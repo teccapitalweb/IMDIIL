@@ -3,11 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="IMDIIL - Instituto Mexicano de Ingeniería Industrial y Logística. Especialistas en capacitación industrial y logística." />
+  <meta name="description" content="IMDIIL - Instituto Mexicano de Ingeniería Industrial y Logística. Cursos online de seguridad industrial, logística, supervisión industrial y capacitación técnica profesional." />
+  <meta name="keywords" content="cursos online, capacitación industrial, logística, seguridad industrial, supervisión industrial, IMDIIL, cursos de ingeniería industrial, cursos de logística" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="IMDIIL | Especialistas en capacitación industrial y logística" />
+  <meta property="og:description" content="Capacitación técnica profesional con cursos online en seguridad industrial, logística, supervisión y mejora operativa." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_MX" />
+  <meta property="og:image" content="assets/img/banner.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="IMDIIL | Especialistas en capacitación industrial y logística" />
+  <meta name="twitter:description" content="Cursos online para la industria, seguridad, logística y supervisión con enfoque técnico y profesional." />
+  <meta name="twitter:image" content="assets/img/banner.jpg" />
   <title>IMDIIL | Especialistas en capacitación industrial y logística</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "IMDIIL - Instituto Mexicano de Ingeniería Industrial y Logística",
+    "description": "Instituto de capacitación profesional especializado en ingeniería industrial, logística, seguridad industrial y supervisión.",
+    "areaServed": "MX",
+    "sameAs": [
+      "https://www.facebook.com/ImdiilMX",
+      "https://www.instagram.com/imdiil_mexico/"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "telephone": "+52 1 221 183 2603",
+      "areaServed": "MX",
+      "availableLanguage": ["es"]
+    }
+  }
+  </script>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -236,7 +268,12 @@
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <div class="lightbox__overlay" data-close="true"></div>
     <button class="lightbox__close" aria-label="Cerrar">×</button>
-    <img id="lightboxImage" alt="Vista ampliada" />
+    <button class="lightbox__nav lightbox__nav--prev" aria-label="Imagen anterior">‹</button>
+    <figure class="lightbox__figure">
+      <img id="lightboxImage" alt="Vista ampliada" />
+      <figcaption id="lightboxCaption"></figcaption>
+    </figure>
+    <button class="lightbox__nav lightbox__nav--next" aria-label="Imagen siguiente">›</button>
   </div>
 
   <script src="js/script.js"></script>

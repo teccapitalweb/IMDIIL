@@ -158,6 +158,7 @@ const modal = document.getElementById('courseModal');
 const modalBody = document.getElementById('modalBody');
 const lightbox = document.getElementById('lightbox');
 const lightboxImage = document.getElementById('lightboxImage');
+const lightboxCaption = document.getElementById('lightboxCaption');
 
 function renderCourses() {
   coursesGrid.innerHTML = courseData.map((course, index) => `
@@ -174,6 +175,7 @@ function renderCourses() {
 
 function openCourseModal(index) {
   const course = courseData[index];
+  const whatsappUrl = `https://wa.me/522211832603?text=${encodeURIComponent(`Hola, me interesa inscribirme al curso: ${course.title}. Quiero recibir más información.`)}`;
   modalBody.innerHTML = `
     <article class="modal-course">
       <div>
@@ -197,6 +199,10 @@ function openCourseModal(index) {
             <ul>${course.includes.map(item => `<li>${item}</li>`).join('')}</ul>
           </div>
         </div>
+        <div class="modal-course__actions">
+          <a href="${whatsappUrl}" target="_blank" rel="noopener" class="btn btn--primary modal-course__cta">Inscribirme por WhatsApp</a>
+          <a href="#contacto" class="btn btn--ghost" data-close="true">Solicitar más información</a>
+        </div>
       </div>
     </article>
   `;
@@ -219,17 +225,38 @@ function renderGallery() {
   `).join('');
 }
 
+let currentGalleryIndex = 0;
+
 function openLightbox(src) {
-  lightboxImage.src = src;
+  currentGalleryIndex = galleryImages.indexOf(src);
+  if (currentGalleryIndex < 0) currentGalleryIndex = 0;
+  updateLightbox();
   lightbox.classList.add('is-open');
   lightbox.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+}
+
+function updateLightbox() {
+  const src = galleryImages[currentGalleryIndex];
+  lightboxImage.src = src;
+  lightboxCaption.textContent = `Imagen ${currentGalleryIndex + 1} de ${galleryImages.length}`;
+}
+
+function nextLightboxImage() {
+  currentGalleryIndex = (currentGalleryIndex + 1) % galleryImages.length;
+  updateLightbox();
+}
+
+function prevLightboxImage() {
+  currentGalleryIndex = (currentGalleryIndex - 1 + galleryImages.length) % galleryImages.length;
+  updateLightbox();
 }
 
 function closeLightbox() {
   lightbox.classList.remove('is-open');
   lightbox.setAttribute('aria-hidden', 'true');
   lightboxImage.src = '';
+  lightboxCaption.textContent = '';
   document.body.style.overflow = '';
 }
 
@@ -272,6 +299,8 @@ function setupEvents() {
 
     if (event.target.closest('[data-close="true"]') || event.target.closest('.modal__close')) closeModal();
     if (event.target.closest('[data-close="true"]') || event.target.closest('.lightbox__close')) closeLightbox();
+    if (event.target.closest('.lightbox__nav--next')) nextLightboxImage();
+    if (event.target.closest('.lightbox__nav--prev')) prevLightboxImage();
 
     const galleryBtn = event.target.closest('.gallery-item');
     if (galleryBtn) openLightbox(galleryBtn.dataset.src);
@@ -282,6 +311,9 @@ function setupEvents() {
       closeModal();
       closeLightbox();
     }
+    if (!lightbox.classList.contains('is-open')) return;
+    if (event.key === 'ArrowRight') nextLightboxImage();
+    if (event.key === 'ArrowLeft') prevLightboxImage();
   });
 
   document.querySelector('.carousel__btn--next').addEventListener('click', () => {
@@ -299,6 +331,26 @@ function setupEvents() {
   nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => nav.classList.remove('is-open')));
 }
 
+function animateCounter(el, target) {
+  const duration = target >= 100 ? 2400 : 1800;
+  const start = performance.now();
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  function frame(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const value = Math.floor(target * easeOutCubic(progress));
+    el.textContent = `+${value}`;
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      el.textContent = `+${target}`;
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
 function setupCounter() {
   const counters = document.querySelectorAll('.counter');
   const observer = new IntersectionObserver((entries) => {
@@ -306,18 +358,7 @@ function setupCounter() {
       if (!entry.isIntersecting) return;
       const el = entry.target;
       const target = Number(el.dataset.target);
-      let current = 0;
-      const step = Math.max(1, Math.ceil(target / 60));
-      const tick = () => {
-        current += step;
-        if (current >= target) {
-          el.textContent = `+${target}`;
-        } else {
-          el.textContent = `+${current}`;
-          requestAnimationFrame(tick);
-        }
-      };
-      tick();
+      animateCounter(el, target);
       observer.unobserve(el);
     });
   }, { threshold: 0.45 });
