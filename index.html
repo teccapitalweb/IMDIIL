@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="IMDIIL - Instituto Mexicano de Ingeniería Industrial y Logística. Especialistas en capacitación industrial y logística." />
+  <title>IMDIIL | Especialistas en capacitación industrial y logística</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <header class="topbar">
+    <a href="#inicio" class="brand">
+      <img src="assets/img/logo.jpg" alt="Logo IMDIIL" class="brand__logo" />
+      <div>
+        <span class="brand__name">IMDIIL</span>
+        <span class="brand__sub">Instituto Mexicano de Ingeniería Industrial y Logística</span>
+      </div>
+    </a>
+
+    <button class="nav-toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav">
+      <a href="#inicio">Inicio</a>
+      <a href="#nosotros">Nosotros</a>
+      <a href="#cursos">Cursos</a>
+      <a href="#galeria">Galería</a>
+      <a href="#opiniones">Opiniones</a>
+      <a href="#contacto">Contacto</a>
+      <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="nav__cta">WhatsApp</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section" id="inicio">
+      <div class="hero__content container">
+        <div class="hero__text reveal">
+          <span class="eyebrow">Capacitación profesional para la industria</span>
+          <h1>Especialistas en capacitación industrial y logística</h1>
+          <p>
+            Formamos profesionales preparados para los retos reales de la industria mediante programas de
+            capacitación técnica enfocados en seguridad, operación responsable y excelencia operativa.
+          </p>
+          <div class="hero__actions">
+            <a href="#cursos" class="btn btn--primary">Ver cursos</a>
+            <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="btn btn--ghost">Contactar por WhatsApp</a>
+          </div>
+          <div class="stats">
+            <article class="stat-card">
+              <strong class="counter" data-target="900">0</strong>
+              <span>Alumnos capacitados</span>
+            </article>
+            <article class="stat-card">
+              <strong class="counter" data-target="21">0</strong>
+              <span>Cursos especializados</span>
+            </article>
+            <article class="stat-card stat-card--text">
+              <strong>100%</strong>
+              <span>Formación teórico-práctica</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="hero__media reveal reveal-delay">
+          <div class="hero__media-card">
+            <img src="assets/img/banner.jpg" alt="Banner IMDIIL" />
+          </div>
+          <div class="hero__floating">
+            <span>Seguridad industrial</span>
+            <span>Supervisión industrial</span>
+            <span>Logística</span>
+            <span>Cumplimiento normativo</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="highlights container reveal">
+      <article><span>Capacitación especializada</span></article>
+      <article><span>Enfoque teórico-práctico</span></article>
+      <article><span>Formación para la industria</span></article>
+      <article><span>Cultura de seguridad</span></article>
+      <article><span>Excelencia operativa</span></article>
+    </section>
+
+    <section class="section section--tight" id="nosotros">
+      <div class="container split">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Sobre IMDIIL</span>
+          <h2>Formación técnica que impulsa profesionales más preparados</h2>
+          <p>
+            El <strong>Instituto Mexicano de Ingeniería Industrial y Logística (IMDIIL)</strong> es una organización
+            dedicada a la capacitación profesional especializada en ingeniería industrial y logística.
+          </p>
+          <p>
+            Nuestro enfoque educativo combina formación teórica y práctica para fortalecer competencias técnicas,
+            cultura de seguridad, operación responsable y cumplimiento normativo en entornos industriales modernos.
+          </p>
+          <p>
+            Preparamos especialistas capaces de impulsar la mejora continua, la supervisión industrial responsable y
+            la calidad operativa dentro de las empresas.
+          </p>
+        </div>
+        <div class="feature-panel reveal reveal-delay">
+          <h3>Áreas de formación destacadas</h3>
+          <ul class="check-list">
+            <li>Seguridad industrial</li>
+            <li>Supervisión industrial</li>
+            <li>Operación responsable</li>
+            <li>Atención empresarial</li>
+            <li>Cumplimiento normativo</li>
+            <li>Competencias técnicas industriales</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="cursos">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Oferta académica</span>
+          <h2>Cursos online diseñados para la industria</h2>
+          <p>Explora nuestros programas especializados. Cada curso cuenta con información rápida y detalle en ventana emergente.</p>
+        </div>
+        <div class="courses-grid" id="coursesGrid"></div>
+      </div>
+    </section>
+
+    <section class="section section--soft" id="galeria">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Galería visual</span>
+          <h2>Capturas reales de clases y sesiones de formación</h2>
+          <p>Una muestra visual del entorno de aprendizaje, materiales y sesiones impartidas por IMDIIL.</p>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </section>
+
+    <section class="section" id="opiniones">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Opiniones</span>
+          <h2>Lo que comparten nuestros alumnos</h2>
+          <p>Comentarios reales presentados en un carrusel automático para reforzar confianza y credibilidad.</p>
+        </div>
+        <div class="carousel reveal">
+          <button class="carousel__btn carousel__btn--prev" aria-label="Anterior">‹</button>
+          <div class="carousel__viewport">
+            <div class="carousel__track" id="opinionsTrack"></div>
+          </div>
+          <button class="carousel__btn carousel__btn--next" aria-label="Siguiente">›</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tight" id="contacto">
+      <div class="container contact-wrap">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Contacto</span>
+          <h2>Solicita información y comienza tu formación profesional con IMDIIL</h2>
+          <p>Estamos listos para brindarte atención y ayudarte a encontrar el programa ideal para tu perfil profesional.</p>
+        </div>
+        <div class="contact-grid">
+          <a class="contact-card reveal" href="https://wa.me/522211832603" target="_blank" rel="noopener">
+            <span class="contact-card__label">WhatsApp</span>
+            <strong>+52 1 221 183 2603</strong>
+            <small>Atención directa y rápida</small>
+          </a>
+          <a class="contact-card reveal reveal-delay" href="https://www.facebook.com/ImdiilMX" target="_blank" rel="noopener">
+            <span class="contact-card__label">Facebook</span>
+            <strong>IMDIIL MX</strong>
+            <small>Conoce novedades y publicaciones</small>
+          </a>
+          <a class="contact-card reveal reveal-delay-2" href="https://www.instagram.com/imdiil_mexico/" target="_blank" rel="noopener">
+            <span class="contact-card__label">Instagram</span>
+            <strong>@imdiil_mexico</strong>
+            <small>Síguenos en redes sociales</small>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__content">
+      <div class="footer__brand">
+        <img src="assets/img/logo.jpg" alt="Logo IMDIIL" />
+        <div>
+          <strong>IMDIIL</strong>
+          <p>Instituto Mexicano de Ingeniería Industrial y Logística</p>
+        </div>
+      </div>
+      <div class="footer__links">
+        <a href="#inicio">Inicio</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#cursos">Cursos</a>
+        <a href="#galeria">Galería</a>
+        <a href="#opiniones">Opiniones</a>
+        <a href="#contacto">Contacto</a>
+      </div>
+      <div class="footer__socials">
+        <a href="https://www.facebook.com/ImdiilMX" target="_blank" rel="noopener">Facebook</a>
+        <a href="https://www.instagram.com/imdiil_mexico/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://wa.me/522211832603" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="floating-whatsapp" aria-label="Abrir WhatsApp">✆</a>
+
+  <div class="modal" id="courseModal" aria-hidden="true">
+    <div class="modal__overlay" data-close="true"></div>
+    <div class="modal__dialog">
+      <button class="modal__close" aria-label="Cerrar">×</button>
+      <div class="modal__body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox__overlay" data-close="true"></div>
+    <button class="lightbox__close" aria-label="Cerrar">×</button>
+    <img id="lightboxImage" alt="Vista ampliada" />
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
