@@ -56,6 +56,12 @@ button { font: inherit; }
 .nav__cta {
   padding: 12px 18px; border-radius: 999px; background: linear-gradient(135deg, var(--primary), var(--primary-2));
   color: #182132 !important; font-weight: 800 !important;
+  transition: box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
+}
+.nav__cta:hover {
+  box-shadow: 0 0 24px rgba(249, 173, 46, 0.5), 0 0 0 1px rgba(249, 173, 46, 0.3);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--primary-2), var(--primary));
 }
 .nav-toggle { display: none; background: transparent; border: 0; padding: 0; }
 .nav-toggle span { display: block; width: 24px; height: 2px; background: #fff; margin: 5px 0; border-radius: 4px; }
@@ -73,9 +79,19 @@ button { font: inherit; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; min-height: 54px; padding: 0 22px; border-radius: 999px;
   border: 1px solid var(--line); font-weight: 800;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
 }
 .btn--primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #1b2233; }
 .btn--ghost { background: rgba(255, 255, 255, 0.04); }
+.btn:hover {
+  border-color: rgba(249, 173, 46, 0.75);
+  box-shadow: 0 0 18px rgba(249, 173, 46, 0.35), 0 0 0 1px rgba(249, 173, 46, 0.18);
+  transform: translateY(-2px);
+}
+.btn--primary:hover {
+  background: linear-gradient(135deg, var(--primary-2), var(--primary));
+  box-shadow: 0 0 24px rgba(249, 173, 46, 0.5), 0 0 0 1px rgba(249, 173, 46, 0.3);
+}
 
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .stat-card {
@@ -178,6 +194,13 @@ button { font: inherit; }
 .contact-card {
   padding: 26px; border-radius: 24px; border: 1px solid var(--line); background: rgba(255,255,255,0.04); box-shadow: var(--shadow);
   display: flex; flex-direction: column; gap: 8px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
+}
+.contact-card:hover {
+  border-color: rgba(249, 173, 46, 0.75);
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.34), 0 0 18px rgba(249, 173, 46, 0.35), 0 0 0 1px rgba(249, 173, 46, 0.18);
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(249,173,46,0.06));
+  transform: translateY(-6px);
 }
 .contact-card__label { color: var(--primary-2); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; }
 .contact-card strong { font-size: 1.25rem; }
