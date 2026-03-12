@@ -375,6 +375,17 @@ function setupReveal() {
   items.forEach(item => observer.observe(item));
 }
 
+// Carrusel infinito de empresas: duplicar imágenes
+function setupEmpresasCarousel() {
+  const track = document.querySelector('.empresas-track');
+  if (!track) return;
+  const imgs = Array.from(track.children);
+  imgs.forEach(img => {
+    const clone = img.cloneNode(true);
+    track.appendChild(clone);
+  });
+}
+
 renderCourses();
 renderGallery();
 renderOpinions();
@@ -383,3 +394,4 @@ setupCounter();
 setupReveal();
 updateCarousel();
 startAutoSlide();
+setupEmpresasCarousel();
