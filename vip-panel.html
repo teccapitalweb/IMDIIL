@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="night">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0A1628" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#F4F6FB" media="(prefers-color-scheme: light)" />
+<meta name="description" content="Panel VIP IMDIIL · Capacitación industrial, herramientas pro y certificación con folio para profesionales de la ingeniería industrial y logística." />
+<meta property="og:title" content="IMDIIL · Panel VIP" />
+<meta property="og:description" content="Acceso completo a cursos, herramientas pro IPER, OEE, ATS, NOMs y certificación con folio QR." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://www.imdiil.com/assets/img/og.jpg" />
+
+<title>IMDIIL · Panel VIP</title>
+
+<link rel="manifest" href="manifest.json" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none;cursor:pointer}
+img{display:block;max-width:100%}
+svg{flex-shrink:0}
+::selection{background:var(--primary);color:var(--bg)}
+
+:root[data-theme="night"]{
+  --bg:#0A1628;
+  --bg-deep:#060F1E;
+  --surface:#10223A;
+  --surface-2:#162C49;
+  --surface-3:#1D3859;
+  --border:rgba(255,255,255,0.07);
+  --border-2:rgba(255,255,255,0.14);
+  --border-strong:rgba(255,255,255,0.22);
+  --text:#E8EDF5;
+  --text-2:#9AAAC4;
+  --text-3:#5D7494;
+  --primary:#E8772E;
+  --primary-soft:#F19A5C;
+  --primary-glow:rgba(232,119,46,0.35);
+  --secondary:#3DA9E0;
+  --secondary-soft:#6FC2EC;
+  --highlight:#F4B942;
+  --success:#3DDC97;
+  --danger:#F25767;
+  --aurora-1:rgba(232,119,46,0.18);
+  --aurora-2:rgba(43,123,185,0.22);
+  --aurora-3:rgba(244,185,66,0.10);
+  --grid-line:rgba(255,255,255,0.025);
+  --shadow-card:0 8px 32px rgba(0,0,0,0.35);
+  --shadow-glow:0 0 32px var(--primary-glow);
+  --logo-text:#E8EDF5;
+  --logo-accent:#E8772E;
+}
+:root[data-theme="day"]{
+  --bg:#F4F6FB;
+  --bg-deep:#E8ECF5;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFC;
+  --surface-3:#EEF2F8;
+  --border:rgba(11,15,26,0.07);
+  --border-2:rgba(11,15,26,0.14);
+  --border-strong:rgba(11,15,26,0.26);
+  --text:#0B0F1A;
+  --text-2:#3A4565;
+  --text-3:#6A7592;
+  --primary:#2D5BFF;
+  --primary-soft:#5B82FF;
+  --primary-glow:rgba(45,91,255,0.22);
+  --secondary:#E85A20;
+  --secondary-soft:#F07A47;
+  --highlight:#C68A1E;
+  --success:#0A8F5E;
+  --danger:#D63846;
+  --aurora-1:rgba(45,91,255,0.07);
+  --aurora-2:rgba(232,90,32,0.05);
+  --aurora-3:rgba(198,138,30,0.04);
+  --grid-line:rgba(11,15,26,0.035);
+  --shadow-card:0 4px 24px rgba(11,15,26,0.06);
+  --shadow-glow:0 0 28px var(--primary-glow);
+  --logo-text:#0B0F1A;
+  --logo-accent:#2D5BFF;
+}
+
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:14px;
+  line-height:1.55;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background .35s ease,color .35s ease;
+}
+
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aurora::before,.aurora::after{
+  content:"";position:absolute;width:60vw;height:60vw;border-radius:50%;
+  filter:blur(120px);opacity:.85;
+  animation:auroraDrift 24s ease-in-out infinite alternate;
+}
+.aurora::before{background:var(--aurora-1);top:-20vw;right:-15vw}
+.aurora::after{background:var(--aurora-2);bottom:-20vw;left:-15vw;animation-delay:-12s}
+.aurora__c{
+  position:absolute;top:35%;left:50%;transform:translate(-50%,-50%);
+  width:50vw;height:50vw;border-radius:50%;background:var(--aurora-3);
+  filter:blur(100px);opacity:.6;animation:auroraDrift 32s ease-in-out infinite;
+}
+@keyframes auroraDrift{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(40px,-30px) scale(1.08)}
+  100%{transform:translate(-30px,40px) scale(.95)}
+}
+
+.grid-bg{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%);
+  mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%);
+}
+
+.ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ic--sm{width:13px;height:13px}
+.ic--lg{width:22px;height:22px}
+.ic--xl{width:28px;height:28px}
+
+.shell{position:relative;z-index:2;display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+
+aside.sidebar{
+  background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-right:0.5px solid var(--border);
+  padding:22px 16px 32px;
+  display:flex;flex-direction:column;gap:22px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--border-2) transparent;
+}
+aside.sidebar::-webkit-scrollbar{width:5px}
+aside.sidebar::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:0.5px solid var(--border)}
+.brand__logo{
+  width:42px;height:42px;border-radius:10px;
+  background:var(--bg-deep);border:0.5px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  position:relative;overflow:hidden;
+}
+.brand__logo svg{width:30px;height:30px}
+.brand__name{font-family:'Sora',sans-serif;font-size:15px;font-weight:600;letter-spacing:-.2px;line-height:1.1}
+.brand__tag{font-size:9.5px;color:var(--text-3);letter-spacing:1.6px;text-transform:uppercase;margin-top:3px;font-weight:600}
+
+.nav-group{display:flex;flex-direction:column;gap:2px}
+.nav-group__label{
+  font-size:10px;color:var(--text-3);letter-spacing:1.4px;
+  text-transform:uppercase;padding:4px 10px 8px;font-weight:600;
+}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:9px 11px;
+  border-radius:8px;font-size:13px;color:var(--text-2);
+  border-left:2px solid transparent;position:relative;
+  transition:background .15s,color .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-item:hover{background:var(--surface-2);color:var(--text)}
+.nav-item.is-active{background:var(--surface-2);color:var(--text);border-left-color:var(--primary)}
+.nav-item .ic{color:var(--secondary);transition:color .15s}
+.nav-item.is-active .ic{color:var(--primary)}
+.nav-item__badge{
+  margin-left:auto;font-size:9.5px;font-weight:600;padding:2px 7px;
+  border-radius:10px;background:var(--primary);color:var(--bg-deep);letter-spacing:.4px;
+}
+.nav-item__badge.is-new{background:var(--secondary);color:var(--bg-deep)}
+
+main.main{padding:24px 32px 80px;display:flex;flex-direction:column;gap:28px;min-width:0}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.topbar__left{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;
+  padding:6px 12px;border-radius:20px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  border:0.5px solid color-mix(in srgb,var(--primary) 38%,transparent);
+  letter-spacing:1.2px;text-transform:uppercase;
+}
+.pill .ic{width:12px;height:12px}
+
+.topbar__right{display:flex;align-items:center;gap:10px}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;background:var(--surface);
+  border:0.5px solid var(--border-2);display:flex;align-items:center;justify-content:center;
+  color:var(--text-2);transition:color .15s,border-color .15s,background .15s;position:relative;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--border-strong)}
+.icon-btn .dot{
+  position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;
+  background:var(--primary);box-shadow:0 0 0 2px var(--surface);
+}
+
+.theme-toggle{
+  display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:20px;
+  background:var(--surface);border:0.5px solid var(--border-2);
+  font-size:12px;color:var(--text-2);font-weight:500;
+  transition:color .15s,border-color .15s;
+}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+.theme-toggle .ic{width:15px;height:15px;transition:transform .4s}
+.theme-toggle:hover .ic{transform:rotate(15deg)}
+
+.hero{display:flex;flex-direction:column;gap:8px;padding:8px 0 0;animation:fadeUp .6s ease forwards}
+.hero__greeting{font-size:11px;color:var(--text-3);letter-spacing:1.8px;text-transform:uppercase;font-weight:600}
+.hero h1{
+  font-family:'Sora',sans-serif;font-size:clamp(28px,3.6vw,40px);font-weight:600;
+  letter-spacing:-1px;line-height:1.1;margin-top:2px;
+}
+.hero h1 em{font-style:normal;color:var(--primary);font-weight:600;position:relative}
+.hero h1 em::after{
+  content:"";position:absolute;left:0;bottom:-2px;width:100%;height:2px;
+  background:var(--primary);opacity:.3;border-radius:2px;
+}
+.hero p{font-size:14px;color:var(--text-2);max-width:580px;margin-top:6px;line-height:1.55}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.kpi{
+  background:color-mix(in srgb,var(--surface) 80%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:0.5px solid var(--border);border-radius:12px;
+  padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;
+  min-width:0;position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s;
+}
+.kpi:hover{transform:translateY(-2px);border-color:var(--border-2)}
+.kpi__label{
+  font-size:10px;color:var(--text-3);letter-spacing:1.4px;
+  text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:6px;
+}
+.kpi__label .ic{width:12px;height:12px}
+.kpi__value{
+  font-family:'JetBrains Mono',ui-monospace,monospace;font-size:30px;font-weight:600;
+  line-height:1;color:var(--text);letter-spacing:-1px;
+}
+.kpi--fire .kpi__value,.kpi--fire .kpi__label .ic{color:var(--primary)}
+.kpi--gold .kpi__value{color:var(--highlight)}
+
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section-header__title{font-family:'Sora',sans-serif;font-size:18px;font-weight:600;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+.section-header__title::before{content:"";width:3px;height:18px;background:var(--primary);border-radius:2px}
+.section-header__link{font-size:12px;color:var(--secondary);font-weight:500;display:inline-flex;align-items:center;gap:4px;transition:gap .2s}
+.section-header__link:hover{gap:8px}
+
+.webinar{
+  background:linear-gradient(135deg,var(--surface) 0%,var(--surface-2) 100%);
+  border:0.5px solid var(--border-2);border-radius:14px;padding:20px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  flex-wrap:wrap;position:relative;overflow:hidden;
+}
+.webinar::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(to bottom,var(--primary),var(--highlight))}
+.webinar__info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.webinar__label{font-size:10px;color:var(--primary);font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.webinar__title{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;letter-spacing:-.2px}
+.webinar__meta{font-size:12px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.webinar__meta span{display:inline-flex;align-items:center;gap:5px}
+.webinar__meta .ic{width:13px;height:13px}
+
+.countdown{display:flex;gap:8px;align-items:center}
+.countdown__cell{background:var(--bg-deep);border:0.5px solid var(--border-2);border-radius:8px;padding:7px 10px;min-width:48px;text-align:center}
+.countdown__num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--text);line-height:1}
+.countdown__lbl{font-size:9px;color:var(--text-3);letter-spacing:1.4px;text-transform:uppercase;margin-top:3px;font-weight:600}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 16px;border-radius:22px;font-size:12px;font-weight:600;
+  letter-spacing:.4px;cursor:pointer;
+  transition:transform .15s,box-shadow .2s,background .15s;white-space:nowrap;
+}
+.btn .ic{width:14px;height:14px}
+.btn--primary{background:var(--primary);color:var(--bg-deep);box-shadow:0 4px 14px var(--primary-glow)}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:var(--shadow-glow),0 6px 20px var(--primary-glow)}
+.btn--primary:active{transform:translateY(0)}
+.btn--ghost{background:transparent;color:var(--text-2);border:0.5px solid var(--border-2)}
+.btn--ghost:hover{color:var(--text);border-color:var(--primary)}
+
+.course-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.course{
+  background:color-mix(in srgb,var(--surface) 88%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:0.5px solid var(--border);border-radius:12px;padding:16px 18px;
+  display:flex;flex-direction:column;gap:10px;
+  transition:transform .2s,border-color .2s,box-shadow .25s;cursor:pointer;
+}
+.course:hover{transform:translateY(-2px);border-color:var(--border-2);box-shadow:var(--shadow-card)}
+.course__tags{display:flex;gap:6px;align-items:center}
+.tag{font-size:9.5px;padding:3px 8px;border-radius:4px;letter-spacing:.6px;text-transform:uppercase;font-weight:600}
+.tag--prog{background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary)}
+.tag--area{background:color-mix(in srgb,var(--secondary) 14%,transparent);color:var(--secondary)}
+.tag--lvl{background:var(--surface-3);color:var(--text-2)}
+.course__title{font-family:'Sora',sans-serif;font-size:14px;font-weight:600;line-height:1.35;letter-spacing:-.1px}
+.course__meta{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:12px}
+.course__meta span{display:inline-flex;align-items:center;gap:4px}
+.course__meta .ic{width:12px;height:12px}
+.course__progress{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-2);font-family:'JetBrains Mono',monospace;font-weight:500}
+.bar{flex:1;height:4px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar > div{height:100%;background:var(--primary);border-radius:3px;transition:width .8s ease}
+
+.tools-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.tool{
+  background:color-mix(in srgb,var(--surface) 88%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:0.5px solid var(--border);border-radius:12px;
+  padding:18px 12px 16px;display:flex;flex-direction:column;
+  align-items:center;gap:10px;text-align:center;cursor:pointer;
+  transition:transform .2s,border-color .2s,box-shadow .25s;
+}
+.tool:hover{transform:translateY(-2px);border-color:var(--primary);box-shadow:0 6px 20px var(--primary-glow)}
+.tool__icon{
+  width:40px;height:40px;border-radius:10px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--primary);
+}
+.tool__icon .ic{width:22px;height:22px;stroke-width:1.8}
+.tool__name{font-family:'Sora',sans-serif;font-size:12px;font-weight:600;line-height:1.25}
+.tool__desc{font-size:10px;color:var(--text-3);line-height:1.4}
+
+.level-card{
+  display:flex;align-items:center;gap:14px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:0.5px solid var(--border);border-radius:12px;padding:14px 18px;
+}
+.level-card__icon{
+  width:36px;height:36px;border-radius:10px;
+  background:color-mix(in srgb,var(--highlight) 18%,transparent);
+  color:var(--highlight);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.level-card__icon .ic{width:18px;height:18px;stroke-width:1.8}
+.level-card__info{flex:1;min-width:0}
+.level-card__info .l1{font-size:10px;color:var(--text-3);letter-spacing:1.4px;text-transform:uppercase;font-weight:600}
+.level-card__info .l2{font-family:'Sora',sans-serif;font-size:15px;font-weight:600;margin-top:1px}
+.level-card__bar{flex:0 0 160px;height:5px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.level-card__bar > div{width:38%;height:100%;background:linear-gradient(90deg,var(--highlight),var(--primary));transition:width .8s ease}
+.level-card__xp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);white-space:nowrap;font-weight:500}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.kpi-grid .kpi{animation:fadeUp .55s ease backwards}
+.kpi-grid .kpi:nth-child(1){animation-delay:.05s}
+.kpi-grid .kpi:nth-child(2){animation-delay:.12s}
+.kpi-grid .kpi:nth-child(3){animation-delay:.19s}
+.kpi-grid .kpi:nth-child(4){animation-delay:.26s}
+.kpi-grid .kpi:nth-child(5){animation-delay:.33s}
+
+.tools-grid .tool{animation:fadeUp .5s ease backwards}
+.tools-grid .tool:nth-child(1){animation-delay:.1s}
+.tools-grid .tool:nth-child(2){animation-delay:.18s}
+.tools-grid .tool:nth-child(3){animation-delay:.26s}
+.tools-grid .tool:nth-child(4){animation-delay:.34s}
+.tools-grid .tool:nth-child(5){animation-delay:.42s}
+
+.mobile-nav{display:none}
+
+@media (max-width:980px){
+  .shell{grid-template-columns:1fr}
+  aside.sidebar{display:none}
+  main.main{padding:18px 18px 100px}
+  .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi:nth-child(4),.kpi:nth-child(5){grid-column:span 1}
+  .kpi__value{font-size:24px}
+  .hero h1{font-size:30px}
+  .course-grid{grid-template-columns:1fr}
+  .tools-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tools-grid .tool:nth-child(4),.tools-grid .tool:nth-child(5){grid-column:span 1}
+  .mobile-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;
+    background:color-mix(in srgb,var(--surface) 94%,transparent);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-top:0.5px solid var(--border-2);
+    padding:8px 4px max(8px,env(safe-area-inset-bottom));
+    justify-content:space-around;align-items:center;
+  }
+  .mobile-nav__item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    color:var(--text-3);padding:6px 10px;border-radius:10px;
+    font-size:10px;font-weight:500;letter-spacing:.3px;
+  }
+  .mobile-nav__item.is-active{color:var(--primary)}
+  .mobile-nav__item .ic{width:20px;height:20px}
+}
+@media (max-width:560px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(5){grid-column:span 2}
+  .webinar{flex-direction:column;align-items:flex-start}
+  .countdown{align-self:stretch;justify-content:space-between}
+  .tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tools-grid .tool:nth-child(5){grid-column:span 2}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-dashboard" viewBox="0 0 24 24"><path d="M4 4h6v8h-6z"/><path d="M14 4h6v4h-6z"/><path d="M14 12h6v8h-6z"/><path d="M4 16h6v4h-6z"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/></symbol>
+<symbol id="i-broadcast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><path d="M16.243 16.243a6 6 0 1 0 -8.486 0"/><path d="M19.071 19.071a10 10 0 1 0 -14.142 0"/></symbol>
+<symbol id="i-news" viewBox="0 0 24 24"><path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1 -4 0v-13a1 1 0 0 0 -1 -1h-11a1 1 0 0 0 -1 1v12a3 3 0 0 0 3 3h14"/><path d="M8 8h4"/><path d="M8 12h4"/><path d="M8 16h4"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v8a5 5 0 0 1 -10 0z"/><path d="M5 9a2 2 0 0 1 -2 -2v-1a1 1 0 0 1 1 -1h3"/><path d="M19 9a2 2 0 0 0 2 -2v-1a1 1 0 0 0 -1 -1h-3"/></symbol>
+<symbol id="i-certificate" viewBox="0 0 24 24"><circle cx="15" cy="15" r="3"/><path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5"/><path d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v6"/><path d="M6 9h12"/><path d="M6 12h3"/><path d="M6 15h2"/></symbol>
+<symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M9 12l2 2l4 -4"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24"><circle cx="12" cy="13" r="9"/><path d="M12 13l3 -3"/><path d="M5.2 8.8a8.5 8.5 0 0 1 13.6 0"/><path d="M9 2h6"/></symbol>
+<symbol id="i-clipboard-check" viewBox="0 0 24 24"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 14l2 2l4 -4"/></symbol>
+<symbol id="i-book-2" viewBox="0 0 24 24"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/></symbol>
+<symbol id="i-chart-bar" viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="9" width="4" height="12" rx="1"/></symbol>
+<symbol id="i-messages" viewBox="0 0 24 24"><path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/></symbol>
+<symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9"/><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/></symbol>
+<symbol id="i-credit-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/><path d="M7 15h.01"/><path d="M11 15h2"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"/><path d="M9 12h12l-3 -3"/><path d="M18 15l3 -3"/></symbol>
+<symbol id="i-crown" viewBox="0 0 24 24"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 12c2 -2.96 0 -7 -1 -8c0 3.038 -1.773 4.741 -3 6c-1.226 1.26 -2 3.24 -2 5a6 6 0 1 0 12 0c0 -1.532 -1.056 -3.94 -2 -5c-1.786 1.786 -3 3 -4 4z"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13 -8z"/></symbol>
+<symbol id="i-certificate-2" viewBox="0 0 24 24"><path d="M5 7.2v-2.2c0 -1 1 -2 2 -2h10c1 0 2 1 2 2v2.2"/><path d="M5 16.8v2.2c0 1 1 2 2 2h10c1 0 2 -1 2 -2v-2.2"/><path d="M15 12h.01"/><path d="M9 12h2"/><path d="M5 12h1"/><circle cx="12" cy="12" r="6"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1v4"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/></symbol>
+<symbol id="i-helmet" viewBox="0 0 24 24"><path d="M12 4a8 8 0 0 1 8 8v3h-16v-3a8 8 0 0 1 8 -8z"/><path d="M2 15h20v3a1 1 0 0 1 -1 1h-18a1 1 0 0 1 -1 -1z"/><path d="M12 4v11"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/></symbol>
+<symbol id="i-tools" viewBox="0 0 24 24"><path d="M3 21h4l13 -13a1.5 1.5 0 0 0 -4 -4l-13 13v4"/><path d="M14.5 5.5l4 4"/></symbol>
+</defs>
+</svg>
+
+<div class="aurora"><div class="aurora__c"></div></div>
+<div class="grid-bg"></div>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand__logo">
+        <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-label="IMDIIL">
+          <path d="M14 12 L22 12 L22 48 L14 48 Z M22 12 L30 12 L30 30 L22 30 Z M22 32 L30 32 L30 48 L22 48 Z" fill="var(--logo-text)" opacity=".85"/>
+          <path d="M14 48 Q 30 56 46 48" stroke="var(--logo-text)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".85"/>
+          <path d="M20 36 Q 30 26 40 36 L 40 42 L 20 42 Z" fill="var(--logo-accent)"/>
+          <rect x="20" y="42" width="20" height="2.5" rx="1" fill="var(--logo-accent)"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand__name">IMDIIL</div>
+        <div class="brand__tag">VIP · 2026</div>
+      </div>
+    </div>
+
+    <nav class="nav-group">
+      <div class="nav-group__label">Principal</div>
+      <a class="nav-item is-active" data-section="inicio"><svg class="ic"><use href="#i-dashboard"/></svg>Inicio</a>
+      <a class="nav-item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Mis cursos<span class="nav-item__badge">12</span></a>
+      <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo<span class="nav-item__badge is-new">NEW</span></a>
+      <a class="nav-item" data-section="noticias"><svg class="ic"><use href="#i-news"/></svg>Noticias</a>
+      <a class="nav-item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mis logros</a>
+      <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
+    </nav>
+
+    <nav class="nav-group">
+      <div class="nav-group__label">Herramientas pro</div>
+      <a class="nav-item" data-section="iper"><svg class="ic"><use href="#i-shield-check"/></svg>Matriz IPER</a>
+      <a class="nav-item" data-section="oee"><svg class="ic"><use href="#i-gauge"/></svg>Calculadora OEE</a>
+      <a class="nav-item" data-section="ats"><svg class="ic"><use href="#i-clipboard-check"/></svg>Generador ATS</a>
+      <a class="nav-item" data-section="noms"><svg class="ic"><use href="#i-book-2"/></svg>Tabla NOM-STPS</a>
+      <a class="nav-item" data-section="logistica"><svg class="ic"><use href="#i-chart-bar"/></svg>Indicadores log.</a>
+    </nav>
+
+    <nav class="nav-group">
+      <div class="nav-group__label">Comunidad</div>
+      <a class="nav-item" data-section="foro"><svg class="ic"><use href="#i-messages"/></svg>Foro VIP</a>
+      <a class="nav-item" data-section="canal"><svg class="ic"><use href="#i-whatsapp"/></svg>Canal WhatsApp</a>
+    </nav>
+
+    <nav class="nav-group">
+      <div class="nav-group__label">Cuenta</div>
+      <a class="nav-item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
+      <a class="nav-item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
+      <a class="nav-item" id="btn-logout"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar__left">
+        <span class="pill"><svg class="ic"><use href="#i-crown"/></svg>Membresía activa</span>
+      </div>
+      <div class="topbar__right">
+        <button class="icon-btn" aria-label="Notificaciones">
+          <svg class="ic"><use href="#i-bell"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">
+          <svg class="ic" id="theme-icon"><use href="#i-moon"/></svg>
+          <span id="theme-label">Noche</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero__greeting" id="greeting-label">Bienvenido</div>
+      <h1 id="hero-title">Buen día, <em>ingeniero</em></h1>
+      <p>Sigue tu camino hacia la maestría industrial. Hoy tienes nuevas clases, herramientas pro y tu comunidad esperándote.</p>
+    </section>
+
+    <section class="kpi-grid">
+      <div class="kpi kpi--fire">
+        <div class="kpi__label"><svg class="ic"><use href="#i-flame"/></svg>Racha</div>
+        <div class="kpi__value" data-count="7">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label"><svg class="ic"><use href="#i-play"/></svg>En curso</div>
+        <div class="kpi__value" data-count="3">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label"><svg class="ic"><use href="#i-certificate-2"/></svg>Certificados</div>
+        <div class="kpi__value" data-count="2">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__label"><svg class="ic"><use href="#i-clock"/></svg>Horas</div>
+        <div class="kpi__value" data-count="18">0</div>
+      </div>
+      <div class="kpi kpi--gold">
+        <div class="kpi__label"><svg class="ic"><use href="#i-bolt"/></svg>XP</div>
+        <div class="kpi__value" data-count="450">0</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="webinar">
+        <div class="webinar__info">
+          <div class="webinar__label">Próxima clase en vivo</div>
+          <div class="webinar__title">OEE: optimización de líneas de producción</div>
+          <div class="webinar__meta">
+            <span><svg class="ic"><use href="#i-calendar"/></svg>Jueves 28 de mayo</span>
+            <span><svg class="ic"><use href="#i-clock"/></svg>19:00 hrs</span>
+            <span><svg class="ic"><use href="#i-user"/></svg>Ing. María López</span>
+          </div>
+        </div>
+        <div class="countdown" id="countdown">
+          <div class="countdown__cell"><div class="countdown__num" id="cd-d">05</div><div class="countdown__lbl">Días</div></div>
+          <div class="countdown__cell"><div class="countdown__num" id="cd-h">12</div><div class="countdown__lbl">Hrs</div></div>
+          <div class="countdown__cell"><div class="countdown__num" id="cd-m">34</div><div class="countdown__lbl">Min</div></div>
+          <div class="countdown__cell"><div class="countdown__num" id="cd-s">22</div><div class="countdown__lbl">Seg</div></div>
+        </div>
+        <button class="btn btn--primary"><svg class="ic"><use href="#i-broadcast"/></svg>Inscribirme</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <h2 class="section-header__title">Continúa aprendiendo</h2>
+        <a class="section-header__link">Ver catálogo<svg class="ic ic--sm"><use href="#i-arrow-right"/></svg></a>
+      </div>
+      <div class="course-grid">
+        <article class="course">
+          <div class="course__tags">
+            <span class="tag tag--prog">En progreso</span>
+            <span class="tag tag--area">Seguridad</span>
+            <span class="tag tag--lvl">Intermedio</span>
+          </div>
+          <h3 class="course__title">NOM-019-STPS · Comisiones de seguridad e higiene</h3>
+          <div class="course__meta">
+            <span><svg class="ic"><use href="#i-user"/></svg>Ing. Roberto Méndez</span>
+            <span><svg class="ic"><use href="#i-clock"/></svg>12 hrs</span>
+          </div>
+          <div class="course__progress">
+            <div class="bar"><div style="width:65%"></div></div>
+            <span>65%</span>
+          </div>
+        </article>
+        <article class="course">
+          <div class="course__tags">
+            <span class="tag tag--prog">En progreso</span>
+            <span class="tag tag--area">Logística</span>
+            <span class="tag tag--lvl">Avanzado</span>
+          </div>
+          <h3 class="course__title">Indicadores logísticos: OTIF, Fill Rate y rotación</h3>
+          <div class="course__meta">
+            <span><svg class="ic"><use href="#i-user"/></svg>Ing. Carlos Vidal</span>
+            <span><svg class="ic"><use href="#i-clock"/></svg>10 hrs</span>
+          </div>
+          <div class="course__progress">
+            <div class="bar"><div style="width:30%"></div></div>
+            <span>30%</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <h2 class="section-header__title">Herramientas pro</h2>
+        <span class="section-header__link" style="cursor:default;color:var(--text-3)">Exclusivas miembros VIP</span>
+      </div>
+      <div class="tools-grid">
+        <button class="tool" data-tool="iper">
+          <div class="tool__icon"><svg class="ic"><use href="#i-shield-check"/></svg></div>
+          <div class="tool__name">Matriz IPER</div>
+          <div class="tool__desc">Identificación de peligros y evaluación de riesgos</div>
+        </button>
+        <button class="tool" data-tool="oee">
+          <div class="tool__icon"><svg class="ic"><use href="#i-gauge"/></svg></div>
+          <div class="tool__name">OEE</div>
+          <div class="tool__desc">Disponibilidad × rendimiento × calidad</div>
+        </button>
+        <button class="tool" data-tool="ats">
+          <div class="tool__icon"><svg class="ic"><use href="#i-clipboard-check"/></svg></div>
+          <div class="tool__name">Generador ATS</div>
+          <div class="tool__desc">Análisis de trabajo seguro en PDF</div>
+        </button>
+        <button class="tool" data-tool="noms">
+          <div class="tool__icon"><svg class="ic"><use href="#i-book-2"/></svg></div>
+          <div class="tool__name">Tabla NOM-STPS</div>
+          <div class="tool__desc">NOM-001 a NOM-036 por sector</div>
+        </button>
+        <button class="tool" data-tool="logistica">
+          <div class="tool__icon"><svg class="ic"><use href="#i-chart-bar"/></svg></div>
+          <div class="tool__name">Indicadores</div>
+          <div class="tool__desc">OTIF, Fill Rate, rotación, stockout</div>
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <div class="level-card">
+        <div class="level-card__icon"><svg class="ic"><use href="#i-helmet"/></svg></div>
+        <div class="level-card__info">
+          <div class="l1">Nivel · 2 de 5</div>
+          <div class="l2">Técnico</div>
+        </div>
+        <div class="level-card__bar"><div></div></div>
+        <div class="level-card__xp">450 / 1,200 XP</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<nav class="mobile-nav">
+  <a class="mobile-nav__item is-active"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
+  <a class="mobile-nav__item"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
+  <a class="mobile-nav__item"><svg class="ic"><use href="#i-tools"/></svg>Pro</a>
+  <a class="mobile-nav__item"><svg class="ic"><use href="#i-messages"/></svg>Foro</a>
+  <a class="mobile-nav__item"><svg class="ic"><use href="#i-user"/></svg>Cuenta</a>
+</nav>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const tgBtn = document.getElementById('theme-toggle');
+  const tgIcon = document.getElementById('theme-icon');
+  const tgLabel = document.getElementById('theme-label');
+
+  const savedTheme = localStorage.getItem('imdiil-theme') || 'night';
+  applyTheme(savedTheme);
+
+  function applyTheme(t){
+    root.setAttribute('data-theme', t);
+    if(t === 'night'){
+      tgIcon.firstElementChild.setAttribute('href','#i-moon');
+      tgLabel.textContent = 'Noche';
+    } else {
+      tgIcon.firstElementChild.setAttribute('href','#i-sun');
+      tgLabel.textContent = 'Día';
+    }
+    localStorage.setItem('imdiil-theme', t);
+  }
+
+  tgBtn.addEventListener('click', () => {
+    const cur = root.getAttribute('data-theme');
+    applyTheme(cur === 'night' ? 'day' : 'night');
+  });
+
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Buen día' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const greetLabel = h < 12 ? 'Hoy es un buen día' : h < 19 ? 'Tarde productiva' : 'Cerrando con todo';
+  document.getElementById('hero-title').innerHTML = greet + ', <em>ingeniero</em>';
+  document.getElementById('greeting-label').textContent = greetLabel;
+
+  document.querySelectorAll('.kpi__value[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count, 10);
+    const dur = 1100;
+    const start = performance.now();
+    function tick(now){
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    setTimeout(() => requestAnimationFrame(tick), 200);
+  });
+
+  document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+    item.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('is-active'));
+      item.classList.add('is-active');
+    });
+  });
+
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 5);
+  targetDate.setHours(19, 0, 0, 0);
+  const cd = { d: document.getElementById('cd-d'), h: document.getElementById('cd-h'), m: document.getElementById('cd-m'), s: document.getElementById('cd-s') };
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function updateCountdown(){
+    const diff = targetDate - new Date();
+    if(diff <= 0){ cd.d.textContent = cd.h.textContent = cd.m.textContent = cd.s.textContent = '00'; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    cd.d.textContent = pad(d); cd.h.textContent = pad(h); cd.m.textContent = pad(m); cd.s.textContent = pad(s);
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+})();
+</script>
+
+</body>
+</html>
