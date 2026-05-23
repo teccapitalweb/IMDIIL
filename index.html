@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="IMDIIL - Instituto Mexicano de Ingeniería Industrial y Logística. Cursos online de seguridad industrial, logística, supervisión industrial y capacitación técnica profesional." />
-  <meta name="keywords" content="cursos online, capacitación industrial, logística, seguridad industrial, supervisión industrial, IMDIIL, cursos de ingeniería industrial, cursos de logística" />
+  <meta name="keywords" content="cursos online, capacitación industrial, logística, seguridad industrial, supervisión industrial, IMDIIL, cursos de ingeniería industrial, cursos de logística, club VIP IMDIIL" />
   <meta name="robots" content="index, follow" />
   <meta property="og:title" content="IMDIIL | Especialistas en capacitación industrial y logística" />
   <meta property="og:description" content="Capacitación técnica profesional con cursos online en seguridad industrial, logística, supervisión y mejora operativa." />
@@ -18,7 +18,7 @@
   <title>IMDIIL | Especialistas en capacitación industrial y logística</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
 
   <script type="application/ld+json">
   {
@@ -41,6 +41,340 @@
   }
   </script>
   <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    .nav__vip{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:8px 16px;border-radius:22px;
+      background:linear-gradient(135deg,#E8772E 0%,#D4651C 100%);
+      color:#fff !important;font-weight:700;font-size:13px;
+      letter-spacing:.3px;
+      box-shadow:0 4px 14px rgba(232,119,46,0.35);
+      transition:transform .15s ease,box-shadow .2s ease;
+      position:relative;
+    }
+    .nav__vip::before{
+      content:"";position:absolute;inset:-2px;border-radius:24px;
+      background:linear-gradient(135deg,#E8772E,#F4B942,#E8772E);
+      z-index:-1;opacity:0;transition:opacity .25s ease;
+    }
+    .nav__vip:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(232,119,46,0.5)}
+    .nav__vip:hover::before{opacity:1}
+    .nav__vip svg{width:14px;height:14px;fill:currentColor}
+    .nav__vip-dot{
+      width:6px;height:6px;border-radius:50%;background:#F4B942;
+      box-shadow:0 0 8px #F4B942;animation:vipPulse 2s ease-in-out infinite;
+    }
+    @keyframes vipPulse{
+      0%,100%{opacity:1;transform:scale(1)}
+      50%{opacity:.6;transform:scale(1.3)}
+    }
+
+    .btn--vip{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(135deg,#E8772E 0%,#D4651C 100%) !important;
+      color:#fff !important;
+      box-shadow:0 6px 18px rgba(232,119,46,0.35);
+    }
+    .btn--vip:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 28px rgba(232,119,46,0.5);
+    }
+    .btn--vip svg{width:16px;height:16px;fill:currentColor}
+
+    .vip-section{
+      position:relative;
+      background:#0A1628;
+      color:#E8EDF5;
+      padding:80px 0;
+      overflow:hidden;
+      font-family:'Inter',sans-serif;
+    }
+    .vip-section::before{
+      content:"";position:absolute;
+      top:-30vw;right:-15vw;
+      width:60vw;height:60vw;border-radius:50%;
+      background:rgba(232,119,46,0.18);
+      filter:blur(120px);pointer-events:none;
+    }
+    .vip-section::after{
+      content:"";position:absolute;
+      bottom:-30vw;left:-15vw;
+      width:60vw;height:60vw;border-radius:50%;
+      background:rgba(43,123,185,0.18);
+      filter:blur(120px);pointer-events:none;
+    }
+    .vip-grid-bg{
+      position:absolute;inset:0;pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+      background-size:48px 48px;
+      -webkit-mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%);
+      mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%);
+    }
+    .vip-container{
+      position:relative;z-index:2;
+      max-width:1200px;margin:0 auto;
+      padding:0 24px;
+    }
+
+    .vip-head{text-align:center;margin-bottom:54px}
+    .vip-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      padding:7px 16px;border-radius:22px;
+      background:rgba(232,119,46,0.12);
+      color:#E8772E;
+      border:1px solid rgba(232,119,46,0.35);
+      margin-bottom:18px;
+    }
+    .vip-badge-dot{
+      width:8px;height:8px;border-radius:50%;background:#E8772E;
+      box-shadow:0 0 10px #E8772E;
+    }
+    .vip-section h2{
+      font-family:'Sora',sans-serif;
+      font-size:clamp(32px,5vw,52px);
+      font-weight:700;
+      letter-spacing:-1.2px;
+      line-height:1.05;
+      margin:0 0 16px;
+      color:#fff;
+    }
+    .vip-section h2 em{
+      font-style:normal;
+      color:#E8772E;
+      position:relative;
+    }
+    .vip-section h2 em::after{
+      content:"";position:absolute;left:0;bottom:2px;width:100%;height:4px;
+      background:#E8772E;opacity:.25;border-radius:2px;
+    }
+    .vip-sub{
+      font-size:16px;
+      color:#9AAAC4;
+      max-width:640px;
+      margin:0 auto;
+      line-height:1.55;
+    }
+
+    .vip-benefits{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-bottom:60px;
+    }
+    .vip-benefit{
+      background:rgba(16,34,58,0.6);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:14px;
+      padding:22px 22px 24px;
+      transition:transform .2s ease,border-color .2s ease;
+    }
+    .vip-benefit:hover{
+      transform:translateY(-3px);
+      border-color:rgba(232,119,46,0.35);
+    }
+    .vip-benefit__icon{
+      width:42px;height:42px;border-radius:11px;
+      background:rgba(232,119,46,0.14);
+      color:#E8772E;
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:14px;
+    }
+    .vip-benefit__icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .vip-benefit h3{
+      font-family:'Sora',sans-serif;
+      font-size:15px;font-weight:600;
+      margin:0 0 6px;
+      color:#fff;
+      letter-spacing:-.2px;
+    }
+    .vip-benefit p{
+      font-size:13px;
+      color:#9AAAC4;
+      line-height:1.5;
+      margin:0;
+    }
+
+    .vip-tools-banner{
+      background:linear-gradient(135deg,rgba(232,119,46,0.10) 0%,rgba(43,123,185,0.10) 100%);
+      border:1px solid rgba(232,119,46,0.25);
+      border-radius:18px;
+      padding:28px 32px;
+      margin-bottom:60px;
+      display:flex;align-items:center;gap:32px;
+      flex-wrap:wrap;
+    }
+    .vip-tools-banner__text{flex:1;min-width:240px}
+    .vip-tools-banner__label{
+      font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:#E8772E;font-weight:700;
+    }
+    .vip-tools-banner__title{
+      font-family:'Sora',sans-serif;
+      font-size:22px;font-weight:600;
+      color:#fff;margin:4px 0 6px;
+      letter-spacing:-.4px;
+    }
+    .vip-tools-banner__desc{
+      font-size:13px;color:#9AAAC4;line-height:1.55;
+    }
+    .vip-tools-list{
+      display:flex;gap:8px;flex-wrap:wrap;
+    }
+    .vip-tool-pill{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:8px 13px;border-radius:22px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.10);
+      font-size:12px;font-weight:600;
+      color:#E8EDF5;
+    }
+    .vip-tool-pill svg{width:14px;height:14px;stroke:#E8772E;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+    .vip-plans{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:18px;
+      max-width:920px;
+      margin:0 auto 40px;
+    }
+    .vip-plan{
+      position:relative;
+      background:rgba(16,34,58,0.7);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:18px;
+      padding:32px 30px;
+      display:flex;flex-direction:column;gap:18px;
+    }
+    .vip-plan--featured{
+      border-color:#E8772E;
+      box-shadow:0 0 40px rgba(232,119,46,0.18);
+    }
+    .vip-plan__ribbon{
+      position:absolute;top:-12px;right:24px;
+      background:linear-gradient(135deg,#E8772E,#F4B942);
+      color:#0A1628;
+      font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+      padding:6px 14px;border-radius:14px;
+      box-shadow:0 4px 14px rgba(232,119,46,0.45);
+    }
+    .vip-plan__name{
+      font-family:'Sora',sans-serif;
+      font-size:14px;font-weight:600;
+      color:#9AAAC4;letter-spacing:1px;text-transform:uppercase;
+    }
+    .vip-plan__price{
+      display:flex;align-items:baseline;gap:6px;
+      font-family:'Sora',sans-serif;
+    }
+    .vip-plan__price-num{
+      font-size:48px;font-weight:700;
+      color:#fff;letter-spacing:-1.5px;line-height:1;
+    }
+    .vip-plan__price-cur{
+      font-size:14px;font-weight:600;color:#9AAAC4;
+    }
+    .vip-plan__price-per{
+      font-size:14px;color:#9AAAC4;font-weight:500;
+    }
+    .vip-plan__equiv{
+      font-size:12px;color:#5D7494;margin-top:-10px;
+    }
+    .vip-plan__equiv strong{color:#F4B942;font-weight:600}
+    .vip-plan ul{
+      list-style:none;padding:0;margin:8px 0;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .vip-plan li{
+      display:flex;align-items:flex-start;gap:10px;
+      font-size:13.5px;color:#E8EDF5;line-height:1.4;
+    }
+    .vip-plan li svg{
+      width:18px;height:18px;flex-shrink:0;margin-top:1px;
+      stroke:#E8772E;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+    }
+    .vip-plan__cta{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      padding:14px 20px;border-radius:12px;
+      font-family:'Sora',sans-serif;
+      font-size:14px;font-weight:600;
+      letter-spacing:.3px;
+      transition:transform .15s ease,box-shadow .2s ease;
+      cursor:pointer;
+    }
+    .vip-plan__cta--primary{
+      background:linear-gradient(135deg,#E8772E 0%,#D4651C 100%);
+      color:#fff !important;
+      box-shadow:0 6px 18px rgba(232,119,46,0.35);
+    }
+    .vip-plan__cta--primary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 28px rgba(232,119,46,0.5);
+    }
+    .vip-plan__cta--ghost{
+      background:transparent;
+      color:#E8EDF5!important;
+      border:1px solid rgba(255,255,255,0.18);
+    }
+    .vip-plan__cta--ghost:hover{
+      border-color:#E8772E;color:#fff!important;
+    }
+
+    .vip-foot{
+      text-align:center;
+      font-size:13px;
+      color:#5D7494;
+    }
+    .vip-foot strong{color:#9AAAC4;font-weight:500}
+
+    .vip-floating{
+      position:fixed;
+      bottom:90px;
+      right:18px;
+      z-index:50;
+      width:56px;height:56px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#E8772E 0%,#D4651C 100%);
+      color:#fff;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 24px rgba(232,119,46,0.45);
+      text-decoration:none;
+      transition:transform .2s ease,box-shadow .25s ease;
+    }
+    .vip-floating:hover{transform:scale(1.08);box-shadow:0 12px 32px rgba(232,119,46,0.6)}
+    .vip-floating svg{width:24px;height:24px;fill:currentColor}
+    .vip-floating::after{
+      content:"VIP";
+      position:absolute;
+      bottom:-6px;right:-6px;
+      background:#F4B942;
+      color:#0A1628;
+      font-size:9px;font-weight:800;
+      padding:3px 6px;border-radius:8px;
+      letter-spacing:.5px;
+    }
+
+    @media (max-width:880px){
+      .vip-benefits{grid-template-columns:repeat(2,1fr)}
+      .vip-plans{grid-template-columns:1fr;max-width:480px}
+      .vip-tools-banner{padding:22px;gap:18px}
+      .vip-tools-banner__title{font-size:18px}
+    }
+    @media (max-width:560px){
+      .vip-section{padding:60px 0}
+      .vip-benefits{grid-template-columns:1fr;gap:10px}
+      .vip-benefit{padding:18px}
+      .vip-tools-list{justify-content:flex-start}
+      .vip-plan__price-num{font-size:42px}
+    }
+  </style>
 </head>
 <body>
   <div class="page-bg"></div>
@@ -62,11 +396,15 @@
       <a href="#inicio">Inicio</a>
       <a href="#nosotros">Nosotros</a>
       <a href="#cursos">Cursos</a>
+      <a href="#vip">Club VIP</a>
       <a href="#galeria">Galería</a>
-      <a href="#opiniones">Opiniones</a>
-      <a href="#empresas">Empresas</a>
       <a href="#contacto">Contacto</a>
       <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="nav__cta">WhatsApp</a>
+      <a href="vip-panel.html" class="nav__vip">
+        <span class="nav__vip-dot"></span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Acceso VIP
+      </a>
     </nav>
   </header>
 
@@ -82,6 +420,10 @@
           </p>
           <div class="hero__actions">
             <a href="#cursos" class="btn btn--primary">Ver cursos</a>
+            <a href="#vip" class="btn btn--vip">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Conocer Club VIP
+            </a>
             <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="btn btn--ghost">Contactar por WhatsApp</a>
           </div>
           <div class="stats">
@@ -122,6 +464,148 @@
       <article><span>Excelencia operativa</span></article>
     </section>
 
+    <section class="vip-section" id="vip">
+      <div class="vip-grid-bg"></div>
+      <div class="vip-container">
+
+        <div class="vip-head">
+          <div class="vip-badge">
+            <span class="vip-badge-dot"></span>
+            Nuevo · Club IMDIIL VIP
+          </div>
+          <h2>La membresía pensada para <em>profesionales de la industria</em></h2>
+          <p class="vip-sub">
+            Acceso ilimitado a cursos, clases en vivo con especialistas, 5 herramientas pro de uso diario
+            en planta, descuentos exclusivos y certificación con folio único y código QR verificable.
+          </p>
+        </div>
+
+        <div class="vip-benefits">
+          <div class="vip-benefit">
+            <div class="vip-benefit__icon">
+              <svg viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/></svg>
+            </div>
+            <h3>Catálogo ilimitado</h3>
+            <p>Todos los cursos de seguridad, logística, supervisión y normativa industrial. Avanza a tu ritmo, 24/7.</p>
+          </div>
+          <div class="vip-benefit">
+            <div class="vip-benefit__icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><path d="M16.243 16.243a6 6 0 1 0 -8.486 0"/><path d="M19.071 19.071a10 10 0 1 0 -14.142 0"/></svg>
+            </div>
+            <h3>Clases en vivo mensuales</h3>
+            <p>Sesiones con ingenieros y especialistas del sector. Pregunta en directo, las grabaciones quedan disponibles.</p>
+          </div>
+          <div class="vip-benefit">
+            <div class="vip-benefit__icon">
+              <svg viewBox="0 0 24 24"><circle cx="15" cy="15" r="3"/><path d="M13 17.5v4.5l2 -1.5l2 1.5v-4.5"/><path d="M10 19h-5a2 2 0 0 1 -2 -2v-10c0 -1.1 .9 -2 2 -2h14a2 2 0 0 1 2 2v6"/></svg>
+            </div>
+            <h3>Certificado con folio QR</h3>
+            <p>Al completar cada curso obtienes constancia oficial con folio único y código QR verificable para tu CV.</p>
+          </div>
+          <div class="vip-benefit">
+            <div class="vip-benefit__icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M9 12l2 2l4 -4"/></svg>
+            </div>
+            <h3>5 herramientas pro</h3>
+            <p>Matriz IPER, Calculadora OEE, Generador ATS, Tabla NOM-STPS, Indicadores logísticos. PDFs descargables.</p>
+          </div>
+          <div class="vip-benefit">
+            <div class="vip-benefit__icon">
+              <svg viewBox="0 0 24 24"><path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/></svg>
+            </div>
+            <h3>Comunidad profesional</h3>
+            <p>Foro privado de miembros + canal exclusivo de WhatsApp. Comparte casos, conecta y crece con otros profesionales.</p>
+          </div>
+          <div class="vip-benefit">
+            <div class="vip-benefit__icon">
+              <svg viewBox="0 0 24 24"><path d="M14 3l-2.5 8h6l-3 10"/><path d="M3 12h18"/></svg>
+            </div>
+            <h3>20% de descuento</h3>
+            <p>En todos los cursos nuevos y diplomados de IMDIIL mientras tu membresía esté activa.</p>
+          </div>
+        </div>
+
+        <div class="vip-tools-banner">
+          <div class="vip-tools-banner__text">
+            <div class="vip-tools-banner__label">Lo que nadie más te da</div>
+            <div class="vip-tools-banner__title">5 herramientas pro de uso diario en planta</div>
+            <div class="vip-tools-banner__desc">No solo cursos. Herramientas reales que el supervisor, ingeniero o jefe de seguridad puede usar en su día a día y descargar como PDF.</div>
+          </div>
+          <div class="vip-tools-list">
+            <span class="vip-tool-pill">
+              <svg viewBox="0 0 24 24"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M9 12l2 2l4 -4"/></svg>
+              Matriz IPER
+            </span>
+            <span class="vip-tool-pill">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="9"/><path d="M12 13l3 -3"/></svg>
+              OEE
+            </span>
+            <span class="vip-tool-pill">
+              <svg viewBox="0 0 24 24"><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 14l2 2l4 -4"/></svg>
+              Generador ATS
+            </span>
+            <span class="vip-tool-pill">
+              <svg viewBox="0 0 24 24"><path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z"/><path d="M9 8h6"/></svg>
+              Tabla NOM-STPS
+            </span>
+            <span class="vip-tool-pill">
+              <svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="6" width="4" height="15" rx="1"/><rect x="17" y="9" width="4" height="12" rx="1"/></svg>
+              Indicadores log.
+            </span>
+          </div>
+        </div>
+
+        <div class="vip-plans">
+          <div class="vip-plan">
+            <div class="vip-plan__name">Plan Mensual</div>
+            <div class="vip-plan__price">
+              <span class="vip-plan__price-num">$199</span>
+              <span class="vip-plan__price-cur">MXN</span>
+              <span class="vip-plan__price-per">/ mes</span>
+            </div>
+            <div class="vip-plan__equiv">Facturación mensual · Cancela cuando quieras</div>
+            <ul>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Acceso ilimitado al catálogo</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Clases en vivo mensuales</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>5 herramientas pro + PDFs</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Certificado con folio QR</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>20% OFF en cursos nuevos</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Foro VIP + canal WhatsApp</li>
+            </ul>
+            <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--ghost">
+              Empezar mensual
+            </a>
+          </div>
+
+          <div class="vip-plan vip-plan--featured">
+            <div class="vip-plan__ribbon">Ahorra 2 meses</div>
+            <div class="vip-plan__name">Plan Anual</div>
+            <div class="vip-plan__price">
+              <span class="vip-plan__price-num">$1,899</span>
+              <span class="vip-plan__price-cur">MXN</span>
+              <span class="vip-plan__price-per">/ año</span>
+            </div>
+            <div class="vip-plan__equiv">Equivale a <strong>$158/mes</strong> · Ahorras $489</div>
+            <ul>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Todo lo del plan mensual</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg><strong>2 meses gratis</strong> (ahorras $489)</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Sin cobros mensuales sorpresa</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Acceso garantizado 365 días</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Prioridad en clases con cupo limitado</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Certificado anual premium</li>
+            </ul>
+            <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--primary">
+              Empezar anual →
+            </a>
+          </div>
+        </div>
+
+        <p class="vip-foot">
+          <strong>Sin permanencia · Cancela cuando quieras · Facturación automática</strong>
+        </p>
+      </div>
+    </section>
+
     <section class="section section--tight" id="nosotros">
       <div class="container split">
         <div class="section-heading reveal">
@@ -144,35 +628,8 @@
           <h3>Áreas de formación destacadas</h3>
           <ul class="check-list">
             <li>Seguridad industrial</li>
-            <li>Supervisión industrial</li>
-            <li>Operación responsable</li>
-            <li>Atención empresarial</li>
-            <li>Cumplimiento normativo</li>
-            <li>Competencias técnicas industriales</li>
           </ul>
         </div>
-      </div>
-    </section>
-
-    <section class="section" id="cursos">
-      <div class="container">
-        <div class="section-heading reveal">
-          <span class="eyebrow">Oferta académica</span>
-          <h2>Cursos online diseñados para la industria</h2>
-          <p>Explora nuestros programas especializados.</p>
-        </div>
-        <div class="courses-grid" id="coursesGrid"></div>
-      </div>
-    </section>
-
-    <section class="section section--soft" id="galeria">
-      <div class="container">
-        <div class="section-heading reveal">
-          <span class="eyebrow">Galería visual</span>
-          <h2>Capturas reales de clases y sesiones de formación</h2>
-          <p>Una muestra visual del entorno de aprendizaje, materiales y sesiones impartidas por IMDIIL.</p>
-        </div>
-        <div class="gallery-grid" id="galleryGrid"></div>
       </div>
     </section>
 
@@ -278,6 +735,8 @@
         <a href="#inicio">Inicio</a>
         <a href="#nosotros">Nosotros</a>
         <a href="#cursos">Cursos</a>
+        <a href="#vip">Club VIP</a>
+        <a href="vip-panel.html">Acceso miembros</a>
         <a href="#galeria">Galería</a>
         <a href="#opiniones">Opiniones</a>
         <a href="#empresas">Empresas</a>
@@ -290,6 +749,10 @@
       </div>
     </div>
   </footer>
+
+  <a href="vip-panel.html" class="vip-floating" aria-label="Acceso Club VIP">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
 
   <div class="floating-socials" aria-label="Redes sociales flotantes">
     <a href="https://www.instagram.com/imdiil_mexico/" target="_blank" rel="noopener" class="floating-social floating-social--instagram" aria-label="Abrir Instagram">
