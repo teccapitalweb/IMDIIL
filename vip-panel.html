@@ -1969,6 +1969,7 @@ body{
       <a class="nav-item is-active" data-section="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
       <a class="nav-item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Mis cursos<span class="nav-item__badge">12</span></a>
       <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo<span class="nav-item__dot"></span></a>
+      <a class="nav-item" data-section="videoteca"><svg class="ic"><use href="#i-folder"/></svg>Videoteca</a>
       <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
       <a class="nav-item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mis logros</a>
       <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados<span class="nav-item__badge">2</span></a>
@@ -1981,13 +1982,6 @@ body{
       <a class="nav-item" data-tool="ats"><svg class="ic"><use href="#i-clipboard-check"/></svg>Generador ATS</a>
       <a class="nav-item" data-tool="noms"><svg class="ic"><use href="#i-book-2"/></svg>Tabla NOM-STPS</a>
       <a class="nav-item" data-tool="logistica"><svg class="ic"><use href="#i-chart-bar"/></svg>Indicadores log.</a>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-label">Biblioteca</div>
-      <a class="nav-item" data-section="mes-mayo"><svg class="ic"><use href="#i-folder"/></svg>Mayo 2026<span class="nav-item__badge">8</span></a>
-      <a class="nav-item" data-section="mes-abril"><svg class="ic"><use href="#i-folder"/></svg>Abril 2026<span class="nav-item__badge">6</span></a>
-      <a class="nav-item" data-section="mes-marzo"><svg class="ic"><use href="#i-folder"/></svg>Marzo 2026<span class="nav-item__badge">5</span></a>
     </div>
 
     <div class="nav-section">
@@ -4043,6 +4037,84 @@ const Sections = (function(){
     `;
   }
 
+  /* ============================ VIDEOTECA · agrupa todos los meses ============================ */
+  let videotecaState = {mes:'mes-mayo'};
+
+  function renderVideoteca(container){
+    const m = bibliotecaMeses[videotecaState.mes];
+    const COLOR_TIPO = {video:'#3B82F6',live:'#EF4444',pdf:'#10B981'};
+    const ICON_TIPO = {video:'i-play',live:'i-broadcast',pdf:'i-news'};
+    const totalVideos = Object.values(bibliotecaMeses).reduce((s,x)=>s+x.videos,0);
+    const totalPdfs = Object.values(bibliotecaMeses).reduce((s,x)=>s+x.pdfs,0);
+    const totalLives = Object.values(bibliotecaMeses).reduce((s,x)=>s+x.lives,0);
+    const totalItems = Object.values(bibliotecaMeses).reduce((s,x)=>s+x.items.length,0);
+
+    container.innerHTML = `
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Archivo histórico</span>
+          <h1 class="sec-hero__title">Videoteca</h1>
+          <p class="sec-hero__sub">Todo el contenido publicado mes a mes. Videos, PDFs y grabaciones de clases en vivo organizadas cronológicamente.</p>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-card__label">Publicaciones</div><div class="kpi-card__value">${totalItems}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Videos</div><div class="kpi-card__value">${totalVideos}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">PDFs</div><div class="kpi-card__value">${totalPdfs}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Lives</div><div class="kpi-card__value">${totalLives}</div></div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab ${videotecaState.mes==='mes-mayo'?'is-active':''}" data-vmes="mes-mayo">Mayo 2026 · ${bibliotecaMeses['mes-mayo'].items.length}</button>
+          <button class="tab ${videotecaState.mes==='mes-abril'?'is-active':''}" data-vmes="mes-abril">Abril 2026 · ${bibliotecaMeses['mes-abril'].items.length}</button>
+          <button class="tab ${videotecaState.mes==='mes-marzo'?'is-active':''}" data-vmes="mes-marzo">Marzo 2026 · ${bibliotecaMeses['mes-marzo'].items.length}</button>
+        </div>
+
+        <section class="mes-hero">
+          <div class="mes-hero__cal">
+            <div class="mes-hero__cal-month">${m.mes}</div>
+            <div class="mes-hero__cal-year">${m.año}</div>
+          </div>
+          <div class="mes-hero__info">
+            <h2 class="mes-hero__title">${m.items.length} publicaciones</h2>
+            <p class="mes-hero__sub">Contenido completo de ${m.mes.toLowerCase()} ${m.año}. Filtra por tipo o explora cronológicamente.</p>
+          </div>
+          <div class="mes-hero__counts">
+            <div class="mes-count"><div class="mes-count__num">${m.videos}</div><div class="mes-count__lbl">Videos</div></div>
+            <div class="mes-count"><div class="mes-count__num">${m.pdfs}</div><div class="mes-count__lbl">PDFs</div></div>
+            <div class="mes-count"><div class="mes-count__num">${m.lives}</div><div class="mes-count__lbl">Lives</div></div>
+          </div>
+        </section>
+
+        <div class="content-list">
+          ${m.items.map(it=>`
+            <div class="content-row">
+              <div class="content-row__thumb content-row__thumb--${it.tipo==='video'?'video':it.tipo==='live'?'live':'pdf'}"><svg class="ic ic--lg"><use href="#${ICON_TIPO[it.tipo]}"/></svg></div>
+              <div class="content-row__body">
+                <div class="content-row__title">${it.titulo}</div>
+                <div class="content-row__meta">
+                  ${it.instructor?`<span><svg class="ic"><use href="#i-user"/></svg>${it.instructor}</span>`:''}
+                  ${it.cat?`<span><svg class="ic"><use href="#i-folder"/></svg>${it.cat}</span>`:''}
+                  <span><svg class="ic"><use href="#i-clock"/></svg>${it.duracion}</span>
+                  <span><svg class="ic"><use href="#i-calendar"/></svg>${it.fecha}</span>
+                </div>
+              </div>
+              <div class="content-row__action">
+                ${it.badge==='live'?'<span class="tag tag--live">En vivo</span>':''}
+                ${it.badge==='new'?'<span class="tag tag--new">Nuevo</span>':''}
+                <button class="row-btn">${it.tipo==='pdf'?'<svg class="ic"><use href="#i-download"/></svg>Descargar':it.tipo==='video'?'<svg class="ic"><use href="#i-play"/></svg>Ver':'Inscribirme<svg class="ic"><use href="#i-arrow-right"/></svg>'}</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    container.querySelectorAll('[data-vmes]').forEach(b=>{
+      b.addEventListener('click',()=>{videotecaState.mes=b.dataset.vmes;renderVideoteca(container);});
+    });
+  }
+
   return {
     renderers:{
       cursos:renderCursos,
@@ -4050,9 +4122,7 @@ const Sections = (function(){
       logros:renderLogros,
       webinars:renderWebinars,
       pdfs:renderPDFs,
-      'mes-mayo':(c)=>renderMes(c,'mes-mayo'),
-      'mes-abril':(c)=>renderMes(c,'mes-abril'),
-      'mes-marzo':(c)=>renderMes(c,'mes-marzo'),
+      videoteca:renderVideoteca,
       foro:renderForo,
       canal:renderCanal,
       perfil:renderPerfil,
