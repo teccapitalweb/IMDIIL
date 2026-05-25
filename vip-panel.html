@@ -1816,6 +1816,96 @@ body{
   flex-shrink:0;
 }
 
+/* =========================================================
+   NOTICIAS DIARIAS · estilo ICADEM/Sinergia
+   ========================================================= */
+.news-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.news-card{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .25s cubic-bezier(.2,.8,.25,1),border-color .2s,box-shadow .3s;
+  display:flex;flex-direction:column;
+  position:relative;
+}
+.news-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--cat-color,var(--primary)) 35%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.14)}
+.news-card__cover{
+  height:120px;
+  background:linear-gradient(135deg,var(--cat-color,var(--primary)),color-mix(in srgb,var(--cat-color,var(--primary)) 60%,#000));
+  position:relative;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+}
+.news-card__cover::before{
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(to right,rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.07) 1px,transparent 1px);
+  background-size:28px 28px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 75%);
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 75%);
+}
+.news-card__cover svg{width:42px;height:42px;position:relative;z-index:1;opacity:.95}
+.news-card__date{
+  position:absolute;top:11px;left:11px;
+  background:rgba(0,0,0,.4);
+  backdrop-filter:blur(8px);
+  border:0.5px solid rgba(255,255,255,.22);
+  color:#fff;
+  border-radius:100px;
+  padding:4px 10px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:5px;
+  z-index:1;
+}
+.news-card__date::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:#34D399;
+  animation:pulseDotSmall 1.6s ease-out infinite;
+}
+.news-card__cat{
+  position:absolute;top:11px;right:11px;
+  background:rgba(255,255,255,.92);
+  color:var(--cat-color,var(--primary));
+  border-radius:100px;
+  padding:4px 10px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;
+  z-index:1;
+  backdrop-filter:blur(8px);
+}
+.news-card__body{
+  padding:14px 16px 16px;
+  display:flex;flex-direction:column;gap:8px;
+  flex:1;
+}
+.news-card__title{
+  font-size:14px;font-weight:600;letter-spacing:-.2px;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.news-card__excerpt{
+  font-size:12px;color:var(--text-2);line-height:1.55;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.news-card__footer{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:auto;padding-top:10px;
+  border-top:0.5px solid var(--border);
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:500;
+}
+.news-card__source{color:var(--text-3);display:inline-flex;align-items:center;gap:5px}
+.news-card__source .ic{width:11px;height:11px}
+.news-card__more{
+  color:var(--cat-color,var(--primary));
+  font-weight:600;
+  display:inline-flex;align-items:center;gap:4px;
+  transition:gap .2s;
+}
+.news-card:hover .news-card__more{gap:7px}
+.news-card__more .ic{width:11px;height:11px}
+
 /* RESPONSIVE */
 .mobile-nav{display:none}
 
@@ -1891,6 +1981,10 @@ body{
   .pago-row__amount{font-size:13px}
   .post__header{gap:6px}
   .post__time{margin-left:0;flex-basis:100%;order:99}
+
+  /* Noticias mobile */
+  .news-grid{grid-template-columns:1fr}
+  .news-card__cover{height:100px}
 }
 
 @media (max-width:420px){
@@ -2041,175 +2135,110 @@ body{
 
       <div style="height:22px"></div>
 
-      <!-- Nuevo esta semana -->
+      <!-- Noticias diarias -->
       <section>
         <div class="section-header">
-          <h2 class="section-header__title">Nuevo esta semana<span class="section-header__badge">4 nuevos</span></h2>
-          <a class="section-header__link" data-section="cursos">Ver todo<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+          <h2 class="section-header__title">Noticias del sector<span class="section-header__badge">Hoy</span></h2>
+          <a class="section-header__link">Ver todas<svg class="ic"><use href="#i-arrow-right"/></svg></a>
         </div>
-        <div class="content-list">
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--live"><svg class="ic ic--lg"><use href="#i-broadcast"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">OEE: optimización de líneas de producción</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>Ing. María López</span>
-                <span><svg class="ic"><use href="#i-calendar"/></svg>Jueves 28 mayo · 19:00 hrs</span>
+        <div class="news-grid">
+
+          <article class="news-card" style="--cat-color:#FF7A2D;">
+            <div class="news-card__cover">
+              <svg class="ic"><use href="#i-shield-check"/></svg>
+              <span class="news-card__date">Hoy</span>
+              <span class="news-card__cat">Seguridad</span>
+            </div>
+            <div class="news-card__body">
+              <h3 class="news-card__title">STPS publica actualización de la NOM-019 sobre comisiones de seguridad e higiene</h3>
+              <p class="news-card__excerpt">La Secretaría del Trabajo reforzó los requisitos de integración, capacitación y operación de las comisiones mixtas en centros de trabajo con más de 15 trabajadores.</p>
+              <div class="news-card__footer">
+                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>El Economista</span>
+                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
               </div>
             </div>
-            <div class="content-row__action">
-              <span class="tag tag--live">En vivo</span>
-              <button class="row-btn">Inscribirme<svg class="ic"><use href="#i-arrow-right"/></svg></button>
-            </div>
-          </div>
+          </article>
 
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--video"><svg class="ic ic--lg"><use href="#i-play"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">NOM-019-STPS · Comisiones de seguridad e higiene · Módulo 5</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>Ing. Roberto Méndez</span>
-                <span><svg class="ic"><use href="#i-clock"/></svg>42 min</span>
+          <article class="news-card" style="--cat-color:#3B82F6;">
+            <div class="news-card__cover">
+              <svg class="ic"><use href="#i-book-2"/></svg>
+              <span class="news-card__date">Hoy</span>
+              <span class="news-card__cat">NOM-STPS</span>
+            </div>
+            <div class="news-card__body">
+              <h3 class="news-card__title">NOM-035: 70% de las empresas mexicanas aún tienen pendiente el diagnóstico psicosocial</h3>
+              <p class="news-card__excerpt">Encuesta nacional revela que la mayoría de las pymes no ha aplicado el cuestionario obligatorio. Inspecciones aumentarán en el segundo semestre.</p>
+              <div class="news-card__footer">
+                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>Forbes México</span>
+                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
               </div>
             </div>
-            <div class="content-row__action">
-              <span class="tag tag--new">Nuevo</span>
-              <button class="row-btn"><svg class="ic"><use href="#i-play"/></svg>Ver</button>
-            </div>
-          </div>
+          </article>
 
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--pdf"><svg class="ic ic--lg"><use href="#i-news"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">Plantilla de Matriz IPER en Excel + Guía de aplicación</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-folder"/></svg>Seguridad industrial</span>
-                <span><svg class="ic"><use href="#i-news"/></svg>14 páginas</span>
+          <article class="news-card" style="--cat-color:#10B981;">
+            <div class="news-card__cover">
+              <svg class="ic"><use href="#i-tools"/></svg>
+              <span class="news-card__date">Ayer</span>
+              <span class="news-card__cat">Industria MX</span>
+            </div>
+            <div class="news-card__body">
+              <h3 class="news-card__title">Industria automotriz mexicana cierra abril con incremento de 8.3% en producción</h3>
+              <p class="news-card__excerpt">INEGI reporta crecimiento sostenido en plantas de Guanajuato, Puebla y Coahuila. Ensambladoras anuncian nuevas inversiones en líneas de producción.</p>
+              <div class="news-card__footer">
+                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>El Financiero</span>
+                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
               </div>
             </div>
-            <div class="content-row__action">
-              <span class="tag tag--new">Nuevo</span>
-              <button class="row-btn"><svg class="ic"><use href="#i-download"/></svg>Descargar</button>
-            </div>
-          </div>
+          </article>
 
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--tool"><svg class="ic ic--lg"><use href="#i-gauge"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">Calculadora OEE actualizada · ahora exporta PDF con folio</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-tools"/></svg>Herramienta pro</span>
-                <span><svg class="ic"><use href="#i-bolt"/></svg>Actualizada hoy</span>
+          <article class="news-card" style="--cat-color:#A855F7;">
+            <div class="news-card__cover">
+              <svg class="ic"><use href="#i-chart-bar"/></svg>
+              <span class="news-card__date">Ayer</span>
+              <span class="news-card__cat">Logística</span>
+            </div>
+            <div class="news-card__body">
+              <h3 class="news-card__title">Nearshoring impulsa la inversión en parques industriales del Bajío y norte de México</h3>
+              <p class="news-card__excerpt">CANACINTRA reporta que la ocupación de naves industriales superó el 95% en Querétaro, Aguascalientes y Nuevo León. La logística domestica enfrenta nuevos retos.</p>
+              <div class="news-card__footer">
+                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>Expansión</span>
+                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
               </div>
             </div>
-            <div class="content-row__action">
-              <span class="tag tag--new">Actualizado</span>
-              <button class="row-btn" data-open-tool="oee">Abrir<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+          </article>
+
+          <article class="news-card" style="--cat-color:#FF7A2D;">
+            <div class="news-card__cover">
+              <svg class="ic"><use href="#i-alert-circle"/></svg>
+              <span class="news-card__date">Hace 2 días</span>
+              <span class="news-card__cat">Seguridad</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <div style="height:22px"></div>
-
-      <!-- Biblioteca completa -->
-      <section>
-        <div class="section-header">
-          <h2 class="section-header__title">Biblioteca completa<span class="section-header__badge">archivos</span></h2>
-          <a class="section-header__link" data-section="cursos">Ver catálogo<svg class="ic"><use href="#i-arrow-right"/></svg></a>
-        </div>
-        <div class="content-list">
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--video"><svg class="ic ic--lg"><use href="#i-play"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">Indicadores logísticos: OTIF, Fill Rate y rotación</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>Ing. Carlos Vidal</span>
-                <span><svg class="ic"><use href="#i-folder"/></svg>Logística</span>
-                <span><svg class="ic"><use href="#i-clock"/></svg>10 hrs</span>
+            <div class="news-card__body">
+              <h3 class="news-card__title">Accidentes laborales en México: STPS pone foco en sectores de construcción y manufactura</h3>
+              <p class="news-card__excerpt">Estadísticas del IMSS revelan que estos dos sectores concentran el 58% de los accidentes registrados en 2025. Programa de inspecciones se intensifica.</p>
+              <div class="news-card__footer">
+                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>El Sol de México</span>
+                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
               </div>
             </div>
-            <div class="content-row__action">
-              <span class="tag tag--watched">30%</span>
-              <button class="row-btn"><svg class="ic"><use href="#i-play"/></svg>Continuar</button>
-            </div>
-          </div>
+          </article>
 
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--video"><svg class="ic ic--lg"><use href="#i-play"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">Mantenimiento productivo total (TPM)</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>Ing. Patricia Solís</span>
-                <span><svg class="ic"><use href="#i-folder"/></svg>Mantenimiento</span>
-                <span><svg class="ic"><use href="#i-clock"/></svg>14 hrs</span>
+          <article class="news-card" style="--cat-color:#FFB347;">
+            <div class="news-card__cover">
+              <svg class="ic"><use href="#i-bolt"/></svg>
+              <span class="news-card__date">Hace 3 días</span>
+              <span class="news-card__cat">Industria MX</span>
+            </div>
+            <div class="news-card__body">
+              <h3 class="news-card__title">CFE anuncia nueva tarifa industrial: ¿cómo impacta la operación de tu planta?</h3>
+              <p class="news-card__excerpt">El ajuste para usuarios de alta demanda entra en vigor el próximo mes. Especialistas recomiendan revisar los contratos de demanda y factor de carga.</p>
+              <div class="news-card__footer">
+                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>Energía Hoy</span>
+                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
               </div>
             </div>
-            <div class="content-row__action">
-              <span class="tag tag--watched">12%</span>
-              <button class="row-btn"><svg class="ic"><use href="#i-play"/></svg>Continuar</button>
-            </div>
-          </div>
+          </article>
 
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--pdf"><svg class="ic ic--lg"><use href="#i-news"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">NOM-035-STPS · Cuestionario de identificación de factores psicosociales</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-folder"/></svg>Seguridad industrial</span>
-                <span><svg class="ic"><use href="#i-news"/></svg>22 páginas</span>
-              </div>
-            </div>
-            <div class="content-row__action">
-              <span class="tag tag--down">Descargado</span>
-              <button class="row-btn"><svg class="ic"><use href="#i-download"/></svg>Descargar</button>
-            </div>
-          </div>
-
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--live"><svg class="ic ic--lg"><use href="#i-broadcast"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">NOM-035 en la práctica: aplicación del cuestionario sin que se vuelva trámite</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>Ing. Roberto Méndez</span>
-                <span><svg class="ic"><use href="#i-calendar"/></svg>3 de junio · 19:00 hrs</span>
-              </div>
-            </div>
-            <div class="content-row__action">
-              <span class="tag tag--soon">Próximo</span>
-              <button class="row-btn">Inscribirme<svg class="ic"><use href="#i-arrow-right"/></svg></button>
-            </div>
-          </div>
-
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--video"><svg class="ic ic--lg"><use href="#i-play"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">Lean Manufacturing para supervisores · Curso completo</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>Ing. María López</span>
-                <span><svg class="ic"><use href="#i-folder"/></svg>Calidad</span>
-                <span><svg class="ic"><use href="#i-clock"/></svg>16 hrs</span>
-              </div>
-            </div>
-            <div class="content-row__action">
-              <span class="tag tag--watched">Completado</span>
-              <button class="row-btn"><svg class="ic"><use href="#i-certificate"/></svg>Certificado</button>
-            </div>
-          </div>
-
-          <div class="content-row">
-            <div class="content-row__thumb content-row__thumb--tool"><svg class="ic ic--lg"><use href="#i-shield-check"/></svg></div>
-            <div class="content-row__body">
-              <div class="content-row__title">Matriz IPER · Identificación de peligros y evaluación de riesgos</div>
-              <div class="content-row__meta">
-                <span><svg class="ic"><use href="#i-tools"/></svg>Herramienta pro</span>
-                <span><svg class="ic"><use href="#i-download"/></svg>Genera PDF con folio</span>
-              </div>
-            </div>
-            <div class="content-row__action">
-              <button class="row-btn" data-open-tool="iper">Abrir herramienta<svg class="ic"><use href="#i-arrow-right"/></svg></button>
-            </div>
-          </div>
         </div>
       </section>
     </div>
