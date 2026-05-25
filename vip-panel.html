@@ -527,6 +527,505 @@ body{
 .toast__title{font-weight:600;font-size:12.5px}
 .toast__msg{font-size:11.5px;color:var(--text-2);margin-top:1px}
 
+/* =========================================================
+   SECCIONES INTERNAS · estilo agri-futurista coherente
+   ========================================================= */
+
+/* Section hero (cabecera de sección no-inicio) */
+.sec-hero{
+  padding:8px 0 18px;
+  border-bottom:0.5px solid var(--border);
+  margin-bottom:22px;
+}
+.sec-hero__eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--primary);
+  padding:5px 10px;border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 12%,transparent);
+  border:0.5px solid color-mix(in srgb,var(--primary) 28%,transparent);
+}
+.sec-hero__eyebrow::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--primary);
+  animation:pulseDotSmall 1.8s ease-out infinite;
+}
+.sec-hero__title{
+  font-size:clamp(24px,3vw,32px);
+  font-weight:600;
+  letter-spacing:-.8px;
+  line-height:1.1;
+  margin-top:12px;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 60%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.sec-hero__sub{font-size:13.5px;color:var(--text-2);margin-top:8px;max-width:640px;line-height:1.55}
+
+/* KPI grid (stats cards en certificados, logros) */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:24px}
+.kpi-card{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:14px;
+  padding:14px 16px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .2s,transform .2s,box-shadow .25s;
+}
+.kpi-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+  opacity:.45;
+}
+.kpi-card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--primary) 30%,transparent);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.kpi-card__label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--text-3);
+  display:inline-flex;align-items:center;gap:5px;
+  margin-bottom:8px;
+}
+.kpi-card__label::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--primary);
+  animation:pulseDotSmall 2s ease-out infinite;
+}
+.kpi-card__value{
+  font-size:24px;font-weight:600;letter-spacing:-.6px;line-height:1;
+  font-feature-settings:"tnum" 1;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 60%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.kpi-card__value-sub{font-size:13px;color:var(--text-3);font-weight:500;margin-left:2px}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tab{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:600;letter-spacing:.4px;
+  padding:8px 14px;
+  border-radius:100px;
+  background:var(--surface);
+  border:0.5px solid var(--border-2);
+  color:var(--text-2);
+  cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s;
+}
+.tab:hover{color:var(--text);border-color:var(--border-strong)}
+.tab.is-active{
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  border-color:color-mix(in srgb,var(--primary) 35%,transparent);
+}
+
+/* Search bar */
+.searchbar{position:relative;flex:1;max-width:340px;min-width:200px}
+.searchbar input{
+  width:100%;
+  padding:9px 14px 9px 36px;
+  background:var(--surface);
+  border:0.5px solid var(--border-2);
+  border-radius:100px;
+  font-size:12.5px;color:var(--text);
+  transition:border-color .15s,box-shadow .15s;
+}
+.searchbar input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+.searchbar input::placeholder{color:var(--text-3)}
+.searchbar svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-3);width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+
+/* CURSOS — grid cards con cover */
+.cursos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.curso-card{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .25s cubic-bezier(.2,.8,.25,1),border-color .2s,box-shadow .3s;
+  position:relative;
+  display:flex;flex-direction:column;
+}
+.curso-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--area-color,var(--primary)) 40%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.14)}
+.curso-card__cover{
+  height:96px;
+  background:linear-gradient(135deg,var(--area-color,var(--primary)),color-mix(in srgb,var(--area-color,var(--primary)) 65%,#000));
+  position:relative;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+}
+.curso-card__cover::before{
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(to right,rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:24px 24px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 75%);
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 75%);
+}
+.curso-card__cover svg{width:36px;height:36px;position:relative;z-index:1;opacity:.95}
+.curso-card__cover-badge{
+  position:absolute;top:10px;right:10px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:600;letter-spacing:.5px;
+  padding:3px 8px;border-radius:100px;
+  background:rgba(0,0,0,.4);
+  backdrop-filter:blur(8px);
+  color:#fff;
+  border:0.5px solid rgba(255,255,255,.18);
+  text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.curso-card__body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.curso-card__tags{display:flex;gap:5px;flex-wrap:wrap}
+.curso-card__title{font-size:14.5px;font-weight:600;letter-spacing:-.2px;line-height:1.3;color:var(--text)}
+.curso-card__desc{font-size:12px;color:var(--text-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.curso-card__meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:500;color:var(--text-3);
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:auto;
+}
+.curso-card__meta span{display:inline-flex;align-items:center;gap:4px}
+.curso-card__meta .ic{width:11px;height:11px}
+.curso-card__progress{display:flex;align-items:center;gap:8px;font-size:11px}
+.curso-card__progress-bar{flex:1;height:5px;background:var(--surface-3);border-radius:3px;overflow:hidden}
+.curso-card__progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--highlight));border-radius:3px;transition:width .8s ease}
+.curso-card__progress-pct{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--primary);font-weight:600;min-width:34px;text-align:right}
+
+/* CERTIFICADOS — cards con cover naranja + QR */
+.certs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+.cert-card{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .25s,border-color .2s,box-shadow .3s;
+}
+.cert-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--primary) 40%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.14)}
+.cert-card__top{
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  padding:18px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  color:#fff;
+  position:relative;overflow:hidden;
+}
+.cert-card__top::before{
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(to right,rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.08) 1px,transparent 1px);
+  background-size:24px 24px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+}
+.cert-card__seal{width:42px;height:42px;color:#fff;position:relative;z-index:1}
+.cert-card__qr{position:relative;z-index:1;background:#fff;padding:4px;border-radius:6px}
+.cert-card__body{padding:14px 18px 16px}
+.cert-card__eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:5px;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.cert-card__eyebrow::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--success);
+  animation:pulseDotSmall 2.2s ease-out infinite;
+}
+.cert-card__title{font-size:15px;font-weight:600;letter-spacing:-.2px;line-height:1.3;margin-bottom:10px}
+.cert-card__meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-3);font-weight:500;
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.cert-card__meta span{display:inline-flex;align-items:center;gap:4px}
+.cert-card__meta .ic{width:11px;height:11px}
+.cert-card__foot{
+  margin-top:12px;padding-top:12px;
+  border-top:0.5px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cert-card__folio{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);font-weight:500;letter-spacing:-.2px}
+.cert-card__verify{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--success);font-weight:600;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.cert-card__verify::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--success);
+  animation:pulseDotSmall 2s ease-out infinite;
+}
+
+/* LOGROS — hero + grid de medallas */
+.logro-hero{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:18px;
+  padding:22px 24px;
+  margin-bottom:18px;
+  display:flex;flex-direction:column;gap:16px;
+  position:relative;overflow:hidden;
+}
+.logro-hero::before{
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(to right,color-mix(in srgb,var(--primary) 7%,transparent) 1px,transparent 1px),linear-gradient(to bottom,color-mix(in srgb,var(--primary) 7%,transparent) 1px,transparent 1px);
+  background-size:36px 36px;
+  -webkit-mask-image:radial-gradient(ellipse at top right,#000 0%,transparent 70%);
+  mask-image:radial-gradient(ellipse at top right,#000 0%,transparent 70%);
+  pointer-events:none;
+}
+.logro-hero__row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:1}
+.logro-hero__icon{
+  width:54px;height:54px;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 8px 24px var(--primary-glow);
+}
+.logro-hero__lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);
+}
+.logro-hero__name{
+  font-size:24px;font-weight:600;letter-spacing:-.6px;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 60%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logro-hero__racha{
+  margin-left:auto;
+  display:inline-flex;align-items:center;gap:8px;
+  background:color-mix(in srgb,var(--primary) 12%,transparent);
+  border:0.5px solid color-mix(in srgb,var(--primary) 30%,transparent);
+  padding:7px 14px;border-radius:100px;
+}
+.logro-hero__racha-num{font-size:14px;font-weight:600;color:var(--primary)}
+.logro-hero__racha-lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--primary);letter-spacing:.8px;text-transform:uppercase;font-weight:600}
+.logro-hero__xp-bar{
+  height:10px;
+  background:var(--surface-3);
+  border-radius:100px;
+  overflow:hidden;
+  position:relative;z-index:1;
+}
+.logro-hero__xp-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--highlight),var(--primary));
+  border-radius:100px;
+  transition:width 1s ease;
+  box-shadow:0 0 12px var(--primary-glow);
+}
+.logro-hero__xp-text{
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-2);
+  position:relative;z-index:1;font-weight:500;
+}
+.logro-hero__xp-text strong{color:var(--text);font-weight:600}
+
+.logros-cat{margin-bottom:22px}
+.logros-cat__header{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:10px;
+}
+.logros-cat__icon{
+  width:26px;height:26px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--cat-color,var(--primary)) 14%,transparent);
+  color:var(--cat-color,var(--primary));
+}
+.logros-cat__title{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.logros-cat__count{
+  margin-left:auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--text-3);letter-spacing:.4px;
+}
+
+.logros-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.logro{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:12px;
+  padding:14px 10px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  cursor:pointer;
+  transition:transform .2s,border-color .2s,box-shadow .25s,opacity .2s;
+}
+.logro:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.logro.is-locked{opacity:.45;filter:grayscale(.4)}
+.logro.is-locked:hover{opacity:.8}
+.logro__icon{
+  width:42px;height:42px;
+  border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:color-mix(in srgb,var(--cat-color,var(--primary)) 14%,transparent);
+  color:var(--cat-color,var(--primary));
+}
+.logro.is-unlocked .logro__icon{
+  background:linear-gradient(135deg,var(--cat-color,var(--primary)),color-mix(in srgb,var(--cat-color,var(--primary)) 65%,#000));
+  color:#fff;
+  box-shadow:0 4px 12px color-mix(in srgb,var(--cat-color,var(--primary)) 25%,transparent);
+}
+.logro__name{font-size:11.5px;font-weight:600;line-height:1.2}
+.logro__xp{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;color:var(--text-3);font-weight:600;letter-spacing:.3px;
+}
+.logro.is-unlocked .logro__xp{color:var(--highlight)}
+
+/* WEBINARS — próximo hero + grid */
+.webinar-hero{
+  background:linear-gradient(135deg,#1A130D 0%,#0E0A06 100%);
+  border:0.5px solid var(--border-2);
+  border-radius:18px;
+  padding:24px 26px;
+  margin-bottom:22px;
+  display:grid;grid-template-columns:1fr auto;gap:24px;
+  position:relative;overflow:hidden;
+}
+:root[data-theme="day"] .webinar-hero{background:linear-gradient(135deg,#FFFFFF 0%,#FBF6EB 100%)}
+.webinar-hero::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 20%,color-mix(in srgb,var(--primary) 20%,transparent),transparent 50%),radial-gradient(circle at 20% 80%,color-mix(in srgb,var(--highlight) 15%,transparent),transparent 55%);
+  filter:blur(40px);
+  animation:aurora 20s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+.webinar-hero__info{position:relative;z-index:1;min-width:0}
+.webinar-hero__title{
+  font-size:clamp(20px,2.5vw,26px);font-weight:600;letter-spacing:-.5px;line-height:1.2;
+  margin-top:10px;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 60%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.webinar-hero__meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--text-2);font-weight:500;
+  display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;
+}
+.webinar-hero__meta span{display:inline-flex;align-items:center;gap:5px}
+.webinar-hero__meta .ic{width:12px;height:12px}
+.webinar-hero__desc{font-size:13px;color:var(--text-2);line-height:1.55;margin-top:12px;max-width:480px}
+.webinar-hero__actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.webinar-hero__countdown{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-self:center}
+.webinar-hero__cd-box{
+  background:color-mix(in srgb,var(--surface) 70%,transparent);
+  backdrop-filter:blur(16px);
+  border:0.5px solid var(--border-2);
+  border-radius:12px;
+  padding:12px 10px;text-align:center;min-width:62px;
+}
+.webinar-hero__cd-num{font-size:22px;font-weight:600;letter-spacing:-.6px;line-height:1;font-feature-settings:"tnum" 1;color:var(--text);display:block}
+.webinar-hero__cd-lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin-top:4px;display:block}
+
+.webinars-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.webinar-card{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .25s,border-color .2s,box-shadow .3s;
+}
+.webinar-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--area-color,var(--primary)) 40%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.14)}
+.webinar-card__cover{
+  height:90px;
+  background:linear-gradient(135deg,var(--area-color,var(--primary)),color-mix(in srgb,var(--area-color,var(--primary)) 65%,#000));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;position:relative;overflow:hidden;
+}
+.webinar-card__cover::before{
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(to right,rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:20px 20px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+}
+.webinar-card__date{
+  background:rgba(255,255,255,.95);color:#1A1410;
+  border-radius:10px;padding:6px 14px;text-align:center;
+  min-width:60px;position:relative;z-index:1;
+}
+.webinar-card__date-day{font-size:22px;font-weight:600;letter-spacing:-.6px;line-height:1}
+.webinar-card__date-month{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary);margin-top:2px}
+.webinar-card__play{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.webinar-card__play svg{width:18px;height:18px}
+.webinar-card__body{padding:14px 16px}
+.webinar-card__title{font-size:13.5px;font-weight:600;letter-spacing:-.1px;line-height:1.3;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.webinar-card__meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-3);font-weight:500;
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;
+}
+.webinar-card__meta span{display:inline-flex;align-items:center;gap:4px}
+.webinar-card__meta .ic{width:11px;height:11px}
+
+/* Modales detalle (reutilizable) */
+.detail-hero{
+  display:flex;gap:14px;align-items:center;
+  padding:16px 18px;
+  border-radius:14px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--area-color,var(--primary)) 18%,var(--surface)),color-mix(in srgb,var(--area-color,var(--primary)) 6%,var(--surface)));
+  border:0.5px solid color-mix(in srgb,var(--area-color,var(--primary)) 25%,transparent);
+  margin-bottom:16px;
+}
+.detail-hero__icon{
+  width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg,var(--area-color,var(--primary)),color-mix(in srgb,var(--area-color,var(--primary)) 65%,#000));
+  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 6px 18px color-mix(in srgb,var(--area-color,var(--primary)) 30%,transparent);
+}
+.detail-hero__tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.detail-hero__title{font-size:18px;font-weight:600;letter-spacing:-.3px;line-height:1.3}
+.detail-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);font-weight:500;display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}
+.detail-meta span{display:inline-flex;align-items:center;gap:5px}
+.detail-meta .ic{width:11px;height:11px}
+
+.modulos-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.modulo{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;background:var(--surface);
+  border:0.5px solid var(--border);border-radius:10px;
+}
+.modulo.is-done{background:color-mix(in srgb,var(--success) 5%,var(--surface))}
+.modulo__num{width:26px;height:26px;border-radius:50%;background:var(--surface-3);color:var(--text-2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.modulo.is-done .modulo__num{background:var(--success);color:#fff}
+.modulo__title{font-size:13px;font-weight:500}
+.modulo__meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);margin-top:2px}
+
+/* Empty states */
+.empty-state{padding:60px 24px;text-align:center;background:var(--surface);border:0.5px dashed var(--border-2);border-radius:16px}
+.empty-state__icon{width:64px;height:64px;margin:0 auto 14px;border-radius:16px;background:var(--surface-2);color:var(--text-3);display:flex;align-items:center;justify-content:center}
+.empty-state h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.empty-state p{font-size:12.5px;color:var(--text-2);max-width:340px;margin:0 auto;line-height:1.55}
+
+/* Cert preview en modal */
+.cert-preview{display:flex;justify-content:center;padding:8px}
+.cert-preview__paper{
+  background:#FBF6EB;color:#1A1410;
+  border-radius:14px;padding:32px 38px;
+  width:100%;max-width:560px;
+  position:relative;overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.18);
+}
+.cert-preview__border{position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#FF7A2D,#FFB347,#FF7A2D)}
+.cert-preview__brand{display:flex;align-items:center;gap:11px;padding-bottom:12px;border-bottom:1px solid rgba(26,20,16,.1)}
+.cert-preview__brand-name{font-size:15px;font-weight:600;letter-spacing:-.2px}
+.cert-preview__brand-sub{font-size:9px;color:#5A5044;letter-spacing:.3px;margin-top:2px}
+.cert-preview__eyebrow{margin-top:20px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:#5A5044;font-weight:600}
+.cert-preview__otorga{font-size:11.5px;color:#5A5044;margin-top:8px}
+.cert-preview__name{font-size:28px;font-weight:600;letter-spacing:-1px;margin-top:4px}
+.cert-preview__por{font-size:11.5px;color:#5A5044;margin-top:14px}
+.cert-preview__curso{font-size:16px;font-weight:500;letter-spacing:-.3px;line-height:1.3;margin-top:5px}
+.cert-preview__stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;padding:12px 0;border-top:1px solid rgba(26,20,16,.1);border-bottom:1px solid rgba(26,20,16,.1)}
+.cert-preview__stat .l1{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.1px;text-transform:uppercase;color:#8A7F70;font-weight:600}
+.cert-preview__stat .l2{font-size:13px;font-weight:600;margin-top:2px}
+.cert-preview__bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:22px;gap:18px;flex-wrap:wrap}
+.cert-preview__sign-line{width:160px;height:1px;background:rgba(26,20,16,.4);margin-bottom:4px}
+.cert-preview__sign-lbl{font-size:11px;font-weight:600}
+.cert-preview__sign-sub{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#8A7F70;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+.cert-preview__qr-wrap{text-align:center}
+.cert-preview__qr{background:#fff;padding:5px;border-radius:6px;display:inline-block}
+.cert-preview__folio{font-family:'JetBrains Mono',monospace;font-size:9px;color:#5A5044;margin-top:3px}
+
 /* RESPONSIVE */
 .mobile-nav{display:none}
 
@@ -545,6 +1044,40 @@ body{
   .mobile-nav__item{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-3);padding:5px 8px;border-radius:8px;font-size:9.5px;font-weight:500;letter-spacing:.3px}
   .mobile-nav__item.is-active{color:var(--primary)}
   .mobile-nav__item .ic{width:18px;height:18px}
+
+  /* Secciones internas mobile */
+  .sec-hero{padding:4px 0 14px;margin-bottom:16px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi-card{padding:12px 14px}
+  .kpi-card__value{font-size:20px}
+  .cursos-grid,.certs-grid,.webinars-grid{grid-template-columns:1fr;gap:12px}
+  .logros-grid{grid-template-columns:repeat(3,1fr)}
+  .webinar-hero{grid-template-columns:1fr;gap:18px;padding:20px 22px}
+  .webinar-hero__countdown{align-self:stretch;justify-content:stretch}
+  .webinar-hero__cd-box{padding:10px 6px}
+  .webinar-hero__cd-num{font-size:18px}
+  .logro-hero{padding:18px 20px}
+  .logro-hero__racha{margin-left:0;align-self:flex-start}
+  .content-row{flex-wrap:wrap;gap:10px}
+  .content-row__action{flex-wrap:wrap}
+  .row-btn{padding:8px 14px;font-size:11.5px}
+  .tab{padding:7px 12px;font-size:10.5px}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .searchbar{max-width:100%}
+  .cert-preview__paper{padding:24px 22px}
+  .cert-preview__name{font-size:22px}
+  .cert-preview__stats{grid-template-columns:repeat(2,1fr)}
+  .modal__body{padding:18px 18px}
+  .modal__header{padding:14px 18px 12px}
+  .modal__footer{padding:12px 18px;flex-wrap:wrap}
+  .modal__footer .btn{flex:1;min-width:100px}
+}
+
+@media (max-width:420px){
+  .banner{padding:18px 18px}
+  .banner__stat{min-width:0;flex:1;padding:10px 12px}
+  .banner__stat-val{font-size:18px}
+  .logros-grid{grid-template-columns:repeat(2,1fr)}
 }
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -1042,15 +1575,656 @@ function navigateToSection(section){
   const ni=document.querySelector(`[data-section="${section}"]`);if(ni)ni.classList.add('is-active');
   const inicio=document.getElementById('inicio-content');const dyn=document.getElementById('dynamic-section');
   if(!inicio||!dyn)return;
-  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';}
-  else{inicio.style.display='none';dyn.style.display='';dyn.innerHTML=sectionPlaceholder(section);window.scrollTo({top:0,behavior:'instant'});}
+  if(Sections.countdownTimer){clearInterval(Sections.countdownTimer);Sections.countdownTimer=null;}
+  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';return;}
+  inicio.style.display='none';dyn.style.display='';
+  const renderer=Sections.renderers[section];
+  if(renderer){dyn.innerHTML='';renderer(dyn);}
+  else{dyn.innerHTML=sectionPlaceholder(section);}
+  window.scrollTo({top:0,behavior:'instant'});
+  document.querySelector('main.main')?.scrollTo({top:0,behavior:'instant'});
 }
 
 function sectionPlaceholder(section){
-  const names={cursos:'Mis cursos',webinars:'Clases en vivo',pdfs:'PDFs y material',logros:'Mis logros',certificados:'Certificados','mes-mayo':'Biblioteca · Mayo 2026','mes-abril':'Biblioteca · Abril 2026','mes-marzo':'Biblioteca · Marzo 2026',foro:'Foro VIP',canal:'Canal WhatsApp',perfil:'Mi perfil',suscripcion:'Suscripción'};
+  const names={pdfs:'PDFs y material','mes-mayo':'Biblioteca · Mayo 2026','mes-abril':'Biblioteca · Abril 2026','mes-marzo':'Biblioteca · Marzo 2026',foro:'Foro VIP',canal:'Canal WhatsApp',perfil:'Mi perfil',suscripcion:'Suscripción'};
   const name=names[section]||section;
-  return `<div class="fade-up" style="padding:80px 20px;text-align:center;"><div style="width:80px;height:80px;margin:0 auto 18px;border-radius:20px;background:var(--surface);border:0.5px solid var(--border-2);display:flex;align-items:center;justify-content:center;color:var(--primary);"><svg class="ic ic--xl"><use href="#i-tools"/></svg></div><h2 style="font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:6px;">${name}</h2><p style="color:var(--text-2);max-width:380px;margin:0 auto;line-height:1.55;font-size:13.5px;">Sección en construcción. La estoy desarrollando con datos reales y la entrego en el siguiente sprint.</p><button class="btn btn--ghost" style="margin-top:20px;" onclick="navigateToSection('inicio')">Volver al inicio</button></div>`;
+  return `<div class="fade-up" style="padding:80px 20px;text-align:center;"><div style="width:80px;height:80px;margin:0 auto 18px;border-radius:20px;background:var(--surface);border:0.5px solid var(--border-2);display:flex;align-items:center;justify-content:center;color:var(--primary);"><svg class="ic ic--xl"><use href="#i-tools"/></svg></div><h2 style="font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:6px;">${name}</h2><p style="color:var(--text-2);max-width:380px;margin:0 auto;line-height:1.55;font-size:13.5px;">Sección en construcción. La entrego en el siguiente sprint.</p><button class="btn btn--ghost" style="margin-top:20px;" onclick="navigateToSection('inicio')">Volver al inicio</button></div>`;
 }
+
+/* =========================================================
+   SECCIONES: datos seed + renders
+   ========================================================= */
+const Sections = (function(){
+  const COLOR_AREA = {
+    'Seguridad':'#FF7A2D',
+    'Logística':'#3B82F6',
+    'Calidad':'#10B981',
+    'Mantenimiento':'#A855F7'
+  };
+  const ICON_AREA = {
+    'Seguridad':'i-shield-check',
+    'Logística':'i-chart-bar',
+    'Calidad':'i-gauge',
+    'Mantenimiento':'i-tools'
+  };
+  const COLOR_CAT = {
+    'Seguridad':'#FF7A2D',
+    'Logística':'#3B82F6',
+    'Calidad':'#10B981',
+    'Comunidad':'#A855F7',
+    'Maestría':'#FFB347'
+  };
+  const ICON_CAT = {
+    'Seguridad':'i-shield-check',
+    'Logística':'i-chart-bar',
+    'Calidad':'i-gauge',
+    'Comunidad':'i-messages',
+    'Maestría':'i-crown'
+  };
+
+  /* SEED DATA */
+  const cursos = [
+    {id:'c1',titulo:'NOM-019-STPS · Comisiones de seguridad e higiene',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:12,modulos:8,progreso:65,status:'progreso',desc:'Constituir, organizar y operar legalmente la comisión de seguridad e higiene según la NOM-019-STPS-2011.'},
+    {id:'c2',titulo:'Indicadores logísticos: OTIF, Fill Rate y rotación',area:'Logística',nivel:'Avanzado',instructor:'Ing. Carlos Vidal',horas:10,modulos:6,progreso:30,status:'progreso',desc:'KPIs críticos de cadena de suministro: medición, interpretación y mejora con casos reales.'},
+    {id:'c3',titulo:'Mantenimiento productivo total (TPM)',area:'Mantenimiento',nivel:'Intermedio',instructor:'Ing. Patricia Solís',horas:14,modulos:9,progreso:12,status:'progreso',desc:'Los 8 pilares del TPM para reducir paros no programados y mejorar OEE.'},
+    {id:'c4',titulo:'NOM-001-STPS · Edificios, locales e instalaciones',area:'Seguridad',nivel:'Básico',instructor:'Ing. Roberto Méndez',horas:8,modulos:5,progreso:100,status:'completado',desc:'Requisitos mínimos de seguridad en edificios y áreas de los centros de trabajo.',completadoEn:'2026-04-18'},
+    {id:'c5',titulo:'Lean Manufacturing para supervisores',area:'Calidad',nivel:'Intermedio',instructor:'Ing. María López',horas:16,modulos:10,progreso:100,status:'completado',desc:'Las 7 mudas, VSM, 5S, kaizen y kanban aplicados al piso de planta.',completadoEn:'2026-03-22'},
+    {id:'c6',titulo:'NOM-029-STPS · Trabajos eléctricos seguros',area:'Seguridad',nivel:'Avanzado',instructor:'Ing. Roberto Méndez',horas:18,modulos:11,progreso:0,status:'catalogo',desc:'LOTO, evaluación de riesgo eléctrico y EPP especializado para trabajos en instalaciones.'},
+    {id:'c7',titulo:'Six Sigma Green Belt',area:'Calidad',nivel:'Avanzado',instructor:'Ing. María López',horas:40,modulos:24,progreso:0,status:'catalogo',desc:'Certificación Green Belt con metodología DMAIC y proyecto real obligatorio.'},
+    {id:'c8',titulo:'WMS y gestión de almacenes 4.0',area:'Logística',nivel:'Intermedio',instructor:'Ing. Carlos Vidal',horas:12,modulos:8,progreso:0,status:'catalogo',desc:'Layout, slotting, picking strategies, sistema WMS y digitalización.'},
+    {id:'c9',titulo:'ISO 45001 · Sistema de gestión SST',area:'Seguridad',nivel:'Avanzado',instructor:'Ing. Patricia Solís',horas:24,modulos:14,progreso:0,status:'catalogo',desc:'Implementación del sistema de gestión SST según ISO 45001:2018.'},
+    {id:'c10',titulo:'Análisis modal de fallos (AMEF)',area:'Calidad',nivel:'Intermedio',instructor:'Ing. María López',horas:10,modulos:7,progreso:0,status:'catalogo',desc:'AMEF de diseño y proceso, RPN, severidad, ocurrencia y detección.'},
+    {id:'c11',titulo:'Supervisión efectiva en planta',area:'Mantenimiento',nivel:'Básico',instructor:'Ing. Patricia Solís',horas:14,modulos:10,progreso:0,status:'catalogo',desc:'Liderazgo, comunicación y técnicas de supervisión para jefes de turno.'},
+    {id:'c12',titulo:'NOM-035-STPS · Factores de riesgo psicosocial',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:10,modulos:6,progreso:0,status:'catalogo',desc:'Identificación, análisis y prevención de factores de riesgo psicosocial.'}
+  ];
+
+  const certificados = [
+    {id:'cert1',cursoId:'c4',titulo:'NOM-001-STPS · Edificios, locales e instalaciones',folio:'IMDIIL-2026-48201',emitido:'2026-04-18',horas:8,area:'Seguridad',instructor:'Ing. Roberto Méndez',calificacion:96},
+    {id:'cert2',cursoId:'c5',titulo:'Lean Manufacturing para supervisores',folio:'IMDIIL-2026-37154',emitido:'2026-03-22',horas:16,area:'Calidad',instructor:'Ing. María López',calificacion:92}
+  ];
+
+  const niveles = [
+    {id:1,nombre:'Aprendiz',desde:0,hasta:200},
+    {id:2,nombre:'Técnico',desde:200,hasta:600},
+    {id:3,nombre:'Profesional',desde:600,hasta:1200},
+    {id:4,nombre:'Líder',desde:1200,hasta:2400},
+    {id:5,nombre:'Maestro',desde:2400,hasta:99999}
+  ];
+
+  const logros = [
+    {id:'l1',cat:'Seguridad',nombre:'Primer paso',desc:'Completaste tu primer curso de seguridad',xp:50,unlock:'2026-04-18',criterio:'Termina 1 curso del área Seguridad'},
+    {id:'l2',cat:'Seguridad',nombre:'Defensor STPS',desc:'Completaste 3 NOMs de la STPS',xp:150,unlock:null,criterio:'Termina 3 cursos NOM-STPS'},
+    {id:'l3',cat:'Seguridad',nombre:'Casco de oro',desc:'Completaste 5 cursos de seguridad básica',xp:300,unlock:null,criterio:'Termina los 5 cursos básicos del área Seguridad'},
+    {id:'l4',cat:'Seguridad',nombre:'IPER experto',desc:'Generaste 20 matrices IPER',xp:200,unlock:null,criterio:'Crea 20 matrices IPER en la herramienta pro'},
+    {id:'l5',cat:'Seguridad',nombre:'Cero accidentes',desc:'Calificación 100 en un curso de seguridad',xp:100,unlock:null,criterio:'Saca 100 en cualquier curso de Seguridad'},
+    {id:'l6',cat:'Seguridad',nombre:'Guardián 24/7',desc:'Racha de 30 días aprendiendo seguridad',xp:250,unlock:null,criterio:'Estudia Seguridad 30 días seguidos'},
+    {id:'l7',cat:'Logística',nombre:'OTIF perfecto',desc:'Completaste el curso de indicadores logísticos',xp:120,unlock:null,criterio:'Termina "Indicadores logísticos: OTIF…"'},
+    {id:'l8',cat:'Logística',nombre:'Master del almacén',desc:'Completaste WMS y gestión de almacenes',xp:150,unlock:null,criterio:'Termina "WMS y gestión de almacenes 4.0"'},
+    {id:'l9',cat:'Logística',nombre:'KPI master',desc:'Calculaste 50 indicadores logísticos',xp:200,unlock:null,criterio:'Usa la herramienta Indicadores 50 veces'},
+    {id:'l10',cat:'Logística',nombre:'Cadena perfecta',desc:'Completaste todos los cursos de Logística',xp:400,unlock:null,criterio:'Termina los 5 cursos del área Logística'},
+    {id:'l11',cat:'Logística',nombre:'Tiempo es oro',desc:'Optimizaste 10 procesos medibles',xp:180,unlock:null,criterio:'Genera 10 reportes de mejora'},
+    {id:'l12',cat:'Calidad',nombre:'Lean adopter',desc:'Completaste Lean Manufacturing',xp:120,unlock:'2026-03-22',criterio:'Termina "Lean Manufacturing para supervisores"'},
+    {id:'l13',cat:'Calidad',nombre:'Six Sigma green',desc:'Obtuviste tu certificación Green Belt',xp:500,unlock:null,criterio:'Termina "Six Sigma Green Belt"'},
+    {id:'l14',cat:'Calidad',nombre:'AMEF master',desc:'Generaste 15 análisis AMEF completos',xp:200,unlock:null,criterio:'Completa 15 AMEFs en la plataforma'},
+    {id:'l15',cat:'Calidad',nombre:'OEE world-class',desc:'Alcanzaste >85% OEE',xp:300,unlock:null,criterio:'Usa la calculadora OEE y supera 85%'},
+    {id:'l16',cat:'Calidad',nombre:'Cero defectos',desc:'Implementaste 5 mejoras de calidad',xp:250,unlock:null,criterio:'Documenta 5 acciones de mejora'},
+    {id:'l17',cat:'Comunidad',nombre:'Bienvenido al club',desc:'Te uniste al Club VIP IMDIIL',xp:30,unlock:'2026-03-15',criterio:'Activa tu membresía VIP'},
+    {id:'l18',cat:'Comunidad',nombre:'Voz del foro',desc:'Publicaste 10 mensajes en el foro VIP',xp:100,unlock:null,criterio:'Crea 10 posts en el foro'},
+    {id:'l19',cat:'Comunidad',nombre:'Ayudador',desc:'Recibiste 25 likes en respuestas',xp:150,unlock:null,criterio:'Ayuda y consigue 25 likes'},
+    {id:'l20',cat:'Comunidad',nombre:'Presente en vivo',desc:'Asististe a 5 clases en vivo',xp:200,unlock:null,criterio:'Conéctate a 5 webinars en vivo'},
+    {id:'l21',cat:'Comunidad',nombre:'Embajador IMDIIL',desc:'Invitaste a 3 colegas',xp:300,unlock:null,criterio:'Refiere a 3 personas que se registren'},
+    {id:'l22',cat:'Maestría',nombre:'Estudiante constante',desc:'Racha de 7 días aprendiendo',xp:70,unlock:'2026-05-19',criterio:'Aprende 7 días seguidos'},
+    {id:'l23',cat:'Maestría',nombre:'Estudiante de hierro',desc:'Racha de 30 días aprendiendo',xp:300,unlock:null,criterio:'Aprende 30 días seguidos'},
+    {id:'l24',cat:'Maestría',nombre:'Maratonista',desc:'Acumulaste 100 horas de estudio',xp:400,unlock:null,criterio:'Acumula 100 horas totales'},
+    {id:'l25',cat:'Maestría',nombre:'Tres áreas dominadas',desc:'Certificados en 3 áreas distintas',xp:350,unlock:null,criterio:'Obtén certificados en 3 áreas distintas'},
+    {id:'l26',cat:'Maestría',nombre:'Maestro IMDIIL',desc:'Completaste 20 cursos. Una leyenda.',xp:1000,unlock:null,criterio:'Termina 20 cursos del catálogo'}
+  ];
+
+  const webinars = [
+    {id:'w1',titulo:'OEE: optimización de líneas de producción',instructor:'Ing. María López',fecha:'2026-05-28T19:00:00',duracion:90,status:'proxima',area:'Calidad',desc:'Caso real de una planta automotriz que pasó de 58% a 84% de OEE en 6 meses. Mediciones exactas, proyectos kaizen y cómo replicarlo.',registrado:false},
+    {id:'w2',titulo:'NOM-035 en la práctica',instructor:'Ing. Roberto Méndez',fecha:'2026-06-03T19:00:00',duracion:75,status:'proxima',area:'Seguridad',desc:'Estrategias reales para aplicar la NOM-035 obteniendo información útil. Análisis de 2 cuestionarios reales.',registrado:true},
+    {id:'w3',titulo:'OTIF: cómo medirlo cuando tu sistema no lo calcula',instructor:'Ing. Carlos Vidal',fecha:'2026-06-10T19:00:00',duracion:60,status:'proxima',area:'Logística',desc:'Plantilla Excel + Power Query para calcular OTIF, Fill Rate y rotación cuando tu ERP no tiene el módulo.',registrado:false},
+    {id:'w4',titulo:'AMEF de proceso: del papel al sistema',instructor:'Ing. María López',fecha:'2026-05-15T19:00:00',duracion:80,status:'grabada',area:'Calidad',desc:'Cómo conducir un AMEF efectivo con un equipo multidisciplinario.',visto:false},
+    {id:'w5',titulo:'Investigación de accidentes con árbol de causas',instructor:'Ing. Patricia Solís',fecha:'2026-05-08T19:00:00',duracion:90,status:'grabada',area:'Seguridad',desc:'Metodología práctica para investigar accidentes sin culpar personas.',visto:true},
+    {id:'w6',titulo:'Layout de almacén: 10 errores comunes',instructor:'Ing. Carlos Vidal',fecha:'2026-05-01T19:00:00',duracion:70,status:'grabada',area:'Logística',desc:'Los 10 errores más comunes al diseñar layout y cómo corregirlos sin obras mayores.',visto:false},
+    {id:'w7',titulo:'Las 7 mudas en gemba walk',instructor:'Ing. María López',fecha:'2026-04-24T19:00:00',duracion:60,status:'grabada',area:'Calidad',desc:'Cómo hacer un gemba walk identificando waste en cada estación.',visto:true},
+    {id:'w8',titulo:'NOM-029-STPS: trabajos eléctricos seguros',instructor:'Ing. Roberto Méndez',fecha:'2026-04-17T19:00:00',duracion:85,status:'grabada',area:'Seguridad',desc:'LOTO, evaluación de riesgo eléctrico y EPP especializado.',visto:false},
+    {id:'w9',titulo:'TPM: arrancar mantenimiento autónomo',instructor:'Ing. Patricia Solís',fecha:'2026-04-10T19:00:00',duracion:75,status:'grabada',area:'Mantenimiento',desc:'Los 7 pasos del mantenimiento autónomo aplicados en planta real.',visto:false}
+  ];
+
+  const usuario = {nombre:'Ingeniero',xp:450,racha:7,diasActivos:23};
+
+  /* HELPERS */
+  function pad(n){return String(n).padStart(2,'0')}
+  function monthShort(m){return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][m]}
+  function formatDate(iso){const d=new Date(iso);return d.getDate()+' '+monthShort(d.getMonth())+' '+d.getFullYear()}
+  function formatFechaLarga(d){
+    const dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return dias[d.getDay()]+' '+d.getDate()+' de '+meses[d.getMonth()];
+  }
+  function getNivel(xp){return niveles.find(n=>xp>=n.desde&&xp<n.hasta)||niveles[0]}
+
+  /* QR sintético determinístico */
+  function hashCode(s){let h=0;for(let i=0;i<s.length;i++)h=((h<<5)-h)+s.charCodeAt(i),h|=0;return Math.abs(h)}
+  function qrSvg(text,size){
+    size=size||56;const seed=hashCode(text);const grid=11;const cell=size/grid;
+    let cells='';
+    for(let y=0;y<grid;y++){
+      for(let x=0;x<grid;x++){
+        const inCorner=(x<3&&y<3)||(x>grid-4&&y<3)||(x<3&&y>grid-4);
+        let on=false;
+        if(inCorner){
+          if(x<3&&y<3)on=(x===0||x===2||y===0||y===2)?true:(x===1&&y===1);
+          else if(x>grid-4&&y<3)on=(x===grid-3||x===grid-1||y===0||y===2)?true:(x===grid-2&&y===1);
+          else on=(x===0||x===2||y===grid-3||y===grid-1)?true:(x===1&&y===grid-2);
+        } else {
+          on=((seed+x*31+y*17)%7)<3;
+        }
+        if(on)cells+=`<rect x="${x*cell}" y="${y*cell}" width="${cell}" height="${cell}" />`;
+      }
+    }
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><g fill="#1A1410">${cells}</g></svg>`;
+  }
+
+  /* ============================ CURSOS ============================ */
+  let cursosState={tab:'progreso',area:'todas',search:''};
+  let countdownTimer=null;
+
+  function counts(){
+    return {
+      progreso:cursos.filter(c=>c.status==='progreso').length,
+      completado:cursos.filter(c=>c.status==='completado').length,
+      catalogo:cursos.filter(c=>c.status==='catalogo').length
+    };
+  }
+  function cursosFiltrados(){
+    return cursos.filter(c=>{
+      if(cursosState.tab==='progreso'&&c.status!=='progreso')return false;
+      if(cursosState.tab==='completado'&&c.status!=='completado')return false;
+      if(cursosState.tab==='catalogo'&&c.status!=='catalogo')return false;
+      if(cursosState.area!=='todas'&&c.area!==cursosState.area)return false;
+      if(cursosState.search){
+        const q=cursosState.search.toLowerCase();
+        if(!c.titulo.toLowerCase().includes(q)&&!c.instructor.toLowerCase().includes(q))return false;
+      }
+      return true;
+    });
+  }
+
+  function renderCursos(container){
+    const c=counts();
+    container.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Tu camino</span>
+          <h1 class="sec-hero__title">Mis cursos</h1>
+          <p class="sec-hero__sub">Continúa donde lo dejaste, repasa lo que ya dominas o descubre nuevas áreas de especialización.</p>
+        </div>
+        <div class="tabs">
+          <button class="tab ${cursosState.tab==='progreso'?'is-active':''}" data-curtab="progreso">En progreso · ${c.progreso}</button>
+          <button class="tab ${cursosState.tab==='completado'?'is-active':''}" data-curtab="completado">Completados · ${c.completado}</button>
+          <button class="tab ${cursosState.tab==='catalogo'?'is-active':''}" data-curtab="catalogo">Catálogo · ${c.catalogo}</button>
+        </div>
+        <div class="toolbar">
+          <div class="searchbar">
+            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
+            <input type="text" placeholder="Buscar curso o instructor…" id="cur-search" value="${cursosState.search.replace(/"/g,'&quot;')}">
+          </div>
+          <select class="select" id="cur-area" style="max-width:200px;">
+            <option value="todas" ${cursosState.area==='todas'?'selected':''}>Todas las áreas</option>
+            <option value="Seguridad" ${cursosState.area==='Seguridad'?'selected':''}>Seguridad</option>
+            <option value="Logística" ${cursosState.area==='Logística'?'selected':''}>Logística</option>
+            <option value="Calidad" ${cursosState.area==='Calidad'?'selected':''}>Calidad</option>
+            <option value="Mantenimiento" ${cursosState.area==='Mantenimiento'?'selected':''}>Mantenimiento</option>
+          </select>
+        </div>
+        <div id="cur-list"></div>
+      </div>
+    `;
+    container.querySelectorAll('[data-curtab]').forEach(b=>b.addEventListener('click',()=>{cursosState.tab=b.dataset.curtab;renderCursos(container);}));
+    container.querySelector('#cur-search').addEventListener('input',e=>{cursosState.search=e.target.value;renderCursosList();});
+    container.querySelector('#cur-area').addEventListener('change',e=>{cursosState.area=e.target.value;renderCursosList();});
+    renderCursosList();
+  }
+
+  function renderCursosList(){
+    const list=document.getElementById('cur-list');if(!list)return;
+    const items=cursosFiltrados();
+    if(items.length===0){
+      list.innerHTML=`<div class="empty-state"><div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-book"/></svg></div><h3>Sin resultados</h3><p>Cambia el filtro o búsqueda para ver más cursos.</p></div>`;
+      return;
+    }
+    list.innerHTML=`<div class="cursos-grid">${items.map(c=>`
+      <article class="curso-card" data-cid="${c.id}" tabindex="0" style="--area-color:${COLOR_AREA[c.area]};">
+        <div class="curso-card__cover">
+          <svg class="ic"><use href="#${ICON_AREA[c.area]}"/></svg>
+          ${c.status==='completado'?'<span class="curso-card__cover-badge">✓ COMPLETADO</span>':''}
+          ${c.status==='progreso'?'<span class="curso-card__cover-badge">EN PROGRESO</span>':''}
+        </div>
+        <div class="curso-card__body">
+          <div class="curso-card__tags">
+            <span class="tag tag--soon" style="color:${COLOR_AREA[c.area]};border-color:${COLOR_AREA[c.area]}40;background:${COLOR_AREA[c.area]}14;">${c.area}</span>
+            <span class="tag tag--soon">${c.nivel}</span>
+          </div>
+          <h3 class="curso-card__title">${c.titulo}</h3>
+          <p class="curso-card__desc">${c.desc}</p>
+          <div class="curso-card__meta">
+            <span><svg class="ic"><use href="#i-user"/></svg>${c.instructor.split(' ').slice(-1)[0]}</span>
+            <span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h</span>
+            <span><svg class="ic"><use href="#i-book"/></svg>${c.modulos} mód.</span>
+          </div>
+          ${c.status==='progreso'?`<div class="curso-card__progress"><div class="curso-card__progress-bar"><div class="curso-card__progress-fill" style="width:${c.progreso}%"></div></div><span class="curso-card__progress-pct">${c.progreso}%</span></div>`:''}
+          ${c.status==='completado'?`<div class="curso-card__progress"><div class="curso-card__progress-bar"><div class="curso-card__progress-fill" style="width:100%;background:var(--success);"></div></div><span class="curso-card__progress-pct" style="color:var(--success);">100%</span></div>`:''}
+        </div>
+      </article>
+    `).join('')}</div>`;
+    list.querySelectorAll('.curso-card').forEach(card=>{
+      card.addEventListener('click',()=>openCursoDetalle(card.dataset.cid));
+      card.addEventListener('keydown',e=>{if(e.key==='Enter')openCursoDetalle(card.dataset.cid);});
+    });
+  }
+
+  function openCursoDetalle(id){
+    const c=cursos.find(x=>x.id===id);if(!c)return;
+    const modulos=[];
+    for(let i=1;i<=c.modulos;i++){
+      modulos.push({num:i,titulo:moduloTitulo(c,i),duracion:Math.round(c.horas/c.modulos*60),completado:c.progreso>=(i/c.modulos)*100});
+    }
+    const body=`
+      <div class="detail-hero" style="--area-color:${COLOR_AREA[c.area]};">
+        <div class="detail-hero__icon"><svg class="ic ic--lg"><use href="#${ICON_AREA[c.area]}"/></svg></div>
+        <div style="flex:1;min-width:0">
+          <div class="detail-hero__tags">
+            <span class="tag tag--soon" style="color:${COLOR_AREA[c.area]};border-color:${COLOR_AREA[c.area]}40;background:${COLOR_AREA[c.area]}14;">${c.area}</span>
+            <span class="tag tag--soon">${c.nivel}</span>
+          </div>
+          <div class="detail-hero__title">${c.titulo}</div>
+          <div class="detail-meta"><span><svg class="ic"><use href="#i-user"/></svg>${c.instructor}</span><span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h · ${c.modulos} módulos</span></div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px;">${c.desc}</p>
+      ${c.status==='progreso'?`<div style="background:var(--surface-2);border-radius:12px;padding:14px 18px;margin-bottom:16px;"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px;">Tu progreso</div><div style="display:flex;align-items:center;gap:12px;"><div style="font-size:24px;font-weight:600;color:var(--primary);font-feature-settings:'tnum' 1;">${c.progreso}<span style="font-size:14px;opacity:.6;">%</span></div><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${c.progreso}%;background:linear-gradient(90deg,var(--primary),var(--highlight));border-radius:3px;"></div></div></div></div>`:''}
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:8px;">Contenido del curso</div>
+      <div class="modulos-list">
+        ${modulos.map(m=>`<div class="modulo ${m.completado?'is-done':''}"><div class="modulo__num">${m.completado?'✓':m.num}</div><div style="flex:1;min-width:0;"><div class="modulo__title">${m.titulo}</div><div class="modulo__meta">${m.duracion} min</div></div></div>`).join('')}
+      </div>
+    `;
+    const footer=document.createElement('div');
+    footer.innerHTML=`<button class="btn btn--ghost" id="cd-close">Cerrar</button>${c.status==='progreso'?'<button class="btn btn--accent" id="cd-cont">Continuar viendo<svg class="ic"><use href="#i-arrow-right"/></svg></button>':c.status==='completado'?'<button class="btn btn--accent" id="cd-cert">Ver certificado<svg class="ic"><use href="#i-certificate"/></svg></button>':'<button class="btn btn--accent" id="cd-start">Empezar curso<svg class="ic"><use href="#i-arrow-right"/></svg></button>'}`;
+    const m=Modal.open({id:'curso-'+id,title:'Detalle del curso',subtitle:c.titulo.length>40?c.titulo.slice(0,40)+'…':c.titulo,icon:ICON_AREA[c.area],size:'lg',body,footer});
+    footer.querySelector('#cd-close').addEventListener('click',()=>m.close());
+    footer.querySelector('#cd-cont')?.addEventListener('click',()=>{Toast.info('Reanudando curso','Módulo '+Math.ceil(c.progreso/100*c.modulos)+' de '+c.modulos);m.close();});
+    footer.querySelector('#cd-cert')?.addEventListener('click',()=>{m.close();navigateToSection('certificados');});
+    footer.querySelector('#cd-start')?.addEventListener('click',()=>{c.status='progreso';c.progreso=5;Toast.success('Curso iniciado','Bienvenido al curso. Buen camino.');m.close();renderCursos(document.getElementById('dynamic-section'));});
+  }
+  function moduloTitulo(c,i){
+    const g={'Seguridad':['Introducción y normativa','Identificación de peligros','Evaluación de riesgos','Controles operativos','Equipo de protección','Casos prácticos','Plan de acción','Evaluación final'],'Logística':['Fundamentos','Indicadores clave','Medición OTIF','Fill Rate avanzado','Rotación de inventario','Casos reales','Mejora continua','Evaluación'],'Calidad':['Bases de mejora continua','7 mudas','Value stream mapping','5S en planta','Kaizen y kanban','Casos prácticos','Implementación','Evaluación'],'Mantenimiento':['Introducción al TPM','Mantenimiento autónomo','Mantenimiento planeado','Capacitación','Mejora enfocada','Calidad cero','Casos prácticos','Evaluación']};
+    const t=g[c.area]||g['Seguridad'];return 'Módulo '+i+': '+t[(i-1)%t.length];
+  }
+
+  /* ============================ CERTIFICADOS ============================ */
+  function renderCertificados(container){
+    const totalHoras=certificados.reduce((s,c)=>s+c.horas,0);
+    const areas=[...new Set(certificados.map(c=>c.area))].length;
+    const promedio=certificados.length?Math.round(certificados.reduce((s,c)=>s+c.calificacion,0)/certificados.length):0;
+    container.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Tu trayectoria</span>
+          <h1 class="sec-hero__title">Mis certificados</h1>
+          <p class="sec-hero__sub">Cada certificado tiene un folio único <strong style="color:var(--primary);font-family:'JetBrains Mono',monospace;">IMDIIL-2026-XXXXX</strong> y código QR verificable. Compártelos en LinkedIn o descárgalos en PDF.</p>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-card__label">Certificados</div><div class="kpi-card__value">${certificados.length}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Horas certificadas</div><div class="kpi-card__value">${totalHoras}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Áreas dominadas</div><div class="kpi-card__value">${areas}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Promedio</div><div class="kpi-card__value">${promedio}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Verificables</div><div class="kpi-card__value">100<span class="kpi-card__value-sub">%</span></div></div>
+        </div>
+        ${certificados.length===0?`<div class="empty-state"><div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-certificate"/></svg></div><h3>Aún no tienes certificados</h3><p>Completa tu primer curso para emitir tu primer certificado IMDIIL con folio y QR.</p></div>`:`
+        <div class="section-header"><h2 class="section-header__title">Mis ${certificados.length} certificados<span class="section-header__badge">${certificados.length} activos</span></h2></div>
+        <div class="certs-grid">${certificados.map(c=>`
+          <article class="cert-card" data-certid="${c.id}" tabindex="0">
+            <div class="cert-card__top">
+              <div class="cert-card__seal"><svg viewBox="0 0 48 48" width="48" height="48"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"/><circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 24l5 5l11-11" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="cert-card__qr">${qrSvg(c.folio,56)}</div>
+            </div>
+            <div class="cert-card__body">
+              <div class="cert-card__eyebrow">Certificado de aprovechamiento</div>
+              <h3 class="cert-card__title">${c.titulo}</h3>
+              <div class="cert-card__meta"><span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h</span><span><svg class="ic"><use href="#i-bolt"/></svg>${c.calificacion}</span><span><svg class="ic"><use href="#i-calendar"/></svg>${formatDate(c.emitido)}</span></div>
+              <div class="cert-card__foot"><span class="cert-card__folio">${c.folio}</span><span class="cert-card__verify">Verificable</span></div>
+            </div>
+          </article>
+        `).join('')}</div>
+        `}
+      </div>
+    `;
+    container.querySelectorAll('.cert-card').forEach(c=>{
+      c.addEventListener('click',()=>openCertDetalle(c.dataset.certid));
+      c.addEventListener('keydown',e=>{if(e.key==='Enter')openCertDetalle(c.dataset.certid);});
+    });
+  }
+  function openCertDetalle(id){
+    const c=certificados.find(x=>x.id===id);if(!c)return;
+    const body=`
+      <div class="cert-preview">
+        <div class="cert-preview__paper">
+          <div class="cert-preview__border"></div>
+          <div class="cert-preview__brand">
+            <div style="width:38px;height:38px;border-radius:10px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 64 64" width="26" height="26"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg></div>
+            <div><div class="cert-preview__brand-name">IMDIIL</div><div class="cert-preview__brand-sub">Instituto Mexicano de Ingeniería Industrial y Logística</div></div>
+          </div>
+          <div class="cert-preview__eyebrow">Certificado de aprovechamiento</div>
+          <div class="cert-preview__otorga">Se otorga el presente certificado a</div>
+          <div class="cert-preview__name">${usuario.nombre}</div>
+          <div class="cert-preview__por">por haber completado satisfactoriamente el curso</div>
+          <div class="cert-preview__curso">${c.titulo}</div>
+          <div class="cert-preview__stats">
+            <div class="cert-preview__stat"><div class="l1">Horas</div><div class="l2">${c.horas}</div></div>
+            <div class="cert-preview__stat"><div class="l1">Calificación</div><div class="l2">${c.calificacion}</div></div>
+            <div class="cert-preview__stat"><div class="l1">Área</div><div class="l2">${c.area}</div></div>
+            <div class="cert-preview__stat"><div class="l1">Emitido</div><div class="l2">${formatDate(c.emitido)}</div></div>
+          </div>
+          <div class="cert-preview__bottom">
+            <div><div class="cert-preview__sign-line"></div><div class="cert-preview__sign-lbl">${c.instructor}</div><div class="cert-preview__sign-sub">Instructor</div></div>
+            <div class="cert-preview__qr-wrap"><div class="cert-preview__qr">${qrSvg(c.folio,80)}</div><div class="cert-preview__folio">${c.folio}</div></div>
+          </div>
+        </div>
+      </div>
+    `;
+    const footer=document.createElement('div');
+    footer.innerHTML=`<button class="btn btn--ghost" id="ct-close">Cerrar</button><button class="btn btn--ghost" id="ct-share">Compartir LinkedIn<svg class="ic"><use href="#i-arrow-right"/></svg></button><button class="btn btn--accent" id="ct-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>`;
+    const m=Modal.open({id:'cert-'+id,title:'Certificado IMDIIL',subtitle:c.folio,icon:'i-certificate',size:'lg',body,footer});
+    footer.querySelector('#ct-close').addEventListener('click',()=>m.close());
+    footer.querySelector('#ct-share').addEventListener('click',()=>{window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent('https://www.imdiil.com/verificar/'+c.folio),'_blank');Toast.success('Compartiendo','Abriendo LinkedIn…');});
+    footer.querySelector('#ct-pdf').addEventListener('click',()=>generarPDFCert(c));
+  }
+  function generarPDFCert(c){
+    if(!window.jspdf){Toast.error('Generador no disponible','Verifica conexión');return;}
+    try{
+      const {jsPDF}=window.jspdf;
+      const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+      pdf.setFillColor(255,122,45);pdf.rect(0,0,297,8,'F');
+      pdf.setFillColor(26,20,16);pdf.rect(0,8,297,4,'F');
+      pdf.setFontSize(11);pdf.setTextColor(120,108,90);pdf.text('IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística',148,28,{align:'center'});
+      pdf.setFontSize(9);pdf.text('CERTIFICADO DE APROVECHAMIENTO',148,37,{align:'center'});
+      pdf.setFontSize(13);pdf.setTextColor(60,52,42);pdf.text('Se otorga el presente certificado a',148,60,{align:'center'});
+      pdf.setFontSize(32);pdf.setTextColor(26,20,16);pdf.setFont(undefined,'bold');pdf.text(usuario.nombre,148,76,{align:'center'});pdf.setFont(undefined,'normal');
+      pdf.setFontSize(13);pdf.setTextColor(60,52,42);pdf.text('por haber completado satisfactoriamente el curso',148,92,{align:'center'});
+      pdf.setFontSize(18);pdf.setTextColor(26,20,16);pdf.text(c.titulo,148,106,{align:'center',maxWidth:240});
+      pdf.setDrawColor(200,180,160);pdf.line(40,128,257,128);
+      pdf.setFontSize(10);pdf.setTextColor(120,108,90);pdf.text('HORAS',60,138);pdf.text('CALIFICACIÓN',105,138);pdf.text('ÁREA',160,138);pdf.text('EMITIDO',220,138);
+      pdf.setFontSize(14);pdf.setTextColor(26,20,16);pdf.text(String(c.horas),60,148);pdf.text(String(c.calificacion),105,148);pdf.text(c.area,160,148);pdf.text(formatDate(c.emitido),220,148);
+      pdf.line(40,154,257,154);
+      pdf.setFontSize(10);pdf.setTextColor(120,108,90);pdf.text(c.instructor,55,175);pdf.text('Instructor',55,181);
+      pdf.text('Folio: '+c.folio,242,175,{align:'right'});pdf.text('Verifica en imdiil.com/verificar',242,181,{align:'right'});
+      pdf.save('certificado-'+c.folio+'.pdf');
+      Toast.success('PDF descargado',c.folio);
+    }catch(e){console.error(e);Toast.error('Error generando PDF',e.message||'Intenta de nuevo');}
+  }
+
+  /* ============================ LOGROS ============================ */
+  function renderLogros(container){
+    const nivelActual=getNivel(usuario.xp);
+    const pct=Math.round(((usuario.xp-nivelActual.desde)/(nivelActual.hasta-nivelActual.desde))*100);
+    const xpRest=nivelActual.hasta-usuario.xp;
+    const proxNivel=niveles[nivelActual.id]?.nombre||'Maestro';
+    const ganados=logros.filter(l=>l.unlock).length;
+    const totalXp=logros.filter(l=>l.unlock).reduce((s,l)=>s+l.xp,0);
+    const cats=['Seguridad','Logística','Calidad','Comunidad','Maestría'];
+    container.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Tu progreso</span>
+          <h1 class="sec-hero__title">Mis logros</h1>
+          <p class="sec-hero__sub">Cada curso, herramienta y participación te suma XP. Sube de nivel y desbloquea medallas. Llega a <em style="color:var(--primary);">Maestro</em>.</p>
+        </div>
+        <div class="logro-hero">
+          <div class="logro-hero__row">
+            <div class="logro-hero__icon"><svg class="ic ic--xl"><use href="#i-helmet"/></svg></div>
+            <div>
+              <div class="logro-hero__lbl">Nivel ${nivelActual.id} de 5</div>
+              <div class="logro-hero__name">${nivelActual.nombre}</div>
+            </div>
+            <div class="logro-hero__racha">
+              <svg class="ic" style="width:14px;height:14px;color:var(--primary);"><use href="#i-flame"/></svg>
+              <span class="logro-hero__racha-num">${usuario.racha}</span>
+              <span class="logro-hero__racha-lbl">días</span>
+            </div>
+          </div>
+          <div class="logro-hero__xp-bar"><div class="logro-hero__xp-fill" style="width:${pct}%"></div></div>
+          <div class="logro-hero__xp-text"><span><strong>${usuario.xp}</strong> XP</span><span>${xpRest>0?xpRest+' XP para '+proxNivel:'¡Nivel máximo!'}</span><span><strong>${nivelActual.hasta===99999?'∞':nivelActual.hasta}</strong> XP</span></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-card__label">Logros ganados</div><div class="kpi-card__value">${ganados}<span class="kpi-card__value-sub">/${logros.length}</span></div></div>
+          <div class="kpi-card"><div class="kpi-card__label">XP de logros</div><div class="kpi-card__value">${totalXp}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Días activos</div><div class="kpi-card__value">${usuario.diasActivos}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Racha</div><div class="kpi-card__value">${usuario.racha}</div></div>
+        </div>
+        ${cats.map(cat=>`
+          <section class="logros-cat" style="--cat-color:${COLOR_CAT[cat]};">
+            <div class="logros-cat__header">
+              <div class="logros-cat__icon"><svg class="ic"><use href="#${ICON_CAT[cat]}"/></svg></div>
+              <h2 class="logros-cat__title">${cat}</h2>
+              <span class="logros-cat__count">${logros.filter(l=>l.cat===cat&&l.unlock).length}/${logros.filter(l=>l.cat===cat).length}</span>
+            </div>
+            <div class="logros-grid">
+              ${logros.filter(l=>l.cat===cat).map(l=>`
+                <div class="logro ${l.unlock?'is-unlocked':'is-locked'}" data-lid="${l.id}" tabindex="0" style="--cat-color:${COLOR_CAT[cat]};">
+                  <div class="logro__icon">${l.unlock?`<svg class="ic"><use href="#${ICON_CAT[cat]}"/></svg>`:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'}</div>
+                  <div class="logro__name">${l.nombre}</div>
+                  <div class="logro__xp">+${l.xp} XP</div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `).join('')}
+      </div>
+    `;
+    container.querySelectorAll('.logro').forEach(el=>{
+      el.addEventListener('click',()=>openLogroDetalle(el.dataset.lid));
+      el.addEventListener('keydown',e=>{if(e.key==='Enter')openLogroDetalle(el.dataset.lid);});
+    });
+  }
+  function openLogroDetalle(id){
+    const l=logros.find(x=>x.id===id);if(!l)return;
+    const body=`
+      <div style="text-align:center;padding:8px 12px 14px;">
+        <div style="width:78px;height:78px;margin:0 auto 16px;border-radius:20px;background:linear-gradient(135deg,${COLOR_CAT[l.cat]},${COLOR_CAT[l.cat]}aa);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 28px ${COLOR_CAT[l.cat]}44;">
+          ${l.unlock?`<svg class="ic ic--xl"><use href="#${ICON_CAT[l.cat]}"/></svg>`:'<svg class="ic ic--xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'}
+        </div>
+        <h2 style="font-size:22px;font-weight:600;letter-spacing:-.4px;">${l.nombre}</h2>
+        <p style="color:var(--text-2);max-width:340px;margin:6px auto 0;line-height:1.5;font-size:13px;">${l.desc}</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px;">
+          <div style="background:var(--surface-2);border-radius:10px;padding:10px 8px;text-align:center;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);font-weight:600;">Categoría</div><div style="font-size:13px;font-weight:600;margin-top:3px;color:${COLOR_CAT[l.cat]};">${l.cat}</div></div>
+          <div style="background:var(--surface-2);border-radius:10px;padding:10px 8px;text-align:center;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);font-weight:600;">Recompensa</div><div style="font-size:13px;font-weight:600;margin-top:3px;">+${l.xp} XP</div></div>
+          <div style="background:var(--surface-2);border-radius:10px;padding:10px 8px;text-align:center;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);font-weight:600;">Estado</div><div style="font-size:13px;font-weight:600;margin-top:3px;color:${l.unlock?'var(--success)':'var(--text-2)'};">${l.unlock?'✓ Ganado':'Bloqueado'}</div></div>
+        </div>
+        <div style="background:var(--surface-2);border-radius:10px;padding:14px 16px;margin-top:14px;text-align:left;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:5px;">Cómo desbloquearlo</div>
+          <div style="font-size:13px;line-height:1.5;">${l.criterio}</div>
+        </div>
+        ${l.unlock?`<div style="margin-top:14px;padding:10px 14px;background:color-mix(in srgb,var(--success) 12%,transparent);color:var(--success);border-radius:10px;font-size:12px;font-weight:500;">🎉 Desbloqueado el ${formatDate(l.unlock)}</div>`:''}
+      </div>
+    `;
+    Modal.open({id:'logro-'+id,title:l.unlock?'Medalla obtenida':'Medalla pendiente',subtitle:l.cat,icon:ICON_CAT[l.cat],size:'sm',body,footer:`<button class="btn btn--ghost" onclick="Modal.close('logro-${id}')">Cerrar</button>`});
+  }
+
+  /* ============================ WEBINARS / CLASES EN VIVO ============================ */
+  let webState={tab:'proximas'};
+
+  function renderWebinars(container){
+    const proximas=webinars.filter(w=>w.status==='proxima').sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+    const grabadas=webinars.filter(w=>w.status==='grabada');
+    const mias=proximas.filter(w=>w.registrado);
+    const prox=proximas[0];
+    container.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Aprende en directo</span>
+          <h1 class="sec-hero__title">Clases en vivo</h1>
+          <p class="sec-hero__sub">Sesiones quincenales con ingenieros y especialistas del sector industrial. Pregunta en vivo, las grabaciones quedan disponibles.</p>
+        </div>
+        ${prox?renderProxHero(prox):''}
+        <div class="tabs">
+          <button class="tab ${webState.tab==='proximas'?'is-active':''}" data-wtab="proximas">Próximas · ${proximas.length}</button>
+          <button class="tab ${webState.tab==='grabadas'?'is-active':''}" data-wtab="grabadas">Grabaciones · ${grabadas.length}</button>
+          <button class="tab ${webState.tab==='registradas'?'is-active':''}" data-wtab="registradas">Mis registradas · ${mias.length}</button>
+        </div>
+        <div id="web-list"></div>
+      </div>
+    `;
+    container.querySelectorAll('[data-wtab]').forEach(b=>b.addEventListener('click',()=>{webState.tab=b.dataset.wtab;renderWebinars(container);}));
+    container.querySelector('#wh-register')?.addEventListener('click',()=>{prox.registrado=!prox.registrado;Toast.success(prox.registrado?'Te inscribiste':'Cancelaste registro',prox.registrado?'Recibirás recordatorio una hora antes':'');renderWebinars(container);});
+    container.querySelector('#wh-cal')?.addEventListener('click',()=>descargarICS(prox));
+    renderWebList();
+    iniciarCountdownHero(prox);
+  }
+
+  function renderProxHero(w){
+    const f=new Date(w.fecha);
+    return `
+      <div class="webinar-hero">
+        <div class="webinar-hero__info">
+          <span class="sec-hero__eyebrow">Próxima en vivo</span>
+          <h2 class="webinar-hero__title">${w.titulo}</h2>
+          <div class="webinar-hero__meta">
+            <span><svg class="ic"><use href="#i-calendar"/></svg>${formatFechaLarga(f)}</span>
+            <span><svg class="ic"><use href="#i-clock"/></svg>${pad(f.getHours())}:${pad(f.getMinutes())} hrs · ${w.duracion} min</span>
+            <span><svg class="ic"><use href="#i-user"/></svg>${w.instructor}</span>
+          </div>
+          <p class="webinar-hero__desc">${w.desc}</p>
+          <div class="webinar-hero__actions">
+            <button class="btn btn--accent" id="wh-register">${w.registrado?'Ya registrado ✓':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+            <button class="btn btn--ghost" id="wh-cal"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
+          </div>
+        </div>
+        <div class="webinar-hero__countdown">
+          <div class="webinar-hero__cd-box"><span class="webinar-hero__cd-num" id="wh-d">00</span><span class="webinar-hero__cd-lbl">Días</span></div>
+          <div class="webinar-hero__cd-box"><span class="webinar-hero__cd-num" id="wh-h">00</span><span class="webinar-hero__cd-lbl">Hrs</span></div>
+          <div class="webinar-hero__cd-box"><span class="webinar-hero__cd-num" id="wh-m">00</span><span class="webinar-hero__cd-lbl">Min</span></div>
+          <div class="webinar-hero__cd-box"><span class="webinar-hero__cd-num" id="wh-s">00</span><span class="webinar-hero__cd-lbl">Seg</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function iniciarCountdownHero(w){
+    if(!w)return;
+    if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
+    const target=new Date(w.fecha);
+    function tick(){
+      const diff=target-new Date();
+      const els={d:document.getElementById('wh-d'),h:document.getElementById('wh-h'),m:document.getElementById('wh-m'),s:document.getElementById('wh-s')};
+      if(!els.d){clearInterval(countdownTimer);countdownTimer=null;return;}
+      if(diff<=0){Object.values(els).forEach(e=>{if(e)e.textContent='00';});clearInterval(countdownTimer);countdownTimer=null;return;}
+      if(els.d)els.d.textContent=pad(Math.floor(diff/86400000));
+      if(els.h)els.h.textContent=pad(Math.floor((diff%86400000)/3600000));
+      if(els.m)els.m.textContent=pad(Math.floor((diff%3600000)/60000));
+      if(els.s)els.s.textContent=pad(Math.floor((diff%60000)/1000));
+    }
+    tick();countdownTimer=setInterval(tick,1000);
+    Sections.countdownTimer=countdownTimer;
+  }
+
+  function renderWebList(){
+    const list=document.getElementById('web-list');if(!list)return;
+    let items=[];
+    if(webState.tab==='proximas')items=webinars.filter(w=>w.status==='proxima');
+    if(webState.tab==='grabadas')items=webinars.filter(w=>w.status==='grabada');
+    if(webState.tab==='registradas')items=webinars.filter(w=>w.registrado);
+    if(items.length===0){
+      list.innerHTML=`<div class="empty-state"><div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-broadcast"/></svg></div><h3>Sin clases</h3><p>Cambia el filtro para ver más sesiones.</p></div>`;
+      return;
+    }
+    list.innerHTML=`<div class="webinars-grid">${items.map(w=>renderWebCard(w)).join('')}</div>`;
+    list.querySelectorAll('.webinar-card').forEach(c=>{
+      c.addEventListener('click',()=>openWebDetalle(c.dataset.wid));
+      c.addEventListener('keydown',e=>{if(e.key==='Enter')openWebDetalle(c.dataset.wid);});
+    });
+  }
+  function renderWebCard(w){
+    const f=new Date(w.fecha);
+    const isProx=w.status==='proxima';
+    return `
+      <article class="webinar-card" data-wid="${w.id}" tabindex="0" style="--area-color:${COLOR_AREA[w.area]};">
+        <div class="webinar-card__cover">
+          ${isProx?`<div class="webinar-card__date"><div class="webinar-card__date-day">${f.getDate()}</div><div class="webinar-card__date-month">${monthShort(f.getMonth())}</div></div>`:`<div class="webinar-card__play"><svg class="ic"><use href="#i-play"/></svg></div>`}
+        </div>
+        <div class="webinar-card__body">
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <span class="tag tag--soon" style="color:${COLOR_AREA[w.area]};border-color:${COLOR_AREA[w.area]}40;background:${COLOR_AREA[w.area]}14;">${w.area}</span>
+            ${isProx?(w.registrado?'<span class="tag tag--watched">Registrado</span>':'<span class="tag tag--live">En vivo</span>'):(w.visto?'<span class="tag tag--watched">Visto</span>':'<span class="tag tag--soon">Grabación</span>')}
+          </div>
+          <h3 class="webinar-card__title">${w.titulo}</h3>
+          <div class="webinar-card__meta">
+            <span><svg class="ic"><use href="#i-user"/></svg>${w.instructor.split(' ').slice(-1)[0]}</span>
+            <span><svg class="ic"><use href="#i-clock"/></svg>${w.duracion}m</span>
+            ${isProx?`<span><svg class="ic"><use href="#i-calendar"/></svg>${pad(f.getDate())}/${pad(f.getMonth()+1)}</span>`:''}
+          </div>
+        </div>
+      </article>
+    `;
+  }
+  function openWebDetalle(id){
+    const w=webinars.find(x=>x.id===id);if(!w)return;
+    const f=new Date(w.fecha);const isProx=w.status==='proxima';
+    const body=`
+      ${isProx?`
+        <div class="detail-hero" style="--area-color:${COLOR_AREA[w.area]};">
+          <div class="detail-hero__icon"><svg class="ic ic--lg"><use href="#i-broadcast"/></svg></div>
+          <div style="flex:1;min-width:0">
+            <div class="detail-hero__tags">
+              <span class="tag tag--soon" style="color:${COLOR_AREA[w.area]};border-color:${COLOR_AREA[w.area]}40;background:${COLOR_AREA[w.area]}14;">${w.area}</span>
+              ${w.registrado?'<span class="tag tag--watched">Registrado</span>':'<span class="tag tag--live">En vivo</span>'}
+            </div>
+            <div class="detail-hero__title">${w.titulo}</div>
+            <div class="detail-meta"><span><svg class="ic"><use href="#i-user"/></svg>${w.instructor}</span><span><svg class="ic"><use href="#i-calendar"/></svg>${formatFechaLarga(f)}</span><span><svg class="ic"><use href="#i-clock"/></svg>${pad(f.getHours())}:${pad(f.getMinutes())} · ${w.duracion}m</span></div>
+          </div>
+        </div>
+      `:`
+        <div style="background:#0E0A06;color:#fff;border-radius:14px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">
+          <svg class="ic" style="width:48px;height:48px;color:#fff;"><use href="#i-play"/></svg>
+          <div style="font-size:13px;opacity:.8;">Reproductor de video (placeholder)</div>
+          <div style="font-size:11px;opacity:.5;">Conexión real en Sprint 4</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+          <span class="tag tag--soon" style="color:${COLOR_AREA[w.area]};border-color:${COLOR_AREA[w.area]}40;background:${COLOR_AREA[w.area]}14;">${w.area}</span>
+          <span class="tag tag--soon">Grabación · ${w.duracion}m</span>
+        </div>
+        <h2 style="font-size:18px;font-weight:600;letter-spacing:-.3px;line-height:1.3;">${w.titulo}</h2>
+      `}
+      <p style="color:var(--text-2);font-size:13px;line-height:1.6;margin-top:10px;">${w.desc}</p>
+    `;
+    const footer=document.createElement('div');
+    if(isProx){
+      footer.innerHTML=`<button class="btn btn--ghost" id="wd-close">Cerrar</button><button class="btn btn--ghost" id="wd-ics"><svg class="ic"><use href="#i-calendar"/></svg>Calendario</button><button class="btn btn--accent" id="wd-toggle">${w.registrado?'Cancelar registro':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>`;
+    } else {
+      footer.innerHTML=`<button class="btn btn--ghost" id="wd-close">Cerrar</button><button class="btn btn--accent" id="wd-play">${w.visto?'Volver a ver':'Reproducir'}<svg class="ic"><use href="#i-play"/></svg></button>`;
+    }
+    const m=Modal.open({id:'web-'+id,title:isProx?'Clase en vivo':'Grabación',subtitle:formatFechaLarga(f),icon:'i-broadcast',size:'lg',body,footer});
+    footer.querySelector('#wd-close').addEventListener('click',()=>m.close());
+    footer.querySelector('#wd-ics')?.addEventListener('click',()=>descargarICS(w));
+    footer.querySelector('#wd-toggle')?.addEventListener('click',()=>{w.registrado=!w.registrado;Toast.success(w.registrado?'Te inscribiste':'Cancelaste registro',w.registrado?'Recibirás recordatorio una hora antes':'');m.close();renderWebinars(document.getElementById('dynamic-section'));});
+    footer.querySelector('#wd-play')?.addEventListener('click',()=>{w.visto=true;Toast.info('Reproductor','En Sprint 4 esto reproducirá el video real.');m.close();renderWebinars(document.getElementById('dynamic-section'));});
+  }
+
+  function descargarICS(w){
+    const f=new Date(w.fecha);const end=new Date(f.getTime()+w.duracion*60*1000);
+    const fmt=d=>d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+    const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//IMDIIL//ES','BEGIN:VEVENT','UID:'+w.id+'@imdiil.com','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(f),'DTEND:'+fmt(end),'SUMMARY:'+w.titulo,'DESCRIPTION:'+(w.desc||'').replace(/\n/g,'\\n')+'\\n\\nInstructor: '+w.instructor,'LOCATION:Online · IMDIIL Panel VIP','BEGIN:VALARM','TRIGGER:-PT1H','ACTION:DISPLAY','DESCRIPTION:Tu clase IMDIIL en 1 hora','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+    const blob=new Blob([ics],{type:'text/calendar'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='IMDIIL-'+w.id+'.ics';a.click();URL.revokeObjectURL(url);
+    Toast.success('Evento descargado','Importa el .ics a tu calendario');
+  }
+
+  return {
+    renderers:{cursos:renderCursos,certificados:renderCertificados,logros:renderLogros,webinars:renderWebinars},
+    countdownTimer:null
+  };
+})();
 
 function initNav(){
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(it=>{
