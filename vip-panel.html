@@ -105,51 +105,343 @@ body{
 .avatar__name{font-size:11px;font-weight:600}
 .avatar__plan{font-size:9px;font-weight:600;color:var(--primary);letter-spacing:.5px}
 
-/* Banner */
-.banner{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-deep) 100%);color:#fff;border-radius:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px;position:relative;overflow:hidden;box-shadow:0 12px 40px var(--primary-glow);flex-wrap:wrap}
-.banner::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 90% -10%,rgba(255,255,255,.18),transparent 50%),radial-gradient(circle at 10% 110%,rgba(0,0,0,.18),transparent 60%);pointer-events:none}
+/* Banner — estilo agri-futurista con grid pattern + aurora + glassmorphism */
+.banner{
+  background:linear-gradient(135deg,#1A130D 0%,#0E0A06 100%);
+  color:var(--text);
+  border-radius:20px;
+  padding:28px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  position:relative;
+  overflow:hidden;
+  border:0.5px solid var(--border-2);
+  flex-wrap:wrap;
+  box-shadow:0 12px 40px rgba(0,0,0,.35);
+}
+:root[data-theme="day"] .banner{
+  background:linear-gradient(135deg,#FFFFFF 0%,#FBF6EB 100%);
+  box-shadow:0 8px 32px rgba(58,40,20,.08);
+}
+/* Grid pattern tipo blueprint */
+.banner::before{
+  content:"";
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb,var(--primary) 8%,transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb,var(--primary) 8%,transparent) 1px, transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, transparent 75%);
+  mask-image:radial-gradient(ellipse at center, rgba(0,0,0,1) 0%, transparent 75%);
+  pointer-events:none;
+}
+/* Aurora animada */
+.banner::after{
+  content:"";
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 15% 25%, color-mix(in srgb,var(--primary) 22%,transparent), transparent 45%),
+    radial-gradient(circle at 85% 75%, color-mix(in srgb,var(--highlight) 18%,transparent), transparent 50%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb,var(--primary-deep) 12%,transparent), transparent 55%);
+  filter:blur(40px);
+  animation:aurora 18s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes aurora{
+  0%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(20px,-15px) scale(1.08)}
+  66%{transform:translate(-15px,10px) scale(.95)}
+  100%{transform:translate(10px,20px) scale(1.05)}
+}
 .banner__info{position:relative;z-index:1;flex:1;min-width:240px}
-.banner__greeting{font-size:10.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;opacity:.9}
-.banner__title{font-size:clamp(22px,2.6vw,30px);font-weight:600;letter-spacing:-.7px;line-height:1.15;margin-top:6px}
-.banner__sub{font-size:13.5px;opacity:.92;margin-top:8px;max-width:560px;line-height:1.5}
-.banner__stats{position:relative;z-index:1;display:flex;gap:12px}
-.banner__stat{background:rgba(255,255,255,.16);backdrop-filter:blur(8px);border:0.5px solid rgba(255,255,255,.22);border-radius:12px;padding:11px 14px;text-align:center;min-width:62px}
-.banner__stat-val{font-size:20px;font-weight:600;line-height:1;letter-spacing:-.5px;font-feature-settings:"tnum" 1}
-.banner__stat-lbl{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;opacity:.85;margin-top:3px}
+
+/* Hero tag glassmorphism con dot pulsante */
+.banner__eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 12px 6px 10px;
+  border-radius:100px;
+  background:color-mix(in srgb,var(--surface) 60%,transparent);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:0.5px solid color-mix(in srgb,var(--primary) 30%,transparent);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--primary);
+}
+.banner__eyebrow__dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--success);
+  box-shadow:0 0 0 0 var(--success);
+  animation:pulseDot 1.8s ease-out infinite;
+}
+@keyframes pulseDot{
+  0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--success) 60%,transparent)}
+  70%{box-shadow:0 0 0 8px transparent}
+  100%{box-shadow:0 0 0 0 transparent}
+}
+.banner__version{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text-3);
+  font-weight:500;
+  letter-spacing:.5px;
+  margin-left:6px;
+}
+
+.banner__title{
+  font-size:clamp(24px,2.8vw,32px);
+  font-weight:600;
+  letter-spacing:-.8px;
+  line-height:1.12;
+  margin-top:14px;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 65%,transparent));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.banner__sub{font-size:13.5px;color:var(--text-2);margin-top:10px;max-width:560px;line-height:1.55}
+
+.banner__stats{
+  position:relative;z-index:1;
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.banner__stat{
+  background:color-mix(in srgb,var(--surface) 70%,transparent);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:0.5px solid var(--border-2);
+  border-radius:14px;
+  padding:13px 16px;
+  text-align:left;
+  min-width:78px;
+  position:relative;
+  overflow:hidden;
+}
+.banner__stat::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+  opacity:.5;
+}
+.banner__stat-lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);
+  display:flex;align-items:center;gap:5px;
+  margin-bottom:5px;
+}
+.banner__stat-lbl::before{
+  content:"";
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--success);
+  animation:pulseDotSmall 2.2s ease-out infinite;
+}
+@keyframes pulseDotSmall{
+  0%,100%{opacity:1}
+  50%{opacity:.4}
+}
+.banner__stat-val{
+  font-size:22px;font-weight:600;line-height:1;letter-spacing:-.6px;
+  font-feature-settings:"tnum" 1;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 60%,transparent));
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
 
 /* Section header */
-.section-header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
-.section-header__title{font-size:18px;font-weight:600;letter-spacing:-.3px}
-.section-header__link{font-size:11.5px;color:var(--text-2);font-weight:500;display:inline-flex;align-items:center;gap:4px;transition:gap .2s,color .15s}
-.section-header__link:hover{gap:7px;color:var(--text)}
-.section-header__link .ic{width:13px;height:13px}
+.section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section-header__title{
+  font-size:17px;font-weight:600;letter-spacing:-.3px;
+  display:inline-flex;align-items:center;gap:10px;
+}
+.section-header__badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:.8px;
+  padding:3px 9px;
+  border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  border:0.5px solid color-mix(in srgb,var(--primary) 28%,transparent);
+  text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.section-header__badge::before{
+  content:"";width:5px;height:5px;border-radius:50%;
+  background:var(--primary);
+  animation:pulseDotSmall 1.8s ease-out infinite;
+}
+.section-header__link{
+  font-size:11.5px;color:var(--text-2);font-weight:500;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:gap .2s,color .15s;
+  padding:6px 12px;border-radius:100px;
+  border:0.5px solid var(--border-2);
+  background:var(--surface);
+}
+.section-header__link:hover{gap:8px;color:var(--primary);border-color:color-mix(in srgb,var(--primary) 30%,transparent)}
+.section-header__link .ic{width:12px;height:12px}
 
-/* Content rows */
-.content-list{display:flex;flex-direction:column;gap:8px}
-.content-row{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .2s}
-.content-row:hover{transform:translateX(2px);border-color:var(--primary);box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.content-row__thumb{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
-.content-row__thumb--video{background:linear-gradient(135deg,#2B7BB9,#1E5C92)}
-.content-row__thumb--live{background:linear-gradient(135deg,#DC2626,#991B1B)}
-.content-row__thumb--pdf{background:linear-gradient(135deg,#0F9D58,#0B7944)}
+/* Content cards — glassmorphism + glow + shine */
+.content-list{display:flex;flex-direction:column;gap:10px}
+.content-row{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:14px;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:transform .25s cubic-bezier(.2,.8,.25,1),border-color .2s,box-shadow .3s;
+}
+/* Shine diagonal en hover */
+.content-row::before{
+  content:"";
+  position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(110deg,transparent 30%,color-mix(in srgb,var(--primary) 8%,transparent) 50%,transparent 70%);
+  transition:left .7s ease;
+  pointer-events:none;
+}
+.content-row:hover{
+  transform:translateY(-2px);
+  border-color:color-mix(in srgb,var(--primary) 35%,transparent);
+  box-shadow:0 10px 30px rgba(0,0,0,.12),0 0 0 1px color-mix(in srgb,var(--primary) 10%,transparent);
+}
+.content-row:hover::before{left:100%}
+
+.content-row__thumb{
+  width:46px;height:46px;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  color:#fff;
+  position:relative;
+  transition:transform .25s,box-shadow .25s;
+}
+/* Glow detrás del icono */
+.content-row__thumb::after{
+  content:"";
+  position:absolute;inset:-4px;
+  border-radius:14px;
+  background:inherit;
+  filter:blur(12px);
+  opacity:.25;
+  z-index:-1;
+  transition:opacity .25s;
+}
+.content-row:hover .content-row__thumb{transform:scale(1.06) rotate(-3deg)}
+.content-row:hover .content-row__thumb::after{opacity:.55}
+.content-row__thumb--video{background:linear-gradient(135deg,#3B82F6,#1E40AF)}
+.content-row__thumb--live{background:linear-gradient(135deg,#EF4444,#991B1B)}
+.content-row__thumb--pdf{background:linear-gradient(135deg,#10B981,#047857)}
 .content-row__thumb--tool{background:linear-gradient(135deg,var(--primary),var(--primary-deep))}
-.content-row__body{flex:1;min-width:0}
-.content-row__title{font-size:13.5px;font-weight:500;letter-spacing:-.1px;line-height:1.3}
-.content-row__meta{font-size:11px;color:var(--text-3);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.content-row__body{flex:1;min-width:0;position:relative;z-index:1}
+.content-row__title{font-size:13.5px;font-weight:600;letter-spacing:-.1px;line-height:1.35;color:var(--text)}
+.content-row__meta{
+  font-size:11px;color:var(--text-3);margin-top:4px;
+  display:flex;gap:12px;flex-wrap:wrap;
+  font-family:'JetBrains Mono',monospace;
+  font-weight:500;letter-spacing:-.1px;
+}
 .content-row__meta span{display:inline-flex;align-items:center;gap:4px}
 .content-row__meta .ic{width:11px;height:11px}
-.content-row__action{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.content-row__action{display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative;z-index:1}
 
-.tag{font-size:9px;padding:3px 8px;border-radius:100px;letter-spacing:.5px;text-transform:uppercase;font-weight:600}
-.tag--new{background:var(--primary);color:#fff}
-.tag--watched{background:color-mix(in srgb,var(--success) 14%,transparent);color:var(--success);border:0.5px solid color-mix(in srgb,var(--success) 30%,transparent)}
-.tag--down{background:color-mix(in srgb,var(--success) 14%,transparent);color:var(--success);border:0.5px solid color-mix(in srgb,var(--success) 30%,transparent)}
-.tag--live{background:var(--danger);color:#fff}
-.tag--soon{background:var(--surface-3);color:var(--text-2);border:0.5px solid var(--border-2)}
+/* Tags vibrantes con dots */
+.tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  padding:4px 9px;
+  border-radius:100px;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+.tag--new{
+  background:color-mix(in srgb,var(--primary) 18%,transparent);
+  color:var(--primary);
+  border:0.5px solid color-mix(in srgb,var(--primary) 35%,transparent);
+}
+.tag--new::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--primary);
+  animation:pulseDotSmall 1.6s ease-out infinite;
+}
+.tag--watched{
+  background:color-mix(in srgb,var(--success) 14%,transparent);
+  color:var(--success);
+  border:0.5px solid color-mix(in srgb,var(--success) 30%,transparent);
+}
+.tag--down{
+  background:color-mix(in srgb,var(--success) 14%,transparent);
+  color:var(--success);
+  border:0.5px solid color-mix(in srgb,var(--success) 30%,transparent);
+}
+.tag--live{
+  background:color-mix(in srgb,var(--danger) 18%,transparent);
+  color:var(--danger);
+  border:0.5px solid color-mix(in srgb,var(--danger) 35%,transparent);
+}
+.tag--live::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--danger);
+  animation:pulseDotSmall 1.2s ease-out infinite;
+}
+.tag--soon{
+  background:var(--surface-3);
+  color:var(--text-2);
+  border:0.5px solid var(--border-2);
+}
 
-.row-btn{font-size:11px;font-weight:600;padding:6px 12px;border-radius:100px;background:var(--text);color:var(--bg);display:inline-flex;align-items:center;gap:5px;transition:transform .15s}
-.row-btn:hover{transform:translateY(-1px)}
-.row-btn .ic{width:11px;height:11px}
+/* Row buttons — gradient + glow */
+.row-btn{
+  font-size:11px;
+  font-weight:600;
+  padding:7px 14px;
+  border-radius:100px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:transform .15s,box-shadow .25s,filter .15s;
+  box-shadow:0 4px 14px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.18);
+  letter-spacing:.1px;
+}
+.row-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 22px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.25);
+  filter:brightness(1.06);
+}
+.row-btn .ic{width:11px;height:11px;stroke-width:2.2}
+.row-btn--ghost{
+  background:transparent;
+  color:var(--text);
+  border:0.5px solid var(--border-2);
+  box-shadow:none;
+}
+.row-btn--ghost:hover{
+  background:var(--surface-2);
+  border-color:var(--primary);
+  color:var(--primary);
+  filter:none;
+}
 
 /* PANEL DERECHO */
 .aside{background:transparent;padding:18px 16px 24px;display:flex;flex-direction:column;gap:12px;position:sticky;top:0;height:100vh;overflow-y:auto;border-left:0.5px solid var(--border)}
@@ -388,24 +680,24 @@ body{
       <!-- Banner -->
       <section class="banner fade-up">
         <div class="banner__info">
-          <div class="banner__greeting" id="greeting-label">Bienvenido</div>
+          <span class="banner__eyebrow"><span class="banner__eyebrow__dot"></span><span id="greeting-label">En vivo</span><span class="banner__version">v.2026.05</span></span>
           <h1 class="banner__title" id="hero-title">Buenas tardes, ingeniero</h1>
           <p class="banner__sub">Tu acceso a cursos premium, herramientas pro de seguridad y la comunidad de ingeniería industrial más activa de México.</p>
         </div>
         <div class="banner__stats">
-          <div class="banner__stat"><div class="banner__stat-val">12</div><div class="banner__stat-lbl">Cursos</div></div>
-          <div class="banner__stat"><div class="banner__stat-val">9</div><div class="banner__stat-lbl">Clases</div></div>
-          <div class="banner__stat"><div class="banner__stat-val">24</div><div class="banner__stat-lbl">PDFs</div></div>
-          <div class="banner__stat"><div class="banner__stat-val">5</div><div class="banner__stat-lbl">Pro</div></div>
+          <div class="banner__stat"><div class="banner__stat-lbl">Cursos</div><div class="banner__stat-val">12</div></div>
+          <div class="banner__stat"><div class="banner__stat-lbl">Clases</div><div class="banner__stat-val">9</div></div>
+          <div class="banner__stat"><div class="banner__stat-lbl">PDFs</div><div class="banner__stat-val">24</div></div>
+          <div class="banner__stat"><div class="banner__stat-lbl">Pro</div><div class="banner__stat-val">5</div></div>
         </div>
       </section>
 
-      <div style="height:20px"></div>
+      <div style="height:22px"></div>
 
       <!-- Nuevo esta semana -->
       <section>
         <div class="section-header">
-          <h2 class="section-header__title">🆕 Nuevo esta semana</h2>
+          <h2 class="section-header__title">Nuevo esta semana<span class="section-header__badge">4 nuevos</span></h2>
           <a class="section-header__link" data-section="cursos">Ver todo<svg class="ic"><use href="#i-arrow-right"/></svg></a>
         </div>
         <div class="content-list">
@@ -471,12 +763,12 @@ body{
         </div>
       </section>
 
-      <div style="height:20px"></div>
+      <div style="height:22px"></div>
 
       <!-- Biblioteca completa -->
       <section>
         <div class="section-header">
-          <h2 class="section-header__title">📚 Biblioteca completa</h2>
+          <h2 class="section-header__title">Biblioteca completa<span class="section-header__badge">archivos</span></h2>
           <a class="section-header__link" data-section="cursos">Ver catálogo<svg class="ic"><use href="#i-arrow-right"/></svg></a>
         </div>
         <div class="content-list">
@@ -668,7 +960,7 @@ const Theme={
 function applyGreeting(){
   const h=new Date().getHours();
   const greet=h<12?'Buen día':h<19?'Buenas tardes':'Buenas noches';
-  const eyebrow=h<12?'Hoy es un buen día':h<19?'Tarde productiva':'Cerrando con todo';
+  const eyebrow=h<12?'Modo enfoque · Mañana':h<19?'Modo enfoque · Tarde':'Modo enfoque · Noche';
   const t=document.getElementById('hero-title');if(t)t.textContent=greet+', ingeniero';
   const l=document.getElementById('greeting-label');if(l)l.textContent=eyebrow;
 }
