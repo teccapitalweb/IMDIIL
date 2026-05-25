@@ -1026,6 +1026,339 @@ body{
 .cert-preview__qr{background:#fff;padding:5px;border-radius:6px;display:inline-block}
 .cert-preview__folio{font-family:'JetBrains Mono',monospace;font-size:9px;color:#5A5044;margin-top:3px}
 
+/* =========================================================
+   HERRAMIENTA IPER · matriz, peligros, controles
+   ========================================================= */
+.iper{display:flex;flex-direction:column;gap:18px}
+.iper__folio{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--primary);
+  padding:5px 10px;border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 12%,transparent);
+  border:0.5px solid color-mix(in srgb,var(--primary) 28%,transparent);
+}
+.iper__folio::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--primary);
+  animation:pulseDotSmall 1.8s ease-out infinite;
+}
+
+.iper-tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:100px;flex-wrap:wrap}
+.iper-tab{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:600;letter-spacing:.4px;
+  padding:8px 14px;border-radius:100px;
+  color:var(--text-3);cursor:pointer;transition:color .15s,background .15s;
+  flex:1;text-align:center;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.iper-tab .ic{width:13px;height:13px}
+.iper-tab:hover{color:var(--text)}
+.iper-tab.is-active{background:var(--surface);color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.iper-tab__num{
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  padding:1px 7px;border-radius:100px;
+  font-size:9.5px;font-weight:600;
+}
+
+.iper-pane{display:none}
+.iper-pane.is-active{display:block;animation:fadeUp .3s ease}
+
+/* Setup form */
+.iper-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.iper-form__field{display:flex;flex-direction:column;gap:6px}
+.iper-form__field--full{grid-column:1/-1}
+.iper-form__label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--text-3);
+}
+
+/* Add peligro form */
+.iper-add{
+  background:var(--surface-2);
+  border:0.5px dashed var(--border-strong);
+  border-radius:14px;
+  padding:18px 20px;
+  margin-bottom:14px;
+}
+.iper-add__header{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:12px;
+}
+.iper-add__icon{
+  width:32px;height:32px;border-radius:10px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+}
+.iper-add__title{font-size:14px;font-weight:600;letter-spacing:-.2px}
+
+.iper-add__grid{display:grid;grid-template-columns:1.5fr 1fr;gap:10px}
+.iper-scale{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+}
+.iper-scale__label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--text-3);
+  margin-bottom:7px;
+}
+.iper-scale__row{display:flex;gap:4px}
+.iper-scale__btn{
+  flex:1;
+  padding:8px 6px;
+  border-radius:7px;
+  background:var(--surface-2);
+  border:0.5px solid var(--border-2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:600;
+  color:var(--text-2);
+  cursor:pointer;
+  transition:all .15s;
+}
+.iper-scale__btn:hover{color:var(--text);border-color:var(--border-strong)}
+.iper-scale__btn.is-active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 3px 10px var(--primary-glow)}
+
+.iper-result-preview{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:10px;
+  padding:12px 16px;
+  margin-top:12px;
+}
+.iper-result-preview__score{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;font-weight:700;letter-spacing:-.5px;
+  color:var(--text);
+  font-feature-settings:"tnum" 1;
+  min-width:38px;
+}
+.iper-result-preview__info{flex:1;min-width:0}
+.iper-result-preview__level{
+  font-size:13px;font-weight:600;letter-spacing:-.2px;
+}
+.iper-result-preview__cat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--text-3);font-weight:500;letter-spacing:.4px;
+  margin-top:2px;
+}
+
+/* Riesgo nivel colors */
+.riesgo-trivial{--level-color:#10B981;--level-bg:rgba(16,185,129,.14)}
+.riesgo-tolerable{--level-color:#84CC16;--level-bg:rgba(132,204,22,.14)}
+.riesgo-moderado{--level-color:#FBBF24;--level-bg:rgba(251,191,36,.14)}
+.riesgo-importante{--level-color:#FB923C;--level-bg:rgba(251,146,60,.14)}
+.riesgo-intolerable{--level-color:#EF4444;--level-bg:rgba(239,68,68,.18)}
+
+.iper-result-preview .iper-result-pill{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  padding:4px 9px;border-radius:100px;
+  background:var(--level-bg);
+  color:var(--level-color);
+  border:0.5px solid var(--level-color);
+  display:inline-flex;align-items:center;gap:5px;
+}
+.iper-result-pill::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--level-color);
+  animation:pulseDotSmall 1.6s ease-out infinite;
+}
+
+/* Peligros list */
+.iper-list{display:flex;flex-direction:column;gap:8px}
+.iper-row{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-left:3px solid var(--level-color,var(--text-3));
+  border-radius:12px;
+  padding:13px 16px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  transition:transform .15s,box-shadow .2s;
+}
+.iper-row:hover{transform:translateX(2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.iper-row__num{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--surface-2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:600;color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.iper-row__body{flex:1;min-width:0}
+.iper-row__title{font-size:13.5px;font-weight:600;letter-spacing:-.1px;line-height:1.3}
+.iper-row__meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-3);font-weight:500;
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;
+}
+.iper-row__score{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:700;
+  color:var(--level-color);
+  font-feature-settings:"tnum" 1;
+  min-width:34px;text-align:right;
+}
+.iper-row__del{
+  width:28px;height:28px;border-radius:50%;
+  border:0.5px solid var(--border-2);
+  color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;
+  transition:color .15s,border-color .15s,background .15s;
+  flex-shrink:0;
+}
+.iper-row__del:hover{color:var(--danger);border-color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,transparent)}
+.iper-row__del .ic{width:13px;height:13px;stroke-width:2.2}
+
+/* Matriz 5x5 */
+.matriz-wrap{padding:8px 0}
+.matriz-legend{
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:14px;flex-wrap:wrap;gap:8px;
+}
+.matriz{
+  display:grid;
+  grid-template-columns:auto repeat(5,1fr);
+  gap:4px;
+  margin-bottom:16px;
+}
+.matriz__corner{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;
+  padding:6px;
+}
+.matriz__corner small{font-size:8px;letter-spacing:.6px;text-transform:uppercase}
+.matriz__col-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;color:var(--text-2);
+  text-align:center;padding:6px 4px;
+}
+.matriz__row-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;color:var(--text-2);
+  text-align:right;padding:8px 8px;
+  display:flex;align-items:center;justify-content:flex-end;
+}
+.matriz__cell{
+  aspect-ratio:1;
+  border-radius:10px;
+  background:var(--level-bg);
+  border:1px solid color-mix(in srgb,var(--level-color) 30%,transparent);
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;font-weight:600;
+  color:var(--level-color);
+  transition:transform .15s;
+  min-height:48px;
+}
+.matriz__cell:hover{transform:scale(1.06);z-index:1}
+.matriz__cell--has{
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--level-color) 50%,transparent),0 4px 14px color-mix(in srgb,var(--level-color) 30%,transparent);
+}
+.matriz__cell-count{
+  position:absolute;top:4px;right:5px;
+  background:var(--level-color);
+  color:#fff;
+  font-size:9.5px;font-weight:700;
+  padding:1px 6px;border-radius:100px;
+  min-width:16px;text-align:center;
+  font-feature-settings:"tnum" 1;
+}
+.matriz-key{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:6px;
+}
+.matriz-key__item{
+  display:flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--text-2);font-weight:500;
+  padding:7px 10px;
+  background:var(--level-bg);
+  border:0.5px solid color-mix(in srgb,var(--level-color) 30%,transparent);
+  border-radius:8px;
+}
+.matriz-key__dot{width:8px;height:8px;border-radius:50%;background:var(--level-color);flex-shrink:0}
+.matriz-key__range{
+  font-weight:700;color:var(--level-color);
+}
+
+/* Controles */
+.iper-controls{display:flex;flex-direction:column;gap:8px}
+.control-row{
+  background:var(--surface);
+  border:0.5px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.control-row__icon{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--level-bg);
+  color:var(--level-color);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.control-row__body{flex:1;min-width:0}
+.control-row__title{font-size:13.5px;font-weight:600;letter-spacing:-.2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.control-row__count{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;color:var(--text-3);
+  padding:2px 8px;border-radius:100px;
+  background:var(--surface-3);
+}
+.control-row__desc{font-size:12.5px;color:var(--text-2);margin-top:4px;line-height:1.5}
+.control-row__plan{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:500;color:var(--level-color);
+  margin-top:8px;padding:8px 12px;background:var(--level-bg);border-radius:8px;
+  line-height:1.5;letter-spacing:-.1px;
+}
+
+/* Stats summary */
+.iper-summary{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:8px;margin-bottom:16px;
+}
+.iper-stat{
+  background:var(--level-bg,var(--surface));
+  border:0.5px solid color-mix(in srgb,var(--level-color,var(--border)) 25%,transparent);
+  border-radius:10px;
+  padding:10px 12px;
+}
+.iper-stat__lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--level-color,var(--text-3));
+}
+.iper-stat__val{
+  font-size:20px;font-weight:700;color:var(--level-color,var(--text));
+  font-feature-settings:"tnum" 1;line-height:1;margin-top:4px;
+}
+
+/* Empty (sin peligros) */
+.iper-empty{
+  text-align:center;padding:40px 24px;
+  background:var(--surface);border:0.5px dashed var(--border-2);
+  border-radius:12px;
+}
+.iper-empty__icon{
+  width:56px;height:56px;margin:0 auto 12px;border-radius:14px;
+  background:var(--surface-2);color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;
+}
+.iper-empty h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.iper-empty p{font-size:12px;color:var(--text-2);max-width:280px;margin:0 auto;line-height:1.5}
+
 /* RESPONSIVE */
 .mobile-nav{display:none}
 
@@ -1071,6 +1404,23 @@ body{
   .modal__header{padding:14px 18px 12px}
   .modal__footer{padding:12px 18px;flex-wrap:wrap}
   .modal__footer .btn{flex:1;min-width:100px}
+
+  /* IPER mobile */
+  .iper-form{grid-template-columns:1fr}
+  .iper-add__grid{grid-template-columns:1fr}
+  .iper-tab{font-size:10px;padding:7px 8px;flex:0 0 auto}
+  .iper-tab__num{display:none}
+  .matriz{gap:3px}
+  .matriz__cell{min-height:38px;font-size:11px;border-radius:6px}
+  .matriz__cell-count{font-size:8.5px;padding:0 5px;top:2px;right:3px;min-width:14px}
+  .matriz__col-label,.matriz__row-label{font-size:8.5px;padding:4px 2px}
+  .matriz__corner{padding:2px;font-size:7.5px}
+  .iper-row{flex-wrap:wrap;gap:10px}
+  .iper-row__body{flex:1 1 60%;min-width:0}
+  .iper-result-preview{flex-wrap:wrap}
+  .iper-scale__btn{font-size:12px;padding:7px 4px}
+  .iper-summary{grid-template-columns:repeat(3,1fr)}
+  .iper-stat__val{font-size:16px}
 }
 
 @media (max-width:420px){
@@ -1563,12 +1913,576 @@ function openToolPlaceholder(slug,name,desc,icon,detail){
 }
 
 const Tools={
-  iper:{open(){openToolPlaceholder('iper','Matriz IPER','Identificación de peligros y evaluación de riesgos','i-shield-check','Herramienta funcional con evaluación P×S×E, clasificación por niveles de riesgo (Trivial → Intolerable), controles automáticos y generación de PDF oficial con folio.');}},
+  iper:{open(){IPERTool.open();}},
   oee:{open(){openToolPlaceholder('oee','Calculadora OEE','Disponibilidad × Rendimiento × Calidad','i-gauge','Cálculo real de OEE con gauges SVG animados, clasificación World-class, diagnóstico y reporte PDF descargable.');}},
   ats:{open(){openToolPlaceholder('ats','Generador ATS','Análisis de Trabajo Seguro','i-clipboard-check','Formulario multi-paso con pasos editables, EPP requerido, firmas digitales y PDF oficial formato STPS.');}},
   noms:{open(){openToolPlaceholder('noms','Tabla NOM-STPS','Buscador de normas oficiales mexicanas','i-book-2','Base de datos de 30+ NOMs (NOM-001 a NOM-036), búsqueda en tiempo real, filtros por sector y ficha detallada.');}},
   logistica:{open(){openToolPlaceholder('logistica','Indicadores Logísticos','OTIF, Fill Rate, rotación, stockout','i-chart-bar','4 calculadoras integradas con benchmarks por sector, dashboard visual y reporte mensual PDF.');}}
 };
+
+/* =========================================================
+   HERRAMIENTA IPER · funcional
+   Metodología P × S (Probabilidad × Severidad)
+   Escalas 1-5 · Matriz 5×5 · Clasificación STPS
+   Persistencia en localStorage · PDF con folio
+   ========================================================= */
+const IPERTool = (function(){
+  const STORAGE_KEY = 'imdiil:iper:current';
+  let state = {
+    folio: null,
+    setup: {empresa:'',area:'',actividad:'',evaluador:'Ingeniero',fecha:new Date().toISOString().slice(0,10)},
+    peligros: [],
+    tab: 'setup',
+    draft: {desc:'',cat:'Mecánico',P:null,S:null}
+  };
+
+  /* Catálogo de peligros frecuentes para autocompletar */
+  const CAT_PELIGROS = [
+    {cat:'Mecánico',icon:'i-tools',ejemplos:['Atrapamiento por partes móviles','Caída de objetos','Proyección de partículas','Corte con herramienta','Aprisionamiento entre máquinas']},
+    {cat:'Eléctrico',icon:'i-bolt',ejemplos:['Contacto directo con conductor energizado','Contacto indirecto por falla aislamiento','Arco eléctrico','Sobrecarga de circuito']},
+    {cat:'Físico',icon:'i-broadcast',ejemplos:['Ruido continuo >85 dB','Vibración mano-brazo','Temperatura elevada','Radiación UV','Iluminación deficiente']},
+    {cat:'Químico',icon:'i-alert-circle',ejemplos:['Exposición a polvos','Vapores de solventes','Manejo de ácidos','Inhalación de gases']},
+    {cat:'Ergonómico',icon:'i-user',ejemplos:['Postura forzada prolongada','Levantamiento manual de cargas','Movimientos repetitivos','Aplicación de fuerza']},
+    {cat:'Locativo',icon:'i-home',ejemplos:['Piso resbaladizo','Caída a distinto nivel','Espacio confinado','Orden y limpieza deficiente']},
+    {cat:'Psicosocial',icon:'i-messages',ejemplos:['Jornadas extensas','Carga mental alta','Acoso laboral','Violencia externa']},
+    {cat:'Biológico',icon:'i-shield-check',ejemplos:['Exposición a virus','Bacterias en superficies','Hongos en ambientes húmedos','Vectores (insectos)']}
+  ];
+
+  const ESCALA_P = [
+    {v:1,nombre:'Raro',desc:'Casi nunca ocurre · 1 vez en 10+ años'},
+    {v:2,nombre:'Improbable',desc:'Ha ocurrido pocas veces · 1 vez en 5 años'},
+    {v:3,nombre:'Ocasional',desc:'Puede ocurrir alguna vez · 1 vez/año'},
+    {v:4,nombre:'Probable',desc:'Probable que ocurra · varias veces al año'},
+    {v:5,nombre:'Frecuente',desc:'Ocurre habitualmente · mensual o más'}
+  ];
+  const ESCALA_S = [
+    {v:1,nombre:'Insignificante',desc:'Sin lesión / molestia leve'},
+    {v:2,nombre:'Leve',desc:'Primeros auxilios · sin incapacidad'},
+    {v:3,nombre:'Moderada',desc:'Lesión con incapacidad temporal'},
+    {v:4,nombre:'Grave',desc:'Lesión permanente · incapacidad permanente'},
+    {v:5,nombre:'Catastrófica',desc:'Muerte o invalidez total'}
+  ];
+
+  function clasificar(score){
+    if (score <= 3) return {key:'trivial',nombre:'Trivial',accion:'No requiere acción específica',color:'#10B981'};
+    if (score <= 8) return {key:'tolerable',nombre:'Tolerable',accion:'Monitorear · mejora cuando sea posible',color:'#84CC16'};
+    if (score <= 12) return {key:'moderado',nombre:'Moderado',accion:'Reducir riesgo · plazo definido',color:'#FBBF24'};
+    if (score <= 20) return {key:'importante',nombre:'Importante',accion:'Acción inmediata · no continuar hasta mitigar',color:'#FB923C'};
+    return {key:'intolerable',nombre:'Intolerable',accion:'DETENER actividad · eliminar peligro',color:'#EF4444'};
+  }
+
+  /* Jerarquía de controles según ISO 45001 + STPS */
+  function controlesRecomendados(nivel){
+    const controles = {
+      trivial:[
+        {tipo:'Monitoreo',desc:'Mantener condiciones actuales y verificar periódicamente.'}
+      ],
+      tolerable:[
+        {tipo:'Administrativos',desc:'Definir procedimiento de trabajo seguro y capacitar al personal.'},
+        {tipo:'EPP',desc:'Asegurar uso correcto del equipo de protección personal básico.'}
+      ],
+      moderado:[
+        {tipo:'Ingeniería',desc:'Implementar barreras o sistemas de protección colectiva.'},
+        {tipo:'Administrativos',desc:'Permisos de trabajo, señalización y supervisión específica.'},
+        {tipo:'EPP',desc:'EPP especializado certificado para el riesgo identificado.'}
+      ],
+      importante:[
+        {tipo:'Sustitución',desc:'Considerar sustituir el material, proceso o equipo por uno más seguro.'},
+        {tipo:'Ingeniería',desc:'Aislamiento, enclavamientos, ventilación localizada según aplique.'},
+        {tipo:'Administrativos',desc:'LOTO, permiso de trabajo de alto riesgo, supervisión continua.'},
+        {tipo:'EPP',desc:'EPP de máxima protección certificado NOM aplicable.'},
+        {tipo:'Capacitación',desc:'Capacitación específica documentada y evaluación de competencias.'}
+      ],
+      intolerable:[
+        {tipo:'Eliminación',desc:'⚠ DETENER LA ACTIVIDAD. Eliminar el peligro en su origen antes de continuar.'},
+        {tipo:'Rediseño',desc:'Replantear el proceso completo · análisis causa-raíz obligatorio.'},
+        {tipo:'Aprobación',desc:'Autorización formal de la dirección para reanudar con plan documentado.'}
+      ]
+    };
+    return controles[nivel] || [];
+  }
+
+  function generarFolio(){
+    return 'IMDIIL-IPER-' + Math.floor(10000 + Math.random()*89999);
+  }
+
+  function save(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+  }
+  function load(){
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      if (v) {
+        const parsed = JSON.parse(v);
+        if (parsed && parsed.folio) state = {...state, ...parsed, draft:{desc:'',cat:'Mecánico',P:null,S:null}};
+      }
+    } catch(e){}
+  }
+
+  function open(){
+    load();
+    if (!state.folio) state.folio = generarFolio();
+    save();
+
+    const body = `<div class="iper" id="iper-root"></div>`;
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="iper-reset">Nuevo análisis</button>
+      <button class="btn btn--ghost" id="iper-close">Cerrar</button>
+      <button class="btn btn--accent" id="iper-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>
+    `;
+    const m = Modal.open({
+      id:'iper-tool',
+      title:'Matriz IPER',
+      subtitle:state.folio,
+      icon:'i-shield-check',
+      size:'lg',
+      body,
+      footer,
+      onClose(){ save(); }
+    });
+
+    footer.querySelector('#iper-close').addEventListener('click', () => m.close());
+    footer.querySelector('#iper-reset').addEventListener('click', () => {
+      if (state.peligros.length > 0 && !confirm('¿Iniciar un nuevo análisis IPER? Se perderá el actual.')) return;
+      state = {folio:generarFolio(),setup:{empresa:'',area:'',actividad:'',evaluador:'Ingeniero',fecha:new Date().toISOString().slice(0,10)},peligros:[],tab:'setup',draft:{desc:'',cat:'Mecánico',P:null,S:null}};
+      save();
+      document.querySelector('.modal__subtitle').textContent = state.folio;
+      render();
+      Toast.info('Nuevo análisis','Folio: '+state.folio);
+    });
+    footer.querySelector('#iper-pdf').addEventListener('click', () => generarPDF());
+
+    render();
+  }
+
+  function render(){
+    const root = document.getElementById('iper-root');
+    if (!root) return;
+    root.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <span class="iper__folio">${state.folio}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-3);font-weight:500;">${state.peligros.length} peligros · actualizado ${new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short'})}</span>
+      </div>
+      <div class="iper-tabs">
+        <button class="iper-tab ${state.tab==='setup'?'is-active':''}" data-itab="setup"><svg class="ic"><use href="#i-clipboard-check"/></svg>Datos</button>
+        <button class="iper-tab ${state.tab==='peligros'?'is-active':''}" data-itab="peligros"><svg class="ic"><use href="#i-alert-circle"/></svg>Peligros<span class="iper-tab__num">${state.peligros.length}</span></button>
+        <button class="iper-tab ${state.tab==='matriz'?'is-active':''}" data-itab="matriz"><svg class="ic"><use href="#i-chart-bar"/></svg>Matriz</button>
+        <button class="iper-tab ${state.tab==='controles'?'is-active':''}" data-itab="controles"><svg class="ic"><use href="#i-shield-check"/></svg>Controles</button>
+      </div>
+      <div class="iper-pane ${state.tab==='setup'?'is-active':''}" id="pane-setup"></div>
+      <div class="iper-pane ${state.tab==='peligros'?'is-active':''}" id="pane-peligros"></div>
+      <div class="iper-pane ${state.tab==='matriz'?'is-active':''}" id="pane-matriz"></div>
+      <div class="iper-pane ${state.tab==='controles'?'is-active':''}" id="pane-controles"></div>
+    `;
+    root.querySelectorAll('[data-itab]').forEach(b => b.addEventListener('click', () => { state.tab = b.dataset.itab; save(); render(); }));
+    if (state.tab === 'setup') renderSetup();
+    else if (state.tab === 'peligros') renderPeligros();
+    else if (state.tab === 'matriz') renderMatriz();
+    else if (state.tab === 'controles') renderControles();
+  }
+
+  function renderSetup(){
+    const p = document.getElementById('pane-setup');
+    p.innerHTML = `
+      <div class="iper-form">
+        <div class="iper-form__field iper-form__field--full">
+          <label class="iper-form__label">Empresa o centro de trabajo</label>
+          <input type="text" class="input" id="iper-empresa" value="${state.setup.empresa.replace(/"/g,'&quot;')}" placeholder="Ej: Industrias del Centro SA de CV">
+        </div>
+        <div class="iper-form__field">
+          <label class="iper-form__label">Área evaluada</label>
+          <input type="text" class="input" id="iper-area" value="${state.setup.area.replace(/"/g,'&quot;')}" placeholder="Ej: Producción línea 3">
+        </div>
+        <div class="iper-form__field">
+          <label class="iper-form__label">Actividad / proceso</label>
+          <input type="text" class="input" id="iper-actividad" value="${state.setup.actividad.replace(/"/g,'&quot;')}" placeholder="Ej: Soldadura MIG en mesa">
+        </div>
+        <div class="iper-form__field">
+          <label class="iper-form__label">Evaluador</label>
+          <input type="text" class="input" id="iper-evaluador" value="${state.setup.evaluador.replace(/"/g,'&quot;')}" placeholder="Nombre del responsable">
+        </div>
+        <div class="iper-form__field">
+          <label class="iper-form__label">Fecha de evaluación</label>
+          <input type="date" class="input" id="iper-fecha" value="${state.setup.fecha}">
+        </div>
+        <div class="iper-form__field iper-form__field--full" style="margin-top:6px;">
+          <button class="btn btn--accent" id="iper-next">Siguiente: agregar peligros<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+        </div>
+      </div>
+    `;
+    ['empresa','area','actividad','evaluador','fecha'].forEach(k=>{
+      p.querySelector('#iper-'+k).addEventListener('input', e => { state.setup[k] = e.target.value; save(); });
+    });
+    p.querySelector('#iper-next').addEventListener('click', () => { state.tab = 'peligros'; save(); render(); });
+  }
+
+  function renderPeligros(){
+    const p = document.getElementById('pane-peligros');
+    const d = state.draft;
+    const score = (d.P && d.S) ? d.P*d.S : null;
+    const cls = score ? clasificar(score) : null;
+
+    p.innerHTML = `
+      <div class="iper-add">
+        <div class="iper-add__header">
+          <div class="iper-add__icon"><svg class="ic"><use href="#i-alert-circle"/></svg></div>
+          <div><div class="iper-add__title">Agregar nuevo peligro</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);font-weight:500;letter-spacing:.4px;margin-top:1px;">Metodología P × S · escala 1-5</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="iper-form__field">
+            <label class="iper-form__label">Descripción del peligro</label>
+            <textarea class="textarea" id="d-desc" placeholder="Describe el peligro identificado…" style="min-height:60px;">${d.desc.replace(/</g,'&lt;')}</textarea>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;" id="d-suggest"></div>
+          </div>
+          <div class="iper-form__field">
+            <label class="iper-form__label">Categoría</label>
+            <select class="select" id="d-cat">
+              ${CAT_PELIGROS.map(c => `<option value="${c.cat}" ${d.cat===c.cat?'selected':''}>${c.cat}</option>`).join('')}
+            </select>
+          </div>
+          <div class="iper-add__grid">
+            <div class="iper-scale">
+              <div class="iper-scale__label">Probabilidad (P)</div>
+              <div class="iper-scale__row" id="d-P">
+                ${[1,2,3,4,5].map(v => `<button class="iper-scale__btn ${d.P===v?'is-active':''}" data-p="${v}" title="${ESCALA_P[v-1].nombre}: ${ESCALA_P[v-1].desc}">${v}</button>`).join('')}
+              </div>
+              ${d.P ? `<div style="font-size:11px;color:var(--text-2);margin-top:6px;line-height:1.4;"><strong style="color:var(--primary);">${ESCALA_P[d.P-1].nombre}:</strong> ${ESCALA_P[d.P-1].desc}</div>` : '<div style="font-size:10.5px;color:var(--text-3);margin-top:6px;font-family:JetBrains Mono,monospace;letter-spacing:.3px;">Selecciona del 1 al 5</div>'}
+            </div>
+            <div class="iper-scale">
+              <div class="iper-scale__label">Severidad (S)</div>
+              <div class="iper-scale__row" id="d-S">
+                ${[1,2,3,4,5].map(v => `<button class="iper-scale__btn ${d.S===v?'is-active':''}" data-s="${v}" title="${ESCALA_S[v-1].nombre}: ${ESCALA_S[v-1].desc}">${v}</button>`).join('')}
+              </div>
+              ${d.S ? `<div style="font-size:11px;color:var(--text-2);margin-top:6px;line-height:1.4;"><strong style="color:var(--primary);">${ESCALA_S[d.S-1].nombre}:</strong> ${ESCALA_S[d.S-1].desc}</div>` : '<div style="font-size:10.5px;color:var(--text-3);margin-top:6px;font-family:JetBrains Mono,monospace;letter-spacing:.3px;">Selecciona del 1 al 5</div>'}
+            </div>
+          </div>
+          ${score ? `
+            <div class="iper-result-preview riesgo-${cls.key}">
+              <div class="iper-result-preview__score" style="color:${cls.color};">${score}</div>
+              <div class="iper-result-preview__info">
+                <div class="iper-result-preview__level">Nivel ${cls.nombre}</div>
+                <div class="iper-result-preview__cat">P:${d.P} × S:${d.S} · ${cls.accion}</div>
+              </div>
+              <span class="iper-result-pill">${cls.nombre}</span>
+            </div>
+            <button class="btn btn--accent" id="d-add" style="margin-top:4px;">Agregar a la lista<svg class="ic"><use href="#i-check"/></svg></button>
+          ` : ''}
+        </div>
+      </div>
+
+      ${state.peligros.length === 0 ? `
+        <div class="iper-empty">
+          <div class="iper-empty__icon"><svg class="ic ic--xl"><use href="#i-shield-check"/></svg></div>
+          <h4>Sin peligros aún</h4>
+          <p>Empieza describiendo el primer peligro identificado en el área.</p>
+        </div>
+      ` : `
+        <div class="iper-list" id="iper-list">
+          ${state.peligros.map((peligro,i) => {
+            const c = clasificar(peligro.score);
+            return `
+              <div class="iper-row riesgo-${c.key}" style="--level-color:${c.color};">
+                <div class="iper-row__num">${i+1}</div>
+                <div class="iper-row__body">
+                  <div class="iper-row__title">${peligro.desc.replace(/</g,'&lt;')}</div>
+                  <div class="iper-row__meta">
+                    <span>${peligro.cat}</span>
+                    <span>P:${peligro.P} × S:${peligro.S}</span>
+                    <span style="color:${c.color};font-weight:700;">${c.nombre.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div class="iper-row__score" style="color:${c.color};">${peligro.score}</div>
+                <button class="iper-row__del" data-del="${i}" aria-label="Eliminar"><svg class="ic"><use href="#i-close"/></svg></button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `}
+    `;
+
+    // Sugerencias
+    const sg = p.querySelector('#d-suggest');
+    const ejemplos = CAT_PELIGROS.find(c => c.cat === d.cat)?.ejemplos || [];
+    sg.innerHTML = ejemplos.slice(0,4).map(ej => `<button class="tag tag--soon" style="cursor:pointer;padding:5px 10px;" data-ej="${ej.replace(/"/g,'&quot;')}">${ej}</button>`).join('');
+    sg.querySelectorAll('[data-ej]').forEach(b => b.addEventListener('click', () => { state.draft.desc = b.dataset.ej; save(); renderPeligros(); }));
+
+    // Inputs
+    p.querySelector('#d-desc').addEventListener('input', e => { state.draft.desc = e.target.value; save(); });
+    p.querySelector('#d-cat').addEventListener('change', e => { state.draft.cat = e.target.value; save(); renderPeligros(); });
+    p.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => { state.draft.P = parseInt(b.dataset.p); save(); renderPeligros(); }));
+    p.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => { state.draft.S = parseInt(b.dataset.s); save(); renderPeligros(); }));
+
+    const addBtn = p.querySelector('#d-add');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const d = state.draft;
+        if (!d.desc.trim()) { Toast.error('Falta descripción','Describe el peligro antes de agregar.'); return; }
+        if (!d.P || !d.S) { Toast.error('Faltan valores','Selecciona P y S del 1 al 5.'); return; }
+        state.peligros.push({desc:d.desc.trim(),cat:d.cat,P:d.P,S:d.S,score:d.P*d.S,fecha:new Date().toISOString()});
+        state.draft = {desc:'',cat:d.cat,P:null,S:null};
+        save();
+        Toast.success('Peligro agregado','#'+state.peligros.length+' · '+clasificar(d.P*d.S).nombre);
+        renderPeligros();
+      });
+    }
+
+    // Eliminar
+    p.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      const i = parseInt(b.dataset.del);
+      if (confirm('¿Eliminar peligro #'+(i+1)+'?')) {
+        state.peligros.splice(i,1); save(); renderPeligros();
+        Toast.info('Peligro eliminado','Quedan '+state.peligros.length+' peligros');
+      }
+    }));
+  }
+
+  function renderMatriz(){
+    const p = document.getElementById('pane-matriz');
+    // Conteo por celda (P, S)
+    const grid = {};
+    state.peligros.forEach(pe => {
+      const k = pe.P+'-'+pe.S;
+      grid[k] = (grid[k] || 0) + 1;
+    });
+
+    // Resumen por nivel
+    const niveles = {trivial:0,tolerable:0,moderado:0,importante:0,intolerable:0};
+    state.peligros.forEach(pe => { niveles[clasificar(pe.score).key]++; });
+
+    let matrizHTML = '<div class="matriz">';
+    matrizHTML += `<div class="matriz__corner"><small>P↓<br>S→</small></div>`;
+    for (let s = 1; s <= 5; s++) matrizHTML += `<div class="matriz__col-label">${s}<br><small style="font-size:7.5px;color:var(--text-3);">${ESCALA_S[s-1].nombre.slice(0,5)}</small></div>`;
+    for (let pp = 5; pp >= 1; pp--){
+      matrizHTML += `<div class="matriz__row-label">${pp}<br><small style="font-size:7.5px;color:var(--text-3);">${ESCALA_P[pp-1].nombre.slice(0,5)}</small></div>`;
+      for (let s = 1; s <= 5; s++){
+        const score = pp*s;
+        const c = clasificar(score);
+        const count = grid[pp+'-'+s] || 0;
+        matrizHTML += `<div class="matriz__cell riesgo-${c.key} ${count?'matriz__cell--has':''}" title="P:${pp} × S:${s} = ${score} (${c.nombre})${count?' · '+count+' peligros':''}">${score}${count?`<span class="matriz__cell-count">${count}</span>`:''}</div>`;
+      }
+    }
+    matrizHTML += '</div>';
+
+    p.innerHTML = `
+      <div class="iper-summary">
+        <div class="iper-stat riesgo-trivial"><div class="iper-stat__lbl">Trivial</div><div class="iper-stat__val">${niveles.trivial}</div></div>
+        <div class="iper-stat riesgo-tolerable"><div class="iper-stat__lbl">Tolerable</div><div class="iper-stat__val">${niveles.tolerable}</div></div>
+        <div class="iper-stat riesgo-moderado"><div class="iper-stat__lbl">Moderado</div><div class="iper-stat__val">${niveles.moderado}</div></div>
+        <div class="iper-stat riesgo-importante"><div class="iper-stat__lbl">Importante</div><div class="iper-stat__val">${niveles.importante}</div></div>
+        <div class="iper-stat riesgo-intolerable"><div class="iper-stat__lbl">Intolerable</div><div class="iper-stat__val">${niveles.intolerable}</div></div>
+      </div>
+      <div class="matriz-wrap">
+        <div class="matriz-legend">
+          <span>Probabilidad ↑ × Severidad →</span>
+          <span>${state.peligros.length} peligros plotteados</span>
+        </div>
+        ${matrizHTML}
+        <div class="matriz-key">
+          <div class="matriz-key__item riesgo-trivial"><span class="matriz-key__dot"></span>Trivial <span class="matriz-key__range">1-3</span></div>
+          <div class="matriz-key__item riesgo-tolerable"><span class="matriz-key__dot"></span>Tolerable <span class="matriz-key__range">4-8</span></div>
+          <div class="matriz-key__item riesgo-moderado"><span class="matriz-key__dot"></span>Moderado <span class="matriz-key__range">9-12</span></div>
+          <div class="matriz-key__item riesgo-importante"><span class="matriz-key__dot"></span>Importante <span class="matriz-key__range">15-20</span></div>
+          <div class="matriz-key__item riesgo-intolerable"><span class="matriz-key__dot"></span>Intolerable <span class="matriz-key__range">25</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderControles(){
+    const p = document.getElementById('pane-controles');
+    if (state.peligros.length === 0){
+      p.innerHTML = `<div class="iper-empty"><div class="iper-empty__icon"><svg class="ic ic--xl"><use href="#i-shield-check"/></svg></div><h4>Sin peligros para evaluar</h4><p>Agrega peligros primero para ver los controles recomendados según la jerarquía STPS.</p></div>`;
+      return;
+    }
+    // Agrupar peligros por nivel de riesgo
+    const grupos = {trivial:[],tolerable:[],moderado:[],importante:[],intolerable:[]};
+    state.peligros.forEach((pe,i) => grupos[clasificar(pe.score).key].push({...pe,idx:i+1}));
+    const niveles = ['intolerable','importante','moderado','tolerable','trivial'];
+    let html = '';
+    niveles.forEach(nivel => {
+      const lista = grupos[nivel];
+      if (lista.length === 0) return;
+      const c = clasificar(nivel==='trivial'?1:nivel==='tolerable'?4:nivel==='moderado'?9:nivel==='importante'?15:25);
+      const ctrls = controlesRecomendados(nivel);
+      html += `
+        <div style="margin-bottom:18px;" class="riesgo-${nivel}">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:${c.color};margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:${c.color};animation:pulseDotSmall 1.6s ease-out infinite;"></span>
+            ${c.nombre} · ${lista.length} peligro${lista.length>1?'s':''}
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);margin-bottom:10px;padding:8px 12px;background:var(--level-bg);border-radius:8px;border:0.5px solid color-mix(in srgb,${c.color} 25%,transparent);">
+            ${lista.map(pe => `<span style="display:inline-block;margin-right:10px;"><strong>#${pe.idx}</strong> ${pe.desc.slice(0,38)}${pe.desc.length>38?'…':''}</span>`).join('')}
+          </div>
+          <div class="iper-controls">
+            ${ctrls.map(ct => `
+              <div class="control-row" style="--level-color:${c.color};--level-bg:color-mix(in srgb,${c.color} 12%,transparent);">
+                <div class="control-row__icon"><svg class="ic ic--lg"><use href="#i-shield-check"/></svg></div>
+                <div class="control-row__body">
+                  <div class="control-row__title">${ct.tipo}<span class="control-row__count">jerarquía STPS</span></div>
+                  <div class="control-row__desc">${ct.desc}</div>
+                  <div class="control-row__plan">Aplicar a ${lista.length} peligro${lista.length>1?'s':''} clasificado${lista.length>1?'s':''} como ${c.nombre.toLowerCase()}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+    p.innerHTML = html;
+  }
+
+  function generarPDF(){
+    if (state.peligros.length === 0) {
+      Toast.error('Sin datos','Agrega al menos un peligro antes de generar el PDF.');
+      return;
+    }
+    if (!window.jspdf) { Toast.error('Generador no disponible','Verifica conexión.'); return; }
+    try {
+      const {jsPDF} = window.jspdf;
+      const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      const W = 210, H = 297, MARGIN = 16;
+      let y = MARGIN;
+
+      // Header
+      pdf.setFillColor(255,122,45); pdf.rect(0,0,W,6,'F');
+      pdf.setFillColor(26,20,16); pdf.rect(0,6,W,3,'F');
+      y = 20;
+      pdf.setFontSize(14); pdf.setTextColor(26,20,16); pdf.setFont(undefined,'bold');
+      pdf.text('MATRIZ IPER · Identificación de Peligros y Evaluación de Riesgos', MARGIN, y);
+      pdf.setFont(undefined,'normal');
+      y += 6;
+      pdf.setFontSize(9); pdf.setTextColor(120,108,90);
+      pdf.text('IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística', MARGIN, y);
+      y += 4;
+      pdf.text('Folio: '+state.folio+' · Generado: '+new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'}), MARGIN, y);
+
+      // Datos
+      y += 9;
+      pdf.setFontSize(10); pdf.setTextColor(26,20,16); pdf.setFont(undefined,'bold');
+      pdf.text('DATOS GENERALES', MARGIN, y);
+      pdf.setFont(undefined,'normal'); pdf.setFontSize(9);
+      y += 6;
+      const datos = [
+        ['Empresa', state.setup.empresa || '—'],
+        ['Área', state.setup.area || '—'],
+        ['Actividad', state.setup.actividad || '—'],
+        ['Evaluador', state.setup.evaluador || '—'],
+        ['Fecha', state.setup.fecha || '—']
+      ];
+      datos.forEach(([l,v]) => {
+        pdf.setTextColor(120,108,90); pdf.text(l+':', MARGIN, y);
+        pdf.setTextColor(26,20,16); pdf.text(v, MARGIN+30, y);
+        y += 5;
+      });
+
+      // Resumen
+      y += 4;
+      pdf.setFont(undefined,'bold'); pdf.setFontSize(10);
+      pdf.text('RESUMEN POR NIVEL DE RIESGO', MARGIN, y);
+      pdf.setFont(undefined,'normal'); pdf.setFontSize(9);
+      y += 6;
+      const niv = {trivial:0,tolerable:0,moderado:0,importante:0,intolerable:0};
+      state.peligros.forEach(pe => niv[clasificar(pe.score).key]++);
+      const nivLabels = [
+        ['Trivial',niv.trivial,[16,185,129]],
+        ['Tolerable',niv.tolerable,[132,204,22]],
+        ['Moderado',niv.moderado,[251,191,36]],
+        ['Importante',niv.importante,[251,146,60]],
+        ['Intolerable',niv.intolerable,[239,68,68]]
+      ];
+      let x = MARGIN;
+      const boxW = (W - 2*MARGIN) / 5 - 2;
+      nivLabels.forEach(([lbl,cnt,rgb]) => {
+        pdf.setFillColor(rgb[0],rgb[1],rgb[2],0.14*255);
+        pdf.setDrawColor(rgb[0],rgb[1],rgb[2]);
+        pdf.roundedRect(x,y,boxW,16,2,2,'FD');
+        pdf.setFontSize(8); pdf.setTextColor(rgb[0],rgb[1],rgb[2]);
+        pdf.text(lbl.toUpperCase(), x+boxW/2, y+5, {align:'center'});
+        pdf.setFontSize(14); pdf.setFont(undefined,'bold');
+        pdf.text(String(cnt), x+boxW/2, y+13, {align:'center'});
+        pdf.setFont(undefined,'normal');
+        x += boxW+2;
+      });
+      y += 22;
+
+      // Tabla peligros
+      pdf.setFont(undefined,'bold'); pdf.setFontSize(10); pdf.setTextColor(26,20,16);
+      pdf.text('PELIGROS IDENTIFICADOS ('+state.peligros.length+')', MARGIN, y);
+      pdf.setFont(undefined,'normal'); pdf.setFontSize(8);
+      y += 6;
+
+      const rows = state.peligros.map((pe,i) => {
+        const c = clasificar(pe.score);
+        return [String(i+1),pe.desc.slice(0,55),pe.cat,String(pe.P),String(pe.S),String(pe.score),c.nombre];
+      });
+
+      pdf.autoTable({
+        startY: y,
+        head: [['#','Peligro','Categoría','P','S','Score','Nivel']],
+        body: rows,
+        theme:'grid',
+        styles:{fontSize:8,cellPadding:2,textColor:[40,30,20]},
+        headStyles:{fillColor:[26,20,16],textColor:[255,255,255],fontSize:8,fontStyle:'bold'},
+        columnStyles:{0:{cellWidth:8,halign:'center'},3:{cellWidth:8,halign:'center'},4:{cellWidth:8,halign:'center'},5:{cellWidth:12,halign:'center',fontStyle:'bold'},6:{cellWidth:22,halign:'center',fontStyle:'bold'}},
+        didParseCell:(d) => {
+          if (d.section === 'body' && d.column.index === 6) {
+            const nivel = d.cell.raw;
+            const colors = {'Trivial':[16,185,129],'Tolerable':[132,204,22],'Moderado':[251,191,36],'Importante':[251,146,60],'Intolerable':[239,68,68]};
+            const c = colors[nivel];
+            if (c) { d.cell.styles.textColor = c; }
+          }
+        }
+      });
+
+      y = pdf.lastAutoTable.finalY + 8;
+      if (y > H - 30) { pdf.addPage(); y = MARGIN; }
+
+      // Controles
+      pdf.setFont(undefined,'bold'); pdf.setFontSize(10); pdf.setTextColor(26,20,16);
+      pdf.text('CONTROLES RECOMENDADOS · Jerarquía STPS', MARGIN, y);
+      pdf.setFont(undefined,'normal'); pdf.setFontSize(8);
+      y += 5;
+      const nivelesOrdenados = ['intolerable','importante','moderado','tolerable','trivial'];
+      const grupos = {trivial:[],tolerable:[],moderado:[],importante:[],intolerable:[]};
+      state.peligros.forEach((pe,i) => grupos[clasificar(pe.score).key].push(i+1));
+
+      nivelesOrdenados.forEach(n => {
+        if (grupos[n].length === 0) return;
+        if (y > H - 50) { pdf.addPage(); y = MARGIN; }
+        const c = clasificar(n==='trivial'?1:n==='tolerable'?4:n==='moderado'?9:n==='importante'?15:25);
+        const rgb = n==='trivial'?[16,185,129]:n==='tolerable'?[132,204,22]:n==='moderado'?[251,191,36]:n==='importante'?[251,146,60]:[239,68,68];
+        pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(rgb[0],rgb[1],rgb[2]);
+        pdf.text(c.nombre.toUpperCase()+' · peligros #'+grupos[n].join(', #'), MARGIN, y+5);
+        y += 8;
+        pdf.setFont(undefined,'normal'); pdf.setFontSize(8); pdf.setTextColor(60,52,42);
+        controlesRecomendados(n).forEach(ct => {
+          const lines = pdf.splitTextToSize('• '+ct.tipo+': '+ct.desc, W - 2*MARGIN);
+          pdf.text(lines, MARGIN, y);
+          y += lines.length*4 + 1;
+        });
+        y += 3;
+      });
+
+      // Footer
+      const pageCount = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(7); pdf.setTextColor(160,148,130);
+        pdf.text('IMDIIL · '+state.folio+' · Página '+i+' de '+pageCount, W/2, H-8, {align:'center'});
+        pdf.text('Verifica en imdiil.com/verificar', W-MARGIN, H-8, {align:'right'});
+      }
+
+      pdf.save('iper-'+state.folio+'.pdf');
+      Toast.success('PDF descargado',state.folio);
+    } catch(e) {
+      console.error(e);
+      Toast.error('Error generando PDF',e.message||'Intenta de nuevo');
+    }
+  }
+
+  return {open};
+})();
 
 function navigateToSection(section){
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(n=>n.classList.remove('is-active'));
