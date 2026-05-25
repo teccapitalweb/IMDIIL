@@ -1517,6 +1517,761 @@ aside.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-rad
   }
 }
 
+
+/* ===== SPRINT 3.1 ===== */
+/* ========================================================================
+   Sprint 3.1 · Estilos de las 4 secciones nuevas
+   ======================================================================== */
+
+/* ---------- Empty state genérico ---------- */
+.empty-state {
+  padding: 60px 24px;
+  text-align: center;
+  background: var(--surface);
+  border: 0.5px dashed var(--border-2);
+  border-radius: 16px;
+}
+.empty-state__icon {
+  width: 72px; height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+}
+.empty-state h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--text-2); max-width: 360px; margin: 0 auto; line-height: 1.5; }
+
+/* ========================================================================
+   MIS CURSOS
+   ======================================================================== */
+.cursos-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cursos-bar__filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cursos-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.curso-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 0;
+  display: flex;
+  gap: 0;
+  cursor: pointer;
+  transition: transform .2s, border-color .2s, box-shadow .25s;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+.curso-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-card);
+}
+.curso-card__cover {
+  flex: 0 0 90px;
+  background: linear-gradient(135deg, var(--area-color, var(--primary)), color-mix(in srgb, var(--area-color, var(--primary)) 70%, #000));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.curso-card__cover .ic { width: 32px; height: 32px; opacity: .95; }
+.curso-card__body {
+  padding: 16px 18px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.curso-card__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.curso-card__title {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.2px;
+  line-height: 1.3;
+}
+.curso-card__desc {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.curso-card__meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-3);
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.curso-card__meta span { display: inline-flex; align-items: center; gap: 4px; }
+.curso-card__progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Curso detalle (en modal) */
+.curso-detalle__hero {
+  display: flex;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  align-items: flex-start;
+}
+.curso-detalle__hero-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.curso-detalle__hero h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -.3px;
+  margin-top: 6px;
+}
+.curso-detalle__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.curso-detalle__meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.curso-detalle__meta span { display: inline-flex; align-items: center; gap: 4px; }
+.curso-detalle__desc { font-size: 13.5px; color: var(--text-2); line-height: 1.6; margin-top: 16px; }
+.curso-detalle__progress-card {
+  margin-top: 16px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.curso-detalle__progress-card > div:first-child { flex-shrink: 0; }
+.curso-detalle__progress-label { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+.curso-detalle__progress-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px; font-weight: 500;
+  color: var(--primary);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.curso-detalle__progress-value span { font-size: 14px; opacity: .6; margin-left: 2px; }
+.curso-detalle__h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 22px;
+}
+.modulos-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.modulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+}
+.modulo.is-done { background: color-mix(in srgb, var(--success) 6%, var(--surface)); }
+.modulo__num {
+  width: 28px; height: 28px;
+  border-radius: 100px;
+  background: var(--surface-3);
+  color: var(--text-2);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 12px;
+  flex-shrink: 0;
+}
+.modulo.is-done .modulo__num { background: var(--success); color: #fff; }
+.modulo.is-done .modulo__num .ic { width: 14px; height: 14px; stroke-width: 2.5; }
+.modulo__body { flex: 1; min-width: 0; }
+.modulo__title { font-size: 13.5px; font-weight: 500; }
+.modulo__meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.modulo__tag {
+  font-size: 10px;
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+  padding: 3px 8px;
+  border-radius: 100px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+
+/* ========================================================================
+   CERTIFICADOS
+   ======================================================================== */
+.certs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.cert-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border-2);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .25s, border-color .2s;
+  position: relative;
+}
+.cert-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 32px rgba(0,0,0,.1);
+}
+.cert-card__top {
+  background: linear-gradient(135deg, var(--primary), var(--primary-deep, #E85A14));
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+}
+.cert-card__seal {
+  width: 48px; height: 48px;
+  color: #fff;
+}
+.cert-card__qr {
+  flex-shrink: 0;
+}
+.cert-card__body {
+  padding: 18px 22px 22px;
+}
+.cert-card__label {
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.cert-card__title {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.2px;
+  line-height: 1.35;
+  margin-top: 6px;
+}
+.cert-card__meta {
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.cert-card__meta span { display: inline-flex; align-items: center; gap: 4px; }
+.cert-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--border);
+}
+.cert-card__folio {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 500;
+  letter-spacing: -.2px;
+}
+.cert-card__verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Cert preview en modal — estilo postal premium */
+.cert-preview {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}
+.cert-preview__paper {
+  background: #FBF6EB;
+  color: #1A1410;
+  border-radius: 14px;
+  padding: 36px 44px;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,.18);
+}
+.cert-preview__border-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #FF7A2D, #FFB347, #FF7A2D);
+}
+.cert-preview__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(26,20,16,.12);
+}
+.cert-preview__brand-name { font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 600; letter-spacing: -.2px; }
+.cert-preview__brand-sub { font-size: 9.5px; color: #5A5044; letter-spacing: .3px; margin-top: 2px; }
+.cert-preview__eyebrow {
+  margin-top: 22px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #5A5044;
+  font-weight: 600;
+}
+.cert-preview__otorga { font-size: 12px; color: #5A5044; margin-top: 10px; }
+.cert-preview__name {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+  margin-top: 6px;
+  color: #1A1410;
+}
+.cert-preview__por { font-size: 12px; color: #5A5044; margin-top: 14px; }
+.cert-preview__curso {
+  font-family: 'Inter', sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -.3px;
+  line-height: 1.3;
+  margin-top: 6px;
+  color: #1A1410;
+}
+.cert-preview__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(26,20,16,.12);
+  border-bottom: 1px solid rgba(26,20,16,.12);
+}
+.cert-preview__stats > div .l1 { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #8A7F70; font-weight: 600; }
+.cert-preview__stats > div .l2 { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; margin-top: 3px; color: #1A1410; }
+.cert-preview__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 30px;
+}
+.cert-preview__sign { flex: 1; }
+.cert-preview__sign-line { width: 180px; height: 1px; background: rgba(26,20,16,.4); margin-bottom: 5px; }
+.cert-preview__sign-label { font-size: 11px; font-weight: 600; color: #1A1410; }
+.cert-preview__sign-sub { font-size: 9.5px; color: #8A7F70; letter-spacing: .5px; text-transform: uppercase; margin-top: 1px; }
+.cert-preview__qr { text-align: center; }
+.cert-preview__folio {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #5A5044;
+  margin-top: 4px;
+  letter-spacing: -.2px;
+}
+
+/* ========================================================================
+   LOGROS
+   ======================================================================== */
+.logro-hero {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.logro-hero__nivel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.logro-hero__nivel-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-deep, #E85A14));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logro-hero__nivel-label { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+.logro-hero__nivel-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px; font-weight: 600;
+  letter-spacing: -.5px;
+}
+.logro-hero__racha {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border: 0.5px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  padding: 8px 14px;
+  border-radius: 100px;
+}
+.logro-hero__racha-icon { color: var(--primary); }
+.logro-hero__racha-icon .ic { width: 18px; height: 18px; }
+.logro-hero__racha-label { font-size: 9.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+.logro-hero__racha-value { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; color: var(--primary); }
+.logro-hero__xp-bar {
+  height: 12px;
+  background: var(--surface-2);
+  border-radius: 100px;
+  overflow: hidden;
+  position: relative;
+}
+.logro-hero__xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--highlight), var(--primary));
+  border-radius: 100px;
+  transition: width 1s ease;
+}
+.logro-hero__xp-text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+.logro-hero__xp-text strong { color: var(--text); font-weight: 600; }
+
+.logros-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+.logro {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform .2s, border-color .2s, box-shadow .25s;
+  position: relative;
+}
+.logro:hover { transform: translateY(-2px); border-color: var(--border-2); box-shadow: var(--shadow-card); }
+.logro.is-locked { opacity: .5; }
+.logro.is-locked:hover { opacity: .8; }
+.logro__icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cat-color, var(--primary));
+  background: color-mix(in srgb, var(--cat-color, var(--primary)) 14%, transparent);
+}
+.logro.is-unlocked .logro__icon {
+  background: var(--cat-color, var(--primary));
+  color: #fff;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--cat-color, var(--primary)) 28%, transparent);
+}
+.logro__name {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.logro__xp {
+  font-size: 10px;
+  color: var(--text-3);
+  font-weight: 600;
+  letter-spacing: .3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.logro.is-unlocked .logro__xp { color: var(--highlight); }
+
+/* Logro detalle modal */
+.logro-detalle { text-align: center; padding: 6px 8px 12px; }
+.logro-detalle__icon {
+  width: 80px; height: 80px;
+  margin: 0 auto 18px;
+  border-radius: 20px;
+  background: var(--cat-color, var(--primary));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--cat-color, var(--primary)) 30%, transparent);
+}
+.logro-detalle__name {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.4px;
+}
+.logro-detalle__desc {
+  font-size: 13.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin-top: 6px;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.logro-detalle__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 22px;
+}
+.logro-detalle__stats > div {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.logro-detalle__stats .l1 { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+.logro-detalle__stats .l2 { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; margin-top: 3px; }
+.logro-detalle__criterio {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 14px;
+  text-align: left;
+}
+.logro-detalle__criterio-label {
+  font-size: 9.5px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.logro-detalle__criterio-text { font-size: 13px; line-height: 1.5; margin-top: 4px; }
+.logro-detalle__unlock {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ========================================================================
+   CLASES EN VIVO (webinars)
+   ======================================================================== */
+.webinar-hero {
+  background: var(--surface);
+  border: 0.5px solid var(--border-2);
+  border-radius: 18px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-card);
+}
+.webinar-hero__info { flex: 1; min-width: 280px; }
+.webinar-hero__title {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -.5px;
+  line-height: 1.2;
+  margin-top: 10px;
+}
+.webinar-hero__meta {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.webinar-hero__meta span { display: inline-flex; align-items: center; gap: 5px; }
+.webinar-hero__desc { font-size: 13.5px; color: var(--text-2); line-height: 1.55; margin-top: 14px; }
+.webinar-hero__actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.webinar-hero__countdown { display: flex; gap: 8px; flex-shrink: 0; }
+
+.webinars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.webinar-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .2s, border-color .2s, box-shadow .25s;
+}
+.webinar-card:hover { transform: translateY(-2px); border-color: var(--border-2); box-shadow: var(--shadow-card); }
+.webinar-card__cover {
+  background: linear-gradient(135deg, var(--area-color, var(--primary)), color-mix(in srgb, var(--area-color, var(--primary)) 65%, #000));
+  color: #fff;
+  height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.webinar-card__date {
+  text-align: center;
+  background: rgba(255,255,255,.95);
+  color: #1A1410;
+  border-radius: 10px;
+  padding: 6px 14px;
+  min-width: 60px;
+}
+.webinar-card__date-day {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px; font-weight: 600;
+  letter-spacing: -.8px;
+  line-height: 1;
+}
+.webinar-card__date-month {
+  font-size: 9px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 2px;
+}
+.webinar-card__play .ic { width: 36px; height: 36px; opacity: .95; }
+.webinar-card__badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: rgba(255,255,255,.95);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 100px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.webinar-card__badge--reg { color: var(--primary); }
+.webinar-card__badge--visto { color: var(--success); }
+.webinar-card__body { padding: 14px 16px 16px; }
+.webinar-card__tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.webinar-card__title {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -.1px;
+  line-height: 1.3;
+  margin-top: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.webinar-card__meta {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.webinar-card__meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Webinar detalle */
+.webinar-detalle__hero {
+  display: flex;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  align-items: center;
+}
+.webinar-detalle__date {
+  text-align: center;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 16px;
+  min-width: 64px;
+  flex-shrink: 0;
+}
+.webinar-detalle__date-day { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 600; letter-spacing: -.8px; line-height: 1; }
+.webinar-detalle__date-month { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; opacity: .9; margin-top: 3px; }
+.webinar-detalle__time { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 500; letter-spacing: -.2px; }
+.webinar-detalle__instructor { font-size: 12px; color: var(--text-2); display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; }
+.webinar-detalle__player {
+  background: #1a1410;
+  color: #fff;
+  border-radius: 14px;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.webinar-detalle__player-text { font-size: 13px; opacity: .8; }
+.webinar-detalle__player-sub { font-size: 11px; opacity: .5; }
+.webinar-detalle__progress { margin-top: 16px; }
+.webinar-detalle__progress-label { font-size: 11px; color: var(--text-3); margin-bottom: 6px; font-weight: 500; }
+
+/* ========================================================================
+   RESPONSIVE
+   ======================================================================== */
+@media (max-width: 980px){
+  .cursos-list { grid-template-columns: 1fr; }
+  .certs-grid { grid-template-columns: 1fr; }
+  .logros-grid { grid-template-columns: repeat(4, 1fr); }
+  .webinars-grid { grid-template-columns: repeat(2, 1fr); }
+  .webinar-hero { flex-direction: column; align-items: stretch; }
+  .webinar-hero__countdown { justify-content: space-between; }
+  .webinar-hero__countdown .countdown__cell { flex: 1; min-width: 0; }
+}
+@media (max-width: 560px){
+  .curso-card { flex-direction: column; }
+  .curso-card__cover { flex: 0 0 80px; }
+  .cursos-bar { flex-direction: column; align-items: stretch; }
+  .cursos-bar__filters { flex-direction: column; align-items: stretch; }
+  .cursos-bar__filters .select, .cursos-bar__filters .noms-toolbar__search { max-width: 100%; }
+  .logros-grid { grid-template-columns: repeat(2, 1fr); }
+  .webinars-grid { grid-template-columns: 1fr; }
+  .cert-preview__paper { padding: 26px 22px; }
+  .cert-preview__name { font-size: 24px; }
+  .cert-preview__stats { grid-template-columns: repeat(2, 1fr); }
+  .cert-preview__bottom { flex-direction: column; gap: 18px; align-items: flex-start; }
+}
+
 </style>
 </head>
 <body>
@@ -1622,8 +2377,7 @@ aside.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-rad
   </aside>
 
   <main class="main">
-
-    <header class="topbar">
+      <header class="topbar">
       <div class="topbar__left">
         <span class="pill"><svg class="ic"><use href="#i-crown"/></svg>Membresía activa</span>
       </div>
@@ -1638,6 +2392,10 @@ aside.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-rad
         </button>
       </div>
     </header>
+
+      <div id="inicio-content">
+
+    
 
     <section class="hero">
       <div class="hero__greeting" id="greeting-label">Bienvenido</div>
@@ -1776,7 +2534,10 @@ aside.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-rad
       </div>
     </section>
 
-  </main>
+  </div>
+
+      <div id="dynamic-section" style="display:none;"></div>
+    </main>
 </div>
 
 <nav class="mobile-nav">
@@ -2927,33 +3688,8 @@ aside.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-rad
      NAVIGATION (sidebar + mobile bottom nav)
      ======================================================================== */
   function initNavigation() {
-    document.querySelectorAll('.nav-item[data-section]').forEach(item => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const section = item.dataset.section;
-
-        // Resaltar visualmente
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('is-active'));
-        item.classList.add('is-active');
-
-        // Disparar evento global para que las herramientas escuchen
-        document.dispatchEvent(new CustomEvent('imdiil:navigate', { detail: { section } }));
-
-        // Si es una herramienta pro, abrirla
-        const toolHandlers = {
-          iper: () => global.IMDIILTools?.iper?.open(),
-          oee: () => global.IMDIILTools?.oee?.open(),
-          ats: () => global.IMDIILTools?.ats?.open(),
-          noms: () => global.IMDIILTools?.noms?.open(),
-          logistica: () => global.IMDIILTools?.logistica?.open()
-        };
-        if (toolHandlers[section]) {
-          toolHandlers[section]();
-        }
-      });
-    });
-
-    // Cards de herramientas (botones grandes en el body)
+    // Sidebar nav: el router se encarga (init() del IMDIILRouter)
+    // Aquí solo wireamos las cards de herramientas pro del body (#inicio)
     document.querySelectorAll('.tool[data-tool]').forEach(tool => {
       tool.addEventListener('click', () => {
         const which = tool.dataset.tool;
@@ -3040,6 +3776,1254 @@ aside.sidebar::-webkit-scrollbar-thumb { background: var(--border-2); border-rad
 
   global.IMDIILApp = App;
 })(window);
+
+
+/* ===== Sprint 3.1: Seed ===== */
+/* ========================================================================
+   IMDIIL VIP · Datos seed
+   Datos realistas del sector industrial mexicano para poblar las secciones.
+   En Sprint 4 esto vendrá de Firestore. Por ahora viven en memoria + localStorage.
+   ======================================================================== */
+(function(global){
+  'use strict';
+
+  const Seed = {
+    /* ========================================================================
+       CURSOS — catálogo completo
+       ======================================================================== */
+    cursos: [
+      // EN PROGRESO
+      { id:'c1', titulo:'NOM-019-STPS · Comisiones de seguridad e higiene', area:'Seguridad', nivel:'Intermedio', instructor:'Ing. Roberto Méndez', horas:12, modulos:8, progreso:65, status:'progreso', img:'helmet', desc:'Aprende a constituir, organizar y operar legalmente la comisión de seguridad e higiene en tu empresa según la NOM-019-STPS-2011.' },
+      { id:'c2', titulo:'Indicadores logísticos: OTIF, Fill Rate y rotación', area:'Logística', nivel:'Avanzado', instructor:'Ing. Carlos Vidal', horas:10, modulos:6, progreso:30, status:'progreso', img:'chart', desc:'Domina los KPIs críticos de la cadena de suministro y aprende a medirlos, interpretarlos y mejorarlos con casos reales de la industria mexicana.' },
+      { id:'c3', titulo:'Mantenimiento productivo total (TPM)', area:'Mantenimiento', nivel:'Intermedio', instructor:'Ing. Patricia Solís', horas:14, modulos:9, progreso:12, status:'progreso', img:'tools', desc:'Implementa los 8 pilares del TPM para reducir paros no programados, mejorar OEE y crear cultura de mantenimiento autónomo.' },
+
+      // COMPLETADOS
+      { id:'c4', titulo:'NOM-001-STPS · Edificios, locales e instalaciones', area:'Seguridad', nivel:'Básico', instructor:'Ing. Roberto Méndez', horas:8, modulos:5, progreso:100, status:'completado', img:'shield', desc:'Requisitos mínimos de seguridad en edificios, locales, instalaciones y áreas de los centros de trabajo.', completadoEn:'2026-04-18' },
+      { id:'c5', titulo:'Lean Manufacturing para supervisores', area:'Calidad', nivel:'Intermedio', instructor:'Ing. María López', horas:16, modulos:10, progreso:100, status:'completado', img:'gauge', desc:'Las 7 mudas, value stream mapping, 5S, kaizen y kanban aplicados al piso de planta.', completadoEn:'2026-03-22' },
+
+      // CATÁLOGO (no iniciados)
+      { id:'c6', titulo:'NOM-029-STPS · Mantenimiento de instalaciones eléctricas', area:'Seguridad', nivel:'Avanzado', instructor:'Ing. Roberto Méndez', horas:18, modulos:11, progreso:0, status:'catalogo', img:'bolt', desc:'Trabajo seguro en instalaciones eléctricas, LOTO, evaluación de riesgo eléctrico y EPP especializado.' },
+      { id:'c7', titulo:'Six Sigma Green Belt', area:'Calidad', nivel:'Avanzado', instructor:'Ing. María López', horas:40, modulos:24, progreso:0, status:'catalogo', img:'target', desc:'Certificación Green Belt con metodología DMAIC, herramientas estadísticas y proyecto real obligatorio.' },
+      { id:'c8', titulo:'WMS y gestión de almacenes 4.0', area:'Logística', nivel:'Intermedio', instructor:'Ing. Carlos Vidal', horas:12, modulos:8, progreso:0, status:'catalogo', img:'box', desc:'Diseño de layout, slotting, picking strategies, sistema WMS y digitalización del almacén.' },
+      { id:'c9', titulo:'ISO 45001 · Sistema de gestión SST', area:'Seguridad', nivel:'Avanzado', instructor:'Ing. Patricia Solís', horas:24, modulos:14, progreso:0, status:'catalogo', img:'shield', desc:'Implementación del sistema de gestión de seguridad y salud en el trabajo según la norma internacional ISO 45001:2018.' },
+      { id:'c10', titulo:'Análisis modal de fallos (AMEF)', area:'Calidad', nivel:'Intermedio', instructor:'Ing. María López', horas:10, modulos:7, progreso:0, status:'catalogo', img:'gauge', desc:'AMEF de diseño y de proceso, RPN, severidad, ocurrencia, detección. Casos automotrices.' },
+      { id:'c11', titulo:'Supervisión efectiva en planta', area:'Mantenimiento', nivel:'Básico', instructor:'Ing. Patricia Solís', horas:14, modulos:10, progreso:0, status:'catalogo', img:'tools', desc:'Liderazgo, comunicación, manejo de conflictos y técnicas de supervisión modernas para jefes de turno.' },
+      { id:'c12', titulo:'NOM-035-STPS · Factores de riesgo psicosocial', area:'Seguridad', nivel:'Intermedio', instructor:'Ing. Roberto Méndez', horas:10, modulos:6, progreso:0, status:'catalogo', img:'shield', desc:'Identificación, análisis y prevención de factores de riesgo psicosocial en el trabajo.' }
+    ],
+
+    /* ========================================================================
+       CERTIFICADOS — los que el usuario ya ganó
+       ======================================================================== */
+    certificados: [
+      {
+        id:'cert1',
+        cursoId:'c4',
+        titulo:'NOM-001-STPS · Edificios, locales e instalaciones',
+        folio:'IMDIIL-2026-48201',
+        emitido:'2026-04-18',
+        horas:8,
+        area:'Seguridad',
+        instructor:'Ing. Roberto Méndez',
+        calificacion:96
+      },
+      {
+        id:'cert2',
+        cursoId:'c5',
+        titulo:'Lean Manufacturing para supervisores',
+        folio:'IMDIIL-2026-37154',
+        emitido:'2026-03-22',
+        horas:16,
+        area:'Calidad',
+        instructor:'Ing. María López',
+        calificacion:92
+      }
+    ],
+
+    /* ========================================================================
+       LOGROS — 26 medallas en 5 categorías + niveles
+       ======================================================================== */
+    niveles: [
+      { id:1, nombre:'Aprendiz',     desde:0,     hasta:200,   icono:'i-helmet' },
+      { id:2, nombre:'Técnico',      desde:200,   hasta:600,   icono:'i-helmet' },
+      { id:3, nombre:'Profesional',  desde:600,   hasta:1200,  icono:'i-shield-check' },
+      { id:4, nombre:'Líder',        desde:1200,  hasta:2400,  icono:'i-trophy' },
+      { id:5, nombre:'Maestro',      desde:2400,  hasta:99999, icono:'i-crown' }
+    ],
+
+    logros: [
+      // SEGURIDAD (6)
+      { id:'l1',  cat:'Seguridad', nombre:'Primer paso',         desc:'Completaste tu primer curso de seguridad',          xp:50,  unlock:'2026-04-18', criterio:'Termina 1 curso del área Seguridad' },
+      { id:'l2',  cat:'Seguridad', nombre:'Defensor STPS',       desc:'Completaste 3 NOMs de la STPS',                     xp:150, unlock:null,         criterio:'Termina 3 cursos NOM-STPS' },
+      { id:'l3',  cat:'Seguridad', nombre:'Casco de oro',        desc:'Completaste todos los cursos de seguridad básica', xp:300, unlock:null,         criterio:'Termina los 5 cursos básicos del área Seguridad' },
+      { id:'l4',  cat:'Seguridad', nombre:'IPER experto',        desc:'Generaste 20 matrices IPER',                        xp:200, unlock:null,         criterio:'Crea 20 matrices IPER en la herramienta pro' },
+      { id:'l5',  cat:'Seguridad', nombre:'Cero accidentes',     desc:'Aprobaste con 100 en un curso de seguridad',         xp:100, unlock:null,         criterio:'Saca 100 de calificación en cualquier curso de Seguridad' },
+      { id:'l6',  cat:'Seguridad', nombre:'Guardián 24/7',       desc:'Racha de 30 días aprendiendo seguridad',             xp:250, unlock:null,         criterio:'Estudia algo de Seguridad 30 días seguidos' },
+
+      // LOGÍSTICA (5)
+      { id:'l7',  cat:'Logística', nombre:'OTIF perfecto',       desc:'Completaste el curso de OTIF, Fill Rate y rotación', xp:120, unlock:null,         criterio:'Termina el curso "Indicadores logísticos"' },
+      { id:'l8',  cat:'Logística', nombre:'Master del almacén',  desc:'Completaste WMS y gestión de almacenes 4.0',         xp:150, unlock:null,         criterio:'Termina el curso "WMS y gestión de almacenes 4.0"' },
+      { id:'l9',  cat:'Logística', nombre:'KPI master',          desc:'Calculaste 50 indicadores logísticos',               xp:200, unlock:null,         criterio:'Usa la herramienta Indicadores logísticos 50 veces' },
+      { id:'l10', cat:'Logística', nombre:'Cadena perfecta',     desc:'Completaste todos los cursos del área Logística',    xp:400, unlock:null,         criterio:'Termina los 5 cursos del área Logística' },
+      { id:'l11', cat:'Logística', nombre:'Tiempo es oro',       desc:'Optimizaste 10 procesos con métricas medibles',      xp:180, unlock:null,         criterio:'Genera 10 reportes de mejora con la herramienta de Indicadores' },
+
+      // CALIDAD (5)
+      { id:'l12', cat:'Calidad',   nombre:'Lean adopter',        desc:'Completaste Lean Manufacturing',                     xp:120, unlock:'2026-03-22', criterio:'Termina el curso "Lean Manufacturing para supervisores"' },
+      { id:'l13', cat:'Calidad',   nombre:'Six Sigma green',     desc:'Obtuviste tu certificación Green Belt',              xp:500, unlock:null,         criterio:'Termina el curso "Six Sigma Green Belt"' },
+      { id:'l14', cat:'Calidad',   nombre:'AMEF master',         desc:'Generaste 15 análisis AMEF completos',               xp:200, unlock:null,         criterio:'Completa 15 AMEFs en la plataforma' },
+      { id:'l15', cat:'Calidad',   nombre:'OEE world-class',     desc:'Alcanzaste >85% OEE en tu evaluación',               xp:300, unlock:null,         criterio:'Usa la calculadora OEE y obtén un resultado >85%' },
+      { id:'l16', cat:'Calidad',   nombre:'Cero defectos',       desc:'Implementaste 5 mejoras de calidad',                 xp:250, unlock:null,         criterio:'Documenta 5 acciones de mejora en tu perfil' },
+
+      // COMUNIDAD (5)
+      { id:'l17', cat:'Comunidad', nombre:'Bienvenido al club',  desc:'Te uniste al Club VIP IMDIIL',                       xp:30,  unlock:'2026-03-15', criterio:'Activa tu membresía VIP' },
+      { id:'l18', cat:'Comunidad', nombre:'Voz del foro',        desc:'Publicaste 10 mensajes en el foro VIP',              xp:100, unlock:null,         criterio:'Crea 10 posts en el foro' },
+      { id:'l19', cat:'Comunidad', nombre:'Ayudador',            desc:'Recibiste 25 likes en tus respuestas',               xp:150, unlock:null,         criterio:'Ayuda a otros miembros y consigue 25 likes' },
+      { id:'l20', cat:'Comunidad', nombre:'Presente en vivo',    desc:'Asististe a 5 clases en vivo',                       xp:200, unlock:null,         criterio:'Conéctate a 5 webinars en vivo' },
+      { id:'l21', cat:'Comunidad', nombre:'Embajador IMDIIL',    desc:'Invitaste a 3 colegas a unirse',                     xp:300, unlock:null,         criterio:'Comparte el club con 3 personas que se registren' },
+
+      // MAESTRÍA (5)
+      { id:'l22', cat:'Maestría',  nombre:'Estudiante constante',desc:'Racha de 7 días aprendiendo',                        xp:70,  unlock:'2026-05-19', criterio:'Aprende 7 días seguidos' },
+      { id:'l23', cat:'Maestría',  nombre:'Estudiante de hierro',desc:'Racha de 30 días aprendiendo',                       xp:300, unlock:null,         criterio:'Aprende 30 días seguidos' },
+      { id:'l24', cat:'Maestría',  nombre:'Maratonista',         desc:'Acumulaste 100 horas de estudio',                    xp:400, unlock:null,         criterio:'Acumula 100 horas totales de cursos' },
+      { id:'l25', cat:'Maestría',  nombre:'Tres áreas dominadas', desc:'Tienes certificados en 3 áreas diferentes',         xp:350, unlock:null,         criterio:'Obtén certificados en al menos 3 áreas distintas' },
+      { id:'l26', cat:'Maestría',  nombre:'Maestro IMDIIL',      desc:'Completaste 20 cursos. Eres una leyenda.',           xp:1000,unlock:null,         criterio:'Termina 20 cursos del catálogo' }
+    ],
+
+    /* ========================================================================
+       CLASES EN VIVO — webinars próximos + grabaciones
+       ======================================================================== */
+    webinars: [
+      // PRÓXIMAS
+      { id:'w1', titulo:'OEE: optimización de líneas de producción', instructor:'Ing. María López',     fecha:'2026-05-28T19:00:00', duracion:90, status:'proxima', area:'Calidad',    desc:'Caso real de cómo una planta automotriz pasó de 58% a 84% de OEE en 6 meses. Te muestro las mediciones exactas, los proyectos kaizen, y cómo replicarlo.', registrado:false },
+      { id:'w2', titulo:'NOM-035 en la práctica: cómo aplicar el cuestionario sin que se vuelva trámite', instructor:'Ing. Roberto Méndez', fecha:'2026-06-03T19:00:00', duracion:75, status:'proxima', area:'Seguridad', desc:'Estrategias reales para aplicar la NOM-035 obteniendo información útil, no nada más cumplir trámite. Análisis de 2 cuestionarios reales.', registrado:true },
+      { id:'w3', titulo:'OTIF: cómo medirlo cuando tu sistema no lo calcula automáticamente', instructor:'Ing. Carlos Vidal', fecha:'2026-06-10T19:00:00', duracion:60, status:'proxima', area:'Logística', desc:'Plantilla en Excel + Power Query para calcular OTIF, Fill Rate y rotación cuando tu ERP no tiene el módulo.', registrado:false },
+
+      // GRABADAS
+      { id:'w4', titulo:'AMEF de proceso: del papel al sistema',    instructor:'Ing. María López',     fecha:'2026-05-15T19:00:00', duracion:80, status:'grabada', area:'Calidad',    desc:'Sesión grabada · cómo conducir un AMEF efectivo con un equipo multidisciplinario.', visto:false, duracionVista:0 },
+      { id:'w5', titulo:'Investigación de accidentes con árbol de causas', instructor:'Ing. Patricia Solís', fecha:'2026-05-08T19:00:00', duracion:90, status:'grabada', area:'Seguridad', desc:'Metodología práctica para investigar accidentes sin culpar personas, sino sistemas.', visto:true, duracionVista:90 },
+      { id:'w6', titulo:'Layout de almacén: 10 errores comunes',    instructor:'Ing. Carlos Vidal',    fecha:'2026-05-01T19:00:00', duracion:70, status:'grabada', area:'Logística',  desc:'Los 10 errores más comunes al diseñar layout y cómo corregirlos sin obras mayores.', visto:false, duracionVista:0 },
+      { id:'w7', titulo:'Las 7 mudas en planta: cómo identificarlas en gemba walk', instructor:'Ing. María López', fecha:'2026-04-24T19:00:00', duracion:60, status:'grabada', area:'Calidad', desc:'Cómo hacer un gemba walk identificando waste en cada estación.', visto:true, duracionVista:42 },
+      { id:'w8', titulo:'NOM-029-STPS: trabajos eléctricos seguros', instructor:'Ing. Roberto Méndez', fecha:'2026-04-17T19:00:00', duracion:85, status:'grabada', area:'Seguridad', desc:'LOTO, evaluación de riesgo eléctrico y EPP especializado para trabajos en instalaciones.', visto:false, duracionVista:0 },
+      { id:'w9', titulo:'TPM: arrancar mantenimiento autónomo en tu planta', instructor:'Ing. Patricia Solís', fecha:'2026-04-10T19:00:00', duracion:75, status:'grabada', area:'Mantenimiento', desc:'Los 7 pasos del mantenimiento autónomo aplicados en planta real.', visto:false, duracionVista:0 }
+    ],
+
+    /* ========================================================================
+       Estado del usuario (perfil, XP, racha)
+       ======================================================================== */
+    usuario: {
+      nombre:'Ingeniero',
+      email:'usuario@example.com',
+      especialidad:'Seguridad industrial',
+      empresa:'',
+      xp: 450,
+      racha: 7,
+      ultimaActividad: new Date().toISOString().slice(0,10),
+      diasActivos: 23
+    }
+  };
+
+  global.IMDIILSeed = Seed;
+})(window);
+
+
+/* ===== Sprint 3.1: Router ===== */
+/* ========================================================================
+   IMDIIL VIP · Router SPA
+   Navegación entre secciones sin recargar la página.
+   - URL hash sincronizada: /vip-panel.html#cursos
+   - Historial del navegador funcional (back/forward)
+   - Eventos: imdiil:section-change
+   ======================================================================== */
+(function(global){
+  'use strict';
+
+  const Router = {
+    current: 'inicio',
+    sections: {},   // { id: { render(container), onEnter, onLeave } }
+
+    register(id, config){
+      this.sections[id] = config;
+    },
+
+    navigate(id, opts){
+      opts = opts || {};
+      if (!this.sections[id] && id !== 'inicio'){
+        console.warn('[Router] Sección no registrada:', id);
+        return;
+      }
+      const prev = this.current;
+      if (prev === id && !opts.force) return;
+
+      // Llamar onLeave de la sección anterior
+      if (this.sections[prev] && typeof this.sections[prev].onLeave === 'function'){
+        try { this.sections[prev].onLeave(); } catch(e){ console.error(e); }
+      }
+
+      this.current = id;
+
+      // Actualizar hash sin disparar evento (para evitar loop)
+      if (!opts.fromHash){
+        const newHash = id === 'inicio' ? '' : '#' + id;
+        if (location.hash !== newHash){
+          history.pushState({section: id}, '', newHash || location.pathname);
+        }
+      }
+
+      // Actualizar UI: sidebar activo
+      document.querySelectorAll('.nav-item[data-section]').forEach(el => {
+        el.classList.toggle('is-active', el.dataset.section === id);
+      });
+      document.querySelectorAll('.mobile-nav__item[data-section]').forEach(el => {
+        el.classList.toggle('is-active', el.dataset.section === id);
+      });
+
+      // Renderizar la sección
+      const inicioContent = document.getElementById('inicio-content');
+      const dyn = document.getElementById('dynamic-section');
+      if (!inicioContent || !dyn){
+        console.warn('[Router] Wrappers inicio-content/dynamic-section no encontrados');
+        return;
+      }
+
+      if (id === 'inicio'){
+        inicioContent.style.display = '';
+        dyn.style.display = 'none';
+      } else {
+        inicioContent.style.display = 'none';
+        dyn.style.display = '';
+        dyn.innerHTML = '';
+        const sec = this.sections[id];
+        if (sec && typeof sec.render === 'function'){
+          try {
+            sec.render(dyn);
+            if (typeof sec.onEnter === 'function') sec.onEnter(dyn);
+          } catch(e){
+            console.error('[Router] Error renderizando ' + id + ':', e);
+            dyn.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-3);">Error cargando sección</div>';
+          }
+        } else {
+          dyn.innerHTML = '<div style="padding:60px 20px; text-align:center;"><div style="font-size:36px; margin-bottom:12px;">🚧</div><h3 style="font-weight:600; margin-bottom:6px;">Sección en construcción</h3><p style="color:var(--text-2);">Pronto disponible.</p></div>';
+        }
+
+        // Scroll al top
+        const main = document.querySelector('main.main');
+        if (main) main.scrollTop = 0;
+        window.scrollTo({top: 0, behavior: 'instant'});
+      }
+
+      // Emitir evento global
+      document.dispatchEvent(new CustomEvent('imdiil:section-change', { detail: { section: id, previous: prev } }));
+    },
+
+    init(){
+      // Listener hash changes
+      window.addEventListener('popstate', (e) => {
+        const id = (location.hash || '#inicio').replace('#', '') || 'inicio';
+        this.navigate(id, { fromHash: true });
+      });
+
+      window.addEventListener('hashchange', () => {
+        const id = (location.hash || '#inicio').replace('#', '') || 'inicio';
+        if (id !== this.current) this.navigate(id, { fromHash: true });
+      });
+
+      // Click handlers en sidebar y mobile nav
+      document.querySelectorAll('.nav-item[data-section], .mobile-nav__item[data-section]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          const section = el.dataset.section;
+          // Si es una herramienta pro, abrir modal en vez de navegar
+          const toolSections = ['iper', 'oee', 'ats', 'noms', 'logistica'];
+          if (toolSections.includes(section)){
+            e.preventDefault();
+            const handler = global.IMDIILTools?.[section]?.open;
+            if (handler) handler();
+            return;
+          }
+          e.preventDefault();
+          this.navigate(section);
+        });
+      });
+
+      // Navegar a la sección inicial según la URL
+      const initial = (location.hash || '#inicio').replace('#', '') || 'inicio';
+      if (initial !== 'inicio'){
+        this.navigate(initial, { fromHash: true });
+      }
+    }
+  };
+
+  global.IMDIILRouter = Router;
+})(window);
+
+
+/* ===== Sprint 3.1: Sección Mis cursos ===== */
+/* ========================================================================
+   IMDIIL VIP · Sección Mis cursos
+   ======================================================================== */
+(function(global){
+  'use strict';
+
+  const COLOR_AREA = {
+    'Seguridad':'#FF7A2D',
+    'Logística':'#2B7BB9',
+    'Calidad':'#0F9D58',
+    'Mantenimiento':'#A855F7'
+  };
+
+  const ICON_AREA = {
+    'Seguridad':'i-shield-check',
+    'Logística':'i-chart-bar',
+    'Calidad':'i-gauge',
+    'Mantenimiento':'i-tools'
+  };
+
+  let state = { tab:'progreso', area:'todas', search:'' };
+
+  function getFiltrados(){
+    const data = IMDIILSeed.cursos;
+    return data.filter(c => {
+      if (state.tab === 'progreso' && c.status !== 'progreso') return false;
+      if (state.tab === 'completado' && c.status !== 'completado') return false;
+      if (state.tab === 'catalogo' && c.status !== 'catalogo') return false;
+      if (state.area !== 'todas' && c.area !== state.area) return false;
+      if (state.search){
+        const q = state.search.toLowerCase();
+        if (!c.titulo.toLowerCase().includes(q) && !c.instructor.toLowerCase().includes(q) && !c.desc.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  function counts(){
+    const d = IMDIILSeed.cursos;
+    return {
+      progreso: d.filter(c => c.status === 'progreso').length,
+      completado: d.filter(c => c.status === 'completado').length,
+      catalogo: d.filter(c => c.status === 'catalogo').length
+    };
+  }
+
+  function render(container){
+    const c = counts();
+    container.innerHTML = `
+      <section class="hero">
+        <div class="hero__greeting">Tu camino</div>
+        <h1>Mis cursos</h1>
+        <p>Continúa donde lo dejaste, repasa lo que ya dominas o descubre nuevas áreas de especialización.</p>
+      </section>
+
+      <div class="cursos-bar">
+        <div class="tabs">
+          <button class="tab ${state.tab==='progreso'?'is-active':''}" data-tab="progreso">En progreso · ${c.progreso}</button>
+          <button class="tab ${state.tab==='completado'?'is-active':''}" data-tab="completado">Completados · ${c.completado}</button>
+          <button class="tab ${state.tab==='catalogo'?'is-active':''}" data-tab="catalogo">Catálogo · ${c.catalogo}</button>
+        </div>
+        <div class="cursos-bar__filters">
+          <div class="noms-toolbar__search" style="min-width:220px;">
+            <span class="noms-toolbar__search-icon"><svg class="ic"><use href="#i-search"/></svg></span>
+            <input id="cursos-search" type="text" class="input" placeholder="Buscar curso o instructor…" value="${state.search.replace(/"/g,'&quot;')}">
+          </div>
+          <select id="cursos-area" class="select" style="max-width:200px;">
+            <option value="todas" ${state.area==='todas'?'selected':''}>Todas las áreas</option>
+            <option value="Seguridad" ${state.area==='Seguridad'?'selected':''}>Seguridad</option>
+            <option value="Logística" ${state.area==='Logística'?'selected':''}>Logística</option>
+            <option value="Calidad" ${state.area==='Calidad'?'selected':''}>Calidad</option>
+            <option value="Mantenimiento" ${state.area==='Mantenimiento'?'selected':''}>Mantenimiento</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="cursos-list" class="cursos-list"></div>
+    `;
+
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => { state.tab = btn.dataset.tab; render(container); });
+    });
+    container.querySelector('#cursos-search').addEventListener('input', (e) => {
+      state.search = e.target.value;
+      renderList();
+    });
+    container.querySelector('#cursos-area').addEventListener('change', (e) => {
+      state.area = e.target.value;
+      renderList();
+    });
+
+    renderList();
+  }
+
+  function renderList(){
+    const list = document.getElementById('cursos-list');
+    if (!list) return;
+    const items = getFiltrados();
+    if (items.length === 0){
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-book"/></svg></div>
+          <h3>No hay cursos</h3>
+          <p>Cambia el filtro o búsqueda para ver más.</p>
+        </div>`;
+      return;
+    }
+    list.innerHTML = items.map(c => `
+      <article class="curso-card" data-id="${c.id}" tabindex="0">
+        <div class="curso-card__cover" style="--area-color:${COLOR_AREA[c.area]||'var(--primary)'};">
+          <svg class="ic ic--xl"><use href="#${ICON_AREA[c.area]||'i-book'}"/></svg>
+        </div>
+        <div class="curso-card__body">
+          <div class="curso-card__tags">
+            <span class="tag tag--area" style="color:${COLOR_AREA[c.area]||'var(--primary)'}; border-color:${COLOR_AREA[c.area]||'var(--primary)'}33;">${c.area}</span>
+            <span class="tag tag--lvl">${c.nivel}</span>
+            ${c.status==='completado' ? '<span class="tag tag--success">Completado</span>' : ''}
+            ${c.status==='progreso' ? '<span class="tag tag--prog">En progreso</span>' : ''}
+          </div>
+          <h3 class="curso-card__title">${c.titulo}</h3>
+          <p class="curso-card__desc">${c.desc}</p>
+          <div class="curso-card__meta">
+            <span><svg class="ic ic--sm"><use href="#i-user"/></svg>${c.instructor}</span>
+            <span><svg class="ic ic--sm"><use href="#i-clock"/></svg>${c.horas} hrs</span>
+            <span><svg class="ic ic--sm"><use href="#i-book"/></svg>${c.modulos} módulos</span>
+          </div>
+          ${c.status === 'progreso' ? `
+            <div class="curso-card__progress">
+              <div class="bar"><div style="width:${c.progreso}%"></div></div>
+              <span>${c.progreso}%</span>
+            </div>` : ''}
+          ${c.status === 'completado' ? `
+            <div class="curso-card__progress">
+              <div class="bar"><div style="width:100%; background:var(--success);"></div></div>
+              <span style="color:var(--success);">100%</span>
+            </div>` : ''}
+        </div>
+      </article>
+    `).join('');
+    document.querySelectorAll('.curso-card').forEach(card => {
+      card.addEventListener('click', () => openDetalle(card.dataset.id));
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter') openDetalle(card.dataset.id); });
+    });
+  }
+
+  function openDetalle(id){
+    const c = IMDIILSeed.cursos.find(x => x.id === id);
+    if (!c) return;
+    const modulos = [];
+    for (let i = 1; i <= c.modulos; i++){
+      const completado = c.progreso >= (i / c.modulos) * 100;
+      modulos.push({
+        num: i,
+        titulo: `Módulo ${i}: ${moduloTitulo(c, i)}`,
+        duracion: Math.round(c.horas / c.modulos * 60),
+        completado
+      });
+    }
+
+    const body = `
+      <div class="curso-detalle">
+        <div class="curso-detalle__hero" style="background:linear-gradient(135deg, ${COLOR_AREA[c.area]||'var(--primary)'}22, ${COLOR_AREA[c.area]||'var(--primary)'}08);">
+          <div class="curso-detalle__hero-icon" style="background:${COLOR_AREA[c.area]||'var(--primary)'}; color:#fff;">
+            <svg class="ic ic--xl"><use href="#${ICON_AREA[c.area]||'i-book'}"/></svg>
+          </div>
+          <div>
+            <div class="curso-detalle__tags">
+              <span class="tag tag--area" style="color:${COLOR_AREA[c.area]||'var(--primary)'};">${c.area}</span>
+              <span class="tag tag--lvl">${c.nivel}</span>
+            </div>
+            <h2>${c.titulo}</h2>
+            <div class="curso-detalle__meta">
+              <span><svg class="ic ic--sm"><use href="#i-user"/></svg>${c.instructor}</span>
+              <span><svg class="ic ic--sm"><use href="#i-clock"/></svg>${c.horas} hrs · ${c.modulos} módulos</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="curso-detalle__desc">${c.desc}</p>
+
+        ${c.status === 'progreso' ? `
+          <div class="curso-detalle__progress-card">
+            <div>
+              <div class="curso-detalle__progress-label">Tu progreso</div>
+              <div class="curso-detalle__progress-value">${c.progreso}<span>%</span></div>
+            </div>
+            <div class="bar" style="height:8px;"><div style="width:${c.progreso}%"></div></div>
+          </div>` : ''}
+
+        <h3 class="curso-detalle__h3">Contenido del curso</h3>
+        <div class="modulos-list">
+          ${modulos.map(m => `
+            <div class="modulo ${m.completado?'is-done':''}">
+              <div class="modulo__num">${m.completado ? '<svg class="ic"><use href="#i-check"/></svg>' : m.num}</div>
+              <div class="modulo__body">
+                <div class="modulo__title">${m.titulo}</div>
+                <div class="modulo__meta">${m.duracion} min</div>
+              </div>
+              ${m.completado ? '<span class="modulo__tag">Visto</span>' : '<svg class="ic ic--sm" style="color:var(--text-3)"><use href="#i-play"/></svg>'}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="cerrar-detalle">Cerrar</button>
+      ${c.status === 'progreso'
+        ? `<button class="btn btn--primary" id="continuar-curso">Continuar viendo<svg class="ic"><use href="#i-arrow-right"/></svg></button>`
+        : c.status === 'completado'
+        ? `<button class="btn btn--primary" id="ver-cert">Ver certificado<svg class="ic"><use href="#i-arrow-right"/></svg></button>`
+        : `<button class="btn btn--primary" id="empezar-curso">Empezar curso<svg class="ic"><use href="#i-arrow-right"/></svg></button>`}
+    `;
+
+    const m = IMDIILModal.open({
+      id: 'curso-detalle-' + id,
+      title: 'Detalle del curso',
+      subtitle: c.titulo,
+      icon: ICON_AREA[c.area] || 'i-book',
+      size: 'lg',
+      body,
+      footer
+    });
+
+    footer.querySelector('#cerrar-detalle').addEventListener('click', () => m.close());
+    const continuar = footer.querySelector('#continuar-curso');
+    const verCert = footer.querySelector('#ver-cert');
+    const empezar = footer.querySelector('#empezar-curso');
+    if (continuar) continuar.addEventListener('click', () => {
+      IMDIILApp.toast.info('Reanudando curso', `Módulo ${Math.ceil(c.progreso / 100 * c.modulos)} de ${c.modulos}`);
+      m.close();
+    });
+    if (verCert) verCert.addEventListener('click', () => {
+      m.close();
+      IMDIILRouter.navigate('certificados');
+    });
+    if (empezar) empezar.addEventListener('click', () => {
+      IMDIILApp.toast.success('Curso iniciado', 'Bienvenido al curso. Buen camino.');
+      c.status = 'progreso';
+      c.progreso = 5;
+      m.close();
+      render(document.getElementById('dynamic-section'));
+    });
+  }
+
+  function moduloTitulo(c, i){
+    const generic = {
+      'Seguridad': ['Introducción y normativa','Identificación de peligros','Evaluación de riesgos','Controles operativos','Equipo de protección','Casos prácticos','Plan de acción','Evaluación final'],
+      'Logística': ['Fundamentos','Indicadores clave','Medición OTIF','Fill Rate avanzado','Rotación de inventario','Casos reales','Mejora continua','Evaluación'],
+      'Calidad': ['Bases de mejora continua','7 mudas','Value stream mapping','5S en planta','Kaizen y kanban','Casos prácticos','Implementación','Evaluación'],
+      'Mantenimiento': ['Introducción al TPM','Mantenimiento autónomo','Mantenimiento planeado','Capacitación','Mejora enfocada','Calidad cero','Casos prácticos','Evaluación']
+    };
+    const titles = generic[c.area] || generic['Seguridad'];
+    return titles[(i-1) % titles.length];
+  }
+
+  IMDIILRouter.register('cursos', { render });
+})(window);
+
+
+/* ===== Sprint 3.1: Sección Certificados ===== */
+/* ========================================================================
+   IMDIIL VIP · Sección Certificados
+   ======================================================================== */
+(function(global){
+  'use strict';
+
+  function render(container){
+    const certs = IMDIILSeed.certificados;
+    const totalHoras = certs.reduce((s, c) => s + c.horas, 0);
+    const areas = [...new Set(certs.map(c => c.area))].length;
+
+    container.innerHTML = `
+      <section class="hero">
+        <div class="hero__greeting">Tu trayectoria</div>
+        <h1>Mis certificados</h1>
+        <p>Cada certificado tiene un folio único <strong>IMDIIL-2026-XXXXX</strong> y código QR verificable. Compártelos en tu LinkedIn o descárgalos en PDF cuando los necesites.</p>
+      </section>
+
+      <section class="kpi-grid">
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</div><div class="kpi__value">${certs.length}</div></div>
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-clock"/></svg>Horas certificadas</div><div class="kpi__value">${totalHoras}</div></div>
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-trophy"/></svg>Áreas dominadas</div><div class="kpi__value">${areas}</div></div>
+        <div class="kpi kpi--gold"><div class="kpi__label"><svg class="ic"><use href="#i-bolt"/></svg>Promedio</div><div class="kpi__value">${certs.length?Math.round(certs.reduce((s,c)=>s+c.calificacion,0)/certs.length):0}</div></div>
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-shield-check"/></svg>Verificables</div><div class="kpi__value">100<span style="font-size:18px;">%</span></div></div>
+      </section>
+
+      ${certs.length === 0 ? `
+        <div class="empty-state">
+          <div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-certificate"/></svg></div>
+          <h3>Aún no tienes certificados</h3>
+          <p>Completa tu primer curso para emitir tu primer certificado IMDIIL con folio y QR.</p>
+          <button class="btn btn--primary" id="ir-cursos" style="margin-top:14px;">Ver mis cursos<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+        </div>
+      ` : `
+        <div class="section-header">
+          <h2 class="section-header__title">Mis ${certs.length} certificados</h2>
+        </div>
+        <div class="certs-grid" id="certs-grid"></div>
+      `}
+    `;
+
+    if (certs.length === 0){
+      const btn = container.querySelector('#ir-cursos');
+      if (btn) btn.addEventListener('click', () => IMDIILRouter.navigate('cursos'));
+      return;
+    }
+
+    const grid = container.querySelector('#certs-grid');
+    grid.innerHTML = certs.map(c => `
+      <article class="cert-card" data-id="${c.id}" tabindex="0">
+        <div class="cert-card__top">
+          <div class="cert-card__seal">
+            <svg viewBox="0 0 48 48" width="48" height="48">
+              <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+              <circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M16 24l5 5 11-11" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="cert-card__qr">${qrSvg(c.folio)}</div>
+        </div>
+        <div class="cert-card__body">
+          <div class="cert-card__label">Certificado de aprovechamiento</div>
+          <h3 class="cert-card__title">${c.titulo}</h3>
+          <div class="cert-card__meta">
+            <span><svg class="ic ic--sm"><use href="#i-clock"/></svg>${c.horas} hrs</span>
+            <span><svg class="ic ic--sm"><use href="#i-bolt"/></svg>Calif. ${c.calificacion}</span>
+            <span><svg class="ic ic--sm"><use href="#i-calendar"/></svg>${formatDate(c.emitido)}</span>
+          </div>
+          <div class="cert-card__footer">
+            <span class="cert-card__folio">${c.folio}</span>
+            <span class="cert-card__verify">Verificable</span>
+          </div>
+        </div>
+      </article>
+    `).join('');
+
+    grid.querySelectorAll('.cert-card').forEach(card => {
+      card.addEventListener('click', () => openCert(card.dataset.id));
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter') openCert(card.dataset.id); });
+    });
+  }
+
+  function openCert(id){
+    const c = IMDIILSeed.certificados.find(x => x.id === id);
+    if (!c) return;
+
+    const body = `
+      <div class="cert-preview">
+        <div class="cert-preview__paper">
+          <div class="cert-preview__border-top"></div>
+          <div class="cert-preview__brand">
+            <div class="cert-preview__logo">
+              <svg viewBox="0 0 64 64" width="44" height="44">
+                <rect x="14" y="12" width="6" height="34" rx="1" fill="#1A1410" opacity=".9"/>
+                <rect x="22" y="18" width="6" height="28" rx="1" fill="#1A1410" opacity=".75"/>
+                <rect x="30" y="14" width="6" height="32" rx="1" fill="#1A1410" opacity=".9"/>
+                <path d="M 14 46 Q 32 54 50 46" stroke="#1A1410" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/>
+                <path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/>
+                <rect x="20" y="44" width="24" height="3" rx="1.5" fill="#FF7A2D"/>
+              </svg>
+            </div>
+            <div>
+              <div class="cert-preview__brand-name">IMDIIL</div>
+              <div class="cert-preview__brand-sub">Instituto Mexicano de Ingeniería Industrial y Logística</div>
+            </div>
+          </div>
+
+          <div class="cert-preview__eyebrow">Certificado de aprovechamiento</div>
+          <div class="cert-preview__otorga">Se otorga el presente certificado a</div>
+          <div class="cert-preview__name">${IMDIILSeed.usuario.nombre}</div>
+          <div class="cert-preview__por">por haber completado satisfactoriamente el curso</div>
+          <div class="cert-preview__curso">${c.titulo}</div>
+
+          <div class="cert-preview__stats">
+            <div><div class="l1">Horas</div><div class="l2">${c.horas}</div></div>
+            <div><div class="l1">Calificación</div><div class="l2">${c.calificacion}</div></div>
+            <div><div class="l1">Área</div><div class="l2">${c.area}</div></div>
+            <div><div class="l1">Emitido</div><div class="l2">${formatDate(c.emitido)}</div></div>
+          </div>
+
+          <div class="cert-preview__bottom">
+            <div class="cert-preview__sign">
+              <div class="cert-preview__sign-line"></div>
+              <div class="cert-preview__sign-label">${c.instructor}</div>
+              <div class="cert-preview__sign-sub">Instructor</div>
+            </div>
+            <div class="cert-preview__qr">${qrSvg(c.folio, 90)}
+              <div class="cert-preview__folio">${c.folio}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="cert-cerrar">Cerrar</button>
+      <button class="btn btn--ghost" id="cert-compartir"><svg class="ic"><use href="#i-arrow-right"/></svg>Compartir LinkedIn</button>
+      <button class="btn btn--primary" id="cert-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>
+    `;
+
+    const m = IMDIILModal.open({
+      id: 'cert-' + id,
+      title: 'Certificado IMDIIL',
+      subtitle: c.folio,
+      icon: 'i-certificate',
+      size: 'lg',
+      body,
+      footer
+    });
+
+    footer.querySelector('#cert-cerrar').addEventListener('click', () => m.close());
+    footer.querySelector('#cert-compartir').addEventListener('click', () => {
+      const url = encodeURIComponent('https://www.imdiil.com/verificar/' + c.folio);
+      const title = encodeURIComponent(c.titulo);
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+      IMDIILApp.toast.success('Compartiendo', 'Abriendo LinkedIn…');
+    });
+    footer.querySelector('#cert-pdf').addEventListener('click', () => generarPDF(c));
+  }
+
+  function generarPDF(c){
+    if (!global.jspdf){
+      IMDIILApp.toast.error('Generador no disponible', 'Verifica tu conexión e inténtalo de nuevo');
+      return;
+    }
+    try {
+      const pdf = IMDIILPDF.create({
+        title: 'Certificado de aprovechamiento',
+        subtitle: c.titulo,
+        folio: c.folio,
+        date: new Date(c.emitido)
+      });
+      pdf.spacer(4)
+         .h2('Datos del participante')
+         .kv([
+           ['Nombre', IMDIILSeed.usuario.nombre],
+           ['Curso', c.titulo],
+           ['Área', c.area],
+           ['Instructor', c.instructor],
+           ['Duración', c.horas + ' horas'],
+           ['Calificación obtenida', c.calificacion + '/100']
+         ])
+         .spacer(4)
+         .h2('Validación')
+         .text('Este certificado puede ser verificado en línea ingresando el folio ' + c.folio + ' en www.imdiil.com/verificar')
+         .spacer(6)
+         .banner('IMDIIL hace constar que ' + IMDIILSeed.usuario.nombre + ' ha completado satisfactoriamente el curso "' + c.titulo + '" con un total de ' + c.horas + ' horas lectivas.', 'primary')
+         .spacer(20)
+         .signatures([c.instructor + ' · Instructor', 'IMDIIL · Dirección académica'])
+         .save('certificado-IMDIIL-' + c.folio + '.pdf');
+      IMDIILApp.toast.success('PDF descargado', c.folio);
+    } catch(e){
+      console.error(e);
+      IMDIILApp.toast.error('Error generando PDF', e.message || 'Intenta de nuevo');
+    }
+  }
+
+  function qrSvg(text, size){
+    size = size || 60;
+    // QR estilizado generado deterministicamente desde el folio (visual, no escaneable)
+    const seed = hashCode(text);
+    const grid = 11;
+    const cell = size / grid;
+    let cells = '';
+    for (let y = 0; y < grid; y++){
+      for (let x = 0; x < grid; x++){
+        // Esquinas fijas (corner squares)
+        const inCorner = (x<3&&y<3)||(x>grid-4&&y<3)||(x<3&&y>grid-4);
+        const ringCorner = (x===0||x===2||y===0||y===2)&&inCorner&&(x<3&&y<3);
+        let on = false;
+        if (inCorner){
+          if (x<3&&y<3) on = !(x===1&&y===1) && (x===0||x===2||y===0||y===2) ? true : (x===1&&y===1);
+          else if (x>grid-4&&y<3) on = !(x===grid-2&&y===1) && (x===grid-3||x===grid-1||y===0||y===2) ? true : (x===grid-2&&y===1);
+          else on = !(x===1&&y===grid-2) && (x===0||x===2||y===grid-3||y===grid-1) ? true : (x===1&&y===grid-2);
+        } else {
+          on = ((seed + x*31 + y*17) % 7) < 3;
+        }
+        if (on) cells += `<rect x="${x*cell}" y="${y*cell}" width="${cell}" height="${cell}" />`;
+      }
+    }
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="background:#fff; padding:4px; border-radius:6px;"><g fill="#1A1410">${cells}</g></svg>`;
+  }
+
+  function hashCode(s){
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i), h |= 0;
+    return Math.abs(h);
+  }
+
+  function formatDate(iso){
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const d = new Date(iso);
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  IMDIILRouter.register('certificados', { render });
+})(window);
+
+
+/* ===== Sprint 3.1: Sección Mis logros ===== */
+/* ========================================================================
+   IMDIIL VIP · Sección Mis logros
+   ======================================================================== */
+(function(global){
+  'use strict';
+
+  const COLOR_CAT = {
+    'Seguridad':'#FF7A2D',
+    'Logística':'#2B7BB9',
+    'Calidad':'#0F9D58',
+    'Comunidad':'#A855F7',
+    'Maestría':'#D97706'
+  };
+
+  const ICON_CAT = {
+    'Seguridad':'i-shield-check',
+    'Logística':'i-chart-bar',
+    'Calidad':'i-gauge',
+    'Comunidad':'i-messages',
+    'Maestría':'i-crown'
+  };
+
+  function getNivelActual(xp){
+    const niveles = IMDIILSeed.niveles;
+    return niveles.find(n => xp >= n.desde && xp < n.hasta) || niveles[0];
+  }
+
+  function getProximoNivel(xp){
+    const niveles = IMDIILSeed.niveles;
+    return niveles.find(n => xp < n.desde) || null;
+  }
+
+  function render(container){
+    const u = IMDIILSeed.usuario;
+    const nivelActual = getNivelActual(u.xp);
+    const proxNivel = IMDIILSeed.niveles[Math.min(nivelActual.id, IMDIILSeed.niveles.length-1)];
+    const pct = Math.round(((u.xp - nivelActual.desde) / (nivelActual.hasta - nivelActual.desde)) * 100);
+    const xpRestante = nivelActual.hasta - u.xp;
+
+    const logros = IMDIILSeed.logros;
+    const ganados = logros.filter(l => l.unlock).length;
+    const totalXpGanado = logros.filter(l => l.unlock).reduce((s, l) => s + l.xp, 0);
+    const cats = ['Seguridad','Logística','Calidad','Comunidad','Maestría'];
+
+    container.innerHTML = `
+      <section class="hero">
+        <div class="hero__greeting">Tu progreso</div>
+        <h1>Mis logros</h1>
+        <p>Cada curso, herramienta y participación te suma XP. Sube de nivel y desbloquea medallas. Llega a <em>Maestro</em>.</p>
+      </section>
+
+      <section class="logro-hero">
+        <div class="logro-hero__nivel">
+          <div class="logro-hero__nivel-icon"><svg class="ic ic--xl"><use href="#${nivelActual.icono}"/></svg></div>
+          <div>
+            <div class="logro-hero__nivel-label">Nivel ${nivelActual.id} de 5</div>
+            <div class="logro-hero__nivel-name">${nivelActual.nombre}</div>
+          </div>
+          <div class="logro-hero__racha">
+            <div class="logro-hero__racha-icon"><svg class="ic"><use href="#i-flame"/></svg></div>
+            <div>
+              <div class="logro-hero__racha-label">Racha</div>
+              <div class="logro-hero__racha-value">${u.racha} días</div>
+            </div>
+          </div>
+        </div>
+        <div class="logro-hero__xp">
+          <div class="logro-hero__xp-bar"><div class="logro-hero__xp-fill" style="width:${pct}%"></div></div>
+          <div class="logro-hero__xp-text">
+            <span><strong>${u.xp}</strong> XP</span>
+            <span>${xpRestante > 0 ? xpRestante + ' XP para ' + (IMDIILSeed.niveles[nivelActual.id]?.nombre || 'Maestro') : '¡Nivel máximo!'}</span>
+            <span><strong>${nivelActual.hasta === 99999 ? '∞' : nivelActual.hasta}</strong> XP</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpi-grid">
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-trophy"/></svg>Logros ganados</div><div class="kpi__value">${ganados}<span style="font-size:18px; color:var(--text-3);">/${logros.length}</span></div></div>
+        <div class="kpi kpi--gold"><div class="kpi__label"><svg class="ic"><use href="#i-bolt"/></svg>XP de logros</div><div class="kpi__value">${totalXpGanado}</div></div>
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-clock"/></svg>Días activos</div><div class="kpi__value">${u.diasActivos}</div></div>
+        <div class="kpi kpi--fire"><div class="kpi__label"><svg class="ic"><use href="#i-flame"/></svg>Racha actual</div><div class="kpi__value">${u.racha}</div></div>
+        <div class="kpi"><div class="kpi__label"><svg class="ic"><use href="#i-helmet"/></svg>Nivel</div><div class="kpi__value">${nivelActual.id}</div></div>
+      </section>
+
+      ${cats.map(cat => `
+        <section>
+          <div class="section-header">
+            <h2 class="section-header__title" style="display:flex; align-items:center; gap:10px;">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:8px; background:${COLOR_CAT[cat]}22; color:${COLOR_CAT[cat]};"><svg class="ic"><use href="#${ICON_CAT[cat]}"/></svg></span>
+              ${cat}
+            </h2>
+            <span style="font-size:12px; color:var(--text-3);">${logros.filter(l=>l.cat===cat && l.unlock).length} de ${logros.filter(l=>l.cat===cat).length}</span>
+          </div>
+          <div class="logros-grid">
+            ${logros.filter(l => l.cat === cat).map(l => `
+              <div class="logro ${l.unlock ? 'is-unlocked' : 'is-locked'}" data-id="${l.id}" tabindex="0">
+                <div class="logro__icon" style="--cat-color:${COLOR_CAT[cat]};">
+                  ${l.unlock
+                    ? `<svg class="ic ic--lg"><use href="#${ICON_CAT[cat]}"/></svg>`
+                    : `<svg class="ic ic--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`}
+                </div>
+                <div class="logro__name">${l.nombre}</div>
+                <div class="logro__xp">+${l.xp} XP</div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `).join('')}
+    `;
+
+    container.querySelectorAll('.logro').forEach(el => {
+      el.addEventListener('click', () => openLogro(el.dataset.id));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') openLogro(el.dataset.id); });
+    });
+  }
+
+  function openLogro(id){
+    const l = IMDIILSeed.logros.find(x => x.id === id);
+    if (!l) return;
+
+    const body = `
+      <div class="logro-detalle">
+        <div class="logro-detalle__icon" style="--cat-color:${COLOR_CAT[l.cat]};">
+          ${l.unlock
+            ? `<svg class="ic ic--xl"><use href="#${ICON_CAT[l.cat]}"/></svg>`
+            : `<svg class="ic ic--xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`}
+        </div>
+        <h2 class="logro-detalle__name">${l.nombre}</h2>
+        <p class="logro-detalle__desc">${l.desc}</p>
+        <div class="logro-detalle__stats">
+          <div><div class="l1">Categoría</div><div class="l2" style="color:${COLOR_CAT[l.cat]};">${l.cat}</div></div>
+          <div><div class="l1">Recompensa</div><div class="l2">+${l.xp} XP</div></div>
+          <div><div class="l1">Estado</div><div class="l2">${l.unlock ? '✓ Ganado' : 'Bloqueado'}</div></div>
+        </div>
+        <div class="logro-detalle__criterio">
+          <div class="logro-detalle__criterio-label">Cómo desbloquearlo</div>
+          <div class="logro-detalle__criterio-text">${l.criterio}</div>
+        </div>
+        ${l.unlock ? `<div class="logro-detalle__unlock">🎉 Desbloqueado el ${formatDate(l.unlock)}</div>` : ''}
+      </div>
+    `;
+
+    IMDIILModal.open({
+      id: 'logro-' + id,
+      title: l.unlock ? 'Medalla obtenida' : 'Medalla pendiente',
+      subtitle: l.cat,
+      icon: ICON_CAT[l.cat],
+      size: 'sm',
+      body,
+      footer: '<button class="btn btn--ghost" onclick="IMDIILModal.close(\'logro-' + id + '\')">Cerrar</button>'
+    });
+  }
+
+  function formatDate(iso){
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const d = new Date(iso);
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  IMDIILRouter.register('logros', { render });
+})(window);
+
+
+/* ===== Sprint 3.1: Sección Clases en vivo ===== */
+/* ========================================================================
+   IMDIIL VIP · Sección Clases en vivo
+   ======================================================================== */
+(function(global){
+  'use strict';
+
+  const COLOR_AREA = {
+    'Seguridad':'#FF7A2D',
+    'Logística':'#2B7BB9',
+    'Calidad':'#0F9D58',
+    'Mantenimiento':'#A855F7'
+  };
+
+  let state = { tab:'proximas' };
+  let countdownInterval = null;
+
+  function render(container){
+    const data = IMDIILSeed.webinars;
+    const proximas = data.filter(w => w.status === 'proxima');
+    const grabadas = data.filter(w => w.status === 'grabada');
+    const proximaMasCercana = proximas.sort((a,b) => new Date(a.fecha) - new Date(b.fecha))[0];
+
+    container.innerHTML = `
+      <section class="hero">
+        <div class="hero__greeting">Aprende en directo</div>
+        <h1>Clases en vivo</h1>
+        <p>Sesiones quincenales con ingenieros y especialistas del sector industrial. Pregunta en vivo, las grabaciones quedan disponibles para repasar.</p>
+      </section>
+
+      ${proximaMasCercana ? renderProximaHero(proximaMasCercana) : ''}
+
+      <div class="tabs" style="margin-top:8px;">
+        <button class="tab ${state.tab==='proximas'?'is-active':''}" data-tab-w="proximas">Próximas · ${proximas.length}</button>
+        <button class="tab ${state.tab==='grabadas'?'is-active':''}" data-tab-w="grabadas">Grabaciones · ${grabadas.length}</button>
+        <button class="tab ${state.tab==='registradas'?'is-active':''}" data-tab-w="registradas">Mis registradas · ${proximas.filter(w=>w.registrado).length}</button>
+      </div>
+
+      <div id="webinars-list"></div>
+    `;
+
+    container.querySelectorAll('[data-tab-w]').forEach(btn => {
+      btn.addEventListener('click', () => { state.tab = btn.dataset.tabW; render(container); });
+    });
+
+    renderList();
+    startCountdown();
+  }
+
+  function renderProximaHero(w){
+    const fecha = new Date(w.fecha);
+    return `
+      <section class="webinar-hero">
+        <div class="webinar-hero__info">
+          <span class="pill" style="background:color-mix(in srgb, var(--primary) 14%, transparent); color:var(--primary); border-color:color-mix(in srgb, var(--primary) 35%, transparent);"><svg class="ic"><use href="#i-broadcast"/></svg>Próxima en vivo</span>
+          <h2 class="webinar-hero__title">${w.titulo}</h2>
+          <div class="webinar-hero__meta">
+            <span><svg class="ic ic--sm"><use href="#i-calendar"/></svg>${formatFechaLarga(fecha)}</span>
+            <span><svg class="ic ic--sm"><use href="#i-clock"/></svg>${pad(fecha.getHours())}:${pad(fecha.getMinutes())} hrs · ${w.duracion} min</span>
+            <span><svg class="ic ic--sm"><use href="#i-user"/></svg>${w.instructor}</span>
+          </div>
+          <p class="webinar-hero__desc">${w.desc}</p>
+          <div class="webinar-hero__actions">
+            <button class="btn btn--primary" id="w-registrar" data-id="${w.id}">${w.registrado?'Ya registrado ✓':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+            <button class="btn btn--ghost" id="w-calendar" data-id="${w.id}"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
+          </div>
+        </div>
+        <div class="webinar-hero__countdown" data-target="${w.fecha}">
+          <div class="countdown__cell"><div class="countdown__num" id="wh-d">00</div><div class="countdown__lbl">Días</div></div>
+          <div class="countdown__cell"><div class="countdown__num" id="wh-h">00</div><div class="countdown__lbl">Hrs</div></div>
+          <div class="countdown__cell"><div class="countdown__num" id="wh-m">00</div><div class="countdown__lbl">Min</div></div>
+          <div class="countdown__cell"><div class="countdown__num" id="wh-s">00</div><div class="countdown__lbl">Seg</div></div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderList(){
+    const list = document.getElementById('webinars-list');
+    if (!list) return;
+    const data = IMDIILSeed.webinars;
+    let items = [];
+    if (state.tab === 'proximas') items = data.filter(w => w.status === 'proxima');
+    if (state.tab === 'grabadas') items = data.filter(w => w.status === 'grabada');
+    if (state.tab === 'registradas') items = data.filter(w => w.registrado);
+
+    if (items.length === 0){
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-broadcast"/></svg></div>
+          <h3>Sin webinars</h3>
+          <p>Cambia el filtro para ver más sesiones.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = `<div class="webinars-grid">${items.map(w => renderCard(w)).join('')}</div>`;
+
+    list.querySelectorAll('.webinar-card').forEach(card => {
+      card.addEventListener('click', () => openDetalle(card.dataset.id));
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter') openDetalle(card.dataset.id); });
+    });
+  }
+
+  function renderCard(w){
+    const fecha = new Date(w.fecha);
+    const isProxima = w.status === 'proxima';
+    return `
+      <article class="webinar-card" data-id="${w.id}" tabindex="0">
+        <div class="webinar-card__cover" style="--area-color:${COLOR_AREA[w.area]||'var(--primary)'};">
+          ${isProxima ? `
+            <div class="webinar-card__date">
+              <div class="webinar-card__date-day">${fecha.getDate()}</div>
+              <div class="webinar-card__date-month">${monthShort(fecha.getMonth())}</div>
+            </div>` : `
+            <div class="webinar-card__play"><svg class="ic ic--xl"><use href="#i-play"/></svg></div>
+          `}
+          ${w.visto ? '<span class="webinar-card__badge webinar-card__badge--visto">Visto</span>' : ''}
+          ${isProxima && w.registrado ? '<span class="webinar-card__badge webinar-card__badge--reg">Registrado</span>' : ''}
+        </div>
+        <div class="webinar-card__body">
+          <div class="webinar-card__tags">
+            <span class="tag tag--area" style="color:${COLOR_AREA[w.area]||'var(--primary)'};">${w.area}</span>
+            ${isProxima ? '<span class="tag tag--prog">En vivo</span>' : '<span class="tag tag--lvl">Grabación</span>'}
+          </div>
+          <h3 class="webinar-card__title">${w.titulo}</h3>
+          <div class="webinar-card__meta">
+            <span><svg class="ic ic--sm"><use href="#i-user"/></svg>${w.instructor}</span>
+            <span><svg class="ic ic--sm"><use href="#i-clock"/></svg>${w.duracion} min</span>
+            ${isProxima ? `<span><svg class="ic ic--sm"><use href="#i-calendar"/></svg>${pad(fecha.getDate())}/${pad(fecha.getMonth()+1)}</span>` : ''}
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function openDetalle(id){
+    const w = IMDIILSeed.webinars.find(x => x.id === id);
+    if (!w) return;
+    const fecha = new Date(w.fecha);
+    const isProxima = w.status === 'proxima';
+
+    const body = `
+      <div class="webinar-detalle">
+        ${isProxima ? `
+          <div class="webinar-detalle__hero" style="background:linear-gradient(135deg, ${COLOR_AREA[w.area]||'var(--primary)'}22, ${COLOR_AREA[w.area]||'var(--primary)'}08);">
+            <div class="webinar-detalle__date" style="background:${COLOR_AREA[w.area]||'var(--primary)'};">
+              <div class="webinar-detalle__date-day">${fecha.getDate()}</div>
+              <div class="webinar-detalle__date-month">${monthShort(fecha.getMonth())}</div>
+            </div>
+            <div>
+              <div class="webinar-detalle__time">${pad(fecha.getHours())}:${pad(fecha.getMinutes())} hrs · ${w.duracion} min</div>
+              <div class="webinar-detalle__instructor"><svg class="ic ic--sm"><use href="#i-user"/></svg>${w.instructor}</div>
+            </div>
+          </div>` : `
+          <div class="webinar-detalle__player">
+            <svg class="ic" style="width:48px; height:48px; color:#fff;"><use href="#i-play"/></svg>
+            <div class="webinar-detalle__player-text">Reproductor de video (placeholder)</div>
+            <div class="webinar-detalle__player-sub">Sprint 4 conectará el reproductor real</div>
+          </div>`}
+
+        <div class="webinar-detalle__tags" style="margin-top:14px;">
+          <span class="tag tag--area" style="color:${COLOR_AREA[w.area]||'var(--primary)'};">${w.area}</span>
+          ${isProxima ? '<span class="tag tag--prog">En vivo</span>' : '<span class="tag tag--lvl">Grabación · ' + w.duracion + ' min</span>'}
+        </div>
+        <h2 style="font-family:'Inter',sans-serif; font-size:22px; font-weight:500; letter-spacing:-.5px; margin-top:8px;">${w.titulo}</h2>
+        <p style="color:var(--text-2); margin-top:8px; line-height:1.55;">${w.desc}</p>
+
+        ${!isProxima ? `
+          <div class="webinar-detalle__progress">
+            <div class="webinar-detalle__progress-label">Tu progreso · ${w.duracionVista} de ${w.duracion} min</div>
+            <div class="bar"><div style="width:${Math.round((w.duracionVista/w.duracion)*100)}%"></div></div>
+          </div>` : ''}
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    if (isProxima){
+      footer.innerHTML = `
+        <button class="btn btn--ghost" id="w-cerrar">Cerrar</button>
+        <button class="btn btn--ghost" id="w-ics"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
+        <button class="btn btn--primary" id="w-toggle">${w.registrado?'Cancelar registro':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+      `;
+    } else {
+      footer.innerHTML = `
+        <button class="btn btn--ghost" id="w-cerrar">Cerrar</button>
+        <button class="btn btn--primary" id="w-play">${w.visto?'Volver a ver':'Reproducir'}<svg class="ic"><use href="#i-play"/></svg></button>
+      `;
+    }
+
+    const m = IMDIILModal.open({
+      id: 'webinar-' + id,
+      title: isProxima ? 'Clase en vivo' : 'Grabación',
+      subtitle: formatFechaLarga(fecha),
+      icon: 'i-broadcast',
+      size: 'lg',
+      body,
+      footer
+    });
+
+    footer.querySelector('#w-cerrar').addEventListener('click', () => m.close());
+    const toggle = footer.querySelector('#w-toggle');
+    const ics = footer.querySelector('#w-ics');
+    const play = footer.querySelector('#w-play');
+
+    if (toggle) toggle.addEventListener('click', () => {
+      w.registrado = !w.registrado;
+      IMDIILApp.toast.success(w.registrado?'Te inscribiste':'Cancelaste registro', w.registrado?'Recibirás un recordatorio una hora antes':'');
+      m.close();
+      render(document.getElementById('dynamic-section'));
+    });
+    if (ics) ics.addEventListener('click', () => descargarICS(w));
+    if (play) play.addEventListener('click', () => {
+      w.visto = true;
+      w.duracionVista = w.duracion;
+      IMDIILApp.toast.info('Reproductor', 'En Sprint 4 esto reproducirá el video real.');
+      m.close();
+      render(document.getElementById('dynamic-section'));
+    });
+  }
+
+  function descargarICS(w){
+    const fecha = new Date(w.fecha);
+    const finFecha = new Date(fecha.getTime() + w.duracion*60*1000);
+    const fmt = (d) => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//IMDIIL//Panel VIP//ES',
+      'BEGIN:VEVENT',
+      'UID:' + w.id + '@imdiil.com',
+      'DTSTAMP:' + fmt(new Date()),
+      'DTSTART:' + fmt(fecha),
+      'DTEND:' + fmt(finFecha),
+      'SUMMARY:' + w.titulo,
+      'DESCRIPTION:' + (w.desc || '').replace(/\n/g,'\\n') + '\\n\\nInstructor: ' + w.instructor,
+      'LOCATION:Online · IMDIIL Panel VIP',
+      'URL:https://www.imdiil.com/vip-panel.html#webinars',
+      'BEGIN:VALARM',
+      'TRIGGER:-PT1H',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Tu clase en vivo IMDIIL comienza en 1 hora',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], {type:'text/calendar'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'IMDIIL-' + w.id + '.ics';
+    a.click();
+    URL.revokeObjectURL(url);
+    IMDIILApp.toast.success('Evento descargado', 'Importa el .ics a tu calendario');
+  }
+
+  function startCountdown(){
+    if (countdownInterval) clearInterval(countdownInterval);
+    const el = document.querySelector('.webinar-hero__countdown');
+    if (!el) return;
+    const target = new Date(el.dataset.target);
+    const update = () => {
+      const diff = target - new Date();
+      if (diff <= 0){
+        ['d','h','m','s'].forEach(k => { const e = document.getElementById('wh-'+k); if (e) e.textContent = '00'; });
+        clearInterval(countdownInterval);
+        return;
+      }
+      const d = Math.floor(diff/86400000);
+      const h = Math.floor((diff%86400000)/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      const s = Math.floor((diff%60000)/1000);
+      const dEl = document.getElementById('wh-d');
+      const hEl = document.getElementById('wh-h');
+      const mEl = document.getElementById('wh-m');
+      const sEl = document.getElementById('wh-s');
+      if (dEl) dEl.textContent = pad(d);
+      if (hEl) hEl.textContent = pad(h);
+      if (mEl) mEl.textContent = pad(m);
+      if (sEl) sEl.textContent = pad(s);
+    };
+    update();
+    countdownInterval = setInterval(update, 1000);
+  }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function monthShort(m){ return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][m]; }
+  function formatFechaLarga(d){
+    const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()];
+  }
+
+  IMDIILRouter.register('webinars', {
+    render,
+    onLeave(){ if (countdownInterval) clearInterval(countdownInterval); }
+  });
+})(window);
+
+
+/* ===== Sprint 3.1: Init router ===== */
+document.addEventListener("imdiil:ready", () => { IMDIILRouter.init(); });
 
 </script>
 </body>
