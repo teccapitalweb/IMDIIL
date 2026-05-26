@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0E0A06">
+<meta name="description" content="IMDIIL Admin · Panel de administración">
+<title>IMDIIL · Admin</title>
+<link rel="icon" type="image/png" href="/assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+/* IMDIIL ADMIN · misma identidad agri-futurista que vip-panel */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none;cursor:pointer}
+img{display:block;max-width:100%}
+svg{flex-shrink:0}
+input,select,textarea{font:inherit;color:inherit}
+::selection{background:var(--primary);color:#fff}
+
+:root[data-theme="night"]{
+  --bg:#0E0A06;--bg-deep:#070503;
+  --surface:#1A130D;--surface-2:#251C13;--surface-3:#33271C;
+  --border:rgba(255,230,200,0.07);--border-2:rgba(255,230,200,0.14);--border-strong:rgba(255,230,200,0.22);
+  --text:#F5F0E6;--text-2:#B0A492;--text-3:#6F6555;
+  --primary:#FF7A2D;--primary-soft:#FFB377;--primary-deep:#E85A14;
+  --primary-glow:rgba(255,122,45,0.38);--highlight:#FFB347;
+  --success:#34D399;--danger:#F87171;--warning:#FBBF24;--whatsapp:#22C55E;
+  --info:#3B82F6;--accent:#A855F7;
+  --shadow-card:0 10px 40px rgba(0,0,0,0.5);
+}
+:root[data-theme="day"]{
+  --bg:#F4EFE3;--bg-deep:#E8DCC8;
+  --surface:#FFFFFF;--surface-2:#FBF6EB;--surface-3:#F2EAD8;
+  --border:rgba(26,20,16,0.07);--border-2:rgba(26,20,16,0.14);--border-strong:rgba(26,20,16,0.24);
+  --text:#1A1410;--text-2:#5A5044;--text-3:#8A7F70;
+  --primary:#FF7A2D;--primary-soft:#FFB377;--primary-deep:#E85A14;
+  --primary-glow:rgba(255,122,45,0.32);--highlight:#FF9148;
+  --success:#0F9D58;--danger:#DC2D3F;--warning:#E89B1F;--whatsapp:#16A34A;
+  --info:#3B82F6;--accent:#A855F7;
+  --shadow-card:0 8px 32px rgba(58,40,20,0.08);
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  font-size:14px;line-height:1.5;
+  color:var(--text);background:var(--bg);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  overflow:hidden;
+}
+
+.app{display:grid;grid-template-columns:228px 1fr;height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--bg-deep);
+  border-right:1px solid var(--border);
+  padding:18px 14px;
+  overflow-y:auto;
+  display:flex;flex-direction:column;gap:8px;
+}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--surface-2);border-radius:3px}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.brand__logo{width:36px;height:36px;border-radius:9px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.brand__logo svg{width:24px;height:24px}
+.brand__name{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.1}
+.brand__role{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--primary);
+  padding:3px 8px;border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--primary) 30%,transparent);
+  display:inline-flex;align-items:center;gap:5px;margin-top:3px;
+}
+.brand__role::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--primary);animation:pulseDotSmall 1.8s ease-out infinite;box-shadow:0 0 6px var(--primary-glow)}
+
+.nav-section{display:flex;flex-direction:column;gap:2px;margin-top:8px}
+.nav-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);padding:8px 12px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:10px;
+  font-size:13px;font-weight:500;color:var(--text-2);
+  transition:color .15s,background .15s;
+  position:relative;
+}
+.nav-item:hover{color:var(--text);background:var(--surface)}
+.nav-item.is-active{color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent)}
+.nav-item .ic{width:16px;height:16px;flex-shrink:0}
+.nav-item__badge{
+  margin-left:auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;
+  padding:2px 7px;border-radius:100px;
+  background:var(--surface-2);color:var(--text-3);
+}
+.nav-item.is-active .nav-item__badge{background:var(--primary);color:#fff}
+
+/* MAIN */
+.main{overflow-y:auto;background:var(--bg);position:relative}
+.main::-webkit-scrollbar{width:8px}
+.main::-webkit-scrollbar-thumb{background:var(--surface-2);border-radius:4px}
+
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+.topbar__pill{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  padding:7px 13px;border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--primary) 30%,transparent);
+  color:var(--primary);
+}
+.topbar__pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--primary);animation:pulseDotSmall 1.8s ease-out infinite;box-shadow:0 0 6px var(--primary-glow)}
+.topbar__right{display:flex;align-items:center;gap:10px}
+.theme-toggle,.icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border-2);
+  color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.theme-toggle:hover,.icon-btn:hover{color:var(--text);border-color:var(--border-strong)}
+.theme-toggle .ic,.icon-btn .ic{width:16px;height:16px}
+.avatar{
+  display:flex;align-items:center;gap:9px;
+  padding:6px 12px 6px 6px;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border-2);
+}
+.avatar__pic{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;letter-spacing:-.2px;
+  flex-shrink:0;
+}
+.avatar__name{font-size:12px;font-weight:600;letter-spacing:-.1px;line-height:1.1}
+.avatar__role{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--primary);font-weight:700;letter-spacing:.6px;margin-top:1px}
+
+.page{padding:28px 32px 80px;max-width:1240px;margin:0 auto}
+
+/* SEC HERO */
+.sec-hero{padding:10px 0 24px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.sec-hero__eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:700;letter-spacing:1.7px;text-transform:uppercase;
+  color:var(--primary);
+  padding:7px 13px;border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--primary) 28%,transparent);
+}
+.sec-hero__eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--primary);animation:pulseDotSmall 1.8s ease-out infinite;box-shadow:0 0 8px var(--primary-glow)}
+.sec-hero__title{
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:clamp(28px,3.4vw,38px);font-weight:800;letter-spacing:-1.1px;line-height:1.05;
+  margin-top:14px;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 55%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.sec-hero__sub{font-size:14px;color:var(--text-2);margin-top:10px;max-width:680px;line-height:1.6}
+.sec-hero__actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px 22px;
+  position:relative;overflow:hidden;
+  transition:transform .25s cubic-bezier(.2,.8,.25,1),border-color .25s,box-shadow .3s;
+}
+.kpi-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--c1,var(--primary)),var(--c2,var(--highlight)),var(--c1,var(--primary)));
+  background-size:200% 100%;
+  animation:shimmerBar 3.5s ease-in-out infinite;
+  border-radius:20px 20px 0 0;
+}
+@keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
+.kpi-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--c1,var(--primary)) 35%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.12)}
+.kpi-card__label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;
+}
+.kpi-card__label::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c1,var(--primary));animation:pulseDotSmall 2s ease-out infinite;box-shadow:0 0 8px var(--c1,var(--primary))}
+.kpi-card__value{
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:30px;font-weight:800;letter-spacing:-.8px;line-height:1;
+  font-feature-settings:"tnum" 1;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 55%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.kpi-card__sub{font-size:11.5px;color:var(--text-2);margin-top:8px;font-weight:500}
+.kpi-card__sub strong{color:var(--c1,var(--primary));font-weight:700}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:11px 22px;border-radius:100px;
+  font-size:13px;font-weight:700;letter-spacing:-.1px;
+  cursor:pointer;transition:all .2s cubic-bezier(.2,.8,.25,1);
+  border:1px solid transparent;
+}
+.btn .ic{width:14px;height:14px}
+.btn--accent{
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;
+  box-shadow:0 8px 22px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn--accent:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn--ghost{background:var(--surface);color:var(--text);border-color:var(--border-2)}
+.btn--ghost:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+.btn--danger{background:transparent;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 35%,transparent)}
+.btn--danger:hover{background:color-mix(in srgb,var(--danger) 10%,transparent);transform:translateY(-1px)}
+.btn--sm{padding:8px 14px;font-size:11.5px}
+
+/* Inputs */
+.input,.select,.textarea{
+  width:100%;
+  padding:11px 14px;
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:11px;
+  font-size:13px;color:var(--text);
+  transition:border-color .15s,box-shadow .15s;
+}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+.input::placeholder,.textarea::placeholder{color:var(--text-3)}
+.textarea{resize:vertical;min-height:80px;line-height:1.5;font-family:inherit}
+.select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236F6555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+
+.label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:7px;display:block;
+}
+
+/* Tags */
+.tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:100px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+  background:var(--surface-2);color:var(--text-2);
+  border:1px solid var(--border);
+}
+.tag--success{background:color-mix(in srgb,var(--success) 12%,transparent);color:var(--success);border-color:color-mix(in srgb,var(--success) 28%,transparent)}
+.tag--success::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--success);animation:pulseDotSmall 2s ease-out infinite;box-shadow:0 0 5px var(--success)}
+.tag--warning{background:color-mix(in srgb,var(--warning) 12%,transparent);color:var(--warning);border-color:color-mix(in srgb,var(--warning) 28%,transparent)}
+.tag--danger{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 28%,transparent)}
+.tag--info{background:color-mix(in srgb,var(--info) 12%,transparent);color:var(--info);border-color:color-mix(in srgb,var(--info) 28%,transparent)}
+.tag--accent{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.tag--primary{background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border-color:color-mix(in srgb,var(--primary) 28%,transparent)}
+
+/* Section header */
+.section-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.section-header__title{
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:19px;font-weight:700;letter-spacing:-.3px;
+  display:inline-flex;align-items:center;gap:10px;
+}
+.section-header__badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;letter-spacing:.8px;
+  padding:4px 11px;border-radius:100px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  border:1px solid color-mix(in srgb,var(--primary) 28%,transparent);
+  text-transform:uppercase;display:inline-flex;align-items:center;gap:5px;
+}
+.section-header__badge::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--primary);animation:pulseDotSmall 1.8s ease-out infinite}
+
+/* Toolbar */
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+.searchbar{position:relative;flex:1;max-width:380px;min-width:200px}
+.searchbar input{
+  width:100%;padding:11px 16px 11px 40px;
+  background:var(--surface);border:1px solid var(--border-2);
+  border-radius:100px;font-size:13px;color:var(--text);
+  transition:border-color .15s,box-shadow .15s;
+}
+.searchbar input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+.searchbar input::placeholder{color:var(--text-3)}
+.searchbar svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--text-3);width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.tab{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;letter-spacing:.5px;
+  padding:10px 18px;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border-2);color:var(--text-2);
+  cursor:pointer;transition:all .2s cubic-bezier(.2,.8,.25,1);
+}
+.tab:hover{color:var(--text);border-color:var(--border-strong);transform:translateY(-1px)}
+.tab.is-active{
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;border-color:var(--primary);
+  box-shadow:0 6px 18px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.18);
+  transform:translateY(-1px);
+}
+
+/* Tabla / lista de filas */
+.adm-list{display:flex;flex-direction:column;gap:8px}
+.adm-row{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px 18px;
+  display:flex;align-items:center;gap:14px;
+  transition:transform .15s,border-color .15s,box-shadow .25s;
+}
+.adm-row:hover{transform:translateX(2px);border-color:var(--border-strong);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.adm-row__thumb{
+  width:44px;height:44px;border-radius:11px;
+  background:linear-gradient(135deg,var(--c1,var(--primary)),color-mix(in srgb,var(--c1,var(--primary)) 60%,#000));
+  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 6px 14px color-mix(in srgb,var(--c1,var(--primary)) 25%,transparent);
+}
+.adm-row__thumb .ic{width:20px;height:20px}
+.adm-row__body{flex:1;min-width:0}
+.adm-row__title{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.2px;line-height:1.3}
+.adm-row__meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-3);font-weight:600;
+  display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;
+}
+.adm-row__meta span{display:inline-flex;align-items:center;gap:5px}
+.adm-row__meta .ic{width:11px;height:11px}
+.adm-row__actions{display:flex;gap:6px;flex-shrink:0}
+.icon-action{
+  width:34px;height:34px;border-radius:10px;
+  background:var(--surface-2);border:1px solid var(--border);
+  color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.icon-action:hover{color:var(--primary);border-color:color-mix(in srgb,var(--primary) 30%,transparent)}
+.icon-action--danger:hover{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,transparent);background:color-mix(in srgb,var(--danger) 6%,transparent)}
+.icon-action .ic{width:14px;height:14px}
+
+/* Form cards */
+.form-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:24px 26px;
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-field{display:flex;flex-direction:column;gap:7px}
+.form-field--full{grid-column:1/-1}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+
+/* Dashboard cards */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:24px}
+.dash-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:22px 24px;
+}
+.dash-card__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dash-card__title{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+.dash-card__title .ic{width:18px;height:18px;color:var(--primary)}
+.dash-card__link{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--primary);display:inline-flex;align-items:center;gap:5px;
+  transition:gap .2s;
+}
+.dash-card__link:hover{gap:8px}
+.dash-card__link .ic{width:11px;height:11px}
+
+/* Mini list dentro de dash-card */
+.mini-list{display:flex;flex-direction:column;gap:8px}
+.mini-row{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.mini-row:last-child{border-bottom:none;padding-bottom:0}
+.mini-row:first-child{padding-top:0}
+.mini-row__dot{
+  width:32px;height:32px;border-radius:50%;
+  background:color-mix(in srgb,var(--c1,var(--primary)) 14%,transparent);
+  color:var(--c1,var(--primary));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mini-row__dot .ic{width:14px;height:14px}
+.mini-row__body{flex:1;min-width:0}
+.mini-row__title{font-size:13px;font-weight:600;letter-spacing:-.1px}
+.mini-row__meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-3);font-weight:500;margin-top:2px}
+.mini-row__right{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;color:var(--c1,var(--primary));font-feature-settings:"tnum" 1}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:50;display:none;align-items:center;justify-content:center;padding:18px}
+:root[data-theme="day"] .modal-backdrop{background:rgba(26,20,16,.35)}
+.modal-backdrop.is-open{display:flex}
+.modal{
+  background:var(--surface);border:1px solid var(--border-2);border-radius:20px;
+  width:100%;max-width:640px;max-height:90vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:var(--shadow-card);
+  animation:modalIn .25s cubic-bezier(.2,.8,.25,1);
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal__header{
+  padding:18px 22px 14px;display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);
+}
+.modal__icon{
+  width:36px;height:36px;border-radius:10px;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.modal__title{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.2px}
+.modal__subtitle{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-3);font-weight:600;margin-top:2px}
+.modal__close{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--surface-2);color:var(--text-2);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal__close:hover{color:var(--danger);background:color-mix(in srgb,var(--danger) 10%,transparent)}
+.modal__close .ic{width:14px;height:14px;stroke-width:2.2}
+.modal__body{padding:20px 22px;overflow-y:auto;flex:1}
+.modal__footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+
+/* Toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:60;display:flex;flex-direction:column;gap:9px;max-width:340px}
+.toast{
+  background:var(--surface);border:1px solid var(--border-2);border-radius:14px;
+  padding:13px 16px;display:flex;gap:11px;align-items:flex-start;
+  box-shadow:var(--shadow-card);
+  animation:toastIn .25s cubic-bezier(.2,.8,.25,1);
+  min-width:240px;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast__icon{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:color-mix(in srgb,var(--c1,var(--primary)) 14%,transparent);
+  color:var(--c1,var(--primary));
+}
+.toast__icon .ic{width:13px;height:13px;stroke-width:2.2}
+.toast--success{--c1:var(--success)}
+.toast--error{--c1:var(--danger)}
+.toast--info{--c1:var(--info)}
+.toast__body{flex:1;min-width:0}
+.toast__title{font-size:13px;font-weight:600;letter-spacing:-.1px}
+.toast__msg{font-size:12px;color:var(--text-2);margin-top:2px;line-height:1.45}
+
+/* News list */
+.news-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px 18px;
+  display:flex;gap:14px;align-items:flex-start;
+  transition:transform .15s,border-color .15s,box-shadow .25s;
+}
+.news-card:hover{transform:translateY(-1px);border-color:var(--border-strong);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.news-card__cover{
+  width:64px;height:64px;border-radius:12px;
+  background:linear-gradient(135deg,var(--c1,var(--primary)),color-mix(in srgb,var(--c1,var(--primary)) 60%,#000));
+  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 6px 14px color-mix(in srgb,var(--c1,var(--primary)) 25%,transparent);
+}
+.news-card__cover .ic{width:24px;height:24px}
+.news-card__body{flex:1;min-width:0}
+.news-card__head{display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap}
+.news-card__date{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--text-3);font-weight:600;letter-spacing:.8px}
+.news-card__title{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.2px;line-height:1.3}
+.news-card__desc{font-size:12px;color:var(--text-2);line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-card__source{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);font-weight:600;margin-top:6px;display:inline-flex;align-items:center;gap:4px}
+
+/* Empty state */
+.empty{
+  text-align:center;padding:60px 28px;
+  background:var(--surface);border:1px dashed var(--border-2);border-radius:18px;
+}
+.empty__icon{
+  width:72px;height:72px;margin:0 auto 16px;border-radius:18px;
+  background:var(--surface-2);color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;
+}
+.empty__icon .ic{width:32px;height:32px}
+.empty h3{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:17px;font-weight:700;margin-bottom:7px}
+.empty p{font-size:13px;color:var(--text-2);max-width:380px;margin:0 auto;line-height:1.55}
+
+/* Cron card especial */
+.cron-card{
+  background:linear-gradient(135deg,#1A130D 0%,#0E0A06 100%);
+  border:1px solid var(--border-2);
+  border-radius:20px;
+  padding:24px 26px;
+  margin-bottom:18px;
+  position:relative;overflow:hidden;
+}
+:root[data-theme="day"] .cron-card{background:linear-gradient(135deg,#FFFFFF 0%,#FBF6EB 100%)}
+.cron-card::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 30%,color-mix(in srgb,var(--success) 18%,transparent),transparent 50%);
+  filter:blur(40px);pointer-events:none;
+}
+.cron-card__row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:relative;z-index:1}
+.cron-card__icon{
+  width:54px;height:54px;border-radius:14px;
+  background:linear-gradient(135deg,var(--success),#047857);
+  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 8px 22px color-mix(in srgb,var(--success) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.cron-card__info{flex:1;min-width:0}
+.cron-card__lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--success);display:inline-flex;align-items:center;gap:6px}
+.cron-card__lbl::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulseDotSmall 1.8s ease-out infinite;box-shadow:0 0 8px var(--success)}
+.cron-card__title{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.4px;margin-top:4px}
+.cron-card__sub{font-size:12.5px;color:var(--text-2);margin-top:4px}
+
+@keyframes pulseDotSmall{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .4s ease forwards}
+
+/* Mobile nav */
+.mobile-nav{display:none}
+
+/* RESPONSIVE */
+@media (max-width:880px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .page{padding:14px 14px 100px}
+  .topbar{padding:12px 14px}
+  .avatar__name,.avatar__role{display:none}
+  .avatar{padding:5px}
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--border-2);padding:6px 4px max(6px,env(safe-area-inset-bottom));justify-content:space-around;align-items:center}
+  .mobile-nav__item{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-3);padding:5px 8px;border-radius:8px;font-size:9.5px;font-weight:600;letter-spacing:.3px}
+  .mobile-nav__item.is-active{color:var(--primary)}
+  .mobile-nav__item .ic{width:18px;height:18px}
+  .form-grid{grid-template-columns:1fr}
+  .dash-grid{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-card{padding:14px 16px}
+  .kpi-card__value{font-size:24px}
+  .adm-row{flex-wrap:wrap;gap:10px}
+  .adm-row__actions{margin-left:auto}
+  .modal__body{padding:18px}
+  .modal__footer .btn{flex:1;min-width:100px}
+}
+</style>
+</head>
+<body>
+
+<!-- ICONOS SVG -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/></symbol>
+<symbol id="i-broadcast" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><path d="M16.243 16.243a6 6 0 1 0-8.486 0"/><path d="M19.071 19.071a10 10 0 1 0-14.142 0"/></symbol>
+<symbol id="i-news" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1-4 0v-13a1 1 0 0 0-1-1h-11a1 1 0 0 0-1 1v12a3 3 0 0 0 3 3h14"/><path d="M8 8h4"/><path d="M8 12h4"/><path d="M8 16h4"/></symbol>
+<symbol id="i-certificate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="15" r="3"/><path d="M13 17.5v4.5l2-1.5l2 1.5v-4.5"/><path d="M10 19h-5a2 2 0 0 1-2-2v-10c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v6"/><path d="M6 9h12"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83a2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0a2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83a2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0a2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1l1-4l9.5-9.5z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+<symbol id="i-shield-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1-8.5 15a12 12 0 0 1-8.5-15a12 12 0 0 0 8.5-3"/><path d="M9 12l2 2l4-4"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-chart-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/><line x1="3" y1="20" x2="21" y2="20"/></symbol>
+<symbol id="i-credit-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8s11 8 11 8s-4 8-11 8s-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+<symbol id="i-tools" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="9"/><path d="M12 13l3-3"/><path d="M5.2 8.8a8.5 8.5 0 0 1 13.6 0"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+<symbol id="i-dollar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+<symbol id="i-whatsapp" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.3A7.85 7.85 0 0 0 12.05 4a7.94 7.94 0 0 0-6.88 11.9L4 20l4.2-1.1a7.93 7.93 0 0 0 3.84.98h.01c4.38 0 7.94-3.56 7.94-7.94c0-2.12-.82-4.11-2.39-5.61zm-5.55 12.21h-.01a6.6 6.6 0 0 1-3.36-.92l-.24-.14l-2.5.65l.67-2.44l-.16-.25a6.59 6.59 0 0 1-1.01-3.51c0-3.64 2.96-6.6 6.6-6.6a6.59 6.59 0 0 1 6.6 6.6c0 3.64-2.96 6.6-6.6 6.6zm3.62-4.94c-.2-.1-1.17-.58-1.35-.64c-.18-.07-.31-.1-.45.1c-.13.2-.51.64-.63.78c-.12.13-.23.15-.43.05c-.2-.1-.84-.31-1.61-.99c-.6-.53-1-1.19-1.12-1.39c-.12-.2-.01-.31.09-.41c.09-.09.2-.23.3-.35c.1-.12.13-.2.2-.33c.07-.13.03-.25-.02-.35c-.05-.1-.45-1.09-.62-1.5c-.16-.39-.33-.34-.45-.34c-.12-.01-.25-.01-.38-.01c-.13 0-.35.05-.53.25c-.18.2-.69.68-.69 1.65c0 .97.71 1.92.81 2.05c.1.13 1.4 2.13 3.39 2.99c.47.2.84.32 1.13.41c.48.15.91.13 1.26.08c.38-.06 1.17-.48 1.34-.94c.16-.46.16-.86.12-.94c-.05-.08-.18-.13-.38-.23z"/></symbol>
+<symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8A4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></symbol>
+</defs>
+</svg>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand__logo">
+        <svg viewBox="0 0 64 64"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg>
+      </div>
+      <div>
+        <div class="brand__name">IMDIIL</div>
+        <span class="brand__role">Admin</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Resumen</div>
+      <a class="nav-item is-active" data-section="dashboard"><svg class="ic"><use href="#i-home"/></svg>Dashboard</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Contenido</div>
+      <a class="nav-item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos<span class="nav-item__badge">12</span></a>
+      <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo<span class="nav-item__badge">3</span></a>
+      <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material<span class="nav-item__badge">9</span></a>
+      <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados<span class="nav-item__badge">2</span></a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Comunidad</div>
+      <a class="nav-item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros VIP<span class="nav-item__badge">486</span></a>
+      <a class="nav-item" data-section="noticias"><svg class="ic"><use href="#i-news"/></svg>Noticias</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Cuenta</div>
+      <a class="nav-item" data-section="config"><svg class="ic"><use href="#i-settings"/></svg>Configuración</a>
+      <a class="nav-item" id="btn-logout"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesión</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar__pill">Modo administrador</span>
+      <div class="topbar__right">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema"><svg class="ic"><use href="#i-moon"/></svg></button>
+        <div class="avatar">
+          <div class="avatar__pic">TC</div>
+          <div>
+            <div class="avatar__name">TEC Capital</div>
+            <div class="avatar__role">SUPERADMIN</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page"></div>
+  </main>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <a class="mobile-nav__item is-active" data-section="dashboard"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
+    <a class="mobile-nav__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
+    <a class="mobile-nav__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Vivo</a>
+    <a class="mobile-nav__item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros</a>
+    <a class="mobile-nav__item" data-section="config"><svg class="ic"><use href="#i-settings"/></svg>Config</a>
+  </nav>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal">
+    <div class="modal__header">
+      <div class="modal__icon" id="modal-icon"><svg class="ic"><use href="#i-plus"/></svg></div>
+      <div>
+        <div class="modal__title" id="modal-title">Título</div>
+        <div class="modal__subtitle" id="modal-subtitle"></div>
+      </div>
+      <button class="modal__close" id="modal-close"><svg class="ic"><use href="#i-close"/></svg></button>
+    </div>
+    <div class="modal__body" id="modal-body"></div>
+    <div class="modal__footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* =========================================================
+   IMDIIL ADMIN · datos seed + lógica completa
+   Para conectar a Firebase en sprint 5
+   ========================================================= */
+
+const Theme={
+  init(){const s=localStorage.getItem('imdiil-admin:theme')||'night';document.documentElement.dataset.theme=s;this.updateIcon();},
+  toggle(){const c=document.documentElement.dataset.theme;const n=c==='night'?'day':'night';document.documentElement.dataset.theme=n;localStorage.setItem('imdiil-admin:theme',n);this.updateIcon();},
+  updateIcon(){const b=document.getElementById('theme-toggle');if(!b)return;const isDay=document.documentElement.dataset.theme==='day';b.innerHTML='<svg class="ic"><use href="#'+(isDay?'i-sun':'i-moon')+'"/></svg>';}
+};
+
+const Toast={
+  show(type,title,msg,dur=3500){
+    const c=document.getElementById('toast-container');
+    const t=document.createElement('div');
+    t.className='toast toast--'+type;
+    const icons={success:'i-check',error:'i-close',info:'i-bolt'};
+    t.innerHTML=`<div class="toast__icon"><svg class="ic"><use href="#${icons[type]||'i-bolt'}"/></svg></div><div class="toast__body"><div class="toast__title">${title}</div>${msg?`<div class="toast__msg">${msg}</div>`:''}</div>`;
+    c.appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';setTimeout(()=>t.remove(),250);},dur);
+  },
+  success(t,m){this.show('success',t,m)},
+  error(t,m){this.show('error',t,m)},
+  info(t,m){this.show('info',t,m)}
+};
+
+const Modal={
+  current:null,
+  open({title,subtitle,icon='i-plus',body,footer,onClose}){
+    document.getElementById('modal-icon').innerHTML='<svg class="ic"><use href="#'+icon+'"/></svg>';
+    document.getElementById('modal-title').textContent=title||'';
+    document.getElementById('modal-subtitle').textContent=subtitle||'';
+    document.getElementById('modal-body').innerHTML='';
+    if(typeof body==='string')document.getElementById('modal-body').innerHTML=body;
+    else if(body)document.getElementById('modal-body').appendChild(body);
+    document.getElementById('modal-footer').innerHTML='';
+    if(typeof footer==='string')document.getElementById('modal-footer').innerHTML=footer;
+    else if(footer)document.getElementById('modal-footer').appendChild(footer);
+    document.getElementById('modal-backdrop').classList.add('is-open');
+    this.current={onClose};
+  },
+  close(){
+    document.getElementById('modal-backdrop').classList.remove('is-open');
+    if(this.current?.onClose)this.current.onClose();
+    this.current=null;
+  }
+};
+
+/* =========================================================
+   DATOS SEED (después → Firestore)
+   ========================================================= */
+const SEED={
+  cursos:[
+    {id:'c1',titulo:'NOM-019-STPS · Comisiones de seguridad e higiene',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:12,modulos:8,activo:true,inscritos:184},
+    {id:'c2',titulo:'Indicadores logísticos: OTIF, Fill Rate y rotación',area:'Logística',nivel:'Avanzado',instructor:'Ing. Carlos Vidal',horas:10,modulos:6,activo:true,inscritos:96},
+    {id:'c3',titulo:'Mantenimiento productivo total (TPM)',area:'Mantenimiento',nivel:'Intermedio',instructor:'Ing. Patricia Solís',horas:14,modulos:9,activo:true,inscritos:67},
+    {id:'c4',titulo:'NOM-001-STPS · Edificios, locales e instalaciones',area:'Seguridad',nivel:'Básico',instructor:'Ing. Roberto Méndez',horas:8,modulos:5,activo:true,inscritos:240},
+    {id:'c5',titulo:'Lean Manufacturing para supervisores',area:'Calidad',nivel:'Intermedio',instructor:'Ing. María López',horas:16,modulos:10,activo:true,inscritos:312},
+    {id:'c6',titulo:'NOM-029-STPS · Trabajos eléctricos seguros',area:'Seguridad',nivel:'Avanzado',instructor:'Ing. Roberto Méndez',horas:18,modulos:11,activo:true,inscritos:45},
+    {id:'c7',titulo:'Six Sigma Green Belt',area:'Calidad',nivel:'Avanzado',instructor:'Ing. María López',horas:40,modulos:24,activo:true,inscritos:28},
+    {id:'c8',titulo:'WMS y gestión de almacenes 4.0',area:'Logística',nivel:'Intermedio',instructor:'Ing. Carlos Vidal',horas:12,modulos:8,activo:true,inscritos:54},
+    {id:'c9',titulo:'ISO 45001 · Sistema de gestión SST',area:'Seguridad',nivel:'Avanzado',instructor:'Ing. Patricia Solís',horas:24,modulos:14,activo:false,inscritos:0},
+    {id:'c10',titulo:'Análisis modal de fallos (AMEF)',area:'Calidad',nivel:'Intermedio',instructor:'Ing. María López',horas:10,modulos:7,activo:true,inscritos:39},
+    {id:'c11',titulo:'Supervisión efectiva en planta',area:'Mantenimiento',nivel:'Básico',instructor:'Ing. Patricia Solís',horas:14,modulos:10,activo:true,inscritos:71},
+    {id:'c12',titulo:'NOM-035-STPS · Factores de riesgo psicosocial',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:10,modulos:6,activo:true,inscritos:158}
+  ],
+  webinars:[
+    {id:'w1',titulo:'OEE: optimización de líneas de producción',instructor:'Ing. María López',fecha:'2026-05-28T19:00:00',duracion:90,area:'Calidad',link:'https://meet.imdiil.com/oee-mayo28',publicado:true,registrados:84},
+    {id:'w2',titulo:'NOM-035 en la práctica',instructor:'Ing. Roberto Méndez',fecha:'2026-06-03T19:00:00',duracion:75,area:'Seguridad',link:'https://meet.imdiil.com/nom035-junio3',publicado:true,registrados:52},
+    {id:'w3',titulo:'OTIF: cómo medirlo cuando tu sistema no lo calcula',instructor:'Ing. Carlos Vidal',fecha:'2026-06-10T19:00:00',duracion:60,area:'Logística',link:'',publicado:false,registrados:0}
+  ],
+  pdfs:[
+    {id:'p1',titulo:'Plantilla de Matriz IPER en Excel',cat:'Seguridad industrial',paginas:14,size:'2.4 MB',publicado:true,descargas:184},
+    {id:'p2',titulo:'NOM-035-STPS · Cuestionario completo',cat:'Seguridad industrial',paginas:22,size:'1.8 MB',publicado:true,descargas:412},
+    {id:'p3',titulo:'Guía OEE: cálculo y mejora paso a paso',cat:'Calidad',paginas:32,size:'4.1 MB',publicado:true,descargas:67},
+    {id:'p4',titulo:'Checklist auditoría 5S en planta',cat:'Calidad',paginas:8,size:'820 KB',publicado:true,descargas:128},
+    {id:'p5',titulo:'Formato ATS · Análisis de Trabajo Seguro',cat:'Seguridad industrial',paginas:6,size:'480 KB',publicado:true,descargas:96},
+    {id:'p6',titulo:'Indicadores logísticos · Excel con Power Query',cat:'Logística',paginas:18,size:'3.6 MB',publicado:true,descargas:54},
+    {id:'p7',titulo:'NOM-019-STPS · Acta de constitución',cat:'Seguridad industrial',paginas:4,size:'320 KB',publicado:true,descargas:210},
+    {id:'p8',titulo:'Procedimiento LOTO',cat:'Seguridad industrial',paginas:12,size:'1.5 MB',publicado:false,descargas:0},
+    {id:'p9',titulo:'Plantilla AMEF de proceso (FMEA)',cat:'Calidad',paginas:6,size:'540 KB',publicado:true,descargas:42}
+  ],
+  certificados:[
+    {id:'cert1',estudiante:'Carlos Méndez',email:'carlos.mendez@email.com',curso:'NOM-001-STPS · Edificios, locales e instalaciones',folio:'IMDIIL-2026-48201',emitido:'2026-04-18',horas:8,calificacion:96,enviado:true},
+    {id:'cert2',estudiante:'María Hernández',email:'maria.hernandez@email.com',curso:'Lean Manufacturing para supervisores',folio:'IMDIIL-2026-37154',emitido:'2026-03-22',horas:16,calificacion:92,enviado:true}
+  ],
+  miembros:[
+    {id:'m1',nombre:'Carlos Méndez Aguilar',email:'carlos.mendez@email.com',plan:'Anual',inicio:'2026-03-15',renovacion:'2027-03-15',activo:true,cursos:7},
+    {id:'m2',nombre:'María Hernández López',email:'maria.hernandez@email.com',plan:'Anual',inicio:'2026-02-20',renovacion:'2027-02-20',activo:true,cursos:5},
+    {id:'m3',nombre:'Roberto Aguilar Pérez',email:'r.aguilar@email.com',plan:'Mensual',inicio:'2026-05-10',renovacion:'2026-06-10',activo:true,cursos:2},
+    {id:'m4',nombre:'Patricia Solís García',email:'p.solis@email.com',plan:'Anual',inicio:'2026-01-08',renovacion:'2027-01-08',activo:true,cursos:9},
+    {id:'m5',nombre:'Jorge Rivera Castro',email:'j.rivera@email.com',plan:'Mensual',inicio:'2026-04-01',renovacion:'2026-05-01',activo:false,cursos:1},
+    {id:'m6',nombre:'Ana López Méndez',email:'a.lopez@email.com',plan:'Anual',inicio:'2026-03-30',renovacion:'2027-03-30',activo:true,cursos:4},
+    {id:'m7',nombre:'Fernando Castro Ortiz',email:'f.castro@email.com',plan:'Mensual',inicio:'2026-05-18',renovacion:'2026-06-18',activo:true,cursos:1}
+  ],
+  noticias:[
+    {id:'n1',titulo:'STPS publica actualización de la NOM-019 sobre comisiones de seguridad e higiene',cat:'Seguridad',fuente:'El Economista',fecha:'Hoy',color:'#FF7A2D'},
+    {id:'n2',titulo:'NOM-035: 70% de las empresas mexicanas aún tienen pendiente el diagnóstico psicosocial',cat:'NOM-STPS',fuente:'Forbes México',fecha:'Hoy',color:'#3B82F6'},
+    {id:'n3',titulo:'Industria automotriz mexicana cierra abril con incremento de 8.3% en producción',cat:'Industria MX',fuente:'El Financiero',fecha:'Ayer',color:'#10B981'},
+    {id:'n4',titulo:'Nearshoring impulsa la inversión en parques industriales del Bajío',cat:'Logística',fuente:'Expansión',fecha:'Ayer',color:'#A855F7'}
+  ],
+  config:{
+    precioMensual:199,
+    precioAnual:1899,
+    monedaSimbolo:'$',
+    moneda:'MXN',
+    whatsapp:'+52 238 173 8143',
+    instagram:'@imdiil',
+    emailContacto:'contacto@imdiil.com',
+    admins:['teccapitalweb@gmail.com','imdiilconsultoria@gmail.com'],
+    stripePublicKey:'pk_live_••••••••••••••••',
+    cronStatus:'activo',
+    cronUltima:'Hoy 7:00 AM',
+    cronProxima:'Mañana 7:00 AM',
+    noticiasGeneradas:24
+  }
+};
+
+/* =========================================================
+   PAGES
+   ========================================================= */
+const Pages={
+  dashboard(p){
+    const stats={
+      miembrosActivos:SEED.miembros.filter(m=>m.activo).length,
+      miembrosTotal:SEED.miembros.length,
+      cursosActivos:SEED.cursos.filter(c=>c.activo).length,
+      certEmitidos:SEED.certificados.length,
+      webinarsProx:SEED.webinars.filter(w=>new Date(w.fecha)>new Date()).length,
+      pdfsPubl:SEED.pdfs.filter(p=>p.publicado).length,
+      ingresoMes:486*199 + 0,
+      noticiasHoy:SEED.noticias.filter(n=>n.fecha==='Hoy').length
+    };
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Resumen general</span>
+          <h1 class="sec-hero__title">Dashboard</h1>
+          <p class="sec-hero__sub">Vista general del panel IMDIIL · miembros, contenido, certificados emitidos e ingresos del mes.</p>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card" style="--c1:#34D399;--c2:#22C55E;">
+            <div class="kpi-card__label">Miembros activos</div>
+            <div class="kpi-card__value">${stats.miembrosActivos}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/${stats.miembrosTotal}</span></div>
+            <div class="kpi-card__sub"><strong>+12</strong> nuevos este mes</div>
+          </div>
+          <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
+            <div class="kpi-card__label">Ingresos del mes</div>
+            <div class="kpi-card__value">$96,714</div>
+            <div class="kpi-card__sub">MXN · <strong>+18%</strong> vs abril</div>
+          </div>
+          <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
+            <div class="kpi-card__label">Cursos activos</div>
+            <div class="kpi-card__value">${stats.cursosActivos}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/12</span></div>
+            <div class="kpi-card__sub">1 inactivo · 0 borradores</div>
+          </div>
+          <div class="kpi-card" style="--c1:#A855F7;--c2:#C084FC;">
+            <div class="kpi-card__label">Certificados emitidos</div>
+            <div class="kpi-card__value">${stats.certEmitidos}</div>
+            <div class="kpi-card__sub">Este mes · <strong>+1</strong> ayer</div>
+          </div>
+          <div class="kpi-card" style="--c1:#EF4444;--c2:#F87171;">
+            <div class="kpi-card__label">Clases programadas</div>
+            <div class="kpi-card__value">${stats.webinarsProx}</div>
+            <div class="kpi-card__sub">Próxima · 28 mayo</div>
+          </div>
+          <div class="kpi-card" style="--c1:#10B981;--c2:#34D399;">
+            <div class="kpi-card__label">Material publicado</div>
+            <div class="kpi-card__value">${stats.pdfsPubl}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/9</span></div>
+            <div class="kpi-card__sub">1 sin publicar</div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+
+          <div class="dash-card">
+            <div class="dash-card__header">
+              <div class="dash-card__title"><svg class="ic"><use href="#i-users"/></svg>Últimos miembros</div>
+              <a class="dash-card__link" data-go="miembros">Ver todos<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div class="mini-list">
+              ${SEED.miembros.slice(0,4).map(m=>`
+                <div class="mini-row" style="--c1:${m.plan==='Anual'?'#FF7A2D':'#3B82F6'};">
+                  <div class="mini-row__dot"><svg class="ic"><use href="#i-user"/></svg></div>
+                  <div class="mini-row__body">
+                    <div class="mini-row__title">${m.nombre}</div>
+                    <div class="mini-row__meta">${m.email} · Plan ${m.plan}</div>
+                  </div>
+                  <span class="tag ${m.activo?'tag--success':'tag--danger'}">${m.activo?'Activo':'Inactivo'}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card__header">
+              <div class="dash-card__title"><svg class="ic"><use href="#i-broadcast"/></svg>Próximas clases</div>
+              <a class="dash-card__link" data-go="webinars">Programar<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div class="mini-list">
+              ${SEED.webinars.filter(w=>new Date(w.fecha)>new Date()).map(w=>{
+                const f=new Date(w.fecha);const fmt=f.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})+' · '+String(f.getHours()).padStart(2,'0')+':'+String(f.getMinutes()).padStart(2,'0');
+                return `
+                <div class="mini-row" style="--c1:#EF4444;">
+                  <div class="mini-row__dot"><svg class="ic"><use href="#i-broadcast"/></svg></div>
+                  <div class="mini-row__body">
+                    <div class="mini-row__title">${w.titulo}</div>
+                    <div class="mini-row__meta">${w.instructor} · ${w.registrados} registrados</div>
+                  </div>
+                  <span class="mini-row__right">${fmt}</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card__header">
+              <div class="dash-card__title"><svg class="ic"><use href="#i-book"/></svg>Cursos top</div>
+              <a class="dash-card__link" data-go="cursos">Gestionar<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div class="mini-list">
+              ${[...SEED.cursos].sort((a,b)=>b.inscritos-a.inscritos).slice(0,4).map(c=>`
+                <div class="mini-row" style="--c1:#FF7A2D;">
+                  <div class="mini-row__dot"><svg class="ic"><use href="#i-book"/></svg></div>
+                  <div class="mini-row__body">
+                    <div class="mini-row__title">${c.titulo}</div>
+                    <div class="mini-row__meta">${c.area} · ${c.horas}h</div>
+                  </div>
+                  <span class="mini-row__right">${c.inscritos}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card__header">
+              <div class="dash-card__title"><svg class="ic"><use href="#i-news"/></svg>Noticias auto-publicadas</div>
+              <a class="dash-card__link" data-go="noticias">Ver cron<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+            </div>
+            <div class="mini-list">
+              ${SEED.noticias.slice(0,4).map(n=>`
+                <div class="mini-row" style="--c1:${n.color};">
+                  <div class="mini-row__dot"><svg class="ic"><use href="#i-news"/></svg></div>
+                  <div class="mini-row__body">
+                    <div class="mini-row__title">${n.titulo.length>50?n.titulo.slice(0,50)+'…':n.titulo}</div>
+                    <div class="mini-row__meta">${n.fuente} · ${n.cat}</div>
+                  </div>
+                  <span class="mini-row__right">${n.fecha}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+    p.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();navigate(b.dataset.go);}));
+  },
+
+  cursos(p){
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Catálogo</span>
+          <h1 class="sec-hero__title">Cursos</h1>
+          <p class="sec-hero__sub">Crea, edita, activa o desactiva los cursos del catálogo. Define instructor, módulos, horas y nivel.</p>
+          <div class="sec-hero__actions">
+            <button class="btn btn--accent" id="new-curso"><svg class="ic"><use href="#i-plus"/></svg>Nuevo curso</button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="searchbar">
+            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
+            <input type="text" placeholder="Buscar curso o instructor…" id="curso-search">
+          </div>
+          <select class="select" id="curso-area" style="max-width:200px;">
+            <option value="todas">Todas las áreas</option>
+            <option>Seguridad</option><option>Logística</option><option>Calidad</option><option>Mantenimiento</option>
+          </select>
+        </div>
+
+        <div class="adm-list" id="curso-list"></div>
+      </div>
+    `;
+    document.getElementById('new-curso').addEventListener('click',()=>cursoModal());
+    document.getElementById('curso-search').addEventListener('input',()=>renderCursos());
+    document.getElementById('curso-area').addEventListener('change',()=>renderCursos());
+    renderCursos();
+    function renderCursos(){
+      const q=(document.getElementById('curso-search').value||'').toLowerCase();
+      const a=document.getElementById('curso-area').value;
+      const items=SEED.cursos.filter(c=>{
+        if(a!=='todas'&&c.area!==a)return false;
+        if(q&&!c.titulo.toLowerCase().includes(q)&&!c.instructor.toLowerCase().includes(q))return false;
+        return true;
+      });
+      const list=document.getElementById('curso-list');
+      if(items.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-book"/></svg></div><h3>Sin resultados</h3><p>Cambia el filtro o búsqueda para ver más cursos.</p></div>`;return;}
+      const colorArea={'Seguridad':'#FF7A2D','Logística':'#3B82F6','Calidad':'#10B981','Mantenimiento':'#A855F7'};
+      list.innerHTML=items.map(c=>`
+        <div class="adm-row" style="--c1:${colorArea[c.area]};">
+          <div class="adm-row__thumb"><svg class="ic"><use href="#i-book"/></svg></div>
+          <div class="adm-row__body">
+            <div class="adm-row__title">${c.titulo}</div>
+            <div class="adm-row__meta">
+              <span><svg class="ic"><use href="#i-user"/></svg>${c.instructor}</span>
+              <span><svg class="ic"><use href="#i-folder"/></svg>${c.area}</span>
+              <span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h · ${c.modulos} mód.</span>
+              <span><svg class="ic"><use href="#i-users"/></svg>${c.inscritos}</span>
+            </div>
+          </div>
+          <span class="tag ${c.activo?'tag--success':'tag--warning'}">${c.activo?'Activo':'Inactivo'}</span>
+          <div class="adm-row__actions">
+            <button class="icon-action" data-edit="${c.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
+            <button class="icon-action icon-action--danger" data-del="${c.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+      `).join('');
+      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>cursoModal(b.dataset.edit)));
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+        if(confirm('¿Eliminar este curso del catálogo?')){
+          const i=SEED.cursos.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.cursos.splice(i,1);renderCursos();Toast.success('Curso eliminado','Los inscritos no perderán su progreso.');}
+        }
+      }));
+    }
+    function cursoModal(id){
+      const c=id?SEED.cursos.find(x=>x.id===id):{titulo:'',area:'Seguridad',nivel:'Básico',instructor:'',horas:8,modulos:5,activo:true,inscritos:0};
+      const body=`
+        <div class="form-grid">
+          <div class="form-field form-field--full"><label class="label">Título del curso</label><input type="text" class="input" id="f-titulo" value="${(c.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: NOM-019-STPS · Comisiones…"></div>
+          <div class="form-field"><label class="label">Área</label><select class="select" id="f-area"><option ${c.area==='Seguridad'?'selected':''}>Seguridad</option><option ${c.area==='Logística'?'selected':''}>Logística</option><option ${c.area==='Calidad'?'selected':''}>Calidad</option><option ${c.area==='Mantenimiento'?'selected':''}>Mantenimiento</option></select></div>
+          <div class="form-field"><label class="label">Nivel</label><select class="select" id="f-nivel"><option ${c.nivel==='Básico'?'selected':''}>Básico</option><option ${c.nivel==='Intermedio'?'selected':''}>Intermedio</option><option ${c.nivel==='Avanzado'?'selected':''}>Avanzado</option></select></div>
+          <div class="form-field form-field--full"><label class="label">Instructor</label><input type="text" class="input" id="f-instructor" value="${(c.instructor||'').replace(/"/g,'&quot;')}" placeholder="Ej: Ing. María López"></div>
+          <div class="form-field"><label class="label">Horas totales</label><input type="number" class="input" id="f-horas" value="${c.horas}" min="1"></div>
+          <div class="form-field"><label class="label">Módulos</label><input type="number" class="input" id="f-modulos" value="${c.modulos}" min="1"></div>
+          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="f-activo" ${c.activo?'checked':''}><label for="f-activo" style="cursor:pointer;font-size:13px;font-weight:500;">Curso activo · visible en el catálogo</label></div>
+        </div>
+      `;
+      const footer=document.createElement('div');
+      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar cambios':'Crear curso'}<svg class="ic"><use href="#i-check"/></svg></button>`;
+      Modal.open({title:id?'Editar curso':'Nuevo curso',subtitle:id?c.titulo:'Define los datos del nuevo curso',icon:'i-book',body,footer});
+      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
+      footer.querySelector('#m-save').addEventListener('click',()=>{
+        const data={titulo:document.getElementById('f-titulo').value.trim(),area:document.getElementById('f-area').value,nivel:document.getElementById('f-nivel').value,instructor:document.getElementById('f-instructor').value.trim(),horas:+document.getElementById('f-horas').value,modulos:+document.getElementById('f-modulos').value,activo:document.getElementById('f-activo').checked};
+        if(!data.titulo){Toast.error('Falta el título','Escribe el nombre del curso.');return;}
+        if(!data.instructor){Toast.error('Falta instructor','Define quién imparte el curso.');return;}
+        if(id){Object.assign(c,data);Toast.success('Curso actualizado',data.titulo);}
+        else{SEED.cursos.unshift({id:'c'+Date.now(),inscritos:0,...data});Toast.success('Curso creado',data.titulo);}
+        Modal.close();renderCursos();
+      });
+    }
+  },
+
+  webinars(p){
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Programación en vivo</span>
+          <h1 class="sec-hero__title">Clases en vivo</h1>
+          <p class="sec-hero__sub">Programa los webinars quincenales con fecha, instructor, link de transmisión y descripción para el panel VIP.</p>
+          <div class="sec-hero__actions">
+            <button class="btn btn--accent" id="new-web"><svg class="ic"><use href="#i-plus"/></svg>Nueva clase en vivo</button>
+          </div>
+        </div>
+        <div class="adm-list" id="web-list"></div>
+      </div>
+    `;
+    document.getElementById('new-web').addEventListener('click',()=>webModal());
+    renderWebs();
+    function renderWebs(){
+      const list=document.getElementById('web-list');
+      if(SEED.webinars.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-broadcast"/></svg></div><h3>Sin clases programadas</h3><p>Programa la primera clase en vivo del mes.</p></div>`;return;}
+      list.innerHTML=SEED.webinars.map(w=>{
+        const f=new Date(w.fecha);
+        const fmt=f.toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})+' · '+String(f.getHours()).padStart(2,'0')+':'+String(f.getMinutes()).padStart(2,'0')+' hrs';
+        return `
+          <div class="adm-row" style="--c1:#EF4444;">
+            <div class="adm-row__thumb"><svg class="ic"><use href="#i-broadcast"/></svg></div>
+            <div class="adm-row__body">
+              <div class="adm-row__title">${w.titulo}</div>
+              <div class="adm-row__meta">
+                <span><svg class="ic"><use href="#i-user"/></svg>${w.instructor}</span>
+                <span><svg class="ic"><use href="#i-calendar"/></svg>${fmt}</span>
+                <span><svg class="ic"><use href="#i-clock"/></svg>${w.duracion} min</span>
+                <span><svg class="ic"><use href="#i-users"/></svg>${w.registrados} registrados</span>
+              </div>
+            </div>
+            <span class="tag ${w.publicado?'tag--success':'tag--warning'}">${w.publicado?'Publicada':'Borrador'}</span>
+            <div class="adm-row__actions">
+              <button class="icon-action" data-edit="${w.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
+              <button class="icon-action icon-action--danger" data-del="${w.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>webModal(b.dataset.edit)));
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+        if(confirm('¿Eliminar esta clase en vivo?')){
+          const i=SEED.webinars.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.webinars.splice(i,1);renderWebs();Toast.success('Clase eliminada');}
+        }
+      }));
+    }
+    function webModal(id){
+      const w=id?SEED.webinars.find(x=>x.id===id):{titulo:'',instructor:'',area:'Seguridad',fecha:'',duracion:90,link:'',publicado:false,registrados:0};
+      const body=`
+        <div class="form-grid">
+          <div class="form-field form-field--full"><label class="label">Título del webinar</label><input type="text" class="input" id="w-titulo" value="${(w.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: OEE: optimización de líneas…"></div>
+          <div class="form-field"><label class="label">Instructor</label><input type="text" class="input" id="w-instructor" value="${(w.instructor||'').replace(/"/g,'&quot;')}" placeholder="Ing. María López"></div>
+          <div class="form-field"><label class="label">Área</label><select class="select" id="w-area"><option ${w.area==='Seguridad'?'selected':''}>Seguridad</option><option ${w.area==='Logística'?'selected':''}>Logística</option><option ${w.area==='Calidad'?'selected':''}>Calidad</option><option ${w.area==='Mantenimiento'?'selected':''}>Mantenimiento</option></select></div>
+          <div class="form-field"><label class="label">Fecha y hora</label><input type="datetime-local" class="input" id="w-fecha" value="${w.fecha?w.fecha.slice(0,16):''}"></div>
+          <div class="form-field"><label class="label">Duración (min)</label><input type="number" class="input" id="w-duracion" value="${w.duracion}" min="15"></div>
+          <div class="form-field form-field--full"><label class="label">Link de transmisión</label><input type="url" class="input" id="w-link" value="${(w.link||'').replace(/"/g,'&quot;')}" placeholder="https://meet.imdiil.com/…"></div>
+          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="w-publicado" ${w.publicado?'checked':''}><label for="w-publicado" style="cursor:pointer;font-size:13px;font-weight:500;">Publicada · visible para miembros VIP</label></div>
+        </div>
+      `;
+      const footer=document.createElement('div');
+      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar':'Programar'}<svg class="ic"><use href="#i-check"/></svg></button>`;
+      Modal.open({title:id?'Editar clase en vivo':'Nueva clase en vivo',subtitle:id?w.titulo:'Programa una transmisión',icon:'i-broadcast',body,footer});
+      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
+      footer.querySelector('#m-save').addEventListener('click',()=>{
+        const data={titulo:document.getElementById('w-titulo').value.trim(),instructor:document.getElementById('w-instructor').value.trim(),area:document.getElementById('w-area').value,fecha:document.getElementById('w-fecha').value+':00',duracion:+document.getElementById('w-duracion').value,link:document.getElementById('w-link').value.trim(),publicado:document.getElementById('w-publicado').checked};
+        if(!data.titulo){Toast.error('Falta el título');return;}
+        if(!data.fecha||!data.instructor){Toast.error('Faltan datos','Fecha e instructor son obligatorios.');return;}
+        if(id){Object.assign(w,data);Toast.success('Clase actualizada',data.titulo);}
+        else{SEED.webinars.unshift({id:'w'+Date.now(),registrados:0,...data});Toast.success('Clase programada',data.titulo);}
+        Modal.close();renderWebs();
+      });
+    }
+  },
+
+  pdfs(p){
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Material descargable</span>
+          <h1 class="sec-hero__title">PDFs y material</h1>
+          <p class="sec-hero__sub">Gestiona plantillas, checklists, formatos y procedimientos. Solo los publicados aparecen en el panel VIP.</p>
+          <div class="sec-hero__actions">
+            <button class="btn btn--accent" id="new-pdf"><svg class="ic"><use href="#i-plus"/></svg>Subir material</button>
+          </div>
+        </div>
+        <div class="adm-list" id="pdf-list"></div>
+      </div>
+    `;
+    document.getElementById('new-pdf').addEventListener('click',()=>pdfModal());
+    renderPdfs();
+    function renderPdfs(){
+      const list=document.getElementById('pdf-list');
+      const colorCat={'Seguridad industrial':'#FF7A2D','Calidad':'#10B981','Logística':'#3B82F6'};
+      list.innerHTML=SEED.pdfs.map(d=>`
+        <div class="adm-row" style="--c1:${colorCat[d.cat]||'#10B981'};">
+          <div class="adm-row__thumb"><svg class="ic"><use href="#i-news"/></svg></div>
+          <div class="adm-row__body">
+            <div class="adm-row__title">${d.titulo}</div>
+            <div class="adm-row__meta">
+              <span><svg class="ic"><use href="#i-folder"/></svg>${d.cat}</span>
+              <span><svg class="ic"><use href="#i-news"/></svg>${d.paginas} pág.</span>
+              <span><svg class="ic"><use href="#i-download"/></svg>${d.size} · ${d.descargas} descargas</span>
+            </div>
+          </div>
+          <span class="tag ${d.publicado?'tag--success':'tag--warning'}">${d.publicado?'Publicado':'Borrador'}</span>
+          <div class="adm-row__actions">
+            <button class="icon-action" data-edit="${d.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
+            <button class="icon-action icon-action--danger" data-del="${d.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+      `).join('');
+      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>pdfModal(b.dataset.edit)));
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+        if(confirm('¿Eliminar este material?')){
+          const i=SEED.pdfs.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.pdfs.splice(i,1);renderPdfs();Toast.success('Material eliminado');}
+        }
+      }));
+    }
+    function pdfModal(id){
+      const d=id?SEED.pdfs.find(x=>x.id===id):{titulo:'',cat:'Seguridad industrial',paginas:1,size:'',publicado:false,descargas:0};
+      const body=`
+        <div class="form-grid">
+          <div class="form-field form-field--full"><label class="label">Título</label><input type="text" class="input" id="d-titulo" value="${(d.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Plantilla de Matriz IPER…"></div>
+          <div class="form-field"><label class="label">Categoría</label><select class="select" id="d-cat"><option ${d.cat==='Seguridad industrial'?'selected':''}>Seguridad industrial</option><option ${d.cat==='Calidad'?'selected':''}>Calidad</option><option ${d.cat==='Logística'?'selected':''}>Logística</option></select></div>
+          <div class="form-field"><label class="label">Páginas</label><input type="number" class="input" id="d-paginas" value="${d.paginas}" min="1"></div>
+          <div class="form-field"><label class="label">Tamaño (ej: 2.4 MB)</label><input type="text" class="input" id="d-size" value="${(d.size||'').replace(/"/g,'&quot;')}"></div>
+          <div class="form-field"><label class="label">Archivo PDF / Excel</label><div style="padding:11px 14px;background:var(--surface-2);border:1px dashed var(--border-2);border-radius:11px;font-size:12px;color:var(--text-3);text-align:center;">📎 Subir archivo (conexión Storage en sprint 6)</div></div>
+          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="d-publicado" ${d.publicado?'checked':''}><label for="d-publicado" style="cursor:pointer;font-size:13px;font-weight:500;">Publicado · visible para miembros VIP</label></div>
+        </div>
+      `;
+      const footer=document.createElement('div');
+      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar':'Subir'}<svg class="ic"><use href="#i-check"/></svg></button>`;
+      Modal.open({title:id?'Editar material':'Nuevo material',subtitle:id?d.titulo:'Sube un PDF/Excel',icon:'i-news',body,footer});
+      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
+      footer.querySelector('#m-save').addEventListener('click',()=>{
+        const data={titulo:document.getElementById('d-titulo').value.trim(),cat:document.getElementById('d-cat').value,paginas:+document.getElementById('d-paginas').value,size:document.getElementById('d-size').value.trim()||'1 MB',publicado:document.getElementById('d-publicado').checked};
+        if(!data.titulo){Toast.error('Falta el título');return;}
+        if(id){Object.assign(d,data);Toast.success('Material actualizado',data.titulo);}
+        else{SEED.pdfs.unshift({id:'p'+Date.now(),descargas:0,...data});Toast.success('Material subido',data.titulo);}
+        Modal.close();renderPdfs();
+      });
+    }
+  },
+
+  certificados(p){
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Emisión</span>
+          <h1 class="sec-hero__title">Certificados</h1>
+          <p class="sec-hero__sub">Emite certificados con folio único IMDIIL-AÑO-XXXXX. El sistema genera el PDF, lo guarda y envía al estudiante por email.</p>
+          <div class="sec-hero__actions">
+            <button class="btn btn--accent" id="new-cert"><svg class="ic"><use href="#i-plus"/></svg>Emitir certificado</button>
+          </div>
+        </div>
+        <div class="adm-list" id="cert-list"></div>
+      </div>
+    `;
+    document.getElementById('new-cert').addEventListener('click',()=>certModal());
+    renderCerts();
+    function renderCerts(){
+      const list=document.getElementById('cert-list');
+      if(SEED.certificados.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-certificate"/></svg></div><h3>Sin certificados emitidos</h3><p>Empieza emitiendo el primer certificado.</p></div>`;return;}
+      list.innerHTML=SEED.certificados.map(c=>`
+        <div class="adm-row" style="--c1:#FF7A2D;">
+          <div class="adm-row__thumb"><svg class="ic"><use href="#i-certificate"/></svg></div>
+          <div class="adm-row__body">
+            <div class="adm-row__title">${c.estudiante} · ${c.curso}</div>
+            <div class="adm-row__meta">
+              <span><svg class="ic"><use href="#i-mail"/></svg>${c.email}</span>
+              <span><svg class="ic"><use href="#i-calendar"/></svg>${c.emitido}</span>
+              <span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h · ${c.calificacion}/100</span>
+              <span style="color:var(--primary);font-weight:700;">${c.folio}</span>
+            </div>
+          </div>
+          <span class="tag ${c.enviado?'tag--success':'tag--warning'}">${c.enviado?'Enviado':'Pendiente'}</span>
+          <div class="adm-row__actions">
+            <button class="icon-action" title="Ver PDF"><svg class="ic"><use href="#i-eye"/></svg></button>
+            <button class="icon-action icon-action--danger" data-del="${c.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+      `).join('');
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+        if(confirm('¿Eliminar este certificado? Esta acción es irreversible.')){
+          const i=SEED.certificados.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.certificados.splice(i,1);renderCerts();Toast.success('Certificado eliminado');}
+        }
+      }));
+    }
+    function certModal(){
+      const cursosOpts=SEED.cursos.filter(c=>c.activo).map(c=>`<option>${c.titulo}</option>`).join('');
+      const folio='IMDIIL-2026-'+String(Math.floor(10000+Math.random()*89999));
+      const body=`
+        <div class="form-grid">
+          <div class="form-field form-field--full"><label class="label">Estudiante</label><input type="text" class="input" id="ce-nom" placeholder="Nombre completo del estudiante"></div>
+          <div class="form-field"><label class="label">Email</label><input type="email" class="input" id="ce-email" placeholder="email@example.com"></div>
+          <div class="form-field"><label class="label">Folio (auto)</label><input type="text" class="input" id="ce-folio" value="${folio}" readonly style="font-family:'JetBrains Mono',monospace;color:var(--primary);font-weight:700;"></div>
+          <div class="form-field form-field--full"><label class="label">Curso completado</label><select class="select" id="ce-curso">${cursosOpts}</select></div>
+          <div class="form-field"><label class="label">Horas</label><input type="number" class="input" id="ce-horas" value="8" min="1"></div>
+          <div class="form-field"><label class="label">Calificación</label><input type="number" class="input" id="ce-cal" value="90" min="0" max="100"></div>
+          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="ce-enviar" checked><label for="ce-enviar" style="cursor:pointer;font-size:13px;font-weight:500;">Enviar al estudiante por email automáticamente</label></div>
+        </div>
+      `;
+      const footer=document.createElement('div');
+      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">Emitir certificado<svg class="ic"><use href="#i-certificate"/></svg></button>`;
+      Modal.open({title:'Emitir nuevo certificado',subtitle:folio,icon:'i-certificate',body,footer});
+      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
+      footer.querySelector('#m-save').addEventListener('click',()=>{
+        const data={estudiante:document.getElementById('ce-nom').value.trim(),email:document.getElementById('ce-email').value.trim(),folio:document.getElementById('ce-folio').value,curso:document.getElementById('ce-curso').value,horas:+document.getElementById('ce-horas').value,calificacion:+document.getElementById('ce-cal').value,enviado:document.getElementById('ce-enviar').checked,emitido:new Date().toISOString().slice(0,10)};
+        if(!data.estudiante||!data.email){Toast.error('Faltan datos','Nombre y email son obligatorios.');return;}
+        SEED.certificados.unshift({id:'cert'+Date.now(),...data});
+        Toast.success('Certificado emitido',data.folio+(data.enviado?' · Enviado por email':''));
+        Modal.close();renderCerts();
+      });
+    }
+  },
+
+  miembros(p){
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Comunidad</span>
+          <h1 class="sec-hero__title">Miembros VIP</h1>
+          <p class="sec-hero__sub">Lista de miembros activos e inactivos. Gestiona planes, renovaciones y accesos manuales sin pasar por Stripe.</p>
+          <div class="sec-hero__actions">
+            <button class="btn btn--accent" id="new-mb"><svg class="ic"><use href="#i-plus"/></svg>Agregar acceso manual</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="searchbar">
+            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
+            <input type="text" placeholder="Buscar por nombre o email…" id="mb-search">
+          </div>
+          <select class="select" id="mb-plan" style="max-width:160px;"><option value="todos">Todos los planes</option><option>Anual</option><option>Mensual</option></select>
+          <select class="select" id="mb-estado" style="max-width:160px;"><option value="todos">Todos</option><option value="activo">Activos</option><option value="inactivo">Inactivos</option></select>
+        </div>
+        <div class="adm-list" id="mb-list"></div>
+      </div>
+    `;
+    document.getElementById('new-mb').addEventListener('click',()=>mbModal());
+    ['mb-search','mb-plan','mb-estado'].forEach(i=>document.getElementById(i).addEventListener('input',()=>renderMb()));
+    renderMb();
+    function renderMb(){
+      const q=(document.getElementById('mb-search').value||'').toLowerCase();
+      const pl=document.getElementById('mb-plan').value;
+      const es=document.getElementById('mb-estado').value;
+      const items=SEED.miembros.filter(m=>{
+        if(pl!=='todos'&&m.plan!==pl)return false;
+        if(es==='activo'&&!m.activo)return false;
+        if(es==='inactivo'&&m.activo)return false;
+        if(q&&!m.nombre.toLowerCase().includes(q)&&!m.email.toLowerCase().includes(q))return false;
+        return true;
+      });
+      const list=document.getElementById('mb-list');
+      if(items.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-users"/></svg></div><h3>Sin resultados</h3><p>Ajusta los filtros.</p></div>`;return;}
+      list.innerHTML=items.map(m=>{
+        const iniciales=m.nombre.split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase();
+        return `
+        <div class="adm-row" style="--c1:${m.plan==='Anual'?'#FF7A2D':'#3B82F6'};">
+          <div class="adm-row__thumb"><span style="font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:14px;">${iniciales}</span></div>
+          <div class="adm-row__body">
+            <div class="adm-row__title">${m.nombre}</div>
+            <div class="adm-row__meta">
+              <span><svg class="ic"><use href="#i-mail"/></svg>${m.email}</span>
+              <span><svg class="ic"><use href="#i-calendar"/></svg>Renueva ${m.renovacion}</span>
+              <span><svg class="ic"><use href="#i-book"/></svg>${m.cursos} cursos</span>
+            </div>
+          </div>
+          <span class="tag ${m.plan==='Anual'?'tag--primary':'tag--info'}">${m.plan}</span>
+          <span class="tag ${m.activo?'tag--success':'tag--danger'}">${m.activo?'Activo':'Inactivo'}</span>
+          <div class="adm-row__actions">
+            <button class="icon-action" data-edit="${m.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
+            <button class="icon-action icon-action--danger" data-del="${m.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>
+        `;
+      }).join('');
+      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>mbModal(b.dataset.edit)));
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+        if(confirm('¿Eliminar el acceso de este miembro? Si pagó por Stripe, también deberás cancelar la suscripción.')){
+          const i=SEED.miembros.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.miembros.splice(i,1);renderMb();Toast.success('Miembro eliminado');}
+        }
+      }));
+    }
+    function mbModal(id){
+      const m=id?SEED.miembros.find(x=>x.id===id):{nombre:'',email:'',plan:'Anual',inicio:new Date().toISOString().slice(0,10),renovacion:'',activo:true,cursos:0};
+      const body=`
+        <div class="form-grid">
+          <div class="form-field form-field--full"><label class="label">Nombre completo</label><input type="text" class="input" id="mb-nom" value="${(m.nombre||'').replace(/"/g,'&quot;')}" placeholder="Nombre del miembro"></div>
+          <div class="form-field form-field--full"><label class="label">Email</label><input type="email" class="input" id="mb-email" value="${(m.email||'').replace(/"/g,'&quot;')}" placeholder="email@example.com"></div>
+          <div class="form-field"><label class="label">Plan</label><select class="select" id="mb-pl"><option ${m.plan==='Anual'?'selected':''}>Anual</option><option ${m.plan==='Mensual'?'selected':''}>Mensual</option></select></div>
+          <div class="form-field"><label class="label">Fecha de inicio</label><input type="date" class="input" id="mb-ini" value="${m.inicio||''}"></div>
+          <div class="form-field"><label class="label">Renovación</label><input type="date" class="input" id="mb-ren" value="${m.renovacion||''}"></div>
+          <div class="form-field" style="display:flex;align-items:center;gap:10px;flex-direction:row;align-self:flex-end;"><input type="checkbox" id="mb-act" ${m.activo?'checked':''}><label for="mb-act" style="cursor:pointer;font-size:13px;font-weight:500;">Acceso activo</label></div>
+        </div>
+      `;
+      const footer=document.createElement('div');
+      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar':'Agregar'}<svg class="ic"><use href="#i-check"/></svg></button>`;
+      Modal.open({title:id?'Editar miembro':'Acceso manual',subtitle:id?m.email:'Sin pasar por Stripe',icon:'i-users',body,footer});
+      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
+      footer.querySelector('#m-save').addEventListener('click',()=>{
+        const data={nombre:document.getElementById('mb-nom').value.trim(),email:document.getElementById('mb-email').value.trim(),plan:document.getElementById('mb-pl').value,inicio:document.getElementById('mb-ini').value,renovacion:document.getElementById('mb-ren').value,activo:document.getElementById('mb-act').checked};
+        if(!data.nombre||!data.email){Toast.error('Faltan datos');return;}
+        if(id){Object.assign(m,data);Toast.success('Miembro actualizado',data.nombre);}
+        else{SEED.miembros.unshift({id:'m'+Date.now(),cursos:0,...data});Toast.success('Acceso creado',data.email);}
+        Modal.close();renderMb();
+      });
+    }
+  },
+
+  noticias(p){
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Cron automático</span>
+          <h1 class="sec-hero__title">Noticias</h1>
+          <p class="sec-hero__sub">El cron de Railway corre cada día a las 7 AM y publica noticias del sector industrial en el panel VIP.</p>
+        </div>
+
+        <section class="cron-card">
+          <div class="cron-card__row">
+            <div class="cron-card__icon"><svg class="ic" style="width:24px;height:24px;"><use href="#i-refresh"/></svg></div>
+            <div class="cron-card__info">
+              <span class="cron-card__lbl">${SEED.config.cronStatus==='activo'?'Cron en línea':'Cron pausado'}</span>
+              <div class="cron-card__title">NewsData → Firestore</div>
+              <div class="cron-card__sub">Última ejecución: <strong>${SEED.config.cronUltima}</strong> · Próxima: <strong>${SEED.config.cronProxima}</strong> · <strong>${SEED.config.noticiasGeneradas}</strong> noticias publicadas en mayo</div>
+            </div>
+            <button class="btn btn--ghost" id="cron-run"><svg class="ic"><use href="#i-refresh"/></svg>Ejecutar ahora</button>
+          </div>
+        </section>
+
+        <div class="section-header"><h2 class="section-header__title">Noticias publicadas hoy<span class="section-header__badge">${SEED.noticias.filter(n=>n.fecha==='Hoy').length} nuevas</span></h2></div>
+        <div class="adm-list">
+          ${SEED.noticias.map(n=>`
+            <div class="news-card" style="--c1:${n.color};">
+              <div class="news-card__cover"><svg class="ic"><use href="#i-news"/></svg></div>
+              <div class="news-card__body">
+                <div class="news-card__head">
+                  <span class="tag" style="color:${n.color};border-color:${n.color}40;background:${n.color}14;">${n.cat}</span>
+                  <span class="news-card__date">${n.fecha}</span>
+                </div>
+                <div class="news-card__title">${n.titulo}</div>
+                <div class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>${n.fuente}</div>
+              </div>
+              <div class="adm-row__actions">
+                <button class="icon-action icon-action--danger" data-del-news="${n.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    document.getElementById('cron-run').addEventListener('click',()=>Toast.info('Cron ejecutado','Buscando noticias nuevas… 3 publicadas.'));
+    p.querySelectorAll('[data-del-news]').forEach(b=>b.addEventListener('click',()=>{
+      if(confirm('¿Eliminar esta noticia del panel?')){
+        const i=SEED.noticias.findIndex(x=>x.id===b.dataset.delNews);if(i>=0){SEED.noticias.splice(i,1);Pages.noticias(document.getElementById('page'));Toast.success('Noticia eliminada');}
+      }
+    }));
+  },
+
+  config(p){
+    const c=SEED.config;
+    p.innerHTML=`
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Ajustes globales</span>
+          <h1 class="sec-hero__title">Configuración</h1>
+          <p class="sec-hero__sub">Precios de membresía Stripe, datos de contacto, emails admin y claves de servicios externos.</p>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-dollar"/></svg>Precios Stripe</div></div>
+            <div class="form-grid">
+              <div class="form-field"><label class="label">Plan Mensual (MXN)</label><input type="number" class="input" id="cfg-mens" value="${c.precioMensual}" min="1"></div>
+              <div class="form-field"><label class="label">Plan Anual (MXN)</label><input type="number" class="input" id="cfg-anual" value="${c.precioAnual}" min="1"></div>
+              <div class="form-field form-field--full"><label class="label">Stripe Public Key</label><input type="text" class="input" id="cfg-stripe" value="${c.stripePublicKey}" placeholder="pk_live_…"></div>
+            </div>
+            <div class="form-actions"><button class="btn btn--accent" data-save="precios">Guardar precios<svg class="ic"><use href="#i-check"/></svg></button></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-whatsapp"/></svg>Contacto</div></div>
+            <div class="form-grid">
+              <div class="form-field form-field--full"><label class="label">WhatsApp</label><input type="text" class="input" id="cfg-wa" value="${c.whatsapp}" placeholder="+52 ..."></div>
+              <div class="form-field form-field--full"><label class="label">Instagram</label><input type="text" class="input" id="cfg-ig" value="${c.instagram}"></div>
+              <div class="form-field form-field--full"><label class="label">Email de contacto</label><input type="email" class="input" id="cfg-em" value="${c.emailContacto}"></div>
+            </div>
+            <div class="form-actions"><button class="btn btn--accent" data-save="contacto">Guardar contacto<svg class="ic"><use href="#i-check"/></svg></button></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-shield-check"/></svg>Administradores</div></div>
+            <p style="font-size:12.5px;color:var(--text-2);line-height:1.55;margin-bottom:14px;">Los emails registrados aquí pueden acceder al panel admin. <strong style="color:var(--danger);">No elimines <code style="font-family:JetBrains Mono,monospace;color:var(--primary);">teccapitalweb@gmail.com</code> bajo ningún motivo.</strong></p>
+            <div id="adm-list" class="adm-list" style="margin-bottom:14px;">
+              ${c.admins.map((e,i)=>`
+                <div class="adm-row" style="padding:11px 14px;">
+                  <div class="adm-row__thumb" style="--c1:#FF7A2D;"><svg class="ic"><use href="#i-shield-check"/></svg></div>
+                  <div class="adm-row__body"><div class="adm-row__title" style="font-size:13px;">${e}</div></div>
+                  ${e==='teccapitalweb@gmail.com'?'<span class="tag tag--primary">Superadmin</span>':`<button class="icon-action icon-action--danger" data-rm-admin="${i}"><svg class="ic"><use href="#i-trash"/></svg></button>`}
+                </div>
+              `).join('')}
+            </div>
+            <div style="display:flex;gap:8px;"><input type="email" class="input" id="cfg-new-admin" placeholder="nuevo@email.com"><button class="btn btn--ghost btn--sm" id="add-admin"><svg class="ic"><use href="#i-plus"/></svg>Agregar</button></div>
+          </div>
+
+          <div class="dash-card">
+            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-bolt"/></svg>Estado de servicios</div></div>
+            <div class="mini-list">
+              <div class="mini-row" style="--c1:#34D399;"><div class="mini-row__dot"><svg class="ic"><use href="#i-shield-check"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Firebase Auth</div><div class="mini-row__meta">imdiil-vip · Funcionando</div></div><span class="tag tag--success">OK</span></div>
+              <div class="mini-row" style="--c1:#34D399;"><div class="mini-row__dot"><svg class="ic"><use href="#i-shield-check"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Firestore</div><div class="mini-row__meta">us-central1 · Reglas v1</div></div><span class="tag tag--success">OK</span></div>
+              <div class="mini-row" style="--c1:#FBBF24;"><div class="mini-row__dot"><svg class="ic"><use href="#i-bolt"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Stripe LIVE</div><div class="mini-row__meta">Webhook pendiente de conectar</div></div><span class="tag tag--warning">Pendiente</span></div>
+              <div class="mini-row" style="--c1:#34D399;"><div class="mini-row__dot"><svg class="ic"><use href="#i-refresh"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Railway Cron (noticias)</div><div class="mini-row__meta">Última: ${c.cronUltima}</div></div><span class="tag tag--success">OK</span></div>
+              <div class="mini-row" style="--c1:#FBBF24;"><div class="mini-row__dot"><svg class="ic"><use href="#i-mail"/></svg></div><div class="mini-row__body"><div class="mini-row__title">EmailJS · Certificados</div><div class="mini-row__meta">Sin configurar</div></div><span class="tag tag--warning">Pendiente</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    p.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',()=>{
+      const type=b.dataset.save;
+      if(type==='precios'){c.precioMensual=+document.getElementById('cfg-mens').value;c.precioAnual=+document.getElementById('cfg-anual').value;c.stripePublicKey=document.getElementById('cfg-stripe').value;Toast.success('Precios actualizados');}
+      else if(type==='contacto'){c.whatsapp=document.getElementById('cfg-wa').value;c.instagram=document.getElementById('cfg-ig').value;c.emailContacto=document.getElementById('cfg-em').value;Toast.success('Contacto actualizado');}
+    }));
+    document.getElementById('add-admin').addEventListener('click',()=>{
+      const e=document.getElementById('cfg-new-admin').value.trim();
+      if(!e||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){Toast.error('Email inválido');return;}
+      if(c.admins.includes(e)){Toast.error('Ya existe');return;}
+      c.admins.push(e);Toast.success('Admin agregado',e);Pages.config(p);
+    });
+    p.querySelectorAll('[data-rm-admin]').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.rmAdmin;
+      if(confirm('¿Eliminar este administrador?')){c.admins.splice(i,1);Toast.success('Admin eliminado');Pages.config(p);}
+    }));
+  }
+};
+
+/* =========================================================
+   ROUTER
+   ========================================================= */
+function navigate(section){
+  document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(n=>n.classList.remove('is-active'));
+  document.querySelectorAll(`[data-section="${section}"]`).forEach(n=>n.classList.add('is-active'));
+  const p=document.getElementById('page');
+  const fn=Pages[section]||Pages.dashboard;
+  fn(p);
+  window.scrollTo({top:0,behavior:'instant'});
+  document.querySelector('.main')?.scrollTo({top:0,behavior:'instant'});
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  Theme.init();
+  document.getElementById('theme-toggle').addEventListener('click',()=>Theme.toggle());
+  document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(b=>b.addEventListener('click',e=>{
+    e.preventDefault();
+    if(b.id==='btn-logout'){if(confirm('¿Cerrar sesión?'))Toast.info('Cerrando sesión','Próximamente: conexión Firebase Auth');return;}
+    if(b.dataset.section)navigate(b.dataset.section);
+  }));
+  document.getElementById('modal-close').addEventListener('click',()=>Modal.close());
+  document.getElementById('modal-backdrop').addEventListener('click',e=>{if(e.target.id==='modal-backdrop')Modal.close();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')Modal.close();});
+  navigate('dashboard');
+});
+</script>
+
+</body>
+</html>
