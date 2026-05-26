@@ -2397,9 +2397,284 @@ body::after{
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{animation:fadeUp .5s ease forwards}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Sprint 7 · Estados de usuario · banner FOMO · candados · paywall
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Por defecto, los elementos VIP-only están ocultos hasta que UserState los habilite */
+[data-only-mode]{display:none}
+
+/* ─── Banner sticky FOMO (modo invitado y sin-membresia) ─── */
+.fomo-banner{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:11px 24px;
+  background:linear-gradient(90deg,var(--primary),var(--highlight));
+  color:#0E0A06;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  letter-spacing:-.1px;line-height:1.4;
+  border-bottom:1px solid color-mix(in srgb,#0E0A06 18%,transparent);
+  flex-wrap:wrap;
+}
+.fomo-banner__icon{font-size:15px;line-height:1}
+.fomo-banner__text strong{font-weight:800}
+.fomo-banner__timer{
+  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+  padding:3px 9px;border-radius:7px;
+  background:rgba(14,10,6,.15);
+  font-feature-settings:"tnum" 1;
+}
+.fomo-banner__cta{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#0E0A06;color:var(--primary);
+  font-size:12px;font-weight:700;letter-spacing:-.1px;
+  padding:7px 14px;border-radius:9px;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.fomo-banner__cta:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(0,0,0,.25)}
+.fomo-banner__cta svg{width:13px;height:13px}
+@media (max-width:768px){
+  .fomo-banner{padding:10px 14px;font-size:12px;gap:10px}
+  .fomo-banner__cta{padding:6px 11px;font-size:11.5px}
+}
+
+/* ─── Candado overlay (cards de cursos/clases/PDFs bloqueados) ─── */
+.lock-overlay{
+  position:absolute;inset:0;
+  background:color-mix(in srgb,var(--bg-deep) 78%,transparent);
+  backdrop-filter:blur(2px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+  border-radius:inherit;
+  cursor:pointer;
+  z-index:5;
+  opacity:0;transition:opacity .2s ease;
+}
+.lock-overlay__ic{
+  width:42px;height:42px;border-radius:50%;
+  background:color-mix(in srgb,var(--primary) 22%,transparent);
+  border:1px solid var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--primary);
+}
+.lock-overlay__ic svg{width:18px;height:18px}
+.lock-overlay__txt{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--primary);font-weight:700;letter-spacing:1px;text-transform:uppercase;
+}
+[data-locked="true"]{position:relative}
+[data-locked="true"]:hover .lock-overlay{opacity:1}
+[data-locked="true"] .lock-overlay{opacity:.85}
+
+/* ─── Popup paywall ─── */
+.paywall-modal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+  animation:fadeIn .2s ease;
+}
+.paywall-modal.is-open{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.paywall-modal__box{
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:20px;
+  max-width:440px;width:100%;
+  padding:32px 28px;text-align:center;
+  position:relative;
+  animation:popIn .25s cubic-bezier(.2,.8,.25,1);
+}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.paywall-modal__close{
+  position:absolute;top:14px;right:14px;
+  width:30px;height:30px;border-radius:50%;
+  background:transparent;border:1px solid var(--border);color:var(--text-3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s ease;
+}
+.paywall-modal__close:hover{color:var(--text);border-color:var(--text-3)}
+.paywall-modal__ic{
+  width:64px;height:64px;border-radius:50%;
+  background:color-mix(in srgb,var(--primary) 14%,transparent);
+  color:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;
+}
+.paywall-modal__ic svg{width:28px;height:28px}
+.paywall-modal__title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:22px;font-weight:800;letter-spacing:-.5px;
+  margin-bottom:10px;line-height:1.2;
+}
+.paywall-modal__sub{
+  font-size:13.5px;color:var(--text-2);line-height:1.6;
+  margin-bottom:22px;
+}
+.paywall-modal__actions{display:flex;flex-direction:column;gap:9px}
+.paywall-modal__btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--highlight));
+  color:#0E0A06;font-weight:700;font-size:13.5px;
+  padding:12px 20px;border-radius:11px;border:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .15s ease;
+}
+.paywall-modal__btn-primary:hover{transform:translateY(-1px)}
+.paywall-modal__btn-ghost{
+  background:transparent;color:var(--text-2);
+  border:1px solid var(--border-2);
+  font-size:12.5px;padding:10px 18px;border-radius:10px;cursor:pointer;
+}
+.paywall-modal__btn-ghost:hover{color:var(--text);border-color:var(--text-3)}
+
+/* ─── Toast de éxito post-checkout ─── */
+.success-toast{
+  position:fixed;top:24px;right:24px;z-index:300;
+  background:linear-gradient(135deg,var(--success),#16A34A);
+  color:#fff;
+  padding:14px 22px;border-radius:14px;
+  font-size:13.5px;font-weight:600;letter-spacing:-.1px;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 18px 40px rgba(0,0,0,.4);
+  animation:slideInRight .35s cubic-bezier(.2,.8,.25,1);
+}
+@keyframes slideInRight{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─── Sección suscripción · estado SIN MEMBRESÍA / INVITADO ─── */
+.sub-empty{
+  background:var(--surface);border:1px solid var(--border-2);border-radius:18px;
+  padding:36px 32px;text-align:center;
+}
+.sub-empty__ic{
+  width:64px;height:64px;border-radius:50%;
+  background:color-mix(in srgb,var(--primary) 12%,transparent);
+  color:var(--primary);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
+}
+.sub-empty__ic svg{width:28px;height:28px}
+.sub-empty__title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px;
+}
+.sub-empty__sub{font-size:13.5px;color:var(--text-2);line-height:1.6;margin-bottom:22px;max-width:440px;margin-left:auto;margin-right:auto}
+
+/* ─── Plan selector inline (dentro de Suscripción) ─── */
+.plan-picker{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:540px;margin:0 auto 18px;
+}
+@media (max-width:600px){.plan-picker{grid-template-columns:1fr}}
+.plan-picker__card{
+  background:var(--surface-2);border:1px solid var(--border-2);
+  border-radius:13px;padding:18px 18px;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  transition:all .15s ease;text-align:left;
+}
+.plan-picker__card:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--primary) 35%,var(--border-2))}
+.plan-picker__card.is-active{
+  border-color:var(--primary);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 6%,var(--surface-2)),var(--surface-2));
+  box-shadow:0 0 0 1px var(--primary);
+}
+.plan-picker__name{font-size:14px;font-weight:700;letter-spacing:-.2px}
+.plan-picker__sub{font-size:11px;color:var(--text-3);margin-top:3px}
+.plan-picker__price{
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;
+  color:var(--primary);font-feature-settings:"tnum" 1;letter-spacing:-.5px;line-height:1;
+}
+.plan-picker__price-sub{font-size:10.5px;color:var(--text-3);margin-top:3px;letter-spacing:.4px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;font-weight:600}
+
+/* ─── Stripe Embedded Checkout container ─── */
+#sub-checkout-mount{
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:16px;
+  padding:8px;margin-top:18px;
+  min-height:420px;
+}
+.sub-loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:300px;gap:14px;color:var(--text-3);font-size:13px;
+}
+.sub-loading__spin{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--border);border-top-color:var(--primary);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body style="visibility:hidden">
+
+<!-- Stripe.js para Embedded Checkout (sección Suscripción) -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<!-- Banner sticky FOMO · solo visible para invitado y sin-membresia -->
+<div class="fomo-banner" id="fomo-banner" style="display:none">
+  <span class="fomo-banner__icon" aria-hidden="true">⭐</span>
+  <span class="fomo-banner__text" id="fomo-banner-text"><strong>Activa tu suscripción</strong> para acceder a cursos, clases y herramientas pro.</span>
+  <span class="fomo-banner__timer" id="fomo-banner-timer" style="display:none">5:00</span>
+  <button class="fomo-banner__cta" id="fomo-banner-cta" type="button">
+    Suscribirme
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </button>
+</div>
+
+<!-- Popup paywall (se abre al hacer click en contenido bloqueado) -->
+<div class="paywall-modal" id="paywall-modal" role="dialog" aria-modal="true" aria-labelledby="paywall-title">
+  <div class="paywall-modal__box">
+    <button class="paywall-modal__close" id="paywall-close" aria-label="Cerrar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="paywall-modal__ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h2 class="paywall-modal__title" id="paywall-title">Contenido exclusivo VIP</h2>
+    <p class="paywall-modal__sub" id="paywall-sub">Este contenido es parte de la membresía. Suscríbete para acceder a todos los cursos, clases en vivo y herramientas pro de IMDIIL.</p>
+    <div class="paywall-modal__actions">
+      <button class="paywall-modal__btn-primary" id="paywall-cta" type="button">
+        Suscribirme ahora
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <button class="paywall-modal__btn-ghost" id="paywall-dismiss" type="button">Seguir explorando</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Detección de modo (corre ANTES de Firebase) ===== -->
+<script>
+// UserState inicial (vacío) y detección de modo demo SIN depender de Firebase
+window.UserState = {
+  modo: 'cargando',
+  uid: null, email: null, displayName: null, iniciales: 'IN',
+  plan: null, isAdmin: false,
+  membership: { activo:false, proximaRenovacion:null, historial:[], metodoPago:null },
+  demo: { timerRestante:300, iniciado:null, visitas:0 }
+};
+
+(function detectDemoMode(){
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('modo') !== 'demo') return;
+
+  // ─── Modo INVITADO · sin auth, sin Firestore ───
+  window.UserState.modo = 'invitado';
+  window.UserState.displayName = 'Invitado';
+  window.UserState.iniciales = 'GU';
+  window.__isDemoMode = true;  // bandera para que el módulo Firebase NO redirija
+
+  // Contar visitas al demo
+  const visits = parseInt(localStorage.getItem('imdiil_demo_visits') || '0', 10) + 1;
+  localStorage.setItem('imdiil_demo_visits', String(visits));
+  window.UserState.demo.visitas = visits;
+
+  // Cupón 20% off solo primera visita
+  if (visits === 1) {
+    localStorage.setItem('imdiil_demo_cupon', 'IMDIILVISIT20');
+    localStorage.setItem('imdiil_demo_cupon_expires', String(Date.now() + 24*60*60*1000));
+  }
+
+  document.body.style.visibility = 'visible';
+})();
+</script>
 
 <!-- ===== AUTH GUARD (Firebase) ===== -->
 <script type="module">
@@ -2419,18 +2694,66 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence);
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) { window.location.href = 'vip-auth.html'; return; }
-  // En sprint 6 agregamos paywall (verificar membresía activa en Firestore)
-  window.__currentUser = user;
-  document.body.style.visibility = 'visible';
-  // Actualizar avatar del usuario en topbar si existe
-  const email = (user.email||'').toLowerCase();
-  const nameEl = document.querySelector('.avatar__name, [data-user-name]');
-  const picEl = document.querySelector('.avatar__pic, [data-user-avatar]');
-  if (nameEl && user.displayName) nameEl.textContent = user.displayName.split(' ').slice(0,2).join(' ');
-  if (picEl) picEl.textContent = (user.displayName||email).split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase().slice(0,2);
-});
+// ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
+const WEBHOOK_URL = 'https://imdiil-webhook-production.up.railway.app';
+window.WEBHOOK_URL = WEBHOOK_URL;
+
+const ADMIN_EMAILS = ['teccapitalweb@gmail.com','imdiilmx@gmail.com','imdiilconsultoria@gmail.com'];
+
+function calcIniciales(nameOrEmail){
+  const s = (nameOrEmail||'').trim();
+  if (!s) return 'IN';
+  const parts = s.split(/[\s@.]+/).filter(Boolean);
+  return ((parts[0]?.[0]||'I' ) + (parts[1]?.[0]||parts[0]?.[1]||'N')).toUpperCase();
+}
+
+const isCheckoutSuccess = new URLSearchParams(window.location.search).get('checkout') === 'success';
+
+// Si ya estamos en modo demo (configurado en script anterior), aplicar UserState y salir
+if (window.__isDemoMode) {
+  setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 80);
+} else {
+  // ─── Auth normal · puede ser sin-membresia o vip ───
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { window.location.href = 'vip-auth.html'; return; }
+
+    window.__currentUser = user;
+    window.UserState.uid = user.uid;
+    window.UserState.email = (user.email||'').toLowerCase();
+    window.UserState.displayName = user.displayName || user.email?.split('@')[0] || 'Ingeniero';
+    window.UserState.iniciales = calcIniciales(user.displayName || user.email);
+    window.UserState.isAdmin = ADMIN_EMAILS.includes(window.UserState.email);
+
+    if (window.UserState.isAdmin) {
+      window.UserState.modo = 'vip';
+      window.UserState.plan = 'admin';
+      window.UserState.membership = { activo:true, plan:'admin' };
+    } else {
+      try {
+        const res = await fetch(`${WEBHOOK_URL}/membership/${user.uid}`, { method:'GET' });
+        const data = await res.json();
+        window.UserState.membership = data;
+        if (data.activo) {
+          window.UserState.modo = 'vip';
+          window.UserState.plan = data.plan || 'mensual';
+        } else {
+          window.UserState.modo = 'sin-membresia';
+        }
+      } catch(e) {
+        console.warn('Backend Railway no responde · modo permisivo: sin-membresia');
+        window.UserState.modo = 'sin-membresia';
+      }
+    }
+
+    document.body.style.visibility = 'visible';
+
+    if (isCheckoutSuccess && window.UserState.modo === 'vip') {
+      setTimeout(() => { window.__showSuccessToast && window.__showSuccessToast(); }, 400);
+    }
+
+    setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 50);
+  });
+}
 
 window.__signOut = async () => {
   try { await signOut(auth); window.location.href = 'vip-auth.html'; }
@@ -4473,28 +4796,215 @@ const Sections = (function(){
 
   /* ============================ SUSCRIPCIÓN ============================ */
   function renderSuscripcion(container){
-    const pagos = [
-      {fecha:'15 mar 2026',concepto:'Membresía VIP Anual',monto:'$1,899.00'},
-      {fecha:'15 mar 2025',concepto:'Membresía VIP Anual',monto:'$1,899.00'},
-      {fecha:'15 mar 2024',concepto:'Membresía VIP Mensual',monto:'$199.00'}
-    ];
+    const S = window.UserState || { modo:'cargando' };
+
+    // Estado VIP · plan activo + historial real
+    if (S.modo === 'vip' && S.plan !== 'admin') {
+      renderSuscripcionVIP(container, S);
+      return;
+    }
+    // Estado ADMIN · panel especial
+    if (S.modo === 'vip' && S.plan === 'admin') {
+      renderSuscripcionAdmin(container, S);
+      return;
+    }
+    // Estado SIN-MEMBRESIA / INVITADO · activar suscripción
+    renderSuscripcionActivar(container, S);
+  }
+
+  /* ─── Estado: SIN membresía (logueado pero no pagó) o INVITADO (demo) ─── */
+  function renderSuscripcionActivar(container, S){
+    const intentPlan = localStorage.getItem('imdiil_intent_plan') || 'anual';
+    const isInvitado = S.modo === 'invitado';
+
+    container.innerHTML = `
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Activa tu acceso</span>
+          <h1 class="sec-hero__title">Suscripción</h1>
+          <p class="sec-hero__sub">${isInvitado
+            ? 'Crea tu cuenta y activa tu membresía para desbloquear cursos, clases en vivo y herramientas pro.'
+            : 'Estás a un click de acceder a todo el contenido de IMDIIL VIP. Elige tu plan y completa tu suscripción.'}</p>
+        </div>
+
+        <div class="sub-empty">
+          <div class="sub-empty__ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="sub-empty__title">${isInvitado ? 'Aún no tienes una cuenta' : 'Tu suscripción no está activa'}</div>
+          <div class="sub-empty__sub">${isInvitado
+            ? 'En modo demo solo puedes explorar el panel. Para suscribirte y desbloquear todo el contenido, crea tu cuenta primero.'
+            : 'Selecciona tu plan preferido a continuación. El pago se procesa de forma segura por Stripe y la activación es inmediata.'}</div>
+
+          ${isInvitado ? `
+            <button class="btn btn--primary btn--lg" id="btn-crear-cuenta-sub" style="margin-top:6px;">
+              Crear mi cuenta · 30 segundos
+              <svg class="ic"><use href="#i-arrow-right"/></svg>
+            </button>
+          ` : ''}
+        </div>
+
+        ${!isInvitado ? `
+          <!-- Selector de plan -->
+          <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.2px;margin:28px 0 14px;text-align:center">
+            Elige tu plan
+          </h3>
+          <div class="plan-picker" id="plan-picker">
+            <button class="plan-picker__card ${intentPlan==='mensual'?'is-active':''}" data-plan="mensual" type="button">
+              <div>
+                <div class="plan-picker__name">VIP Mensual</div>
+                <div class="plan-picker__sub">Cancela cuando quieras</div>
+              </div>
+              <div style="text-align:right">
+                <div class="plan-picker__price">$199</div>
+                <div class="plan-picker__price-sub">MXN/mes</div>
+              </div>
+            </button>
+            <button class="plan-picker__card ${intentPlan==='anual'?'is-active':''}" data-plan="anual" type="button">
+              <div>
+                <div class="plan-picker__name">VIP Anual</div>
+                <div class="plan-picker__sub">Ahorras 21%</div>
+              </div>
+              <div style="text-align:right">
+                <div class="plan-picker__price">$1,899</div>
+                <div class="plan-picker__price-sub">MXN/año</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Stripe Embedded Checkout container -->
+          <div id="sub-checkout-mount">
+            <div class="sub-loading">
+              <div class="sub-loading__spin"></div>
+              <div>Preparando tu plan…</div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    if (isInvitado) {
+      document.getElementById('btn-crear-cuenta-sub')?.addEventListener('click', () => {
+        window.location.href = 'vip-auth.html?plan=' + (localStorage.getItem('imdiil_intent_plan') || 'anual');
+      });
+      return;
+    }
+
+    // ─── Lógica del selector de plan + Stripe Embedded ───
+    let selectedPlan = intentPlan;
+    let checkoutInstance = null;
+    const mountEl = document.getElementById('sub-checkout-mount');
+
+    document.querySelectorAll('#plan-picker .plan-picker__card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const plan = btn.dataset.plan;
+        if (plan === selectedPlan) return;
+        selectedPlan = plan;
+        localStorage.setItem('imdiil_intent_plan', plan);
+        document.querySelectorAll('#plan-picker .plan-picker__card').forEach(c =>
+          c.classList.toggle('is-active', c.dataset.plan === plan));
+        mountStripeCheckout();
+      });
+    });
+
+    async function mountStripeCheckout(){
+      if (checkoutInstance) {
+        try { checkoutInstance.destroy(); } catch(e) {}
+        checkoutInstance = null;
+      }
+      mountEl.innerHTML = `<div class="sub-loading"><div class="sub-loading__spin"></div><div>Cargando plan ${selectedPlan}…</div></div>`;
+      try {
+        const res = await fetch(`${window.WEBHOOK_URL || 'https://imdiil-webhook-production.up.railway.app'}/stripe/checkout`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            plan: selectedPlan,
+            uid: S.uid,
+            email: S.email
+          })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({error:'Error desconocido'}));
+          throw new Error(err.error || `HTTP ${res.status}`);
+        }
+        const { clientSecret } = await res.json();
+        if (!clientSecret) throw new Error('No recibimos clientSecret');
+        if (!window.__stripe) {
+          if (!window.Stripe) throw new Error('Stripe.js no cargó');
+          // ⚠️ CAMBIA esta key por tu pk_live_... real cuando configures Stripe
+          window.__stripe = window.Stripe('pk_live_REEMPLAZAR_CON_TU_PUBLISHABLE_KEY');
+        }
+        mountEl.innerHTML = '';
+        checkoutInstance = await window.__stripe.initEmbeddedCheckout({ clientSecret });
+        checkoutInstance.mount('#sub-checkout-mount');
+      } catch (err) {
+        console.error('Checkout error:', err);
+        mountEl.innerHTML = `
+          <div style="padding:24px 20px;text-align:center;color:var(--text-2);font-size:13px;line-height:1.6;">
+            <div style="color:var(--danger);font-weight:700;margin-bottom:6px;">No pudimos cargar el checkout</div>
+            <div>${err.message}</div>
+            <div style="margin-top:14px;font-size:11.5px;color:var(--text-3);">Verifica tu conexión. Si el problema persiste, contáctanos por WhatsApp.</div>
+          </div>
+        `;
+      }
+    }
+    mountStripeCheckout();
+  }
+
+  /* ─── Estado: ADMIN (cuenta interna, sin membresía pagada) ─── */
+  function renderSuscripcionAdmin(container, S){
+    container.innerHTML = `
+      <div class="fade-up">
+        <div class="sec-hero">
+          <span class="sec-hero__eyebrow">Cuenta administrativa</span>
+          <h1 class="sec-hero__title">Suscripción</h1>
+          <p class="sec-hero__sub">Tu cuenta tiene acceso administrativo a IMDIIL. No requiere suscripción de pago.</p>
+        </div>
+        <div class="sub-empty">
+          <div class="sub-empty__ic" style="background:color-mix(in srgb,var(--success) 14%,transparent);color:var(--success)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7l7 0l-6 5l3 7l-7-4l-7 4l3-7l-6-5l7 0z"/></svg>
+          </div>
+          <div class="sub-empty__title">Cuenta de administrador</div>
+          <div class="sub-empty__sub">Accedes a todo el contenido VIP sin necesidad de pagar. Puedes ver el panel desde la perspectiva de un usuario VIP normal.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ─── Estado: VIP activo · muestra plan real y historial ─── */
+  function renderSuscripcionVIP(container, S){
+    const PLAN_DATA = {
+      mensual: { name:'VIP Mensual', priceNum:'$199',   priceSub:'MXN / mes', period:'mensual' },
+      anual:   { name:'VIP Anual',   priceNum:'$1,899', priceSub:'MXN / año',  period:'anual' }
+    };
+    const plan = PLAN_DATA[S.plan] || PLAN_DATA.mensual;
+    const proxRenovStr = S.membership?.proximaRenovacion
+      ? new Date(S.membership.proximaRenovacion).toLocaleDateString('es-MX', {day:'numeric',month:'long',year:'numeric'})
+      : '—';
+    const diasRestantes = S.membership?.proximaRenovacion
+      ? Math.max(0, Math.ceil((new Date(S.membership.proximaRenovacion) - Date.now()) / (1000*60*60*24)))
+      : '—';
+
+    // Historial real si lo tenemos del backend, si no array vacío
+    const pagos = Array.isArray(S.membership?.historial) ? S.membership.historial : [];
+
     container.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Tu plan</span>
           <h1 class="sec-hero__title">Suscripción</h1>
-          <p class="sec-hero__sub">Detalles de tu membresía, historial de pagos, próxima renovación y opciones para cambiar o cancelar.</p>
+          <p class="sec-hero__sub">Detalles de tu membresía, historial de pagos y próxima renovación.</p>
         </div>
 
         <section class="plan-card">
           <div class="plan-card__header">
             <div>
               <div class="plan-card__lbl">Plan activo · pagado</div>
-              <h2 class="plan-card__name">VIP Anual</h2>
+              <h2 class="plan-card__name">${plan.name}</h2>
             </div>
             <div class="plan-card__price">
-              <div class="plan-card__price-num">$1,899</div>
-              <div class="plan-card__price-sub">MXN / año</div>
+              <div class="plan-card__price-num">${plan.priceNum}</div>
+              <div class="plan-card__price-sub">${plan.priceSub}</div>
             </div>
           </div>
           <div class="plan-card__features">
@@ -4506,58 +5016,55 @@ const Sections = (function(){
             <div class="plan-feat"><svg class="ic"><use href="#i-check"/></svg>20% descuento en certificaciones</div>
           </div>
           <div class="plan-card__footer">
-            <span><strong>Próxima renovación:</strong> 15 marzo 2027</span>
-            <span><strong>Días restantes:</strong> 294</span>
+            <span><strong>Próxima renovación:</strong> ${proxRenovStr}</span>
+            <span><strong>Días restantes:</strong> ${diasRestantes}</span>
           </div>
         </section>
 
         <div class="perfil-grid">
           <div class="perfil-card">
             <div class="perfil-card__title">Método de pago</div>
-            <div style="display:flex;align-items:center;gap:14px;padding:12px 0;">
-              <div style="width:48px;height:32px;border-radius:7px;background:linear-gradient(135deg,#1e293b,#475569);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;"><svg class="ic"><use href="#i-credit-card"/></svg></div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:600;letter-spacing:-.1px;">Visa terminada en 4521</div>
-                <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-3);font-weight:500;margin-top:2px;">Vence 09/27</div>
-              </div>
-              <button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button>
+            <div style="padding:12px 0;font-size:13px;color:var(--text-2);line-height:1.55;">
+              Gestionado por Stripe. Para cambiar tu método o ver tus facturas, escríbenos por WhatsApp y te enviamos el link al portal de Stripe.
             </div>
-            <div style="margin-top:8px;">
-              <button class="btn btn--ghost" style="width:100%;"><svg class="ic"><use href="#i-credit-card"/></svg>Agregar nuevo método</button>
-            </div>
+            <a class="btn btn--ghost" style="width:100%;" href="https://wa.me/5212211832603?text=Hola%20IMDIIL%2C%20quiero%20cambiar%20mi%20m%C3%A9todo%20de%20pago" target="_blank" rel="noopener" data-bypass-paywall="true">
+              <svg class="ic"><use href="#i-whatsapp"/></svg>Solicitar cambio
+            </a>
           </div>
 
           <div class="perfil-card">
-            <div class="perfil-card__title">Cambiar de plan</div>
-            <div style="padding:8px 0;">
-              <div style="font-size:13px;color:var(--text-2);line-height:1.55;">Estás en el plan más completo. Si cambias a mensual perderás el descuento del 20% y el ahorro anual.</div>
+            <div class="perfil-card__title">Gestionar plan</div>
+            <div style="padding:8px 0;font-size:13px;color:var(--text-2);line-height:1.55;">
+              ${S.plan === 'anual'
+                ? 'Estás en el plan anual. Si quieres cambiar a mensual o cancelar, escríbenos.'
+                : 'Estás en el plan mensual. Si quieres cambiar a anual y ahorrar 21%, escríbenos.'}
             </div>
-            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-              <button class="btn btn--ghost btn--sm" style="flex:1;">VIP Mensual · $199</button>
-              <button class="btn btn--ghost btn--sm" style="flex:1;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 30%,transparent);">Cancelar plan</button>
-            </div>
+            <a class="btn btn--ghost" style="width:100%;margin-top:8px;" href="https://wa.me/5212211832603?text=Hola%20IMDIIL%2C%20quiero%20cambiar%2Fcancelar%20mi%20plan" target="_blank" rel="noopener" data-bypass-paywall="true">
+              <svg class="ic"><use href="#i-whatsapp"/></svg>Contactar soporte
+            </a>
           </div>
         </div>
 
+        ${pagos.length > 0 ? `
         <div style="margin-top:14px;">
           <div class="section-header">
             <h2 class="section-header__title">Historial de pagos<span class="section-header__badge">${pagos.length} cobros</span></h2>
-            <a class="section-header__link" href="#"><svg class="ic"><use href="#i-download"/></svg>Descargar facturas</a>
           </div>
           <div class="pagos-list">
             ${pagos.map(p=>`
               <div class="pago-row">
                 <div class="pago-row__icon"><svg class="ic"><use href="#i-check"/></svg></div>
                 <div class="pago-row__body">
-                  <div class="pago-row__title">${p.concepto}</div>
-                  <div class="pago-row__meta">${p.fecha} · Visa ··4521</div>
+                  <div class="pago-row__title">${p.concepto||p.descripcion||'Pago de membresía'}</div>
+                  <div class="pago-row__meta">${p.fecha||'—'}</div>
                 </div>
-                <span class="pago-row__amount">${p.monto}</span>
-                <span class="pago-row__status">Pagado</span>
+                <span class="pago-row__amount">${p.monto||'—'}</span>
+                <span class="pago-row__status">${p.estado||'Pagado'}</span>
               </div>
             `).join('')}
           </div>
         </div>
+        ` : ''}
       </div>
     `;
   }
@@ -5032,6 +5539,274 @@ function init(){
   window.openReferralModal=openReferralModal;
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Sprint 7 · Aplicador de UserState · Paywall · Timer · Checkout inline
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  const PLAN_LABELS = {
+    mensual: { name:'VIP Mensual', price:'$199', period:'MXN/mes', cycle:'mes' },
+    anual:   { name:'VIP Anual',   price:'$1,899', period:'MXN/año', cycle:'año' },
+    admin:   { name:'ADMIN',       price:'—',     period:'',         cycle:'—' }
+  };
+
+  // ─── Aplicador de UserState · llamado después del auth check ───
+  window.__applyUserState = function applyUserState(){
+    const S = window.UserState;
+    if (!S || S.modo === 'cargando') return;
+
+    document.documentElement.setAttribute('data-mode', S.modo);
+
+    // 1. Topbar avatar
+    const avatarCircle = document.querySelector('.avatar__circle');
+    const avatarName = document.querySelector('.avatar__name');
+    const avatarPlan = document.querySelector('.avatar__plan');
+    if (avatarCircle) avatarCircle.textContent = S.iniciales;
+    if (avatarName) {
+      avatarName.textContent = S.modo === 'invitado'
+        ? 'Invitado'
+        : (S.displayName || 'Ingeniero').split(' ').slice(0,2).join(' ');
+    }
+    if (avatarPlan) {
+      if (S.modo === 'vip') {
+        avatarPlan.textContent = (PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name;
+        avatarPlan.style.color = '';
+      } else if (S.modo === 'sin-membresia') {
+        avatarPlan.textContent = 'SIN SUSCRIPCIÓN';
+        avatarPlan.style.color = 'var(--text-3)';
+      } else {
+        avatarPlan.textContent = 'MODO DEMO';
+        avatarPlan.style.color = 'var(--primary)';
+      }
+    }
+
+    // 2. Saludo del banner inicio
+    const heroTitle = document.getElementById('hero-title');
+    if (heroTitle) {
+      const h = new Date().getHours();
+      const part = h<12 ? 'Buenos días' : (h<19 ? 'Buenas tardes' : 'Buenas noches');
+      if (S.modo === 'invitado') {
+        heroTitle.textContent = 'Estás explorando IMDIIL VIP';
+      } else if (S.modo === 'sin-membresia') {
+        heroTitle.textContent = `${part}, ${S.displayName?.split(' ')[0]||'ingeniero'}`;
+      } else {
+        heroTitle.textContent = `${part}, ${S.displayName?.split(' ')[0]||'ingeniero'}`;
+      }
+    }
+
+    // 3. Banner sticky FOMO (solo no-VIP)
+    const banner = document.getElementById('fomo-banner');
+    const bannerText = document.getElementById('fomo-banner-text');
+    const bannerTimer = document.getElementById('fomo-banner-timer');
+    if (banner) {
+      if (S.modo === 'vip') {
+        banner.style.display = 'none';
+      } else if (S.modo === 'invitado') {
+        banner.style.display = '';
+        const msg = S.demo.visitas === 1
+          ? '<strong>Bienvenido al demo</strong> · 5 minutos para explorar IMDIIL VIP.'
+          : (S.demo.visitas === 2
+            ? '<strong>Otra vez por aquí</strong> · ¿Te animas a crear tu cuenta?'
+            : '<strong>Ya conoces el panel</strong> · Crear tu cuenta toma 30 segundos.');
+        if (bannerText) bannerText.innerHTML = msg;
+        if (bannerTimer) bannerTimer.style.display = '';
+        startDemoTimer();
+      } else { // sin-membresia
+        banner.style.display = '';
+        if (bannerText) bannerText.innerHTML = '<strong>Activa tu suscripción</strong> para acceder a cursos, clases y herramientas pro.';
+        if (bannerTimer) bannerTimer.style.display = 'none';
+      }
+    }
+
+    // 4. CTA del banner FOMO
+    const bannerCTA = document.getElementById('fomo-banner-cta');
+    if (bannerCTA) {
+      bannerCTA.onclick = () => {
+        if (S.modo === 'invitado') {
+          window.location.href = 'vip-auth.html?plan=' + (localStorage.getItem('imdiil_intent_plan') || 'anual');
+        } else {
+          window.navigateToSection?.('suscripcion');
+        }
+      };
+    }
+
+    // 5. Sidebar · ocultar "Cerrar sesión" si invitado, agregar "Salir del demo"
+    const navLogoutLinks = document.querySelectorAll('[data-action="logout"], .nav-item--logout');
+    navLogoutLinks.forEach(el => {
+      if (S.modo === 'invitado') el.style.display = 'none';
+      else el.style.display = '';
+    });
+
+    // 6. Aplicar candados a contenido bloqueado (re-aplica al cambiar de sección)
+    setTimeout(applyLocksToCurrentView, 100);
+  };
+
+  // ─── Timer del demo ───
+  let demoInterval = null;
+  function startDemoTimer(){
+    if (demoInterval) return;
+    const startTs = parseInt(localStorage.getItem('imdiil_demo_session_start') || '0', 10);
+    const now = Date.now();
+    let elapsed = 0;
+    if (startTs && (now - startTs) < 600000) {
+      elapsed = Math.floor((now - startTs) / 1000);
+    } else {
+      localStorage.setItem('imdiil_demo_session_start', String(now));
+    }
+    let remaining = Math.max(0, 300 - elapsed);
+    const timerEl = document.getElementById('fomo-banner-timer');
+    function tick(){
+      if (remaining <= 0) {
+        clearInterval(demoInterval); demoInterval = null;
+        showDemoExpiredModal();
+        return;
+      }
+      const m = Math.floor(remaining/60);
+      const s = remaining%60;
+      if (timerEl) timerEl.textContent = `${m}:${String(s).padStart(2,'0')}`;
+      remaining--;
+    }
+    tick();
+    demoInterval = setInterval(tick, 1000);
+  }
+
+  function showDemoExpiredModal(){
+    const modal = document.getElementById('paywall-modal');
+    document.getElementById('paywall-title').textContent = 'Tu demo terminó';
+    document.getElementById('paywall-sub').innerHTML = '¿Te gustó lo que viste? Crea tu cuenta y accede a TODO el contenido de IMDIIL VIP. Solo te toma 30 segundos.';
+    document.getElementById('paywall-cta').textContent = 'Crear mi cuenta';
+    document.getElementById('paywall-cta').onclick = () => {
+      window.location.href = 'vip-auth.html?plan=' + (localStorage.getItem('imdiil_intent_plan') || 'anual');
+    };
+    document.getElementById('paywall-dismiss').textContent = 'Ya tengo cuenta · Iniciar sesión';
+    document.getElementById('paywall-dismiss').onclick = () => {
+      window.location.href = 'vip-auth.html';
+    };
+    modal.classList.add('is-open');
+  }
+
+  // ─── Aplicar candados a la vista actual ───
+  // Cards de cursos, webinars, PDFs, foro, canal · agregamos overlay 🔒
+  // si UserState.modo !== 'vip' (excepto Matriz IPER que sigue libre)
+  function applyLocksToCurrentView(){
+    const S = window.UserState;
+    if (S.modo === 'vip') return;
+
+    // Selectores de cards susceptibles de bloqueo
+    const lockableSelectors = [
+      '.curso-card', '.webinar-card', '.pdf-card', '.cert-card',
+      '[data-lockable="true"]', '.foro-thread', '.canal-card'
+    ];
+    document.querySelectorAll(lockableSelectors.join(',')).forEach(card => {
+      if (card.dataset.locked === 'true') return;
+      // No bloquear si tiene data-free="true" (ej: IPER libre)
+      if (card.dataset.free === 'true') return;
+      card.dataset.locked = 'true';
+      card.style.position = card.style.position || 'relative';
+      const overlay = document.createElement('div');
+      overlay.className = 'lock-overlay';
+      overlay.innerHTML = `
+        <div class="lock-overlay__ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="lock-overlay__txt">Solo VIP</div>
+      `;
+      overlay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showPaywallModal();
+      });
+      card.appendChild(overlay);
+      // Interceptar clicks dentro de la card
+      const originalClickables = card.querySelectorAll('a, button');
+      originalClickables.forEach(el => {
+        if (el.dataset.bypassPaywall === 'true') return;
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          showPaywallModal();
+        }, true);
+      });
+    });
+  }
+
+  // ─── Popup paywall genérico ───
+  function showPaywallModal(opts){
+    const modal = document.getElementById('paywall-modal');
+    if (opts && opts.title) document.getElementById('paywall-title').textContent = opts.title;
+    if (opts && opts.sub) document.getElementById('paywall-sub').textContent = opts.sub;
+    modal.classList.add('is-open');
+  }
+  window.__showPaywallModal = showPaywallModal;
+
+  // Cerrar modal
+  document.getElementById('paywall-close')?.addEventListener('click', () => {
+    document.getElementById('paywall-modal').classList.remove('is-open');
+  });
+  document.getElementById('paywall-dismiss')?.addEventListener('click', () => {
+    document.getElementById('paywall-modal').classList.remove('is-open');
+  });
+  document.getElementById('paywall-cta')?.addEventListener('click', () => {
+    document.getElementById('paywall-modal').classList.remove('is-open');
+    const S = window.UserState;
+    if (S.modo === 'invitado') {
+      window.location.href = 'vip-auth.html?plan=' + (localStorage.getItem('imdiil_intent_plan') || 'anual');
+    } else {
+      window.navigateToSection?.('suscripcion');
+    }
+  });
+  // Cerrar al click fuera del box
+  document.getElementById('paywall-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'paywall-modal') {
+      e.currentTarget.classList.remove('is-open');
+    }
+  });
+
+  // ─── Toast de éxito post-checkout ───
+  window.__showSuccessToast = function(){
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>¡Bienvenido al VIP! Tu acceso está activo.</span>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.transition='opacity .4s ease'; toast.style.opacity='0'; }, 4500);
+    setTimeout(() => toast.remove(), 5000);
+  };
+
+  // ─── Re-aplicar candados cuando se navega a otra sección ───
+  // (el panel renderiza con innerHTML, perdiendo los listeners)
+  const observer = new MutationObserver(() => {
+    if (window.UserState?.modo && window.UserState.modo !== 'vip') {
+      clearTimeout(window.__lockRetimer);
+      window.__lockRetimer = setTimeout(applyLocksToCurrentView, 200);
+    }
+  });
+  const mainView = document.getElementById('view-root') || document.querySelector('main') || document.body;
+  if (mainView) observer.observe(mainView, { childList:true, subtree:true });
+
+  // Exponer función para que la sección Suscripción dinámica la use
+  window.__applyLocksToCurrentView = applyLocksToCurrentView;
+
+  // ─── Auto-apply al cargar si el UserState ya está listo (race condition fix) ───
+  // Si el módulo de auth terminó antes que este script, aplicamos ahora.
+  // Si no, el módulo nos llamará cuando esté listo.
+  function tryAutoApply(){
+    if (window.UserState && window.UserState.modo && window.UserState.modo !== 'cargando') {
+      window.__applyUserState();
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryAutoApply);
+  } else {
+    tryAutoApply();
+  }
+  // También intentar después de un breve delay por si el módulo aún está cargando Firebase
+  setTimeout(tryAutoApply, 800);
+  setTimeout(tryAutoApply, 2000);
+})();
 </script>
 
 </body>
