@@ -2710,7 +2710,7 @@ window.__resetPassword = async () => {
     </div>
 
     <div class="widget widget--disc" id="widget-disc">
-      <div class="widget__label">🎁 Tu descuento VIP</div>
+      <div class="widget__label">⭐ Tu descuento VIP</div>
       <div class="widget__pct">20%</div>
       <div class="widget__count-sub">En cursos de certificación con folio oficial IMDIIL</div>
       <button class="btn btn--primary btn--block btn--sm" id="btn-disc-wa"><svg class="ic"><use href="#i-whatsapp"/></svg>Solicitar mi 20% por WhatsApp</button>
@@ -4674,16 +4674,16 @@ const IMDIIL_CONTACT = {
     return `https://wa.me/${this.whatsapp}?text=${encodeURIComponent(text)}`;
   },
   msgDescuento20() {
-    return '🎁 ¡Hola IMDIIL! Soy miembro VIP y quiero conocer más sobre el *descuento del 20%* en certificaciones. ¿Me pueden dar más información? 🦺';
+    return '⭐ ¡Hola IMDIIL! Soy miembro VIP y quiero conocer más sobre el *descuento del 20%* en certificaciones. ¿Me pueden dar más información?';
   },
   msgSoporte() {
-    return '👋 Hola IMDIIL, soy miembro VIP y necesito ayuda con mi cuenta. Mi consulta es:\n\n';
+    return '☎️ Hola IMDIIL, soy miembro VIP y necesito ayuda con mi cuenta. Mi consulta es:\n\n';
   },
   msgDirector() {
-    return '🤝 Hola, soy miembro VIP de IMDIIL y me gustaría contactar con la dirección. Mi consulta es:\n\n';
+    return '✉️ Hola, soy miembro VIP de IMDIIL y me gustaría contactar con la dirección. Mi consulta es:\n\n';
   },
   shareInvitacion() {
-    const txt = '🦺 Conoce IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística.\n\nCursos online de seguridad industrial, NOM-STPS, calidad y logística con certificación oficial.\n\nÚnete al canal: '+this.canal+'\nSitio: '+this.sitio;
+    const txt = '⭐ Conoce IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística.\n\nCursos online de seguridad industrial, NOM-STPS, calidad y logística con certificación oficial.\n\nÚnete al canal: '+this.canal+'\nSitio: '+this.sitio;
     return `https://wa.me/?text=${encodeURIComponent(txt)}`;
   }
 };
@@ -4894,7 +4894,7 @@ function injectSupportFAB(){
     menu.id='wa-fab-menu';
     menu.innerHTML=`
       <div class="wa-fab-opt" data-wa="discount">
-        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);">🎁</div>
+        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);font-size:18px;">⭐</div>
         <div><div class="wa-fab-opt-tx">Mi descuento 20%</div><div class="wa-fab-opt-sub">Solicitar por WhatsApp</div></div>
       </div>
       <div class="wa-fab-opt" data-wa="support">
@@ -4902,7 +4902,7 @@ function injectSupportFAB(){
         <div><div class="wa-fab-opt-tx">Soporte VIP</div><div class="wa-fab-opt-sub">Ayuda con tu cuenta</div></div>
       </div>
       <div class="wa-fab-opt" data-wa="director">
-        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--highlight) 14%,transparent);color:var(--highlight);">🤝</div>
+        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--highlight) 14%,transparent);color:var(--highlight);font-size:18px;">✉️</div>
         <div><div class="wa-fab-opt-tx">Contactar dirección</div><div class="wa-fab-opt-sub">Para temas estratégicos</div></div>
       </div>
       <div class="wa-fab-opt" data-wa="canal">
