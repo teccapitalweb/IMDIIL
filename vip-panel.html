@@ -2404,7 +2404,7 @@ body::after{
 <!-- ===== AUTH GUARD (Firebase) ===== -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -2422,6 +2422,7 @@ setPersistence(auth, browserLocalPersistence);
 onAuthStateChanged(auth, (user) => {
   if (!user) { window.location.href = 'vip-auth.html'; return; }
   // En sprint 6 agregamos paywall (verificar membresía activa en Firestore)
+  window.__currentUser = user;
   document.body.style.visibility = 'visible';
   // Actualizar avatar del usuario en topbar si existe
   const email = (user.email||'').toLowerCase();
@@ -2434,6 +2435,15 @@ onAuthStateChanged(auth, (user) => {
 window.__signOut = async () => {
   try { await signOut(auth); window.location.href = 'vip-auth.html'; }
   catch(e){ alert('No pudimos cerrar sesión.'); }
+};
+
+window.__resetPassword = async () => {
+  try {
+    const user = window.__currentUser;
+    if (!user || !user.email) throw new Error('Sin email');
+    await sendPasswordResetEmail(auth, user.email);
+    return { ok:true, email:user.email };
+  } catch(e) { return { ok:false, error:e.message }; }
 };
 </script>
 
@@ -2528,7 +2538,7 @@ window.__signOut = async () => {
         <span class="pill"><svg class="ic"><use href="#i-crown"/></svg>Membresía activa</span>
       </div>
       <div class="topbar__right">
-        <button class="icon-btn" aria-label="Notificaciones">
+        <button class="icon-btn" id="btn-notif" aria-label="Notificaciones">
           <svg class="ic"><use href="#i-bell"/></svg>
           <span class="dot"></span>
         </button>
@@ -2536,7 +2546,7 @@ window.__signOut = async () => {
           <svg class="ic" id="theme-icon"><use href="#i-moon"/></svg>
           <span id="theme-label">Noche</span>
         </button>
-        <div class="avatar">
+        <div class="avatar" id="btn-avatar" style="cursor:pointer" title="Mi perfil">
           <div class="avatar__circle">IN</div>
           <div class="avatar__info">
             <span class="avatar__name">Ingeniero</span>
@@ -2555,10 +2565,10 @@ window.__signOut = async () => {
           <p class="banner__sub">Tu acceso a cursos premium, herramientas pro de seguridad y la comunidad de ingeniería industrial más activa de México.</p>
         </div>
         <div class="banner__stats">
-          <div class="banner__stat"><div class="banner__stat-lbl">Cursos</div><div class="banner__stat-val">12</div></div>
-          <div class="banner__stat"><div class="banner__stat-lbl">Clases</div><div class="banner__stat-val">9</div></div>
-          <div class="banner__stat"><div class="banner__stat-lbl">PDFs</div><div class="banner__stat-val">24</div></div>
-          <div class="banner__stat"><div class="banner__stat-lbl">Pro</div><div class="banner__stat-val">5</div></div>
+          <div class="banner__stat" data-section="cursos" style="cursor:pointer"><div class="banner__stat-lbl">Cursos</div><div class="banner__stat-val">12</div></div>
+          <div class="banner__stat" data-section="webinars" style="cursor:pointer"><div class="banner__stat-lbl">Clases</div><div class="banner__stat-val">9</div></div>
+          <div class="banner__stat" data-section="pdfs" style="cursor:pointer"><div class="banner__stat-lbl">PDFs</div><div class="banner__stat-val">24</div></div>
+          <div class="banner__stat" style="cursor:default"><div class="banner__stat-lbl">Pro</div><div class="banner__stat-val">5</div></div>
         </div>
       </section>
 
@@ -2699,11 +2709,11 @@ window.__signOut = async () => {
       <button class="btn btn--wa btn--block btn--sm" id="btn-wa"><svg class="ic"><use href="#i-whatsapp"/></svg>Abrir grupo</button>
     </div>
 
-    <div class="widget widget--disc">
+    <div class="widget widget--disc" id="widget-disc">
       <div class="widget__label">🎁 Tu descuento VIP</div>
       <div class="widget__pct">20%</div>
       <div class="widget__count-sub">En cursos de certificación con folio oficial IMDIIL</div>
-      <button class="btn btn--primary btn--block btn--sm" data-section="cursos">Ver cursos disponibles</button>
+      <button class="btn btn--primary btn--block btn--sm" id="btn-disc-wa"><svg class="ic"><use href="#i-whatsapp"/></svg>Solicitar mi 20% por WhatsApp</button>
     </div>
 
     <div class="widget">
@@ -3949,6 +3959,18 @@ const Sections = (function(){
     `;
     container.querySelectorAll('[data-wtab]').forEach(b=>b.addEventListener('click',()=>{webState.tab=b.dataset.wtab;renderWebinars(container);}));
     container.querySelector('#wh-register')?.addEventListener('click',()=>{prox.registrado=!prox.registrado;Toast.success(prox.registrado?'Te inscribiste':'Cancelaste registro',prox.registrado?'Recibirás recordatorio una hora antes':'');renderWebinars(container);});
+    container.querySelector('#wh-join')?.addEventListener('click',()=>{
+      const target=new Date(prox.fecha);
+      const now=new Date();
+      const diffMin=(target-now)/60000;
+      if(diffMin>15){
+        Toast.info('Aún no es momento','La sala abre 15 min antes · '+formatFechaLarga(target));
+        return;
+      }
+      const url=prox.zoom||window.IMDIIL_CONTACT.zoom;
+      Toast.success('Abriendo Zoom…',prox.titulo);
+      window.open(url,'_blank');
+    });
     container.querySelector('#wh-cal')?.addEventListener('click',()=>descargarICS(prox));
     renderWebList();
     iniciarCountdownHero(prox);
@@ -3970,7 +3992,8 @@ const Sections = (function(){
           </div>
           <p class="webinar-hero__desc">${w.desc}</p>
           <div class="webinar-hero__actions">
-            <button class="btn btn--accent" id="wh-register">${w.registrado?'Ya registrado ✓':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+            <button class="btn btn--accent" id="wh-join"><svg class="ic"><use href="#i-broadcast"/></svg>Unirme a la clase</button>
+            <button class="btn btn--ghost" id="wh-register">${w.registrado?'Ya registrado ✓':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>
             <button class="btn btn--ghost" id="wh-cal"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
           </div>
         </div>
@@ -4355,8 +4378,8 @@ const Sections = (function(){
           </div>
 
           <div style="position:relative;z-index:1;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-            <button class="btn btn--wa"><svg class="ic"><use href="#i-whatsapp"/></svg>Abrir grupo</button>
-            <button class="btn btn--ghost"><svg class="ic"><use href="#i-arrow-right"/></svg>Compartir invitación</button>
+            <button class="btn btn--wa" id="btn-wa-canal-open"><svg class="ic"><use href="#i-whatsapp"/></svg>Abrir grupo</button>
+            <button class="btn btn--ghost" id="btn-wa-canal-share"><svg class="ic"><use href="#i-arrow-right"/></svg>Compartir invitación</button>
           </div>
         </section>
 
@@ -4404,17 +4427,17 @@ const Sections = (function(){
               <span class="tag tag--down">Miembro desde mar 2026</span>
             </div>
           </div>
-          <button class="btn btn--ghost" style="align-self:flex-start;"><svg class="ic"><use href="#i-tools"/></svg>Editar perfil</button>
+          <button class="btn btn--ghost" id="btn-edit-profile" style="align-self:flex-start;"><svg class="ic"><use href="#i-tools"/></svg>Editar perfil</button>
         </section>
 
         <div class="perfil-grid">
           <div class="perfil-card">
             <div class="perfil-card__title">Datos personales</div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Nombre</span><span class="perfil-field__val">Ingeniero</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Email</span><span class="perfil-field__val">usuario@example.com</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">WhatsApp</span><span class="perfil-field__val">+52 238 ··· ··43</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Empresa</span><span class="perfil-field__val">—</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Especialidad</span><span class="perfil-field__val">Seguridad industrial</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="nombre"><span class="perfil-field__lbl">Nombre</span><span class="perfil-field__val">Ingeniero</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="email" data-readonly="1"><span class="perfil-field__lbl">Email</span><span class="perfil-field__val">usuario@example.com</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="whatsapp"><span class="perfil-field__lbl">WhatsApp</span><span class="perfil-field__val">+52 238 ··· ··43</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="empresa"><span class="perfil-field__lbl">Empresa</span><span class="perfil-field__val">—</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="especialidad"><span class="perfil-field__lbl">Especialidad</span><span class="perfil-field__val">Seguridad industrial</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
           </div>
 
           <div class="perfil-card">
@@ -4436,11 +4459,11 @@ const Sections = (function(){
 
           <div class="perfil-card">
             <div class="perfil-card__title">Seguridad</div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Contraseña</span><span class="perfil-field__val">Cambiada hace 32 días</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field"><span class="perfil-field__lbl">Contraseña</span><span class="perfil-field__val">Cambiada hace 32 días</span><button class="perfil-field__edit" id="btn-change-pass" title="Restablecer contraseña"><svg class="ic"><use href="#i-tools"/></svg></button></div>
             <div class="perfil-field"><span class="perfil-field__lbl">Sesiones activas</span><span class="perfil-field__val">2 dispositivos</span></div>
             <div class="perfil-field"><span class="perfil-field__lbl">2FA</span><span class="perfil-field__val" style="color:var(--text-3);">Desactivado</span></div>
             <div class="perfil-field" style="border-bottom:none;padding-top:10px;">
-              <button class="btn btn--ghost" style="font-size:11px;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 35%,transparent);"><svg class="ic"><use href="#i-logout"/></svg>Cerrar todas las sesiones</button>
+              <button class="btn btn--ghost" id="btn-close-all-sessions" style="font-size:11px;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 35%,transparent);"><svg class="ic"><use href="#i-logout"/></svg>Cerrar todas las sesiones</button>
             </div>
           </div>
         </div>
@@ -4633,6 +4656,280 @@ const Sections = (function(){
   };
 })();
 
+// ═══════════════════════════════════════════════════════════════════
+// IMDIIL_CONTACT · constantes globales de contacto y mensajes
+// ═══════════════════════════════════════════════════════════════════
+const IMDIIL_CONTACT = {
+  // Número único de contacto (vendedora · soporte · descuento · director)
+  whatsapp: '5212211832603',  // +52 221 183 2603
+  // Canal de difusión oficial
+  canal: 'https://whatsapp.com/channel/0029VbBP1NL1iUxYcsyoNE3c',
+  // Zoom de la próxima clase (muestra · sustituir por el real al confirmar webinar)
+  zoom: 'https://zoom.us/j/85234567890?pwd=IMDIIL2026OEE',
+  // Sitio público
+  sitio: 'https://www.imdiil.com',
+
+  // Helpers para armar links wa.me con mensajes prediseñados
+  waLink(text) {
+    return `https://wa.me/${this.whatsapp}?text=${encodeURIComponent(text)}`;
+  },
+  msgDescuento20() {
+    return '🎁 ¡Hola IMDIIL! Soy miembro VIP y quiero conocer más sobre el *descuento del 20%* en certificaciones. ¿Me pueden dar más información? 🦺';
+  },
+  msgSoporte() {
+    return '👋 Hola IMDIIL, soy miembro VIP y necesito ayuda con mi cuenta. Mi consulta es:\n\n';
+  },
+  msgDirector() {
+    return '🤝 Hola, soy miembro VIP de IMDIIL y me gustaría contactar con la dirección. Mi consulta es:\n\n';
+  },
+  shareInvitacion() {
+    const txt = '🦺 Conoce IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística.\n\nCursos online de seguridad industrial, NOM-STPS, calidad y logística con certificación oficial.\n\nÚnete al canal: '+this.canal+'\nSitio: '+this.sitio;
+    return `https://wa.me/?text=${encodeURIComponent(txt)}`;
+  }
+};
+window.IMDIIL_CONTACT = IMDIIL_CONTACT;
+
+// ═══════════════════════════════════════════════════════════════════
+// Helpers Modal bonitos (logout, password reset, editar perfil)
+// ═══════════════════════════════════════════════════════════════════
+function openLogoutModal(){
+  const m=Modal.open({
+    id:'logout-confirm',
+    title:'¿Cerrar sesión?',
+    subtitle:'Tu progreso queda guardado',
+    icon:'i-logout',
+    size:'sm',
+    body:`<p style="color:var(--text-2);font-size:14px;line-height:1.55;margin:0;">Vas a salir del Panel VIP de IMDIIL. La próxima vez tendrás que iniciar sesión de nuevo con tu correo y contraseña.</p>`,
+    footer:`<button class="btn btn--ghost" onclick="Modal.close('logout-confirm')">Cancelar</button><button class="btn btn--accent" id="confirm-logout" style="background:var(--danger);border-color:var(--danger);color:#fff;">Cerrar sesión</button>`
+  });
+  document.getElementById('confirm-logout')?.addEventListener('click',()=>{
+    Modal.close('logout-confirm');
+    if(window.__signOut) window.__signOut();
+  });
+}
+
+function openPasswordResetModal(){
+  const email=(window.__currentUser&&window.__currentUser.email)||'tu correo registrado';
+  Modal.open({
+    id:'pass-reset',
+    title:'Restablecer contraseña',
+    subtitle:'Te enviamos un enlace por correo',
+    icon:'i-shield-check',
+    size:'sm',
+    body:`<p style="color:var(--text-2);font-size:14px;line-height:1.55;margin:0 0 12px;">Vamos a enviar un enlace a <strong style="color:var(--text);">${email}</strong> para que crees una nueva contraseña. El enlace expira en 1 hora.</p><p style="color:var(--text-3);font-size:12px;line-height:1.5;margin:0;">Si no recibes el correo en 2 minutos, revisa tu carpeta de spam.</p>`,
+    footer:`<button class="btn btn--ghost" onclick="Modal.close('pass-reset')">Cancelar</button><button class="btn btn--accent" id="confirm-pass-reset">Enviar enlace</button>`
+  });
+  document.getElementById('confirm-pass-reset')?.addEventListener('click',async()=>{
+    const btn=document.getElementById('confirm-pass-reset');
+    btn.disabled=true;btn.textContent='Enviando…';
+    const r=await window.__resetPassword();
+    Modal.close('pass-reset');
+    if(r.ok) Toast.success('Enlace enviado','Revisa '+r.email);
+    else Toast.info('No pudimos enviar el enlace',r.error||'Intenta más tarde');
+  });
+}
+
+function openEditField(field){
+  const wrap=document.querySelector(`[data-field="${field}"]`);
+  if(!wrap) return;
+  if(wrap.dataset.readonly==='1'){
+    Toast.info('Este campo no se puede editar','El email viene de tu cuenta de acceso');
+    return;
+  }
+  const labels={nombre:'Nombre completo',whatsapp:'WhatsApp',empresa:'Empresa donde trabajas',especialidad:'Especialidad / área'};
+  const placeholders={nombre:'Ej: Ing. Juan Pérez',whatsapp:'+52 238 123 4567',empresa:'Ej: Industrias del Centro SA',especialidad:'Ej: Seguridad industrial'};
+  const currentVal=wrap.querySelector('.perfil-field__val').textContent.trim();
+  const cleanVal=(currentVal==='—'||currentVal.includes('···'))?'':currentVal;
+  Modal.open({
+    id:'edit-'+field,
+    title:'Editar '+(labels[field]||field),
+    subtitle:'Se guarda solo en tu navegador',
+    icon:'i-tools',
+    size:'sm',
+    body:`<input type="text" id="edit-field-input" class="input" value="${cleanVal.replace(/"/g,'&quot;')}" placeholder="${placeholders[field]||''}" style="width:100%;padding:11px 14px;background:var(--surface-2);border:0.5px solid var(--border-2);border-radius:9px;color:var(--text);font:14px 'Inter',sans-serif;outline:none;">`,
+    footer:`<button class="btn btn--ghost" onclick="Modal.close('edit-${field}')">Cancelar</button><button class="btn btn--accent" id="save-edit-${field}">Guardar</button>`
+  });
+  setTimeout(()=>document.getElementById('edit-field-input')?.focus(),100);
+  document.getElementById('save-edit-'+field)?.addEventListener('click',()=>{
+    const newVal=document.getElementById('edit-field-input').value.trim();
+    if(!newVal){Toast.info('Campo vacío','Escribe un valor antes de guardar');return;}
+    wrap.querySelector('.perfil-field__val').textContent=newVal;
+    const all=JSON.parse(localStorage.getItem('imdiil_profile')||'{}');
+    all[field]=newVal;localStorage.setItem('imdiil_profile',JSON.stringify(all));
+    Modal.close('edit-'+field);
+    Toast.success('Guardado',(labels[field]||field)+' actualizado');
+  });
+}
+
+function loadProfileFromLS(){
+  const all=JSON.parse(localStorage.getItem('imdiil_profile')||'{}');
+  Object.entries(all).forEach(([field,val])=>{
+    const wrap=document.querySelector(`[data-field="${field}"] .perfil-field__val`);
+    if(wrap) wrap.textContent=val;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Notificaciones · dropdown estático con seed
+// ═══════════════════════════════════════════════════════════════════
+function toggleNotifDropdown(){
+  let dd=document.getElementById('notif-dropdown');
+  if(dd){dd.remove();return;}
+  const notifs=[
+    {icon:'i-broadcast',color:'#FF7A2D',title:'Próxima clase en vivo',sub:'OEE · Ing. María López · 28 mayo 19:00 hrs',time:'Hoy'},
+    {icon:'i-certificate',color:'#34D399',title:'Tu certificado está listo',sub:'Folio IMDIIL-2026-00482 · Matriz IPER avanzada',time:'Ayer'},
+    {icon:'i-trophy',color:'#FBBF24',title:'¡Subiste a nivel Técnico!',sub:'+150 XP · Desbloqueaste 2 medallas nuevas',time:'2 días'}
+  ];
+  dd=document.createElement('div');
+  dd.id='notif-dropdown';
+  dd.style.cssText='position:absolute;top:calc(100% + 8px);right:0;width:340px;max-width:calc(100vw - 32px);background:var(--surface);border:0.5px solid var(--border-2);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22);z-index:9999;padding:8px;animation:dropFade .18s ease;';
+  dd.innerHTML=`
+    <div style="padding:10px 12px 12px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <strong style="font-size:13px;font-weight:600;">Notificaciones</strong>
+      <span style="font-size:10px;color:var(--text-3);letter-spacing:.5px;text-transform:uppercase;">${notifs.length} nuevas</span>
+    </div>
+    ${notifs.map(n=>`
+      <div class="notif-item" style="display:flex;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .15s;align-items:flex-start;">
+        <div style="width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,${n.color} 14%,transparent);color:${n.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg class="ic" style="width:16px;height:16px;"><use href="#${n.icon}"/></svg></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35;">${n.title}</div>
+          <div style="font-size:11.5px;color:var(--text-2);line-height:1.45;margin-top:3px;">${n.sub}</div>
+          <div style="font-size:10px;color:var(--text-3);margin-top:5px;letter-spacing:.3px;text-transform:uppercase;">${n.time}</div>
+        </div>
+      </div>
+    `).join('')}
+    <div style="padding:9px 12px;border-top:0.5px solid var(--border);text-align:center;">
+      <span style="font-size:11.5px;color:var(--text-3);">Próximamente podrás marcarlas como leídas</span>
+    </div>`;
+  dd.querySelectorAll('.notif-item').forEach(el=>{
+    el.addEventListener('mouseenter',()=>el.style.background='var(--surface-2)');
+    el.addEventListener('mouseleave',()=>el.style.background='transparent');
+  });
+  document.getElementById('btn-notif').style.position='relative';
+  document.getElementById('btn-notif').appendChild(dd);
+  // Cerrar al click fuera
+  setTimeout(()=>{
+    const handler=(e)=>{if(!dd.contains(e.target)&&e.target.id!=='btn-notif'){dd.remove();document.removeEventListener('click',handler);}};
+    document.addEventListener('click',handler);
+  },50);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Sistema de referidos · código + copiar + compartir
+// ═══════════════════════════════════════════════════════════════════
+function getReferralCode(){
+  let code=localStorage.getItem('imdiil_referral');
+  if(!code){
+    const rand=Math.random().toString(36).slice(2,7).toUpperCase().replace(/[01OIL]/g,'X');
+    code='IMDIIL-'+rand;
+    localStorage.setItem('imdiil_referral',code);
+  }
+  return code;
+}
+
+function openReferralModal(){
+  const code=getReferralCode();
+  const refLink=IMDIIL_CONTACT.sitio+'/?ref='+code;
+  const shareTxt=`🦺 Conoce IMDIIL · cursos de ingeniería industrial y seguridad con certificación oficial.\n\nUsa mi código ${code} y obtén un descuento especial.\n\nMás info: ${refLink}`;
+  Modal.open({
+    id:'referral',
+    title:'Tu código de referidos',
+    subtitle:'Comparte y gana beneficios',
+    icon:'i-trophy',
+    size:'sm',
+    body:`
+      <div style="background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 16%,transparent),color-mix(in srgb,var(--highlight) 8%,transparent));border:0.5px solid color-mix(in srgb,var(--primary) 30%,transparent);border-radius:14px;padding:18px 16px;text-align:center;margin-bottom:14px;">
+        <div style="font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--primary);font-weight:700;">Tu código personal</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;letter-spacing:1.5px;color:var(--text);margin-top:8px;">${code}</div>
+      </div>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin:0;">Cuando alguien se registre con tu código en IMDIIL, ambos reciben beneficios. Comparte por WhatsApp, redes o copia el enlace.</p>
+    `,
+    footer:`<button class="btn btn--ghost" id="ref-copy"><svg class="ic"><use href="#i-download"/></svg>Copiar código</button><button class="btn btn--accent" id="ref-share"><svg class="ic"><use href="#i-whatsapp"/></svg>Compartir por WhatsApp</button>`
+  });
+  document.getElementById('ref-copy')?.addEventListener('click',()=>{
+    navigator.clipboard?.writeText(code).then(
+      ()=>Toast.success('Código copiado',code),
+      ()=>Toast.info('Copia manual',code)
+    );
+  });
+  document.getElementById('ref-share')?.addEventListener('click',()=>{
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareTxt)}`,'_blank');
+    Toast.success('Abriendo WhatsApp…','Comparte con tus colegas');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FAB · Floating Action Button de soporte WhatsApp
+// ═══════════════════════════════════════════════════════════════════
+function injectSupportFAB(){
+  if(document.getElementById('wa-fab')) return;
+  const style=document.createElement('style');
+  style.textContent=`
+    @keyframes waPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5),0 10px 28px rgba(0,0,0,.3)}50%{box-shadow:0 0 0 14px rgba(34,197,94,0),0 10px 28px rgba(0,0,0,.3)}}
+    #wa-fab{position:fixed;bottom:24px;left:24px;z-index:9000;width:56px;height:56px;border-radius:50%;background:var(--whatsapp);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:waPulse 2.5s ease-in-out infinite;transition:transform .18s ease}
+    #wa-fab:hover{transform:scale(1.08)}
+    #wa-fab .ic{width:26px;height:26px}
+    #wa-fab-menu{position:fixed;bottom:90px;left:24px;z-index:9001;background:var(--surface);border:0.5px solid var(--border-2);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22);padding:8px;min-width:240px;animation:dropFade .2s ease}
+    #wa-fab-menu .wa-fab-opt{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .15s}
+    #wa-fab-menu .wa-fab-opt:hover{background:var(--surface-2)}
+    #wa-fab-menu .wa-fab-opt-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    #wa-fab-menu .wa-fab-opt-tx{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3}
+    #wa-fab-menu .wa-fab-opt-sub{font-size:11px;color:var(--text-3);margin-top:2px;line-height:1.3}
+    @keyframes dropFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @media (max-width:768px){#wa-fab{bottom:88px;left:16px;width:50px;height:50px}#wa-fab-menu{bottom:148px;left:16px}}
+  `;
+  document.head.appendChild(style);
+
+  const fab=document.createElement('button');
+  fab.id='wa-fab';
+  fab.title='Soporte y contacto';
+  fab.innerHTML='<svg class="ic"><use href="#i-whatsapp"/></svg>';
+  document.body.appendChild(fab);
+
+  fab.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    let menu=document.getElementById('wa-fab-menu');
+    if(menu){menu.remove();return;}
+    menu=document.createElement('div');
+    menu.id='wa-fab-menu';
+    menu.innerHTML=`
+      <div class="wa-fab-opt" data-wa="discount">
+        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);">🎁</div>
+        <div><div class="wa-fab-opt-tx">Mi descuento 20%</div><div class="wa-fab-opt-sub">Solicitar por WhatsApp</div></div>
+      </div>
+      <div class="wa-fab-opt" data-wa="support">
+        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--whatsapp) 14%,transparent);color:var(--whatsapp);"><svg class="ic"><use href="#i-whatsapp"/></svg></div>
+        <div><div class="wa-fab-opt-tx">Soporte VIP</div><div class="wa-fab-opt-sub">Ayuda con tu cuenta</div></div>
+      </div>
+      <div class="wa-fab-opt" data-wa="director">
+        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--highlight) 14%,transparent);color:var(--highlight);">🤝</div>
+        <div><div class="wa-fab-opt-tx">Contactar dirección</div><div class="wa-fab-opt-sub">Para temas estratégicos</div></div>
+      </div>
+      <div class="wa-fab-opt" data-wa="canal">
+        <div class="wa-fab-opt-ic" style="background:color-mix(in srgb,var(--whatsapp) 14%,transparent);color:var(--whatsapp);"><svg class="ic"><use href="#i-broadcast"/></svg></div>
+        <div><div class="wa-fab-opt-tx">Canal oficial IMDIIL</div><div class="wa-fab-opt-sub">Únete y recibe alertas</div></div>
+      </div>
+    `;
+    document.body.appendChild(menu);
+    menu.querySelectorAll('.wa-fab-opt').forEach(opt=>{
+      opt.addEventListener('click',()=>{
+        const action=opt.dataset.wa;
+        const map={
+          discount:{url:IMDIIL_CONTACT.waLink(IMDIIL_CONTACT.msgDescuento20()),msg:'Abriendo WhatsApp · Descuento 20%'},
+          support:{url:IMDIIL_CONTACT.waLink(IMDIIL_CONTACT.msgSoporte()),msg:'Abriendo WhatsApp · Soporte'},
+          director:{url:IMDIIL_CONTACT.waLink(IMDIIL_CONTACT.msgDirector()),msg:'Abriendo WhatsApp · Dirección'},
+          canal:{url:IMDIIL_CONTACT.canal,msg:'Abriendo canal IMDIIL'}
+        };
+        window.open(map[action].url,'_blank');
+        Toast.success(map[action].msg,'+52 221 183 2603');
+        menu.remove();
+      });
+    });
+    const handler=(ev)=>{if(!menu.contains(ev.target)&&ev.target.id!=='wa-fab'){menu.remove();document.removeEventListener('click',handler);}};
+    setTimeout(()=>document.addEventListener('click',handler),50);
+  });
+}
+
 function initNav(){
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(it=>{
     it.addEventListener('click',e=>{
@@ -4642,21 +4939,97 @@ function initNav(){
     });
   });
   document.querySelectorAll('[data-open-tool]').forEach(btn=>btn.addEventListener('click',()=>{const t=btn.dataset.openTool;if(Tools[t])Tools[t].open();}));
-  document.querySelectorAll('.section-header__link[data-section], .widget [data-section]').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();navigateToSection(el.dataset.section);});});
-  document.getElementById('btn-logout')?.addEventListener('click',()=>{if(confirm('¿Cerrar sesión?')){if(window.__signOut)window.__signOut();else Toast.info('Cerrando…');}});
-  document.getElementById('btn-wa')?.addEventListener('click',()=>window.open('https://wa.me/522381832603?text=Hola%20IMDIIL%2C%20soy%20miembro%20VIP','_blank'));
+  document.querySelectorAll('.section-header__link[data-section], .widget [data-section], .banner__stat[data-section]').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();navigateToSection(el.dataset.section);});});
+
+  // ─── Botones del DOM estático (topbar, sidebar, widgets siempre presentes) ───
+  document.getElementById('btn-logout')?.addEventListener('click',openLogoutModal);
+  document.getElementById('btn-wa')?.addEventListener('click',()=>{
+    window.open(IMDIIL_CONTACT.canal,'_blank');
+    Toast.success('Abriendo canal IMDIIL','Comunidad oficial');
+  });
+  document.getElementById('btn-disc-wa')?.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    window.open(IMDIIL_CONTACT.waLink(IMDIIL_CONTACT.msgDescuento20()),'_blank');
+    Toast.success('Abriendo WhatsApp','Solicitando tu 20% de descuento');
+  });
+  document.getElementById('btn-notif')?.addEventListener('click',(e)=>{e.stopPropagation();toggleNotifDropdown();});
+  document.getElementById('btn-avatar')?.addEventListener('click',()=>navigateToSection('perfil'));
+
+  // ─── Calendario .ics (widget panel derecho) ───
   document.getElementById('btn-cal')?.addEventListener('click',()=>{
     const target=new Date('2026-05-28T19:00:00');const end=new Date(target.getTime()+90*60*1000);
     const fmt=d=>d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
-    const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//IMDIIL//ES','BEGIN:VEVENT','UID:oee@imdiil.com','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(target),'DTEND:'+fmt(end),'SUMMARY:OEE: optimización de líneas de producción','DESCRIPTION:Clase en vivo IMDIIL con Ing. María López','LOCATION:Online · IMDIIL Panel VIP','END:VEVENT','END:VCALENDAR'].join('\r\n');
+    const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//IMDIIL//ES','BEGIN:VEVENT','UID:oee@imdiil.com','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(target),'DTEND:'+fmt(end),'SUMMARY:OEE: optimización de líneas de producción','DESCRIPTION:Clase en vivo IMDIIL con Ing. María López · Zoom: '+IMDIIL_CONTACT.zoom,'LOCATION:'+IMDIIL_CONTACT.zoom,'END:VEVENT','END:VCALENDAR'].join('\r\n');
     const blob=new Blob([ics],{type:'text/calendar'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='IMDIIL-clase-oee.ics';a.click();URL.revokeObjectURL(url);
     Toast.success('Evento descargado','Importa el .ics a tu calendario');
+  });
+
+  // ═══ EVENT DELEGATION para botones de secciones dinámicas ═══
+  // (Perfil, Canal WhatsApp, y cualquier otra que se renderice con innerHTML)
+  document.addEventListener('click',(e)=>{
+    const t=e.target;
+    if(!t||!t.closest) return;
+
+    // Cambiar contraseña
+    if(t.closest('#btn-change-pass')){ openPasswordResetModal(); return; }
+
+    // Cerrar todas las sesiones
+    if(t.closest('#btn-close-all-sessions')){
+      Modal.open({
+        id:'close-all',
+        title:'¿Cerrar todas las sesiones?',
+        subtitle:'Esto te cerrará sesión en todos los dispositivos',
+        icon:'i-shield-check',
+        size:'sm',
+        body:`<p style="color:var(--text-2);font-size:14px;line-height:1.55;margin:0;">Por seguridad, vas a salir de IMDIIL en este y en cualquier otro dispositivo donde tengas la sesión abierta. Tendrás que volver a iniciar sesión.</p>`,
+        footer:`<button class="btn btn--ghost" onclick="Modal.close('close-all')">Cancelar</button><button class="btn btn--accent" id="confirm-close-all" style="background:var(--danger);border-color:var(--danger);color:#fff;">Cerrar todas</button>`
+      });
+      document.getElementById('confirm-close-all')?.addEventListener('click',()=>{Modal.close('close-all');if(window.__signOut)window.__signOut();});
+      return;
+    }
+
+    // Editar perfil (tip)
+    if(t.closest('#btn-edit-profile')){
+      Toast.info('Edita cada campo','Da click en el ícono ✏️ junto al campo que quieres cambiar');
+      return;
+    }
+
+    // Iconos editar de campos individuales del perfil
+    const editBtn=t.closest('.perfil-field__edit');
+    if(editBtn){
+      const wrap=editBtn.closest('[data-field]');
+      if(wrap){
+        const field=wrap.dataset.field;
+        if(wrap.dataset.readonly==='1'){
+          Toast.info('Email no editable','El email viene de tu cuenta de acceso');
+        } else if(['nombre','whatsapp','empresa','especialidad'].includes(field)){
+          openEditField(field);
+        }
+        return;
+      }
+    }
+
+    // Sección Canal WhatsApp · abrir grupo
+    if(t.closest('#btn-wa-canal-open')){
+      window.open(IMDIIL_CONTACT.canal,'_blank');
+      Toast.success('Abriendo canal','Comunidad IMDIIL');
+      return;
+    }
+    // Sección Canal WhatsApp · compartir
+    if(t.closest('#btn-wa-canal-share')){
+      window.open(IMDIIL_CONTACT.shareInvitacion(),'_blank');
+      Toast.success('Compartiendo','Selecciona contactos');
+      return;
+    }
   });
 }
 
 function init(){
   Theme.init();applyGreeting();initCountdown();initNav();
+  loadProfileFromLS();
+  injectSupportFAB();
   window.Modal=Modal;window.Tools=Tools;window.Toast=Toast;window.navigateToSection=navigateToSection;
+  window.openReferralModal=openReferralModal;
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 </script>
