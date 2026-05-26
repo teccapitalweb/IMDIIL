@@ -2373,7 +2373,43 @@ body{
 .fade-up{animation:fadeUp .5s ease forwards}
 </style>
 </head>
-<body>
+<body style="visibility:hidden">
+
+<!-- ===== AUTH GUARD (Firebase) ===== -->
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
+  authDomain: "imdiil-vip.firebaseapp.com",
+  projectId: "imdiil-vip",
+  storageBucket: "imdiil-vip.firebasestorage.app",
+  messagingSenderId: "875137053237",
+  appId: "1:875137053237:web:65d81cceb6b5ec233bb77c"
+};
+
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence);
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) { window.location.href = 'vip-auth.html'; return; }
+  // En sprint 6 agregamos paywall (verificar membresía activa en Firestore)
+  document.body.style.visibility = 'visible';
+  // Actualizar avatar del usuario en topbar si existe
+  const email = (user.email||'').toLowerCase();
+  const nameEl = document.querySelector('.avatar__name, [data-user-name]');
+  const picEl = document.querySelector('.avatar__pic, [data-user-avatar]');
+  if (nameEl && user.displayName) nameEl.textContent = user.displayName.split(' ').slice(0,2).join(' ');
+  if (picEl) picEl.textContent = (user.displayName||email).split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase().slice(0,2);
+});
+
+window.__signOut = async () => {
+  try { await signOut(auth); window.location.href = 'vip-auth.html'; }
+  catch(e){ alert('No pudimos cerrar sesión.'); }
+};
+</script>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
@@ -4588,7 +4624,7 @@ function initNav(){
   });
   document.querySelectorAll('[data-open-tool]').forEach(btn=>btn.addEventListener('click',()=>{const t=btn.dataset.openTool;if(Tools[t])Tools[t].open();}));
   document.querySelectorAll('.section-header__link[data-section], .widget [data-section]').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();navigateToSection(el.dataset.section);});});
-  document.getElementById('btn-logout')?.addEventListener('click',()=>Toast.info('Cerrar sesión','Próximamente: conexión Firebase.'));
+  document.getElementById('btn-logout')?.addEventListener('click',()=>{if(confirm('¿Cerrar sesión?')){if(window.__signOut)window.__signOut();else Toast.info('Cerrando…');}});
   document.getElementById('btn-wa')?.addEventListener('click',()=>window.open('https://wa.me/522381832603?text=Hola%20IMDIIL%2C%20soy%20miembro%20VIP','_blank'));
   document.getElementById('btn-cal')?.addEventListener('click',()=>{
     const target=new Date('2026-05-28T19:00:00');const end=new Date(target.getTime()+90*60*1000);

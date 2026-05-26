@@ -559,7 +559,45 @@ body{
 }
 </style>
 </head>
-<body>
+<body style="visibility:hidden">
+
+<!-- ===== AUTH GUARD (Firebase) ===== -->
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
+  authDomain: "imdiil-vip.firebaseapp.com",
+  projectId: "imdiil-vip",
+  storageBucket: "imdiil-vip.firebasestorage.app",
+  messagingSenderId: "875137053237",
+  appId: "1:875137053237:web:65d81cceb6b5ec233bb77c"
+};
+const ADMINS = ["teccapitalweb@gmail.com","imdiilconsultoria@gmail.com"];
+
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence);
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) { window.location.href = 'vip-auth.html'; return; }
+  const email = (user.email||'').toLowerCase();
+  if (!ADMINS.includes(email)) { window.location.href = 'vip-panel.html'; return; }
+  // Es admin: mostrar contenido + actualizar avatar
+  document.body.style.visibility = 'visible';
+  const nameEl = document.querySelector('.avatar__name');
+  const picEl = document.querySelector('.avatar__pic');
+  if (nameEl && user.displayName) nameEl.textContent = user.displayName.split(' ').slice(0,2).join(' ');
+  if (picEl) picEl.textContent = (user.displayName||email).split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase().slice(0,2);
+});
+
+// Cerrar sesión real
+window.__signOut = async () => {
+  try { await signOut(auth); window.location.href = 'vip-auth.html'; }
+  catch(e){ alert('No pudimos cerrar sesión. Intenta de nuevo.'); }
+};
+</script>
 
 <!-- ICONOS SVG -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1505,7 +1543,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('theme-toggle').addEventListener('click',()=>Theme.toggle());
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(b=>b.addEventListener('click',e=>{
     e.preventDefault();
-    if(b.id==='btn-logout'){if(confirm('¿Cerrar sesión?'))Toast.info('Cerrando sesión','Próximamente: conexión Firebase Auth');return;}
+    if(b.id==='btn-logout'){if(confirm('¿Cerrar sesión?')){if(window.__signOut)window.__signOut();else Toast.info('Cerrando…');}return;}
     if(b.dataset.section)navigate(b.dataset.section);
   }));
   document.getElementById('modal-close').addEventListener('click',()=>Modal.close());

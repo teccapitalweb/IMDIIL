@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0E0A06">
+<meta name="description" content="IMDIIL · Inicia sesión o crea tu cuenta">
+<title>IMDIIL · Acceso</title>
+<link rel="icon" type="image/png" href="/assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none;cursor:pointer}
+img{display:block;max-width:100%}
+svg{flex-shrink:0}
+input{font:inherit;color:inherit}
+::selection{background:var(--primary);color:#fff}
+
+:root[data-theme="night"]{
+  --bg:#0E0A06;--bg-deep:#070503;
+  --surface:#1A130D;--surface-2:#251C13;--surface-3:#33271C;
+  --border:rgba(255,230,200,0.07);--border-2:rgba(255,230,200,0.14);--border-strong:rgba(255,230,200,0.22);
+  --text:#F5F0E6;--text-2:#B0A492;--text-3:#6F6555;
+  --primary:#FF7A2D;--primary-soft:#FFB377;--primary-deep:#E85A14;
+  --primary-glow:rgba(255,122,45,0.38);--highlight:#FFB347;
+  --success:#34D399;--danger:#F87171;
+  --shadow-card:0 20px 60px rgba(0,0,0,0.55);
+}
+:root[data-theme="day"]{
+  --bg:#F4EFE3;--bg-deep:#E8DCC8;
+  --surface:#FFFFFF;--surface-2:#FBF6EB;--surface-3:#F2EAD8;
+  --border:rgba(26,20,16,0.07);--border-2:rgba(26,20,16,0.14);--border-strong:rgba(26,20,16,0.24);
+  --text:#1A1410;--text-2:#5A5044;--text-3:#8A7F70;
+  --primary:#FF7A2D;--primary-soft:#FFB377;--primary-deep:#E85A14;
+  --primary-glow:rgba(255,122,45,0.32);--highlight:#FF9148;
+  --success:#0F9D58;--danger:#DC2D3F;
+  --shadow-card:0 16px 50px rgba(58,40,20,0.14);
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  font-size:14px;line-height:1.5;
+  color:var(--text);background:var(--bg);
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  min-height:100vh;
+  display:grid;place-items:center;
+  position:relative;overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;
+  background:radial-gradient(circle at 25% 30%,var(--primary-glow),transparent 50%),radial-gradient(circle at 75% 70%,color-mix(in srgb,var(--highlight) 18%,transparent),transparent 50%);
+  filter:blur(60px);
+  pointer-events:none;
+  animation:aurora 24s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";position:fixed;inset:0;
+  background-image:linear-gradient(to right,rgba(255,230,200,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,230,200,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+  pointer-events:none;
+}
+:root[data-theme="day"] body::after{background-image:linear-gradient(to right,rgba(26,20,16,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(26,20,16,.04) 1px,transparent 1px)}
+@keyframes aurora{0%{transform:translate(0,0) scale(1)}50%{transform:translate(2%,-2%) scale(1.05)}100%{transform:translate(-1%,1%) scale(1)}}
+@keyframes pulseDotSmall{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.wrap{
+  width:100%;max-width:440px;padding:24px;
+  position:relative;z-index:1;
+  animation:fadeUp .5s cubic-bezier(.2,.8,.25,1);
+}
+
+.brand{
+  text-align:center;margin-bottom:24px;
+}
+.brand__logo{
+  width:60px;height:60px;border-radius:16px;
+  background:#1A1410;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:14px;
+  box-shadow:0 12px 32px rgba(0,0,0,.35);
+  position:relative;
+}
+.brand__logo::before{
+  content:"";position:absolute;inset:-2px;border-radius:18px;
+  background:linear-gradient(135deg,var(--primary),var(--highlight),var(--primary));
+  background-size:200% 100%;
+  z-index:-1;
+  animation:shimmerBar 4s ease-in-out infinite;
+  filter:blur(8px);opacity:.4;
+}
+@keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
+.brand__logo svg{width:38px;height:38px}
+.brand__name{
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:22px;font-weight:800;letter-spacing:-.6px;
+  background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 55%,transparent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand__sub{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text-3);margin-top:4px;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:22px;
+  padding:28px 28px 24px;
+  box-shadow:var(--shadow-card);
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--primary),var(--highlight),var(--primary));
+  background-size:200% 100%;
+  animation:shimmerBar 3.5s ease-in-out infinite;
+  border-radius:22px 22px 0 0;
+}
+
+.tabs{
+  display:flex;gap:4px;
+  background:var(--surface-2);
+  padding:4px;border-radius:100px;
+  margin-bottom:20px;
+}
+.tab{
+  flex:1;text-align:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;letter-spacing:.5px;
+  padding:10px 14px;border-radius:100px;
+  color:var(--text-3);cursor:pointer;
+  transition:all .2s cubic-bezier(.2,.8,.25,1);
+}
+.tab:hover{color:var(--text)}
+.tab.is-active{
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;
+  box-shadow:0 4px 14px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.pane{display:none;animation:fadeUp .35s ease}
+.pane.is-active{display:block}
+
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--text-3);
+}
+.input-wrap{position:relative}
+.input-wrap svg.lead{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--text-3);
+  width:15px;height:15px;
+  fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  pointer-events:none;
+}
+.input{
+  width:100%;
+  padding:13px 16px 13px 40px;
+  background:var(--surface-2);
+  border:1px solid var(--border-2);
+  border-radius:12px;
+  font-size:13.5px;color:var(--text);
+  transition:border-color .15s,box-shadow .15s;
+}
+.input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+.input::placeholder{color:var(--text-3)}
+.input.is-error{border-color:var(--danger);box-shadow:0 0 0 4px color-mix(in srgb,var(--danger) 15%,transparent)}
+
+.toggle-pass{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;
+  color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;
+  transition:color .15s;
+}
+.toggle-pass:hover{color:var(--text)}
+.toggle-pass svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.forgot{
+  text-align:right;margin:-4px 0 14px;
+}
+.forgot a{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:600;letter-spacing:.4px;
+  color:var(--text-3);transition:color .15s;
+}
+.forgot a:hover{color:var(--primary)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;
+  padding:14px 22px;
+  border-radius:100px;
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:14px;font-weight:700;letter-spacing:-.1px;
+  cursor:pointer;transition:all .2s cubic-bezier(.2,.8,.25,1);
+  border:1px solid transparent;
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep));
+  color:#fff;
+  box-shadow:0 10px 28px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 36px var(--primary-glow),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn .spinner{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;
+  animation:spin .7s linear infinite;
+}
+
+.alert{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:12px 14px;border-radius:12px;
+  font-size:12.5px;line-height:1.5;
+  margin-bottom:14px;
+  border:1px solid;
+}
+.alert--error{background:color-mix(in srgb,var(--danger) 8%,transparent);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 28%,transparent)}
+.alert--success{background:color-mix(in srgb,var(--success) 8%,transparent);color:var(--success);border-color:color-mix(in srgb,var(--success) 28%,transparent)}
+.alert svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.alert__msg strong{font-weight:700}
+
+.divider{
+  display:flex;align-items:center;gap:12px;
+  margin:18px 0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--text-3);
+}
+.divider::before,.divider::after{
+  content:"";flex:1;height:1px;background:var(--border);
+}
+
+.foot{
+  text-align:center;margin-top:18px;
+  font-size:12px;color:var(--text-2);
+}
+.foot a{color:var(--primary);font-weight:600}
+
+.helper-text{
+  font-size:11px;color:var(--text-3);margin-top:6px;
+  line-height:1.45;
+}
+.helper-text strong{color:var(--text-2);font-weight:600}
+
+.checkbox-row{
+  display:flex;align-items:flex-start;gap:9px;
+  margin-bottom:14px;
+  font-size:12.5px;color:var(--text-2);line-height:1.5;
+  cursor:pointer;
+}
+.checkbox-row input{margin-top:2px;flex-shrink:0;accent-color:var(--primary)}
+.checkbox-row a{color:var(--primary);font-weight:600}
+
+.legal{
+  text-align:center;margin-top:18px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:500;letter-spacing:.7px;
+  color:var(--text-3);
+}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:10;
+  width:38px;height:38px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border-2);
+  color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.theme-toggle:hover{color:var(--text);border-color:var(--border-strong)}
+.theme-toggle svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+@media (max-width:420px){
+  .wrap{padding:18px}
+  .card{padding:24px 22px 22px}
+  .brand__logo{width:54px;height:54px}
+  .brand__name{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Tema">
+  <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z"/></svg>
+</button>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="brand__logo">
+      <svg viewBox="0 0 64 64"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg>
+    </div>
+    <div class="brand__name">IMDIIL</div>
+    <div class="brand__sub">Instituto Mexicano · Ing. Industrial</div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab is-active" data-tab="login">Iniciar sesión</button>
+      <button class="tab" data-tab="register">Crear cuenta</button>
+    </div>
+
+    <div id="alert-zone"></div>
+
+    <!-- LOGIN -->
+    <div class="pane is-active" id="pane-login">
+      <div class="field">
+        <label class="label" for="li-email">Correo electrónico</label>
+        <div class="input-wrap">
+          <svg class="lead" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+          <input type="email" class="input" id="li-email" placeholder="tu@email.com" autocomplete="email">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="li-pass">Contraseña</label>
+        <div class="input-wrap">
+          <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" class="input" id="li-pass" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="toggle-pass" data-target="li-pass" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8s11 8 11 8s-4 8-11 8s-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="forgot"><a href="#" id="forgot-link">¿Olvidaste tu contraseña?</a></div>
+      <button class="btn" id="btn-login">
+        <span class="btn-label">Iniciar sesión</span>
+        <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="pane" id="pane-register">
+      <div class="field">
+        <label class="label" for="re-name">Nombre completo</label>
+        <div class="input-wrap">
+          <svg class="lead" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" class="input" id="re-name" placeholder="Tu nombre" autocomplete="name">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="re-email">Correo electrónico</label>
+        <div class="input-wrap">
+          <svg class="lead" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+          <input type="email" class="input" id="re-email" placeholder="tu@email.com" autocomplete="email">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="re-pass">Contraseña</label>
+        <div class="input-wrap">
+          <svg class="lead" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" class="input" id="re-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+          <button type="button" class="toggle-pass" data-target="re-pass" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8s11 8 11 8s-4 8-11 8s-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="helper-text">Usa al menos <strong>6 caracteres</strong> con letras y números.</div>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="re-terms">
+        <span>Acepto los <a href="#" target="_blank">Términos y condiciones</a> y la <a href="#" target="_blank">Política de privacidad</a> de IMDIIL.</span>
+      </label>
+      <button class="btn" id="btn-register">
+        <span class="btn-label">Crear cuenta</span>
+        <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <div class="helper-text" style="margin-top:10px;text-align:center;">Al crearla, te llevamos al checkout para activar tu membresía VIP.</div>
+    </div>
+  </div>
+
+  <div class="legal">IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística<br>© 2026 · Todos los derechos reservados</div>
+</div>
+
+<!-- UI independiente de Firebase (tabs, theme, toggle password) -->
+<script>
+/* ===== Tema ===== */
+const Theme = {
+  init() {
+    const s = localStorage.getItem('imdiil-auth:theme') || 'night';
+    document.documentElement.dataset.theme = s;
+    this.updateIcon();
+  },
+  toggle() {
+    const c = document.documentElement.dataset.theme;
+    const n = c === 'night' ? 'day' : 'night';
+    document.documentElement.dataset.theme = n;
+    localStorage.setItem('imdiil-auth:theme', n);
+    this.updateIcon();
+  },
+  updateIcon() {
+    const isDay = document.documentElement.dataset.theme === 'day';
+    document.getElementById('theme-toggle').innerHTML = isDay
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z"/></svg>';
+  }
+};
+Theme.init();
+document.getElementById('theme-toggle').addEventListener('click', () => Theme.toggle());
+
+/* ===== Tabs ===== */
+document.querySelectorAll('[data-tab]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+    b.classList.add('is-active');
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('is-active'));
+    document.getElementById('pane-' + b.dataset.tab).classList.add('is-active');
+    document.getElementById('alert-zone').innerHTML = '';
+  });
+});
+
+/* ===== Toggle pass ===== */
+document.querySelectorAll('.toggle-pass').forEach(b => {
+  b.addEventListener('click', () => {
+    const i = document.getElementById(b.dataset.target);
+    i.type = i.type === 'password' ? 'text' : 'password';
+  });
+});
+
+/* ===== Alerts (compartidos con Firebase) ===== */
+const ICON_ERR = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+const ICON_OK = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+window.showAlert = function(type, title, msg) {
+  const z = document.getElementById('alert-zone');
+  z.innerHTML = `<div class="alert alert--${type}">${type==='error'?ICON_ERR:ICON_OK}<div class="alert__msg"><strong>${title}</strong>${msg?'<br>'+msg:''}</div></div>`;
+};
+window.clearAlert = function() { document.getElementById('alert-zone').innerHTML = ''; };
+
+/* ===== Loading state (compartido) ===== */
+window.setLoading = function(btn, isLoading, originalLabel) {
+  btn.disabled = isLoading;
+  const label = btn.querySelector('.btn-label');
+  const arrow = btn.querySelector('.btn-arrow');
+  if (isLoading) {
+    label.textContent = 'Procesando…';
+    if (arrow) arrow.style.display = 'none';
+    if (!btn.querySelector('.spinner')) btn.appendChild(Object.assign(document.createElement('span'), {className:'spinner'}));
+  } else {
+    label.textContent = originalLabel;
+    if (arrow) arrow.style.display = '';
+    btn.querySelector('.spinner')?.remove();
+  }
+};
+</script>
+
+<!-- Firebase Auth (módulo) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+/* =========================================================
+   CONFIG · Firebase IMDIIL
+   ⚠️ REEMPLAZA los placeholders con tu config real
+   Firebase Console → Project Settings → General → SDK setup
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
+  authDomain: "imdiil-vip.firebaseapp.com",
+  projectId: "imdiil-vip",
+  storageBucket: "imdiil-vip.firebasestorage.app",
+  messagingSenderId: "875137053237",
+  appId: "1:875137053237:web:65d81cceb6b5ec233bb77c"
+};
+
+/* Admins · emails con acceso al panel admin */
+const ADMINS = [
+  "teccapitalweb@gmail.com",
+  "imdiilconsultoria@gmail.com"
+];
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence);
+
+/* Si ya está logueado, redirige inmediatamente */
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const isAdmin = ADMINS.includes((user.email || "").toLowerCase());
+    window.location.href = isAdmin ? "vip-admin.html" : "vip-panel.html";
+  }
+});
+
+/* ===== Traducir errores Firebase ===== */
+function translateError(code) {
+  const map = {
+    'auth/invalid-email': 'El correo no es válido.',
+    'auth/user-disabled': 'Esta cuenta está deshabilitada. Contacta soporte.',
+    'auth/user-not-found': 'No existe una cuenta con ese correo.',
+    'auth/wrong-password': 'Contraseña incorrecta.',
+    'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+    'auth/email-already-in-use': 'Ya existe una cuenta con ese correo. Inicia sesión.',
+    'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+    'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos.',
+    'auth/network-request-failed': 'Sin conexión. Revisa tu internet.',
+    'auth/missing-password': 'Escribe una contraseña.',
+    'auth/missing-email': 'Escribe tu correo electrónico.'
+  };
+  return map[code] || 'Algo salió mal. Intenta de nuevo.';
+}
+
+/* ===== LOGIN ===== */
+document.getElementById('btn-login').addEventListener('click', async () => {
+  clearAlert();
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pass = document.getElementById('li-pass').value;
+  if (!email || !pass) { showAlert('error', 'Faltan datos', 'Llena ambos campos.'); return; }
+  const btn = document.getElementById('btn-login');
+  setLoading(btn, true);
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    const isAdmin = ADMINS.includes(email);
+    showAlert('success', '¡Bienvenido!', 'Redirigiendo…');
+    setTimeout(() => { window.location.href = isAdmin ? 'vip-admin.html' : 'vip-panel.html'; }, 600);
+  } catch (e) {
+    setLoading(btn, false, 'Iniciar sesión');
+    showAlert('error', 'No pudimos iniciar sesión', translateError(e.code));
+  }
+});
+
+/* ===== REGISTER ===== */
+document.getElementById('btn-register').addEventListener('click', async () => {
+  clearAlert();
+  const name = document.getElementById('re-name').value.trim();
+  const email = document.getElementById('re-email').value.trim().toLowerCase();
+  const pass = document.getElementById('re-pass').value;
+  const terms = document.getElementById('re-terms').checked;
+  if (!name) { showAlert('error', 'Falta tu nombre'); return; }
+  if (!email || !pass) { showAlert('error', 'Faltan datos', 'Correo y contraseña son obligatorios.'); return; }
+  if (pass.length < 6) { showAlert('error', 'Contraseña muy corta', 'Mínimo 6 caracteres.'); return; }
+  if (!terms) { showAlert('error', 'Debes aceptar los términos'); return; }
+  const btn = document.getElementById('btn-register');
+  setLoading(btn, true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    const isAdmin = ADMINS.includes(email);
+    showAlert('success', '¡Cuenta creada!', isAdmin ? 'Redirigiendo al panel admin…' : 'Redirigiendo al checkout…');
+    setTimeout(() => {
+      window.location.href = isAdmin ? 'vip-admin.html' : 'vip-checkout.html';
+    }, 700);
+  } catch (e) {
+    setLoading(btn, false, 'Crear cuenta');
+    showAlert('error', 'No pudimos crear tu cuenta', translateError(e.code));
+  }
+});
+
+/* ===== FORGOT PASSWORD ===== */
+document.getElementById('forgot-link').addEventListener('click', async (e) => {
+  e.preventDefault();
+  clearAlert();
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  if (!email) {
+    showAlert('error', 'Escribe tu correo primero', 'Para enviarte el enlace de recuperación.');
+    document.getElementById('li-email').focus();
+    return;
+  }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showAlert('success', 'Enlace enviado', 'Revisa tu bandeja de entrada (y la carpeta de spam).');
+  } catch (e) {
+    showAlert('error', 'No pudimos enviar el correo', translateError(e.code));
+  }
+});
+
+/* ===== Enter para enviar ===== */
+['li-email','li-pass'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });
+});
+['re-name','re-email','re-pass'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-register').click(); });
+});
+</script>
+</body>
+</html>
