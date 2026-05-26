@@ -6,7 +6,8 @@
 <meta name="theme-color" content="#0E0A06">
 <meta name="description" content="IMDIIL Panel VIP · Capacitación industrial, herramientas pro y certificación con folio.">
 <title>IMDIIL · Panel VIP</title>
-<link rel="icon" type="image/png" href="/assets/img/logo.jpg">
+<link rel="icon" type="image/png" href="assets/imdiil-favicon.png">
+<link rel="apple-touch-icon" href="assets/imdiil-apple-touch.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -90,6 +91,7 @@ body::after{
 .brand{display:flex;align-items:center;gap:11px;padding:6px 16px 16px;border-bottom:0.5px solid var(--border);margin-bottom:6px}
 .brand__logo{width:38px;height:38px;border-radius:10px;background:var(--bg-deep);border:0.5px solid var(--border-2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .brand__logo svg{width:28px;height:28px}
+.brand__logo img{width:30px;height:30px;object-fit:contain;display:block}
 .brand__name{font-size:14px;font-weight:600;letter-spacing:-.2px;line-height:1.1}
 .brand__plan{display:inline-block;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--primary);font-weight:700;margin-top:3px;padding:2px 7px;border-radius:100px;background:color-mix(in srgb,var(--primary) 12%,transparent);border:0.5px solid color-mix(in srgb,var(--primary) 30%,transparent)}
 
@@ -2230,6 +2232,7 @@ body::after{
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
 .cert-preview-mini__logo svg{width:18px;height:18px}
+.cert-preview-mini__logo img{width:20px;height:20px;object-fit:contain;display:block}
 .cert-preview-mini__brand{
   font-family:'Plus Jakarta Sans','Inter',sans-serif;
   font-size:11px;font-weight:800;letter-spacing:.3px;color:#1A1410;
@@ -2477,14 +2480,7 @@ window.__signOut = async () => {
   <aside class="sidebar">
     <div class="brand">
       <div class="brand__logo">
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect x="14" y="12" width="6" height="34" rx="1" fill="var(--text)" opacity=".9"/>
-          <rect x="22" y="18" width="6" height="28" rx="1" fill="var(--text)" opacity=".7"/>
-          <rect x="30" y="14" width="6" height="32" rx="1" fill="var(--text)" opacity=".9"/>
-          <path d="M 14 46 Q 32 54 50 46" stroke="var(--text)" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/>
-          <path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="var(--primary)"/>
-          <rect x="20" y="44" width="24" height="3" rx="1.5" fill="var(--primary)"/>
-        </svg>
+        <img src="assets/imdiil-isotipo.png" alt="IMDIIL">
       </div>
       <div>
         <div class="brand__name">IMDIIL</div>
@@ -3729,7 +3725,7 @@ const Sections = (function(){
             <div class="cert-card__top">
               <div class="cert-preview-mini">
                 <div class="cert-preview-mini__head">
-                  <div class="cert-preview-mini__logo"><svg viewBox="0 0 64 64"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg></div>
+                  <div class="cert-preview-mini__logo"><img src="assets/imdiil-isotipo.png" alt="IMDIIL"></div>
                   <div>
                     <div class="cert-preview-mini__brand">IMDIIL</div>
                     <div class="cert-preview-mini__brand-sub">Instituto Mexicano de Ingeniería Industrial</div>
@@ -3770,7 +3766,7 @@ const Sections = (function(){
         <div class="cert-preview__paper">
           <div class="cert-preview__border"></div>
           <div class="cert-preview__brand">
-            <div style="width:38px;height:38px;border-radius:10px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 64 64" width="26" height="26"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg></div>
+            <div style="width:38px;height:38px;border-radius:10px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;"></div>
             <div><div class="cert-preview__brand-name">IMDIIL</div><div class="cert-preview__brand-sub">Instituto Mexicano de Ingeniería Industrial y Logística</div></div>
           </div>
           <div class="cert-preview__eyebrow">Certificado de aprovechamiento</div>
