@@ -48,7 +48,30 @@ body{
   background:var(--bg);color:var(--text);overflow-x:hidden;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   transition:background .35s,color .35s;
+  position:relative;
 }
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;
+  background:radial-gradient(circle at 25% 30%,var(--primary-glow),transparent 50%),radial-gradient(circle at 75% 70%,color-mix(in srgb,var(--highlight) 18%,transparent),transparent 50%);
+  filter:blur(60px);
+  pointer-events:none;
+  animation:auroraBg 24s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(to right,rgba(255,230,200,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,230,200,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+  mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);
+  pointer-events:none;
+}
+:root[data-theme="day"] body::after{background-image:linear-gradient(to right,rgba(26,20,16,.04) 1px,transparent 1px),linear-gradient(to bottom,rgba(26,20,16,.04) 1px,transparent 1px)}
+@keyframes auroraBg{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(2%,-2%) scale(1.05)}
+  100%{transform:translate(-1%,1%) scale(1)}
+}
+.app{position:relative;z-index:1}
 .ic{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .ic--sm{width:13px;height:13px}.ic--lg{width:22px;height:22px}.ic--xl{width:28px;height:28px}
 
