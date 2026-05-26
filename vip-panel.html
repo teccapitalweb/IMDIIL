@@ -960,19 +960,21 @@ body{
 .webinar-hero__info{position:relative;z-index:1;min-width:0}
 .webinar-hero__title{
   font-family:'Plus Jakarta Sans','Inter',sans-serif;
-  font-size:clamp(22px,2.8vw,30px);font-weight:800;letter-spacing:-.7px;line-height:1.15;
-  margin-top:12px;
+  font-size:clamp(22px,2.8vw,30px);font-weight:800;letter-spacing:-.7px;line-height:1.2;
+  margin-top:16px;margin-bottom:4px;
   background:linear-gradient(135deg,var(--text),color-mix(in srgb,var(--text) 55%,transparent));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
 }
 .webinar-hero__meta{
-  font-family:'JetBrains Mono',monospace;
-  font-size:11.5px;color:var(--text-2);font-weight:600;
-  display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;
+  font-family:'Inter',sans-serif;
+  font-size:13px;color:var(--text-2);font-weight:500;
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px;
+  line-height:1.5;
 }
-.webinar-hero__meta span{display:inline-flex;align-items:center;gap:6px}
-.webinar-hero__meta .ic{width:13px;height:13px}
-.webinar-hero__desc{font-size:13.5px;color:var(--text-2);line-height:1.6;margin-top:14px;max-width:500px}
+.webinar-hero__meta span{display:inline-flex;align-items:center;gap:7px}
+.webinar-hero__meta .ic{width:14px;height:14px;color:var(--text-3);flex-shrink:0}
+.webinar-hero__meta-sep{color:var(--text-3);font-weight:600;opacity:.5}
+.webinar-hero__desc{font-size:14px;color:var(--text-2);line-height:1.65;margin-top:16px;max-width:540px}
 .webinar-hero__actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 .webinar-hero__countdown{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-self:center}
 .webinar-hero__cd-box{
@@ -2354,6 +2356,10 @@ body{
   /* Cert preview mini mobile */
   .cert-preview-mini__name{font-size:15px}
   .cert-card__top{aspect-ratio:1.5/1}
+
+  /* Webinar hero meta mobile */
+  .webinar-hero__meta-sep{display:none}
+  .webinar-hero__meta{gap:8px 12px;font-size:12.5px}
 }
 
 @media (max-width:420px){
@@ -3898,11 +3904,13 @@ const Sections = (function(){
     return `
       <div class="webinar-hero">
         <div class="webinar-hero__info">
-          <span class="sec-hero__eyebrow">Próxima en vivo</span>
+          <span class="sec-hero__eyebrow">Próximo en vivo</span>
           <h2 class="webinar-hero__title">${w.titulo}</h2>
           <div class="webinar-hero__meta">
             <span><svg class="ic"><use href="#i-calendar"/></svg>${formatFechaLarga(f)}</span>
+            <span class="webinar-hero__meta-sep">·</span>
             <span><svg class="ic"><use href="#i-clock"/></svg>${pad(f.getHours())}:${pad(f.getMinutes())} hrs · ${w.duracion} min</span>
+            <span class="webinar-hero__meta-sep">·</span>
             <span><svg class="ic"><use href="#i-user"/></svg>${w.instructor}</span>
           </div>
           <p class="webinar-hero__desc">${w.desc}</p>
