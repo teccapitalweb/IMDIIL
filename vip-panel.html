@@ -2931,7 +2931,7 @@ window.__resetPassword = async () => {
   <main class="main">
     <header class="topbar">
       <div class="topbar__left">
-        <span class="pill"><svg class="ic"><use href="#i-crown"/></svg>Membresía activa</span>
+        <span class="pill" id="topbar-pill"><svg class="ic"><use href="#i-crown"/></svg><span id="topbar-pill-text">Membresía activa</span></span>
       </div>
       <div class="topbar__right">
         <button class="icon-btn" id="btn-notif" aria-label="Notificaciones">
@@ -3154,9 +3154,63 @@ window.__resetPassword = async () => {
   <a class="mobile-nav__item is-active" data-section="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
   <a class="mobile-nav__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
   <a class="mobile-nav__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Vivo</a>
-  <a class="mobile-nav__item" data-tool="iper"><svg class="ic"><use href="#i-tools"/></svg>Pro</a>
-  <a class="mobile-nav__item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Cuenta</a>
+  <a class="mobile-nav__item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Plan</a>
+  <a class="mobile-nav__item" id="mobile-nav-more" role="button"><svg class="ic"><use href="#i-menu"/></svg>Más</a>
 </nav>
+
+<!-- Drawer móvil con TODAS las opciones · se abre al tocar "Más" -->
+<div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+  <div class="mobile-drawer__overlay" id="mobile-drawer-overlay"></div>
+  <div class="mobile-drawer__panel">
+    <div class="mobile-drawer__header">
+      <div class="mobile-drawer__brand">
+        <div class="brand__logo" style="width:38px;height:38px;border-radius:9px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);">
+          <img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:28px;height:28px;object-fit:contain;display:block;">
+        </div>
+        <div>
+          <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1.1;">IMDIIL</div>
+          <div class="brand__plan" id="drawer-plan-badge" style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--primary);font-weight:700;margin-top:3px;">Sin membresía</div>
+        </div>
+      </div>
+      <button class="mobile-drawer__close" id="mobile-drawer-close" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="mobile-drawer__sections">
+      <div class="mobile-drawer__section">
+        <div class="mobile-drawer__label">Principal</div>
+        <a class="mobile-drawer__item" data-section="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
+        <a class="mobile-drawer__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Mis cursos</a>
+        <a class="mobile-drawer__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo</a>
+        <a class="mobile-drawer__item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
+        <a class="mobile-drawer__item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mis logros</a>
+        <a class="mobile-drawer__item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
+      </div>
+
+      <div class="mobile-drawer__section">
+        <div class="mobile-drawer__label">Herramientas pro</div>
+        <a class="mobile-drawer__item" data-tool="iper"><svg class="ic"><use href="#i-shield-check"/></svg>Matriz IPER</a>
+        <a class="mobile-drawer__item" data-tool="oee"><svg class="ic"><use href="#i-gauge"/></svg>Calculadora OEE</a>
+        <a class="mobile-drawer__item" data-tool="ats"><svg class="ic"><use href="#i-tools"/></svg>Generador ATS</a>
+        <a class="mobile-drawer__item" data-tool="nom"><svg class="ic"><use href="#i-news"/></svg>Tabla NOM-STPS</a>
+      </div>
+
+      <div class="mobile-drawer__section">
+        <div class="mobile-drawer__label">Comunidad</div>
+        <a class="mobile-drawer__item" data-section="foro"><svg class="ic"><use href="#i-messages"/></svg>Foro VIP</a>
+        <a class="mobile-drawer__item" data-section="canal"><svg class="ic"><use href="#i-whatsapp"/></svg>Canal WhatsApp</a>
+      </div>
+
+      <div class="mobile-drawer__section">
+        <div class="mobile-drawer__label">Mi cuenta</div>
+        <a class="mobile-drawer__item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
+        <a class="mobile-drawer__item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
+        <a class="mobile-drawer__item" id="drawer-logout-btn" style="color:#EF4444;"><svg class="ic"><use href="#i-x"/></svg>Cerrar sesión</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const PREFIX='imdiil:';
@@ -3813,8 +3867,8 @@ const IPERTool = (function(){
 })();
 
 function navigateToSection(section){
-  document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(n=>n.classList.remove('is-active'));
-  const ni=document.querySelector(`[data-section="${section}"]`);if(ni)ni.classList.add('is-active');
+  document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item').forEach(n=>n.classList.remove('is-active'));
+  document.querySelectorAll(`[data-section="${section}"]`).forEach(ni => ni.classList.add('is-active'));
   const inicio=document.getElementById('inicio-content');const dyn=document.getElementById('dynamic-section');
   if(!inicio||!dyn)return;
   if(Sections.countdownTimer){clearInterval(Sections.countdownTimer);Sections.countdownTimer=null;}
@@ -6609,13 +6663,53 @@ function injectSupportFAB(){
 }
 
 function initNav(){
-  document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(it=>{
+  document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item').forEach(it=>{
     it.addEventListener('click',e=>{
       e.preventDefault();
+      // Si es item del drawer móvil, cerrar el drawer al elegir
+      if (it.classList.contains('mobile-drawer__item')) {
+        cerrarDrawerMovil();
+      }
       if(it.dataset.tool&&Tools[it.dataset.tool]){Tools[it.dataset.tool].open();return;}
       if(it.dataset.section)navigateToSection(it.dataset.section);
     });
   });
+
+  // ─── Drawer móvil · botón "Más" + cierre ───
+  const moreBtn = document.getElementById('mobile-nav-more');
+  const drawer = document.getElementById('mobile-drawer');
+  const drawerOverlay = document.getElementById('mobile-drawer-overlay');
+  const drawerClose = document.getElementById('mobile-drawer-close');
+
+  function abrirDrawerMovil(){
+    if (drawer) {
+      drawer.classList.add('is-open');
+      drawer.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+  window.cerrarDrawerMovil = function(){
+    if (drawer) {
+      drawer.classList.remove('is-open');
+      drawer.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+  };
+
+  if (moreBtn) moreBtn.addEventListener('click', (e) => { e.preventDefault(); abrirDrawerMovil(); });
+  if (drawerOverlay) drawerOverlay.addEventListener('click', cerrarDrawerMovil);
+  if (drawerClose) drawerClose.addEventListener('click', cerrarDrawerMovil);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && drawer?.classList.contains('is-open')) cerrarDrawerMovil();
+  });
+
+  // Logout desde el drawer
+  document.getElementById('drawer-logout-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    cerrarDrawerMovil();
+    setTimeout(() => openLogoutModal(), 200);
+  });
+
   document.querySelectorAll('[data-open-tool]').forEach(btn=>btn.addEventListener('click',()=>{const t=btn.dataset.openTool;if(Tools[t])Tools[t].open();}));
   document.querySelectorAll('.section-header__link[data-section], .widget [data-section], .banner__stat[data-section]').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();navigateToSection(el.dataset.section);});});
 
@@ -6748,18 +6842,44 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
     // ─── Brand badge del sidebar (IMDIIL · estado real) ───
     const brandPlan = document.getElementById('brand-plan-badge');
-    if (brandPlan) {
+    const drawerPlan = document.getElementById('drawer-plan-badge');
+    [brandPlan, drawerPlan].forEach(el => {
+      if (!el) return;
       if (S.modo === 'vip') {
         const planLabel = (PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name;
-        brandPlan.textContent = planLabel;
-        brandPlan.style.color = '';
-        brandPlan.style.background = '';
+        el.textContent = planLabel;
+        el.style.color = '';
       } else if (S.modo === 'invitado') {
-        brandPlan.textContent = 'Modo demo';
-        brandPlan.style.color = '#FFB347';
+        el.textContent = 'Modo demo';
+        el.style.color = '#FFB347';
       } else { // sin-membresia
-        brandPlan.textContent = 'Sin membresía';
-        brandPlan.style.color = 'var(--text-3)';
+        el.textContent = 'Sin membresía';
+        el.style.color = 'var(--text-3)';
+      }
+    });
+
+    // ─── Pill del topbar (icono coronita arriba) · MISMO mensaje que sidebar ───
+    const topbarPill = document.getElementById('topbar-pill');
+    const topbarPillText = document.getElementById('topbar-pill-text');
+    if (topbarPill && topbarPillText) {
+      if (S.modo === 'vip') {
+        topbarPillText.textContent = 'Membresía activa';
+        topbarPill.style.background = '';
+        topbarPill.style.color = '';
+        topbarPill.style.borderColor = '';
+        topbarPill.style.display = 'inline-flex';
+      } else if (S.modo === 'invitado') {
+        topbarPillText.textContent = 'Modo demo · 5 min';
+        topbarPill.style.background = 'color-mix(in srgb, #FFB347 14%, transparent)';
+        topbarPill.style.color = '#FFB347';
+        topbarPill.style.borderColor = 'color-mix(in srgb, #FFB347 30%, transparent)';
+        topbarPill.style.display = 'inline-flex';
+      } else { // sin-membresia
+        topbarPillText.textContent = 'Sin membresía';
+        topbarPill.style.background = 'color-mix(in srgb, var(--text-3) 12%, transparent)';
+        topbarPill.style.color = 'var(--text-3)';
+        topbarPill.style.borderColor = 'color-mix(in srgb, var(--text-3) 24%, transparent)';
+        topbarPill.style.display = 'inline-flex';
       }
     }
 
@@ -7201,6 +7321,65 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   .cancelm__warnings{margin-bottom:16px;padding:10px 12px}
   .cancelm__warning{font-size:12px}
   .cancelm__close{top:10px;right:10px;width:30px;height:30px}
+}
+</style>
+<style>
+/* ═══ Drawer móvil · menú completo con todas las opciones ═══ */
+.mobile-drawer{display:none}
+@media (max-width:768px){
+  .mobile-drawer{display:block}
+  .mobile-drawer{position:fixed;inset:0;z-index:9500;visibility:hidden;pointer-events:none}
+  .mobile-drawer.is-open{visibility:visible;pointer-events:auto}
+  .mobile-drawer__overlay{position:absolute;inset:0;background:rgba(7,5,3,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .3s ease}
+  .mobile-drawer.is-open .mobile-drawer__overlay{opacity:1}
+  .mobile-drawer__panel{
+    position:absolute;top:0;right:0;bottom:0;width:88%;max-width:340px;
+    background:var(--surface);border-left:1px solid var(--border-2);
+    transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.25,1);
+    display:flex;flex-direction:column;
+    box-shadow:-24px 0 60px rgba(0,0,0,.4);
+  }
+  .mobile-drawer.is-open .mobile-drawer__panel{transform:translateX(0)}
+  .mobile-drawer__header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 18px 14px;border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .mobile-drawer__brand{display:flex;align-items:center;gap:11px}
+  .mobile-drawer__close{
+    width:36px;height:36px;border-radius:9px;
+    background:var(--surface-2);border:1px solid var(--border-2);
+    color:var(--text);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:background .15s ease;
+  }
+  .mobile-drawer__close:hover{background:var(--surface-3)}
+  .mobile-drawer__sections{
+    flex:1;overflow-y:auto;
+    padding:14px 12px 28px;
+  }
+  .mobile-drawer__sections::-webkit-scrollbar{width:5px}
+  .mobile-drawer__sections::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+  .mobile-drawer__section + .mobile-drawer__section{margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+  .mobile-drawer__label{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;
+    letter-spacing:1.4px;text-transform:uppercase;
+    color:var(--text-3);font-weight:700;
+    margin-bottom:6px;padding:0 12px;
+  }
+  .mobile-drawer__item{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 14px;border-radius:10px;
+    color:var(--text-2);text-decoration:none;
+    font-size:14px;font-weight:500;letter-spacing:-.1px;
+    cursor:pointer;
+    transition:background .12s ease,color .12s ease;
+  }
+  .mobile-drawer__item:hover,.mobile-drawer__item.is-active{
+    background:color-mix(in srgb,var(--primary) 12%,transparent);
+    color:var(--primary);
+  }
+  .mobile-drawer__item .ic{width:18px;height:18px;flex-shrink:0}
 }
 </style>
 </body>
