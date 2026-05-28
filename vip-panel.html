@@ -2695,6 +2695,8 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 window.__db = db;
+// Exponer funciones de Firestore para que el script no-module pueda usarlas
+window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot };
 setPersistence(auth, browserLocalPersistence);
 
 // ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
@@ -3909,9 +3911,10 @@ const Sections = (function(){
     _cursosLoading = true;
     try {
       const db = window.__db;
-      if (!db) throw new Error('Firestore no inicializado');
-      const q = query(collection(db, 'cursos'), orderBy('orden', 'asc'));
-      const snap = await getDocs(q);
+      const fs = window.__fs;
+      if (!db || !fs) throw new Error('Firestore no inicializado');
+      const q = fs.query(fs.collection(db, 'cursos'), fs.orderBy('orden', 'asc'));
+      const snap = await fs.getDocs(q);
       cursos = snap.docs.map((d, i) => {
         const data = d.data();
         return {
