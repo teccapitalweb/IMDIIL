@@ -4931,8 +4931,7 @@ const Sections = (function(){
         if (!clientSecret) throw new Error('No recibimos clientSecret');
         if (!window.__stripe) {
           if (!window.Stripe) throw new Error('Stripe.js no cargó');
-          // ⚠️ CAMBIA esta key por tu pk_live_... real cuando configures Stripe
-          window.__stripe = window.Stripe('pk_live_REEMPLAZAR_CON_TU_PUBLISHABLE_KEY');
+          window.__stripe = window.Stripe('pk_live_51TMAcSA7If2CqXs9NuKsM1cVT9n5agProkMR8HFiT6QTXzS0g9PtiokZ4cpT1Qo3rk9bbsrZHx9sOUbE9UEOjgGs00n1OM3Y9b');
         }
         mountEl.innerHTML = '';
         checkoutInstance = await window.__stripe.initEmbeddedCheckout({ clientSecret });
