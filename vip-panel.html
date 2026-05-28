@@ -4044,7 +4044,7 @@ const Sections = (function(){
   }
 
   /* ============================ CURSOS ============================ */
-  let cursosState={tab:'progreso',area:'todas',search:''};
+  let cursosState={tab:'catalogo',area:'todas',search:''};
   let countdownTimer=null;
 
   function counts(){
@@ -4106,7 +4106,7 @@ const Sections = (function(){
     if (!_cursosLoaded && !_cursosLoading) {
       const list = document.getElementById('cur-list');
       if (list) list.innerHTML = `<div class="empty-state"><div class="empty-state__icon"><div style="width:42px;height:42px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--primary);animation:spin .8s linear infinite;"></div></div><h3>Cargando cursos…</h3></div>`;
-      cargarCursosFirestore().then(() => renderCursosList());
+      cargarCursosFirestore().then(() => renderCursos(container));
     } else {
       renderCursosList();
     }
