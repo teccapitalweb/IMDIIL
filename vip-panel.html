@@ -2848,6 +2848,8 @@ window.__resetPassword = async () => {
 <defs>
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/></symbol>
 <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
 <symbol id="i-book" viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6v13"/><path d="M12 6v13"/><path d="M21 6v13"/></symbol>
 <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13 -8z"/></symbol>
 <symbol id="i-broadcast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><path d="M16.243 16.243a6 6 0 1 0 -8.486 0"/><path d="M19.071 19.071a10 10 0 1 0 -14.142 0"/></symbol>
@@ -3166,12 +3168,12 @@ window.__resetPassword = async () => {
   <div class="mobile-drawer__panel">
     <div class="mobile-drawer__header">
       <div class="mobile-drawer__brand">
-        <div class="brand__logo" style="width:38px;height:38px;border-radius:9px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);flex-shrink:0;">
-          <img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:28px;height:28px;object-fit:contain;display:block;">
+        <div class="brand__logo" style="width:42px;height:42px;border-radius:10px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);flex-shrink:0;">
+          <img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;">
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1;">IMDIIL</div>
-          <div class="brand__plan" id="drawer-plan-badge" style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary);font-weight:700;padding:3px 7px;background:color-mix(in srgb,var(--primary) 14%,transparent);border-radius:5px;line-height:1;">Sin membresía</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
+          <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1;">IMDIIL</div>
+          <div class="brand__plan" id="drawer-plan-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);font-weight:700;line-height:1;">Sin membresía</div>
         </div>
       </div>
       <button class="mobile-drawer__close" id="mobile-drawer-close" aria-label="Cerrar">
@@ -3208,7 +3210,7 @@ window.__resetPassword = async () => {
         <div class="mobile-drawer__label">Mi cuenta</div>
         <a class="mobile-drawer__item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
         <a class="mobile-drawer__item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
-        <a class="mobile-drawer__item" id="drawer-logout-btn" style="color:#EF4444;"><svg class="ic"><use href="#i-x"/></svg>Cerrar sesión</a>
+        <a class="mobile-drawer__item" id="drawer-logout-btn" style="color:#EF4444;"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesión</a>
       </div>
     </div>
   </div>
@@ -6847,32 +6849,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const drawerPlan = document.getElementById('drawer-plan-badge');
     [brandPlan, drawerPlan].forEach(el => {
       if (!el) return;
-      const isDrawer = el.id === 'drawer-plan-badge';
+      // Texto plano (sin chip/background/border) para mantener alineación vertical con "IMDIIL"
+      el.style.background = 'transparent';
+      el.style.padding = '0';
+      el.style.border = 'none';
       if (S.modo === 'vip') {
         const planLabel = (PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name;
         el.textContent = planLabel;
-        if (isDrawer) {
-          el.style.color = 'var(--primary)';
-          el.style.background = 'color-mix(in srgb,var(--primary) 14%,transparent)';
-        } else {
-          el.style.color = '';
-        }
+        el.style.color = 'var(--primary)';
       } else if (S.modo === 'invitado') {
         el.textContent = 'Modo demo';
-        if (isDrawer) {
-          el.style.color = '#FFB347';
-          el.style.background = 'color-mix(in srgb,#FFB347 14%,transparent)';
-        } else {
-          el.style.color = '#FFB347';
-        }
+        el.style.color = '#FFB347';
       } else { // sin-membresia
         el.textContent = 'Sin membresía';
-        if (isDrawer) {
-          el.style.color = 'var(--text-3)';
-          el.style.background = 'color-mix(in srgb,var(--text-3) 14%,transparent)';
-        } else {
-          el.style.color = 'var(--text-3)';
-        }
+        el.style.color = 'var(--text-3)';
       }
     });
 
