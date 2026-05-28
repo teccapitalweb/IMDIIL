@@ -2297,7 +2297,7 @@ body::after{
 @media (max-width:880px){
   .app{grid-template-columns:1fr}
   .sidebar{display:none}
-  .main{padding:14px 14px 100px}
+  .main{padding:14px 14px 140px}
   .topbar__right .avatar{display:none}
   .banner{flex-direction:column;align-items:flex-start;padding:20px 22px}
   .banner__stats{align-self:stretch;justify-content:space-between;flex-wrap:wrap}
@@ -2755,6 +2755,12 @@ if (window.__isDemoMode) {
         const memberSnap = await getDoc(doc(db, 'miembros', user.uid));
         if (memberSnap.exists()) {
           window.memberData = memberSnap.data();
+          // Propagar campos de cancelación al UserState para que el panel los use
+          window.UserState.cancelacionProgramada = !!window.memberData.cancelacionProgramada;
+          const ffa = window.memberData.fechaFinAcceso;
+          window.UserState.fechaFinAcceso = ffa
+            ? (ffa.toDate ? ffa.toDate().toISOString() : new Date(ffa).toISOString())
+            : null;
         } else {
           window.memberData = null;
         }
@@ -5967,23 +5973,27 @@ const Sections = (function(){
           <div class="perfil-card">
             <div class="perfil-card__title">Método de pago</div>
             <div style="padding:12px 0;font-size:13px;color:var(--text-2);line-height:1.55;">
-              Gestionado por Stripe. Para cambiar tu método o ver tus facturas, escríbenos por WhatsApp y te enviamos el link al portal de Stripe.
+              Gestiona tu tarjeta, descarga tus facturas y revisa tu historial de cobros desde el portal seguro de Stripe.
             </div>
-            <a class="btn btn--ghost" style="width:100%;" href="https://wa.me/5212211832603?text=Hola%20IMDIIL%2C%20quiero%20cambiar%20mi%20m%C3%A9todo%20de%20pago" target="_blank" rel="noopener" data-bypass-paywall="true">
-              <svg class="ic"><use href="#i-whatsapp"/></svg>Solicitar cambio
-            </a>
+            <button class="btn btn--ghost" style="width:100%;" id="btn-billing-portal" data-bypass-paywall="true">
+              <svg class="ic"><use href="#i-card"/></svg><span class="lbl">Gestionar en Stripe</span>
+            </button>
           </div>
 
           <div class="perfil-card">
-            <div class="perfil-card__title">Gestionar plan</div>
+            <div class="perfil-card__title">${S.cancelacionProgramada ? 'Cancelación programada' : 'Cancelar suscripción'}</div>
             <div style="padding:8px 0;font-size:13px;color:var(--text-2);line-height:1.55;">
-              ${S.plan === 'anual'
-                ? 'Estás en el plan anual. Si quieres cambiar a mensual o cancelar, escríbenos.'
-                : 'Estás en el plan mensual. Si quieres cambiar a anual y ahorrar 21%, escríbenos.'}
+              ${S.cancelacionProgramada
+                ? `Tu membresía se cancelará el <strong style="color:var(--text);">${S.fechaFinAcceso ? new Date(S.fechaFinAcceso).toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'}) : proxRenovStr}</strong>. Hasta esa fecha mantienes acceso completo. ¿Cambiaste de opinión?`
+                : 'Mantendrás acceso hasta el final del periodo pagado. Después se cancela automáticamente y no se te cobra más.'}
             </div>
-            <a class="btn btn--ghost" style="width:100%;margin-top:8px;" href="https://wa.me/5212211832603?text=Hola%20IMDIIL%2C%20quiero%20cambiar%2Fcancelar%20mi%20plan" target="_blank" rel="noopener" data-bypass-paywall="true">
-              <svg class="ic"><use href="#i-whatsapp"/></svg>Contactar soporte
-            </a>
+            ${S.cancelacionProgramada
+              ? `<button class="btn btn--accent" style="width:100%;margin-top:8px;" id="btn-reactivar-sub" data-bypass-paywall="true">
+                  <svg class="ic"><use href="#i-zap"/></svg><span class="lbl">Reactivar suscripción</span>
+                </button>`
+              : `<button class="btn btn--ghost" style="width:100%;margin-top:8px;color:#EF4444;border-color:rgba(239,68,68,.3);" id="btn-cancelar-sub" data-bypass-paywall="true">
+                  <svg class="ic"><use href="#i-x"/></svg><span class="lbl">Cancelar suscripción</span>
+                </button>`}
           </div>
         </div>
 
@@ -6009,6 +6019,225 @@ const Sections = (function(){
         ` : ''}
       </div>
     `;
+
+    // ─── Bind de los botones reales ───
+    bindSuscripcionButtons(container);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🚫 BOTONES DE CANCELAR/REACTIVAR + BILLING PORTAL
+  // Conectan con el webhook de Railway · operación real sobre Stripe
+  // ═══════════════════════════════════════════════════════════════
+  const WEBHOOK_BASE_URL = 'https://imdiil-webhook-production.up.railway.app';
+
+  function bindSuscripcionButtons(container) {
+    const btnCancelar = container.querySelector('#btn-cancelar-sub');
+    const btnReactivar = container.querySelector('#btn-reactivar-sub');
+    const btnPortal = container.querySelector('#btn-billing-portal');
+
+    if (btnCancelar) {
+      btnCancelar.addEventListener('click', () => abrirModalCancelarSub());
+    }
+    if (btnReactivar) {
+      btnReactivar.addEventListener('click', () => ejecutarReactivarSub(btnReactivar));
+    }
+    if (btnPortal) {
+      btnPortal.addEventListener('click', () => abrirBillingPortal(btnPortal));
+    }
+  }
+
+  // ─── Modal de confirmación de cancelación ───
+  function abrirModalCancelarSub() {
+    const S = window.UserState;
+    const proxRenov = S.membership?.proximaRenovacion
+      ? new Date(S.membership.proximaRenovacion).toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})
+      : '—';
+
+    let modal = document.getElementById('cancel-sub-modal');
+    if (modal) modal.remove();
+    modal = document.createElement('div');
+    modal.id = 'cancel-sub-modal';
+    modal.innerHTML = `
+      <div class="cancelm__overlay"></div>
+      <div class="cancelm__box">
+        <button class="cancelm__close" id="cancelm-close-x" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="cancelm__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h2 class="cancelm__title">¿Seguro(a) que deseas cancelar?</h2>
+        <p class="cancelm__desc">Tu membresía se cancelará al final del periodo pagado.<br><strong style="color:var(--text);">Seguirás teniendo acceso completo</strong> hasta el <strong style="color:var(--primary);">${proxRenov}</strong>, pero ya no se te realizará ningún cobro.</p>
+        <div class="cancelm__warnings">
+          <div class="cancelm__warning"><span>⚠️</span><span>Perderás acceso a los 12 cursos VIP después de esa fecha</span></div>
+          <div class="cancelm__warning"><span>⚠️</span><span>Tus certificados ya emitidos siguen siendo válidos</span></div>
+          <div class="cancelm__warning"><span>↩</span><span>Podrás reactivar antes de que expire el periodo</span></div>
+        </div>
+        <div class="cancelm__actions">
+          <button class="cancelm__btn cancelm__btn--ghost" id="cancelm-cancel">Mejor no, sigo siendo VIP</button>
+          <button class="cancelm__btn cancelm__btn--danger" id="cancelm-confirm">
+            <span class="cancelm__btn-text">Sí, cancelar mi suscripción</span>
+            <span class="cancelm__btn-spinner" style="display:none;">
+              <span style="display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    const close = () => { modal.remove(); document.body.style.overflow = ''; };
+    modal.querySelector('#cancelm-close-x').addEventListener('click', close);
+    modal.querySelector('#cancelm-cancel').addEventListener('click', close);
+    modal.querySelector('.cancelm__overlay').addEventListener('click', close);
+    modal.querySelector('#cancelm-confirm').addEventListener('click', () => ejecutarCancelacionSub(modal));
+  }
+
+  async function ejecutarCancelacionSub(modal) {
+    const S = window.UserState;
+    const btn = modal.querySelector('#cancelm-confirm');
+    const btnText = btn.querySelector('.cancelm__btn-text');
+    const btnSpinner = btn.querySelector('.cancelm__btn-spinner');
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    btnSpinner.style.display = 'inline-flex';
+
+    try {
+      const resp = await fetch(WEBHOOK_BASE_URL + '/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: S.uid, email: S.email })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'No se pudo cancelar');
+
+      // Actualizar estado en window.UserState
+      window.UserState.cancelacionProgramada = true;
+      window.UserState.fechaFinAcceso = data.finAcceso;
+
+      // Cerrar modal de confirmación
+      modal.remove();
+      document.body.style.overflow = '';
+
+      // Mostrar splash de éxito
+      mostrarSplashCancelacionExitosa(data.finAcceso);
+
+      // Re-renderizar la pestaña suscripción para mostrar "Cancelación programada"
+      setTimeout(() => {
+        if (typeof window.navigateToSection === 'function') {
+          window.navigateToSection('suscripcion');
+        }
+      }, 100);
+
+    } catch (err) {
+      console.error('[CANCEL] Error:', err);
+      btn.disabled = false;
+      btnText.style.display = '';
+      btnSpinner.style.display = 'none';
+      if (typeof Toast !== 'undefined') {
+        Toast.error('No pudimos cancelar', err.message || 'Intenta de nuevo o escríbenos por WhatsApp');
+      } else {
+        alert('Error: ' + (err.message || 'No se pudo cancelar'));
+      }
+    }
+  }
+
+  function mostrarSplashCancelacionExitosa(finAcceso) {
+    const fechaStr = finAcceso
+      ? new Date(finAcceso).toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})
+      : 'el final del periodo';
+    let splash = document.getElementById('cancel-success-splash');
+    if (splash) splash.remove();
+    splash = document.createElement('div');
+    splash.id = 'cancel-success-splash';
+    splash.innerHTML = `
+      <div class="cancelm__overlay"></div>
+      <div class="cancelm__box cancelm__box--success">
+        <div class="cancelm__icon cancelm__icon--success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="cancelm__title">Cancelación programada</h2>
+        <p class="cancelm__desc">Tu suscripción ya no se renovará. Mantienes <strong style="color:var(--text);">acceso completo a IMDIIL</strong> hasta el <strong style="color:var(--primary);">${fechaStr}</strong>.<br><br>Si cambias de opinión, puedes reactivar tu membresía desde la pestaña de Suscripción antes de esa fecha.</p>
+        <div class="cancelm__actions">
+          <button class="cancelm__btn cancelm__btn--primary" id="cancel-success-close">Entendido</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(splash);
+    document.body.style.overflow = 'hidden';
+    const close = () => { splash.remove(); document.body.style.overflow = ''; };
+    splash.querySelector('#cancel-success-close').addEventListener('click', close);
+    splash.querySelector('.cancelm__overlay').addEventListener('click', close);
+  }
+
+  async function ejecutarReactivarSub(btn) {
+    const S = window.UserState;
+    const originalText = btn.querySelector('.lbl').textContent;
+    btn.disabled = true;
+    btn.querySelector('.lbl').textContent = 'Reactivando…';
+
+    try {
+      const resp = await fetch(WEBHOOK_BASE_URL + '/stripe/reactivate-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: S.uid, email: S.email })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'No se pudo reactivar');
+
+      window.UserState.cancelacionProgramada = false;
+      window.UserState.fechaFinAcceso = null;
+
+      if (typeof Toast !== 'undefined') {
+        Toast.success('¡Reactivada!', 'Tu suscripción seguirá renovándose normalmente');
+      }
+
+      // Re-renderizar
+      setTimeout(() => {
+        if (typeof window.navigateToSection === 'function') {
+          window.navigateToSection('suscripcion');
+        }
+      }, 100);
+
+    } catch (err) {
+      console.error('[REACTIVATE] Error:', err);
+      btn.disabled = false;
+      btn.querySelector('.lbl').textContent = originalText;
+      if (typeof Toast !== 'undefined') {
+        Toast.error('No pudimos reactivar', err.message || 'Intenta de nuevo');
+      }
+    }
+  }
+
+  async function abrirBillingPortal(btn) {
+    const S = window.UserState;
+    const originalText = btn.querySelector('.lbl').textContent;
+    btn.disabled = true;
+    btn.querySelector('.lbl').textContent = 'Abriendo portal…';
+
+    try {
+      const resp = await fetch(WEBHOOK_BASE_URL + '/stripe/create-billing-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: S.uid,
+          email: S.email,
+          returnUrl: window.location.href
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'No se pudo abrir el portal');
+      // Redirigir al billing portal de Stripe
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('[BILLING PORTAL] Error:', err);
+      btn.disabled = false;
+      btn.querySelector('.lbl').textContent = originalText;
+      if (typeof Toast !== 'undefined') {
+        Toast.error('No pudimos abrir el portal', err.message || 'Intenta de nuevo');
+      }
+    }
   }
 
   /* ============================ VIDEOTECA · agrupa todos los meses ============================ */
@@ -6935,6 +7164,44 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .dd-fancy__item:hover{background:color-mix(in srgb,var(--primary) 10%,transparent);color:var(--primary)}
 .dd-fancy__item.is-selected{background:color-mix(in srgb,var(--primary) 15%,transparent);color:var(--primary);font-weight:700}
 .dd-fancy__item.is-selected::before{content:"✓ ";font-weight:700;margin-right:2px}
+</style>
+<style>
+/* ═══ Modal cancelación / reactivación ═══ */
+#cancel-sub-modal,
+#cancel-success-splash{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;animation:bnvFadeIn .35s ease;overflow-y:auto}
+.cancelm__overlay{position:fixed;inset:0;background:rgba(7,5,3,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.cancelm__box{position:relative;width:100%;max-width:520px;max-height:calc(100vh - 40px);overflow-y:auto;background:linear-gradient(160deg, var(--surface-2), var(--surface));border:1px solid rgba(239,68,68,.22);border-radius:22px;padding:36px 32px 26px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.03);animation:bnvPop .55s cubic-bezier(.22,1.4,.36,1);margin:auto}
+.cancelm__box::-webkit-scrollbar{width:6px}
+.cancelm__box::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+.cancelm__box--success{border-color:rgba(52,211,153,.32)}
+.cancelm__close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;z-index:2}
+.cancelm__close:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.cancelm__icon{width:78px;height:78px;border-radius:50%;background:color-mix(in srgb, #EF4444 14%, transparent);color:#EF4444;display:inline-flex;align-items:center;justify-content:center;margin-bottom:18px;flex-shrink:0}
+.cancelm__icon--success{background:color-mix(in srgb, #34D399 14%, transparent);color:#34D399}
+.cancelm__title{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1.2;margin-bottom:14px;color:var(--text)}
+.cancelm__desc{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:22px}
+.cancelm__warnings{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;text-align:left;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:11px;padding:12px 14px}
+.cancelm__warning{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--text-2);line-height:1.45}
+.cancelm__warning span:first-child{flex-shrink:0}
+.cancelm__actions{display:flex;flex-direction:column;gap:8px}
+.cancelm__btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:12px;font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:all .15s ease;letter-spacing:-.1px;width:100%;min-height:46px}
+.cancelm__btn:disabled{opacity:.6;cursor:not-allowed}
+.cancelm__btn--ghost{background:transparent;color:var(--text);border-color:rgba(255,255,255,.14)}
+.cancelm__btn--ghost:hover:not(:disabled){background:rgba(255,255,255,.04)}
+.cancelm__btn--danger{background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff;box-shadow:0 8px 24px rgba(239,68,68,.28)}
+.cancelm__btn--danger:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 28px rgba(239,68,68,.4)}
+.cancelm__btn--primary{background:linear-gradient(135deg,var(--primary),var(--highlight));color:#0E0A06;box-shadow:0 8px 24px color-mix(in srgb,var(--primary) 28%,transparent)}
+.cancelm__btn--primary:hover:not(:disabled){transform:translateY(-1px)}
+@media (max-width:560px){
+  #cancel-sub-modal,#cancel-success-splash{padding:12px;align-items:flex-start;padding-top:24px}
+  .cancelm__box{padding:24px 20px 20px;border-radius:18px;max-height:calc(100vh - 48px)}
+  .cancelm__title{font-size:19px;margin-bottom:10px}
+  .cancelm__desc{font-size:13.5px;margin-bottom:16px}
+  .cancelm__icon{width:64px;height:64px;margin-bottom:14px}
+  .cancelm__warnings{margin-bottom:16px;padding:10px 12px}
+  .cancelm__warning{font-size:12px}
+  .cancelm__close{top:10px;right:10px;width:30px;height:30px}
+}
 </style>
 </body>
 </html>
