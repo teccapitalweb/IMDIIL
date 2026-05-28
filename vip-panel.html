@@ -3839,14 +3839,137 @@ const Sections = (function(){
     if (curso && curso.disponibleSiempre === true) return true;
     if (curso && curso.marcarProximamente === true) return false;
     const dias = calcularDiasMembresia();
-    return dias >= (indexCurso * 10);
+    return dias >= (indexCurso * 8);  // ← cada 8 días
   }
 
   function diasParaDesbloquear(indexCurso, curso){
     if (window.UserState?.isAdmin) return 0;
     if (curso && curso.disponibleSiempre === true) return 0;
     const dias = calcularDiasMembresia();
-    return Math.max(0, (indexCurso * 10) - dias);
+    return Math.max(0, (indexCurso * 8) - dias);  // ← cada 8 días
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 📊 PROGRESO POR USUARIO · localStorage (Sprint 7)
+  // En Fase 4 migramos a Firestore para sincronizar entre dispositivos
+  // ═══════════════════════════════════════════════════════════════
+  function getProgresoKey() {
+    const uid = window.UserState?.uid || 'demo';
+    return `imdiil_progress_${uid}`;
+  }
+
+  function getProgreso() {
+    try { return JSON.parse(localStorage.getItem(getProgresoKey()) || '{}'); }
+    catch { return {}; }
+  }
+
+  function setProgreso(p) {
+    try { localStorage.setItem(getProgresoKey(), JSON.stringify(p)); } catch {}
+  }
+
+  function getProgresoCurso(cursoId) {
+    const p = getProgreso();
+    return p[cursoId] || { clasesVistas: [], completado: false, fechaCompletado: null };
+  }
+
+  window.marcarClaseVista = function(cursoId, numeroClase) {
+    const p = getProgreso();
+    if (!p[cursoId]) p[cursoId] = { clasesVistas: [], completado: false, fechaCompletado: null };
+    if (!p[cursoId].clasesVistas.includes(numeroClase)) {
+      p[cursoId].clasesVistas.push(numeroClase);
+      p[cursoId].clasesVistas.sort((a, b) => a - b);
+    }
+    setProgreso(p);
+
+    // Detectar si se completó el curso
+    const curso = cursos.find(c => c.id === cursoId);
+    if (curso && curso.sesiones && p[cursoId].clasesVistas.length >= curso.sesiones.length && !p[cursoId].completado) {
+      p[cursoId].completado = true;
+      p[cursoId].fechaCompletado = new Date().toISOString();
+      setProgreso(p);
+      // Mostrar splash de felicitación
+      setTimeout(() => mostrarSplashCompletado(curso), 400);
+    }
+    return p[cursoId];
+  };
+
+  function claseDesbloqueada(cursoId, indexClase, sesiones) {
+    if (window.UserState?.isAdmin) return true;
+    if (indexClase === 0) return true; // primera siempre desbloqueada
+    const prog = getProgresoCurso(cursoId);
+    const anterior = sesiones[indexClase - 1];
+    const anteriorNum = anterior.numero || indexClase;
+    return prog.clasesVistas.includes(anteriorNum);
+  }
+
+  function progresoCursoPct(cursoId, totalClases) {
+    if (!totalClases) return 0;
+    const prog = getProgresoCurso(cursoId);
+    return Math.round((prog.clasesVistas.length / totalClases) * 100);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🎓 SPLASH DE CURSO COMPLETADO
+  // ═══════════════════════════════════════════════════════════════
+  function mostrarSplashCompletado(curso) {
+    // Cerrar visor si está abierto
+    if (typeof window.cerrarVisor === 'function') window.cerrarVisor();
+    // Cerrar modal del curso si está abierto
+    if (typeof Modal !== 'undefined' && Modal.closeAll) Modal.closeAll();
+
+    const folio = `IMDIIL-${new Date().getFullYear()}-${(curso.id || '').slice(0, 6).toUpperCase()}`;
+    let splash = document.getElementById('splash-completado');
+    if (splash) splash.remove();
+
+    splash = document.createElement('div');
+    splash.id = 'splash-completado';
+    splash.innerHTML = `
+      <div class="splash-cmp__overlay"></div>
+      <div class="splash-cmp__box">
+        <button class="splash-cmp__close" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="splash-cmp__confetti">
+          ${Array.from({length:24}).map((_,i)=>`<span class="splash-cmp__confetti-bit" style="--d:${i*.08}s;--x:${(Math.random()*200-100)|0}px;--c:${['#FF7A2D','#FFB347','#34D399','#60A5FA','#F87171'][i%5]}"></span>`).join('')}
+        </div>
+        <div class="splash-cmp__icon">🎓</div>
+        <div class="splash-cmp__kicker">CURSO COMPLETADO</div>
+        <h1 class="splash-cmp__title">¡Felicidades${window.UserState?.nombre ? ', '+window.UserState.nombre : ''}!</h1>
+        <p class="splash-cmp__desc">Terminaste <strong>${escapeHtml(curso.titulo)}</strong>. Tu certificado IMDIIL ya está disponible.</p>
+        <div class="splash-cmp__cert">
+          <div class="splash-cmp__cert-header">
+            <div class="splash-cmp__cert-logo">⚙️ IMDIIL</div>
+            <div class="splash-cmp__cert-folio">${folio}</div>
+          </div>
+          <div class="splash-cmp__cert-body">
+            <div class="splash-cmp__cert-pre">SE OTORGA EL PRESENTE CERTIFICADO A</div>
+            <div class="splash-cmp__cert-name">${escapeHtml(window.UserState?.nombre || window.UserState?.email || 'Usuario VIP')}</div>
+            <div class="splash-cmp__cert-pre">POR HABER COMPLETADO EL CURSO</div>
+            <div class="splash-cmp__cert-curso">${escapeHtml(curso.titulo)}</div>
+            <div class="splash-cmp__cert-meta">
+              <span>${curso.horas || 0} hrs</span> · <span>${new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</span>
+            </div>
+          </div>
+        </div>
+        <div class="splash-cmp__actions">
+          <button class="splash-cmp__btn splash-cmp__btn--primary" onclick="window.navigateToSection('certificados'); document.getElementById('splash-completado').remove();">
+            Ver mis certificados →
+          </button>
+          <button class="splash-cmp__btn splash-cmp__btn--ghost" onclick="document.getElementById('splash-completado').remove()">
+            Seguir explorando
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(splash);
+    splash.querySelector('.splash-cmp__close').addEventListener('click', () => splash.remove());
+    splash.querySelector('.splash-cmp__overlay').addEventListener('click', () => splash.remove());
+  }
+
+  // escapeHtml helper (por si no existe)
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -3869,17 +3992,45 @@ const Sections = (function(){
               .replace(/\/edit$/, '/preview');
   }
 
-  window.abrirVisor = function(url, titulo) {
+  window.abrirVisor = function(url, titulo, cursoId, numClase) {
     if (!url) return;
     const overlay = document.getElementById('visorOverlay');
     const frame = document.getElementById('visorFrame');
     const titleEl = document.getElementById('visorTitle');
     const dlEl = document.getElementById('visorDownload');
+    const markBtn = document.getElementById('visorMarkAsViewed');
     if (!overlay || !frame) return;
 
     frame.src = convertirUrlDrive(url);
     titleEl.textContent = titulo || 'Visor';
     if (dlEl) dlEl.href = url;
+
+    // Botón "Marcar como vista" solo si es clase con cursoId+numClase
+    if (markBtn) {
+      if (cursoId && numClase) {
+        const prog = getProgresoCurso(cursoId);
+        const yaVista = prog.clasesVistas.includes(numClase);
+        markBtn.style.display = 'inline-flex';
+        markBtn.dataset.cursoId = cursoId;
+        markBtn.dataset.numClase = numClase;
+        if (yaVista) {
+          markBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Ya vista';
+          markBtn.style.background = 'color-mix(in srgb, var(--success) 20%, transparent)';
+          markBtn.style.borderColor = 'color-mix(in srgb, var(--success) 50%, transparent)';
+          markBtn.style.color = 'var(--success)';
+          markBtn.disabled = true;
+        } else {
+          markBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Marcar como vista';
+          markBtn.style.background = 'linear-gradient(135deg, var(--primary), var(--highlight))';
+          markBtn.style.borderColor = 'transparent';
+          markBtn.style.color = '#0E0A06';
+          markBtn.disabled = false;
+        }
+      } else {
+        markBtn.style.display = 'none';
+      }
+    }
+
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
   };
@@ -3903,97 +4054,100 @@ const Sections = (function(){
         window.cerrarVisor();
       }
     });
+    // Handler del botón "Marcar como vista"
+    document.getElementById('visorMarkAsViewed')?.addEventListener('click', function() {
+      const cursoId = this.dataset.cursoId;
+      const numClase = parseInt(this.dataset.numClase);
+      if (!cursoId || !numClase) return;
+      window.marcarClaseVista(cursoId, numClase);
+      // Feedback visual
+      this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> ¡Marcada!';
+      this.style.background = 'color-mix(in srgb, var(--success) 20%, transparent)';
+      this.style.borderColor = 'color-mix(in srgb, var(--success) 50%, transparent)';
+      this.style.color = 'var(--success)';
+      this.disabled = true;
+      // Cerrar después de 1.2s y re-renderizar el modal del curso
+      setTimeout(() => {
+        window.cerrarVisor();
+        // Re-renderizar para mostrar progreso actualizado
+        if (typeof renderCursosList === 'function') renderCursosList();
+      }, 1200);
+    });
   });
 
-  // ─── Portadas automáticas para cursos según el título ───
-  // Imágenes Unsplash CURADAS · 100% industrial / ingeniería / planta
-  // (NO retail, NO oficinas genéricas)
+  // ─── Portadas automáticas · URLs Unsplash VERIFICADAS al 100% ───
+  // 8 URLs reales · industriales · sin retail
   const PORTADAS_CURSOS = {
-    // Energías renovables / Energía
-    'energías renovables':'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&auto=format&fit=crop&q=80',
+    // Energías renovables → paneles solares industriales (verificada)
+    'energías renovables':'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
     'energía':            'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
-    'renovable':          'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&auto=format&fit=crop&q=80',
+    'renovable':          'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
     'solar':              'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
-    'eólic':              'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=900&auto=format&fit=crop&q=80',
-    // Aguas residuales / Medio Ambiente
+    // Aguas residuales → planta de tratamiento (verificada)
     'aguas residuales':   'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
     'tratamiento':        'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
     'biológic':           'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
-    'agua':               'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
     'medio ambiente':     'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
-    // Supervisión / Operaciones / Planta industrial
+    // Supervisión / Producción / Planta → planta industrial moderna
     'supervisión':        'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
     'supervisor':         'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
     'producción':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
     'planta':             'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
-    'manufactur':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
     'operaciones':        'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
-    // Forecasting / Pronóstico (dashboard industrial)
+    // Forecasting → laptop con dashboards (verificada)
     'forecasting':        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
     'pronóstic':          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
     'demanda':            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
-    // Kaizen / Lean / Six Sigma / Mejora continua (manufactura)
-    'kaizen':             'https://images.unsplash.com/photo-1581094794329-c8112c4418fc?w=900&auto=format&fit=crop&q=80',
-    'lean':               'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
-    'six sigma':          'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
-    'mejora continua':    'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
-    'ingeniería de procesos':'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
-    'procesos':           'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
-    'innovación':         'https://images.unsplash.com/photo-1581094794329-c8112c4418fc?w=900&auto=format&fit=crop&q=80',
-    // Costos / Finanzas / Controller (dashboards financieros industriales)
-    'costos':             'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
-    'control de costos':  'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
-    'planificación':      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
-    'finanzas':           'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
-    'controller':         'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
-    'reporting':          'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
-    // Project Management / Gestión (proyectos industriales)
-    'project management': 'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=900&auto=format&fit=crop&q=80',
-    'gestión de proyect': 'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=900&auto=format&fit=crop&q=80',
-    'pmbok':              'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=900&auto=format&fit=crop&q=80',
-    // Inventario y almacén INDUSTRIAL (racks, montacargas, NO retail)
-    'inventario':         'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
-    'almacén':            'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
-    'warehouse':          'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
-    'logístic':           'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
-    'wms':                'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
-    // Secretariado / Administrativo (oficina profesional)
+    // Kaizen → mecánico industrial / piso de planta
+    'kaizen':             'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'innovación':         'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'mejora continua':    'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    // Lean Manufacturing / Six Sigma / Procesos → industria moderna
+    'lean':               'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'six sigma':          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'ingeniería de procesos':'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'procesos':           'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    // Costos / Finanzas / Controller → dashboards / oficina técnica
+    'costos':             'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'control de costos':  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'planificación':      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'finanzas':           'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'controller':         'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'reporting':          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    // Project Management → oficina profesional
+    'project management': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'pmbok':              'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    // Inventario / Almacén → planta industrial (NO retail)
+    'inventario':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'almacén':            'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'logístic':           'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    // Secretariado → oficina profesional
     'secretariad':        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
     'administrativ':      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
-    // Seguridad industrial / NOM-STPS (cascos, EPP, industria)
-    'nom-019':            'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
-    'nom-001':            'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
-    'nom-029':            'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
-    'nom-017':            'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=900&auto=format&fit=crop&q=80',
-    'nom-035':            'https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=900&auto=format&fit=crop&q=80',
-    'iso 45001':          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
-    'seguridad':          'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
+    // Seguridad / NOM
+    'nom-':               'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
+    'iso ':               'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'seguridad':          'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
     'eléctric':           'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
-    'iper':               'https://images.unsplash.com/photo-1581094794329-c8112c4418fc?w=900&auto=format&fit=crop&q=80',
-    'riesgo':             'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
-    // Calidad / Auditoría
-    'amef':               'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
-    'calidad':            'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=900&auto=format&fit=crop&q=80',
-    '5s':                 'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=900&auto=format&fit=crop&q=80',
-    'iso 9001':           'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
-    // Mantenimiento (TPM, mecánico, OEE)
+    'iper':               'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'riesgo':             'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
+    'calidad':            'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    // Mantenimiento
+    'mantenimiento':      'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
     'tpm':                'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
-    'mantenimiento':      'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=900&auto=format&fit=crop&q=80',
-    'oee':                'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=900&auto=format&fit=crop&q=80',
+    'oee':                'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
     'mecánic':            'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
-    // Liderazgo industrial
-    'liderazgo':          'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=80',
-    'ingeniería':         'https://images.unsplash.com/photo-1581092794074-0c81d266c0d8?w=900&auto=format&fit=crop&q=80',
-    'industrial':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80'
+    // Industrial genérico
+    'industrial':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'ingeniería':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80'
   };
 
-  // Portada por defecto (planta industrial genérica de calidad)
+  // Portada por defecto (planta industrial moderna · verificada)
   const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80';
 
   function getPortadaCurso(curso){
     if (curso.portada) return curso.portada;
     const titulo = (curso.titulo || '').toLowerCase();
-    // Las keywords se evalúan en orden; las más específicas primero
     for (const [keyword, url] of Object.entries(PORTADAS_CURSOS)) {
       if (titulo.includes(keyword)) return url;
     }
@@ -4301,24 +4455,61 @@ const Sections = (function(){
         </div>
       `;
     } else {
-      // Sesiones (clases) reales — abren en visor embebido (no en pestaña nueva)
+      // Sesiones (clases) reales — con progreso por clase
+      const cursoId = c.id;
+      const progCurso = getProgresoCurso(cursoId);
+      const totalSes = c.sesiones ? c.sesiones.length : 0;
+      const pct = progresoCursoPct(cursoId, totalSes);
+
       if (c.sesiones && c.sesiones.length > 0) {
         bodyContent += `
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px;">📺 Clases del curso</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;">📺 Clases del curso</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${pct===100?'var(--success)':'var(--primary)'};font-weight:700;">${progCurso.clasesVistas.length}/${totalSes} · ${pct}%</div>
+          </div>
+          <div style="height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;margin-bottom:14px;">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--primary),var(--highlight));border-radius:3px;transition:width .4s ease;"></div>
+          </div>
           <div class="modulos-list" style="margin-bottom:18px;">
             ${c.sesiones.map((s, i) => {
               const titEsc = (s.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
               const urlEsc = (s.url || '').replace(/'/g, "\\'");
+              const numSes = s.numero || (i+1);
+              const vista = progCurso.clasesVistas.includes(numSes);
+              const desblok = claseDesbloqueada(cursoId, i, c.sesiones);
+
+              if (vista) {
+                return `
+                <div class="modulo" onclick="window.abrirVisor('${urlEsc}', '${titEsc}', '${cursoId}', ${numSes})" style="cursor:pointer;background:color-mix(in srgb,var(--success) 8%,var(--surface-2));border-color:color-mix(in srgb,var(--success) 30%,transparent);" data-bypass-paywall="true">
+                  <div class="modulo__num" style="background:var(--success);color:#0E0A06;">✓</div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="modulo__title">${s.titulo}</div>
+                    <div class="modulo__meta" style="color:var(--success);">Vista · click para repasar</div>
+                  </div>
+                  <svg class="ic" style="color:var(--success);"><use href="#i-arrow-right"/></svg>
+                </div>`;
+              }
+              if (desblok) {
+                return `
+                <div class="modulo" onclick="window.abrirVisor('${urlEsc}', '${titEsc}', '${cursoId}', ${numSes})" style="cursor:pointer;" data-bypass-paywall="true">
+                  <div class="modulo__num">${numSes}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="modulo__title">${s.titulo}</div>
+                    <div class="modulo__meta">▶ Click para ver la clase</div>
+                  </div>
+                  <svg class="ic" style="color:var(--primary);"><use href="#i-arrow-right"/></svg>
+                </div>`;
+              }
+              // Bloqueada
               return `
-              <div class="modulo" onclick="window.abrirVisor('${urlEsc}', '${titEsc}')" style="cursor:pointer;" data-bypass-paywall="true">
-                <div class="modulo__num">${s.numero || (i+1)}</div>
-                <div style="flex:1;min-width:0;">
-                  <div class="modulo__title">${s.titulo}</div>
-                  <div class="modulo__meta">▶ Click para ver la clase</div>
-                </div>
-                <svg class="ic" style="color:var(--primary);"><use href="#i-arrow-right"/></svg>
-              </div>
-            `;}).join('')}
+                <div class="modulo" style="cursor:not-allowed;opacity:.55;">
+                  <div class="modulo__num" style="background:var(--surface-3);color:var(--text-3);">🔒</div>
+                  <div style="flex:1;min-width:0;">
+                    <div class="modulo__title" style="color:var(--text-2);">${s.titulo}</div>
+                    <div class="modulo__meta">Marca como vista la clase anterior para desbloquear</div>
+                  </div>
+                </div>`;
+            }).join('')}
           </div>
         `;
       } else {
@@ -6219,6 +6410,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div class="visor-header">
       <div class="visor-title" id="visorTitle">Cargando...</div>
       <div class="visor-actions">
+        <button id="visorMarkAsViewed" class="visor-btn visor-btn--mark" style="display:none;padding:0 14px;width:auto;gap:7px;font-weight:700;font-size:12.5px;letter-spacing:-.1px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          Marcar como vista
+        </button>
         <a id="visorDownload" class="visor-btn visor-btn--ghost" href="#" target="_blank" rel="noopener" title="Abrir en pestaña nueva">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>
         </a>
@@ -6245,6 +6440,42 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .visor-frame-wrap{flex:1;background:#000;position:relative;overflow:hidden}
 .visor-frame{width:100%;height:100%;border:0;background:#000}
 @media (max-width:560px){.visor-overlay{padding:8px}.visor-container{height:94vh;border-radius:14px}.visor-header{padding:11px 14px}}
+</style>
+<style>
+/* ═══ Splash de curso completado ═══ */
+#splash-completado{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;animation:splashFadeIn .35s ease}
+.splash-cmp__overlay{position:absolute;inset:0;background:rgba(7,5,3,.92);backdrop-filter:blur(10px)}
+.splash-cmp__box{position:relative;width:100%;max-width:560px;background:linear-gradient(160deg,#1A130D,#0E0A06);border:1px solid rgba(255,179,71,.22);border-radius:24px;padding:36px 32px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 60px color-mix(in srgb,var(--primary) 20%,transparent);animation:splashPopIn .55s cubic-bezier(.22,1.4,.36,1)}
+.splash-cmp__close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease}
+.splash-cmp__close:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.splash-cmp__confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:24px}
+.splash-cmp__confetti-bit{position:absolute;top:50%;left:50%;width:8px;height:8px;background:var(--c);border-radius:2px;animation:confettiBurst 1.4s cubic-bezier(.2,.8,.25,1) var(--d) forwards;opacity:0}
+@keyframes confettiBurst{0%{opacity:0;transform:translate(0,0) rotate(0deg) scale(0)}10%{opacity:1;transform:translate(0,0) rotate(45deg) scale(1)}100%{opacity:0;transform:translate(var(--x),300px) rotate(720deg) scale(.5)}}
+.splash-cmp__icon{font-size:64px;line-height:1;margin-bottom:8px;animation:bounce 2s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.splash-cmp__kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;color:var(--primary);margin-bottom:10px}
+.splash-cmp__title{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:10px;color:var(--text)}
+.splash-cmp__desc{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:22px}
+.splash-cmp__desc strong{color:var(--text);font-weight:700}
+.splash-cmp__cert{background:linear-gradient(180deg,#F4EFE3,#E8DFCB);border-radius:14px;padding:22px 24px;margin-bottom:22px;color:#0E0A06;text-align:left;box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 3px #FF7A2D,inset 0 0 0 4px rgba(0,0,0,.05);position:relative;overflow:hidden}
+.splash-cmp__cert::before{content:"";position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,122,45,.18),transparent 70%);pointer-events:none}
+.splash-cmp__cert-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,.1);margin-bottom:14px}
+.splash-cmp__cert-logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.3px;color:#0E0A06}
+.splash-cmp__cert-folio{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.2px;color:rgba(14,10,6,.55);font-weight:600;background:rgba(255,122,45,.12);padding:3px 8px;border-radius:5px}
+.splash-cmp__cert-body{text-align:center}
+.splash-cmp__cert-pre{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(14,10,6,.5);font-weight:600;margin-bottom:6px}
+.splash-cmp__cert-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.3px;color:#0E0A06;margin-bottom:12px;padding-bottom:8px;border-bottom:1px dashed rgba(14,10,6,.2)}
+.splash-cmp__cert-curso{font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;font-weight:700;color:#0E0A06;line-height:1.3;margin-bottom:10px}
+.splash-cmp__cert-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(14,10,6,.5);letter-spacing:.5px}
+.splash-cmp__actions{display:flex;flex-direction:column;gap:8px}
+.splash-cmp__btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:12px;font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:all .15s ease;letter-spacing:-.1px}
+.splash-cmp__btn--primary{background:linear-gradient(135deg,var(--primary),var(--highlight));color:#0E0A06;box-shadow:0 8px 24px color-mix(in srgb,var(--primary) 28%,transparent)}
+.splash-cmp__btn--primary:hover{transform:translateY(-1px)}
+.splash-cmp__btn--ghost{background:transparent;color:var(--text);border-color:rgba(255,255,255,.14)}
+.splash-cmp__btn--ghost:hover{background:rgba(255,255,255,.04)}
+@keyframes splashFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes splashPopIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@media (max-width:560px){.splash-cmp__box{padding:24px 20px;border-radius:18px}.splash-cmp__title{font-size:22px}.splash-cmp__cert{padding:16px 18px}.splash-cmp__cert-name{font-size:16px}}
 </style>
 </body>
 </html>
