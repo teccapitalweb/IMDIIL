@@ -2933,7 +2933,7 @@ window.__resetPassword = async () => {
   <main class="main">
     <header class="topbar">
       <div class="topbar__left">
-        <span class="pill" id="topbar-pill"><svg class="ic"><use href="#i-crown"/></svg><span id="topbar-pill-text">Membresía activa</span></span>
+        <span class="pill" id="topbar-pill"><svg class="ic"><use href="#i-user"/></svg><span id="topbar-pill-text">Ingeniero</span></span>
       </div>
       <div class="topbar__right">
         <button class="icon-btn" id="btn-notif" aria-label="Notificaciones">
@@ -3166,12 +3166,12 @@ window.__resetPassword = async () => {
   <div class="mobile-drawer__panel">
     <div class="mobile-drawer__header">
       <div class="mobile-drawer__brand">
-        <div class="brand__logo" style="width:38px;height:38px;border-radius:9px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);">
+        <div class="brand__logo" style="width:38px;height:38px;border-radius:9px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);flex-shrink:0;">
           <img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:28px;height:28px;object-fit:contain;display:block;">
         </div>
-        <div>
-          <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1.1;">IMDIIL</div>
-          <div class="brand__plan" id="drawer-plan-badge" style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--primary);font-weight:700;margin-top:3px;">Sin membresía</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1;">IMDIIL</div>
+          <div class="brand__plan" id="drawer-plan-badge" style="font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary);font-weight:700;padding:3px 7px;background:color-mix(in srgb,var(--primary) 14%,transparent);border-radius:5px;line-height:1;">Sin membresía</div>
         </div>
       </div>
       <button class="mobile-drawer__close" id="mobile-drawer-close" aria-label="Cerrar">
@@ -6847,42 +6847,54 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const drawerPlan = document.getElementById('drawer-plan-badge');
     [brandPlan, drawerPlan].forEach(el => {
       if (!el) return;
+      const isDrawer = el.id === 'drawer-plan-badge';
       if (S.modo === 'vip') {
         const planLabel = (PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name;
         el.textContent = planLabel;
-        el.style.color = '';
+        if (isDrawer) {
+          el.style.color = 'var(--primary)';
+          el.style.background = 'color-mix(in srgb,var(--primary) 14%,transparent)';
+        } else {
+          el.style.color = '';
+        }
       } else if (S.modo === 'invitado') {
         el.textContent = 'Modo demo';
-        el.style.color = '#FFB347';
+        if (isDrawer) {
+          el.style.color = '#FFB347';
+          el.style.background = 'color-mix(in srgb,#FFB347 14%,transparent)';
+        } else {
+          el.style.color = '#FFB347';
+        }
       } else { // sin-membresia
         el.textContent = 'Sin membresía';
-        el.style.color = 'var(--text-3)';
+        if (isDrawer) {
+          el.style.color = 'var(--text-3)';
+          el.style.background = 'color-mix(in srgb,var(--text-3) 14%,transparent)';
+        } else {
+          el.style.color = 'var(--text-3)';
+        }
       }
     });
 
-    // ─── Pill del topbar (icono coronita arriba) · MISMO mensaje que sidebar ───
+    // ─── Pill del topbar (icono coronita arriba) · muestra NOMBRE del usuario ───
+    // (el estado de membresía ya se comunica en el banner naranja superior + drawer)
     const topbarPill = document.getElementById('topbar-pill');
     const topbarPillText = document.getElementById('topbar-pill-text');
     if (topbarPill && topbarPillText) {
-      if (S.modo === 'vip') {
-        topbarPillText.textContent = 'Membresía activa';
-        topbarPill.style.background = '';
-        topbarPill.style.color = '';
-        topbarPill.style.borderColor = '';
-        topbarPill.style.display = 'inline-flex';
-      } else if (S.modo === 'invitado') {
-        topbarPillText.textContent = 'Modo demo · 5 min';
+      if (S.modo === 'invitado') {
+        topbarPillText.textContent = 'Modo demo';
         topbarPill.style.background = 'color-mix(in srgb, #FFB347 14%, transparent)';
         topbarPill.style.color = '#FFB347';
         topbarPill.style.borderColor = 'color-mix(in srgb, #FFB347 30%, transparent)';
-        topbarPill.style.display = 'inline-flex';
-      } else { // sin-membresia
-        topbarPillText.textContent = 'Sin membresía';
-        topbarPill.style.background = 'color-mix(in srgb, var(--text-3) 12%, transparent)';
-        topbarPill.style.color = 'var(--text-3)';
-        topbarPill.style.borderColor = 'color-mix(in srgb, var(--text-3) 24%, transparent)';
-        topbarPill.style.display = 'inline-flex';
+      } else {
+        // Para VIP y sin-membresía: mostrar el nombre del usuario
+        const firstName = (S.displayName || S.email?.split('@')[0] || 'Ingeniero').split(' ')[0];
+        topbarPillText.textContent = firstName;
+        topbarPill.style.background = '';
+        topbarPill.style.color = '';
+        topbarPill.style.borderColor = '';
       }
+      topbarPill.style.display = 'inline-flex';
     }
 
     // 2. Saludo del banner inicio
