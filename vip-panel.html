@@ -2680,6 +2680,7 @@ window.UserState = {
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -2692,6 +2693,8 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+window.__db = db;
 setPersistence(auth, browserLocalPersistence);
 
 // ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
@@ -2742,6 +2745,20 @@ if (window.__isDemoMode) {
       } catch(e) {
         console.warn('Backend Railway no responde · modo permisivo: sin-membresia');
         window.UserState.modo = 'sin-membresia';
+      }
+
+      // ─── Leer doc miembros/{uid} de Firestore para obtener fechaAlta ───
+      // (para el desbloqueo progresivo de cursos como Sinergia)
+      try {
+        const memberSnap = await getDoc(doc(db, 'miembros', user.uid));
+        if (memberSnap.exists()) {
+          window.memberData = memberSnap.data();
+        } else {
+          window.memberData = null;
+        }
+      } catch(e) {
+        console.warn('No se pudo leer miembros/' + user.uid, e.message);
+        window.memberData = null;
       }
     }
 
@@ -3791,21 +3808,148 @@ const Sections = (function(){
     'Maestría':'i-crown'
   };
 
-  /* SEED DATA */
-  const cursos = [
-    {id:'c1',titulo:'NOM-019-STPS · Comisiones de seguridad e higiene',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:12,modulos:8,progreso:65,status:'progreso',desc:'Constituir, organizar y operar legalmente la comisión de seguridad e higiene según la NOM-019-STPS-2011.'},
-    {id:'c2',titulo:'Indicadores logísticos: OTIF, Fill Rate y rotación',area:'Logística',nivel:'Avanzado',instructor:'Ing. Carlos Vidal',horas:10,modulos:6,progreso:30,status:'progreso',desc:'KPIs críticos de cadena de suministro: medición, interpretación y mejora con casos reales.'},
-    {id:'c3',titulo:'Mantenimiento productivo total (TPM)',area:'Mantenimiento',nivel:'Intermedio',instructor:'Ing. Patricia Solís',horas:14,modulos:9,progreso:12,status:'progreso',desc:'Los 8 pilares del TPM para reducir paros no programados y mejorar OEE.'},
-    {id:'c4',titulo:'NOM-001-STPS · Edificios, locales e instalaciones',area:'Seguridad',nivel:'Básico',instructor:'Ing. Roberto Méndez',horas:8,modulos:5,progreso:100,status:'completado',desc:'Requisitos mínimos de seguridad en edificios y áreas de los centros de trabajo.',completadoEn:'2026-04-18'},
-    {id:'c5',titulo:'Lean Manufacturing para supervisores',area:'Calidad',nivel:'Intermedio',instructor:'Ing. María López',horas:16,modulos:10,progreso:100,status:'completado',desc:'Las 7 mudas, VSM, 5S, kaizen y kanban aplicados al piso de planta.',completadoEn:'2026-03-22'},
-    {id:'c6',titulo:'NOM-029-STPS · Trabajos eléctricos seguros',area:'Seguridad',nivel:'Avanzado',instructor:'Ing. Roberto Méndez',horas:18,modulos:11,progreso:0,status:'catalogo',desc:'LOTO, evaluación de riesgo eléctrico y EPP especializado para trabajos en instalaciones.'},
-    {id:'c7',titulo:'Six Sigma Green Belt',area:'Calidad',nivel:'Avanzado',instructor:'Ing. María López',horas:40,modulos:24,progreso:0,status:'catalogo',desc:'Certificación Green Belt con metodología DMAIC y proyecto real obligatorio.'},
-    {id:'c8',titulo:'WMS y gestión de almacenes 4.0',area:'Logística',nivel:'Intermedio',instructor:'Ing. Carlos Vidal',horas:12,modulos:8,progreso:0,status:'catalogo',desc:'Layout, slotting, picking strategies, sistema WMS y digitalización.'},
-    {id:'c9',titulo:'ISO 45001 · Sistema de gestión SST',area:'Seguridad',nivel:'Avanzado',instructor:'Ing. Patricia Solís',horas:24,modulos:14,progreso:0,status:'catalogo',desc:'Implementación del sistema de gestión SST según ISO 45001:2018.'},
-    {id:'c10',titulo:'Análisis modal de fallos (AMEF)',area:'Calidad',nivel:'Intermedio',instructor:'Ing. María López',horas:10,modulos:7,progreso:0,status:'catalogo',desc:'AMEF de diseño y proceso, RPN, severidad, ocurrencia y detección.'},
-    {id:'c11',titulo:'Supervisión efectiva en planta',area:'Mantenimiento',nivel:'Básico',instructor:'Ing. Patricia Solís',horas:14,modulos:10,progreso:0,status:'catalogo',desc:'Liderazgo, comunicación y técnicas de supervisión para jefes de turno.'},
-    {id:'c12',titulo:'NOM-035-STPS · Factores de riesgo psicosocial',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:10,modulos:6,progreso:0,status:'catalogo',desc:'Identificación, análisis y prevención de factores de riesgo psicosocial.'}
-  ];
+  /* ═══════════════════════════════════════════════════════════════════
+     CURSOS · sistema dinámico desde Firestore (flujo Sinergia)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // Array global de cursos cargados desde Firestore
+  let cursos = [];
+  let _cursosLoaded = false;
+  let _cursosLoading = false;
+
+  // ─── Lógica de desbloqueo progresivo (copiada de Sinergia) ───
+  // Un curso se desbloquea cada 10 días desde fechaAlta del miembro
+  // EXCEPCIÓN: si disponibleSiempre === true, visible desde día 1
+  function calcularDiasMembresia(){
+    const md = window.memberData;
+    if (!md) return 0;
+    const fecha = md.fechaAlta?.toDate
+      ? md.fechaAlta.toDate()
+      : (md.fechaAlta ? new Date(md.fechaAlta) : null);
+    if (!fecha) return 0;
+    const dias = Math.floor((Date.now() - fecha.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, dias);
+  }
+
+  function cursoDesbloqueado(indexCurso, curso){
+    // Admins y modo demo ven todo (para que validen contenido)
+    if (window.UserState?.isAdmin) return true;
+    if (curso && curso.disponibleSiempre === true) return true;
+    if (curso && curso.marcarProximamente === true) return false;
+    const dias = calcularDiasMembresia();
+    return dias >= (indexCurso * 10);
+  }
+
+  function diasParaDesbloquear(indexCurso, curso){
+    if (window.UserState?.isAdmin) return 0;
+    if (curso && curso.disponibleSiempre === true) return 0;
+    const dias = calcularDiasMembresia();
+    return Math.max(0, (indexCurso * 10) - dias);
+  }
+
+  // ─── Portadas automáticas para cursos según el título ───
+  // (adaptado a temas de ingeniería industrial / IMDIIL)
+  const PORTADAS_CURSOS = {
+    // Seguridad industrial
+    'nom-019':       'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=800&auto=format&fit=crop&q=80',
+    'nom-001':       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&auto=format&fit=crop&q=80',
+    'nom-029':       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&auto=format&fit=crop&q=80',
+    'nom-017':       'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=800&auto=format&fit=crop&q=80',
+    'nom-035':       'https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=800&auto=format&fit=crop&q=80',
+    'iso 45001':     'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
+    'seguridad':     'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&auto=format&fit=crop&q=80',
+    'eléctric':      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&auto=format&fit=crop&q=80',
+    'iper':          'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&auto=format&fit=crop&q=80',
+    'riesgo':        'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&auto=format&fit=crop&q=80',
+    // Logística y almacenes
+    'logístic':      'https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&auto=format&fit=crop&q=80',
+    'almacen':       'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80',
+    'wms':           'https://images.unsplash.com/photo-1601158935942-52255782d322?w=800&auto=format&fit=crop&q=80',
+    'inventario':    'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80',
+    'cadena':        'https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&auto=format&fit=crop&q=80',
+    'transporte':    'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=80',
+    // Calidad y procesos
+    'lean':          'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=800&auto=format&fit=crop&q=80',
+    'six sigma':     'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=80',
+    'amef':          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
+    'calidad':       'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop&q=80',
+    '5s':            'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=800&auto=format&fit=crop&q=80',
+    'iso 9001':      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
+    // Mantenimiento
+    'tpm':           'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=800&auto=format&fit=crop&q=80',
+    'mantenimiento': 'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=800&auto=format&fit=crop&q=80',
+    'oee':           'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&auto=format&fit=crop&q=80',
+    'producción':    'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80',
+    'mecánic':       'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=800&auto=format&fit=crop&q=80',
+    // Supervisión y liderazgo
+    'supervisi':     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&auto=format&fit=crop&q=80',
+    'liderazgo':     'https://images.unsplash.com/photo-1552581234-26160f608093?w=800&auto=format&fit=crop&q=80',
+    'planta':        'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80',
+    'ingeniería':    'https://images.unsplash.com/photo-1581092794074-0c81d266c0d8?w=800&auto=format&fit=crop&q=80',
+    'industrial':    'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80'
+  };
+
+  // Portada por defecto (industrial genérica)
+  const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1581092794074-0c81d266c0d8?w=800&auto=format&fit=crop&q=80';
+
+  function getPortadaCurso(curso){
+    // Si el curso tiene portada custom, úsala
+    if (curso.portada) return curso.portada;
+    const titulo = (curso.titulo || '').toLowerCase();
+    // Buscar la primera keyword que matche en el título
+    for (const [keyword, url] of Object.entries(PORTADAS_CURSOS)) {
+      if (titulo.includes(keyword)) return url;
+    }
+    return PORTADA_DEFAULT;
+  }
+
+  // ─── Cargar cursos desde Firestore ───
+  async function cargarCursosFirestore(){
+    if (_cursosLoading) return;
+    _cursosLoading = true;
+    try {
+      const db = window.__db;
+      if (!db) throw new Error('Firestore no inicializado');
+      const q = query(collection(db, 'cursos'), orderBy('orden', 'asc'));
+      const snap = await getDocs(q);
+      cursos = snap.docs.map((d, i) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          titulo: data.titulo || 'Sin título',
+          descripcion: data.descripcion || data.desc || '',
+          desc: data.descripcion || data.desc || '',
+          emoji: data.emoji || '📚',
+          // Campos ricos opcionales (modelo híbrido)
+          area: data.area || 'General',
+          nivel: data.nivel || 'Intermedio',
+          instructor: data.instructor || 'Equipo IMDIIL',
+          horas: data.horas || (data.sesiones?.length * 1.5) || 0,
+          modulos: data.sesiones?.length || data.modulos || 0,
+          // Sesiones (clases) y materiales (PDFs)
+          sesiones: Array.isArray(data.sesiones) ? data.sesiones : [],
+          materiales: Array.isArray(data.materiales) ? data.materiales : [],
+          // Flags de desbloqueo
+          disponibleSiempre: data.disponibleSiempre === true,
+          marcarProximamente: data.marcarProximamente === true,
+          orden: data.orden || (i + 1),
+          // Portada automática
+          portada: data.portada || getPortadaCurso({ titulo: data.titulo, portada: data.portada }),
+          // Compatibilidad con UI vieja
+          status: 'catalogo',
+          progreso: 0
+        };
+      });
+      _cursosLoaded = true;
+    } catch (e) {
+      console.warn('No se pudieron cargar cursos de Firestore:', e.message);
+      cursos = [];
+      _cursosLoaded = true;
+    } finally {
+      _cursosLoading = false;
+    }
+  }
+  window.__cargarCursosFirestore = cargarCursosFirestore;
 
   const certificados = [
     {id:'cert1',cursoId:'c4',titulo:'NOM-001-STPS · Edificios, locales e instalaciones',folio:'IMDIIL-2026-48201',emitido:'2026-04-18',horas:8,area:'Seguridad',instructor:'Ing. Roberto Méndez',calificacion:96},
@@ -3942,10 +4086,10 @@ const Sections = (function(){
           </div>
           <select class="select" id="cur-area" style="max-width:200px;">
             <option value="todas" ${cursosState.area==='todas'?'selected':''}>Todas las áreas</option>
-            <option value="Seguridad" ${cursosState.area==='Seguridad'?'selected':''}>Seguridad</option>
-            <option value="Logística" ${cursosState.area==='Logística'?'selected':''}>Logística</option>
-            <option value="Calidad" ${cursosState.area==='Calidad'?'selected':''}>Calidad</option>
-            <option value="Mantenimiento" ${cursosState.area==='Mantenimiento'?'selected':''}>Mantenimiento</option>
+            ${(function(){
+              const set = new Set(cursos.map(c=>c.area).filter(Boolean));
+              return Array.from(set).sort().map(a=>`<option value="${a}" ${cursosState.area===a?'selected':''}>${a}</option>`).join('');
+            })()}
           </select>
         </div>
         <div id="cur-list"></div>
@@ -3954,40 +4098,62 @@ const Sections = (function(){
     container.querySelectorAll('[data-curtab]').forEach(b=>b.addEventListener('click',()=>{cursosState.tab=b.dataset.curtab;renderCursos(container);}));
     container.querySelector('#cur-search').addEventListener('input',e=>{cursosState.search=e.target.value;renderCursosList();});
     container.querySelector('#cur-area').addEventListener('change',e=>{cursosState.area=e.target.value;renderCursosList();});
-    renderCursosList();
+
+    // ─── Cargar cursos de Firestore si aún no se cargaron ───
+    if (!_cursosLoaded && !_cursosLoading) {
+      const list = document.getElementById('cur-list');
+      if (list) list.innerHTML = `<div class="empty-state"><div class="empty-state__icon"><div style="width:42px;height:42px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--primary);animation:spin .8s linear infinite;"></div></div><h3>Cargando cursos…</h3></div>`;
+      cargarCursosFirestore().then(() => renderCursosList());
+    } else {
+      renderCursosList();
+    }
   }
 
   function renderCursosList(){
     const list=document.getElementById('cur-list');if(!list)return;
+    // Empty state: si no hay cursos publicados en Firestore todavía
+    if (cursos.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-book"/></svg></div>
+        <h3>Aún no hay cursos publicados</h3>
+        <p>Estamos preparando los primeros cursos de IMDIIL. Apenas se publiquen, los verás aquí. Síguenos en WhatsApp para enterarte primero.</p>
+        <a class="btn btn--ghost" href="https://wa.me/5212211832603" target="_blank" rel="noopener" data-bypass-paywall="true" style="margin-top:14px;"><svg class="ic"><use href="#i-whatsapp"/></svg>Avísame por WhatsApp</a>
+      </div>`;
+      return;
+    }
     const items=cursosFiltrados();
     if(items.length===0){
       list.innerHTML=`<div class="empty-state"><div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-book"/></svg></div><h3>Sin resultados</h3><p>Cambia el filtro o búsqueda para ver más cursos.</p></div>`;
       return;
     }
-    list.innerHTML=`<div class="cursos-grid">${items.map(c=>`
-      <article class="curso-card" data-cid="${c.id}" tabindex="0" style="--area-color:${COLOR_AREA[c.area]};">
-        <div class="curso-card__cover">
-          <svg class="ic"><use href="#${ICON_AREA[c.area]}"/></svg>
-          ${c.status==='completado'?'<span class="curso-card__cover-badge">✓ COMPLETADO</span>':''}
-          ${c.status==='progreso'?'<span class="curso-card__cover-badge">EN PROGRESO</span>':''}
+    list.innerHTML=`<div class="cursos-grid">${items.map((c, idx)=>{
+      const cursoIdx = cursos.findIndex(x => x.id === c.id);
+      const desbloqueado = cursoDesbloqueado(cursoIdx, c);
+      const diasFalta = diasParaDesbloquear(cursoIdx, c);
+      const portada = c.portada || PORTADA_DEFAULT;
+      return `
+      <article class="curso-card ${!desbloqueado?'curso-card--locked':''}" data-cid="${c.id}" tabindex="0" style="--area-color:${COLOR_AREA[c.area]||'#FF7A2D'};">
+        <div class="curso-card__cover" style="background-image:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.55)),url('${portada}');background-size:cover;background-position:center;">
+          <svg class="ic" style="opacity:.85;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));"><use href="#${ICON_AREA[c.area]||'i-book'}"/></svg>
+          ${c.disponibleSiempre ? '<span class="curso-card__cover-badge" style="background:var(--success);color:#0E0A06;">DISPONIBLE</span>' : ''}
+          ${!desbloqueado && diasFalta > 0 ? `<span class="curso-card__cover-badge" style="background:rgba(14,10,6,.85);color:var(--primary);border:1px solid var(--primary);">🔒 Se desbloquea en ${diasFalta} día${diasFalta!==1?'s':''}</span>` : ''}
         </div>
         <div class="curso-card__body">
           <div class="curso-card__tags">
-            <span class="tag tag--soon" style="color:${COLOR_AREA[c.area]};border-color:${COLOR_AREA[c.area]}40;background:${COLOR_AREA[c.area]}14;">${c.area}</span>
+            <span class="tag tag--soon" style="color:${COLOR_AREA[c.area]||'#FF7A2D'};border-color:${(COLOR_AREA[c.area]||'#FF7A2D')}40;background:${(COLOR_AREA[c.area]||'#FF7A2D')}14;">${c.area}</span>
             <span class="tag tag--soon">${c.nivel}</span>
           </div>
           <h3 class="curso-card__title">${c.titulo}</h3>
-          <p class="curso-card__desc">${c.desc}</p>
+          <p class="curso-card__desc">${c.desc||c.descripcion||''}</p>
           <div class="curso-card__meta">
-            <span><svg class="ic"><use href="#i-user"/></svg>${c.instructor.split(' ').slice(-1)[0]}</span>
-            <span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h</span>
-            <span><svg class="ic"><use href="#i-book"/></svg>${c.modulos} mód.</span>
+            ${c.instructor ? `<span><svg class="ic"><use href="#i-user"/></svg>${c.instructor.split(' ').slice(-1)[0]}</span>` : ''}
+            ${c.horas ? `<span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h</span>` : ''}
+            ${c.sesiones?.length ? `<span><svg class="ic"><use href="#i-book"/></svg>${c.sesiones.length} clase${c.sesiones.length!==1?'s':''}</span>` : ''}
+            ${c.materiales?.length ? `<span><svg class="ic"><use href="#i-news"/></svg>${c.materiales.length} PDF${c.materiales.length!==1?'s':''}</span>` : ''}
           </div>
-          ${c.status==='progreso'?`<div class="curso-card__progress"><div class="curso-card__progress-bar"><div class="curso-card__progress-fill" style="width:${c.progreso}%"></div></div><span class="curso-card__progress-pct">${c.progreso}%</span></div>`:''}
-          ${c.status==='completado'?`<div class="curso-card__progress"><div class="curso-card__progress-bar"><div class="curso-card__progress-fill" style="width:100%;background:var(--success);"></div></div><span class="curso-card__progress-pct" style="color:var(--success);">100%</span></div>`:''}
         </div>
       </article>
-    `).join('')}</div>`;
+    `;}).join('')}</div>`;
     list.querySelectorAll('.curso-card').forEach(card=>{
       card.addEventListener('click',()=>openCursoDetalle(card.dataset.cid));
       card.addEventListener('keydown',e=>{if(e.key==='Enter')openCursoDetalle(card.dataset.cid);});
@@ -3996,37 +4162,173 @@ const Sections = (function(){
 
   function openCursoDetalle(id){
     const c=cursos.find(x=>x.id===id);if(!c)return;
-    const modulos=[];
-    for(let i=1;i<=c.modulos;i++){
-      modulos.push({num:i,titulo:moduloTitulo(c,i),duracion:Math.round(c.horas/c.modulos*60),completado:c.progreso>=(i/c.modulos)*100});
-    }
-    const body=`
-      <div class="detail-hero" style="--area-color:${COLOR_AREA[c.area]};">
-        <div class="detail-hero__icon"><svg class="ic ic--lg"><use href="#${ICON_AREA[c.area]}"/></svg></div>
-        <div style="flex:1;min-width:0">
-          <div class="detail-hero__tags">
-            <span class="tag tag--soon" style="color:${COLOR_AREA[c.area]};border-color:${COLOR_AREA[c.area]}40;background:${COLOR_AREA[c.area]}14;">${c.area}</span>
-            <span class="tag tag--soon">${c.nivel}</span>
-          </div>
-          <div class="detail-hero__title">${c.titulo}</div>
-          <div class="detail-meta"><span><svg class="ic"><use href="#i-user"/></svg>${c.instructor}</span><span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h · ${c.modulos} módulos</span></div>
+    const cursoIdx = cursos.findIndex(x => x.id === id);
+    const desbloqueado = cursoDesbloqueado(cursoIdx, c);
+    const diasFalta = diasParaDesbloquear(cursoIdx, c);
+    const portada = c.portada || PORTADA_DEFAULT;
+    const colorArea = COLOR_AREA[c.area] || '#FF7A2D';
+    const iconArea = ICON_AREA[c.area] || 'i-book';
+
+    // Hero con imagen de portada de fondo
+    const heroBg = `background:linear-gradient(135deg,rgba(0,0,0,.35),rgba(0,0,0,.7)),url('${portada}');background-size:cover;background-position:center;border-radius:14px;padding:24px;color:#fff;margin-bottom:18px;`;
+
+    // Body con sesiones (clases) y materiales reales
+    let bodyContent = `
+      <div style="${heroBg}">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <span class="tag tag--soon" style="color:#fff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);">${c.area}</span>
+          <span class="tag tag--soon" style="color:#fff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.12);">${c.nivel}</span>
+          ${c.disponibleSiempre ? `<span class="tag tag--soon" style="color:#0E0A06;border-color:var(--success);background:var(--success);font-weight:700;">DISPONIBLE</span>` : ''}
+        </div>
+        <h2 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-bottom:8px;">${c.titulo}</h2>
+        <div style="display:flex;gap:14px;font-size:12px;opacity:.9;flex-wrap:wrap;">
+          ${c.instructor ? `<span><svg class="ic" style="color:#fff;"><use href="#i-user"/></svg> ${c.instructor}</span>` : ''}
+          ${c.horas ? `<span><svg class="ic" style="color:#fff;"><use href="#i-clock"/></svg> ${c.horas}h</span>` : ''}
+          ${c.sesiones?.length ? `<span><svg class="ic" style="color:#fff;"><use href="#i-book"/></svg> ${c.sesiones.length} clase${c.sesiones.length!==1?'s':''}</span>` : ''}
         </div>
       </div>
-      <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px;">${c.desc}</p>
-      ${c.status==='progreso'?`<div style="background:var(--surface-2);border-radius:12px;padding:14px 18px;margin-bottom:16px;"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px;">Tu progreso</div><div style="display:flex;align-items:center;gap:12px;"><div style="font-size:24px;font-weight:600;color:var(--primary);font-feature-settings:'tnum' 1;">${c.progreso}<span style="font-size:14px;opacity:.6;">%</span></div><div style="flex:1;height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${c.progreso}%;background:linear-gradient(90deg,var(--primary),var(--highlight));border-radius:3px;"></div></div></div></div>`:''}
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:8px;">Contenido del curso</div>
-      <div class="modulos-list">
-        ${modulos.map(m=>`<div class="modulo ${m.completado?'is-done':''}"><div class="modulo__num">${m.completado?'✓':m.num}</div><div style="flex:1;min-width:0;"><div class="modulo__title">${m.titulo}</div><div class="modulo__meta">${m.duracion} min</div></div></div>`).join('')}
-      </div>
+      <p style="font-size:13px;color:var(--text-2);line-height:1.65;margin-bottom:18px;">${c.descripcion || c.desc || ''}</p>
     `;
-    const footer=document.createElement('div');
-    footer.innerHTML=`<button class="btn btn--ghost" id="cd-close">Cerrar</button>${c.status==='progreso'?'<button class="btn btn--accent" id="cd-cont">Continuar viendo<svg class="ic"><use href="#i-arrow-right"/></svg></button>':c.status==='completado'?'<button class="btn btn--accent" id="cd-cert">Ver certificado<svg class="ic"><use href="#i-certificate"/></svg></button>':'<button class="btn btn--accent" id="cd-start">Empezar curso<svg class="ic"><use href="#i-arrow-right"/></svg></button>'}`;
-    const m=Modal.open({id:'curso-'+id,title:'Detalle del curso',subtitle:c.titulo.length>40?c.titulo.slice(0,40)+'…':c.titulo,icon:ICON_AREA[c.area],size:'lg',body,footer});
-    footer.querySelector('#cd-close').addEventListener('click',()=>m.close());
-    footer.querySelector('#cd-cont')?.addEventListener('click',()=>{Toast.info('Reanudando curso','Módulo '+Math.ceil(c.progreso/100*c.modulos)+' de '+c.modulos);m.close();});
-    footer.querySelector('#cd-cert')?.addEventListener('click',()=>{m.close();navigateToSection('certificados');});
-    footer.querySelector('#cd-start')?.addEventListener('click',()=>{c.status='progreso';c.progreso=5;Toast.success('Curso iniciado','Bienvenido al curso. Buen camino.');m.close();renderCursos(document.getElementById('dynamic-section'));});
+
+    // Si NO está desbloqueado, mostrar candado con días restantes
+    if (!desbloqueado) {
+      bodyContent += `
+        <div class="empty-state" style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:14px;padding:32px 24px;">
+          <div class="empty-state__icon">
+            <svg class="ic ic--xl" style="color:var(--primary);"><use href="#i-shield-check"/></svg>
+          </div>
+          <h3 style="color:var(--primary);">🔒 Este curso se desbloquea pronto</h3>
+          <p>Disponible en <strong style="color:var(--primary);">${diasFalta} día${diasFalta!==1?'s':''}</strong>. Los cursos se desbloquean progresivamente para que aproveches cada uno a fondo.</p>
+          <p style="font-size:12px;color:var(--text-3);margin-top:10px;">Si quieres acceso anticipado, contáctanos.</p>
+        </div>
+      `;
+    } else {
+      // Sesiones (clases) reales
+      if (c.sesiones && c.sesiones.length > 0) {
+        bodyContent += `
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px;">📺 Clases del curso</div>
+          <div class="modulos-list" style="margin-bottom:18px;">
+            ${c.sesiones.map((s, i) => `
+              <a class="modulo" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;cursor:pointer;" data-bypass-paywall="true">
+                <div class="modulo__num">${s.numero || (i+1)}</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="modulo__title">${s.titulo}</div>
+                  <div class="modulo__meta">▶ Ver clase</div>
+                </div>
+                <svg class="ic" style="color:var(--primary);"><use href="#i-arrow-right"/></svg>
+              </a>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        bodyContent += `
+          <div class="empty-state" style="padding:24px 16px;">
+            <p style="font-size:13px;color:var(--text-3);">Este curso aún no tiene clases publicadas. Vuelve pronto.</p>
+          </div>
+        `;
+      }
+
+      // Materiales (PDFs) del curso — con detección de tipo + expansión fancy
+      if (c.materiales && c.materiales.length > 0) {
+        // Detector de tipo según la URL
+        const tipoMat = (url) => {
+          const u = (url || '').toLowerCase();
+          if (u.includes('/presentation/')) return { lbl:'Presentación', color:'#FF7A2D', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' };
+          if (u.includes('/spreadsheets/')) return { lbl:'Excel', color:'#34D399', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>' };
+          if (u.includes('/document/')) return { lbl:'Documento', color:'#60A5FA', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>' };
+          if (u.includes('/folders/')) return { lbl:'Carpeta', color:'#FFB347', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' };
+          return { lbl:'PDF', color:'#F87171', ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' };
+        };
+
+        // Renderiza una tarjeta de material
+        const matCard = (m) => {
+          const t = tipoMat(m.url);
+          return `
+            <a href="${m.url}" target="_blank" rel="noopener" data-bypass-paywall="true" class="mat-card" style="display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;text-decoration:none;color:inherit;transition:all .18s cubic-bezier(.2,.8,.25,1);position:relative;overflow:hidden;" onmouseover="this.style.borderColor='${t.color}';this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
+              <div style="width:38px;height:38px;border-radius:9px;background:color-mix(in srgb,${t.color} 16%,transparent);color:${t.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="width:18px;height:18px;display:block;">${t.ic}</span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:600;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.titulo || 'Material del curso'}</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:${t.color};">${t.lbl}</span>
+                  <span style="font-size:11px;color:var(--text-3);">·</span>
+                  <span style="font-size:11px;color:var(--text-3);">Click para abrir</span>
+                </div>
+              </div>
+              <svg class="ic" style="color:${t.color};opacity:.7;flex-shrink:0;width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          `;
+        };
+
+        const totalMat = c.materiales.length;
+        const PREVIEW_COUNT = 3;
+
+        bodyContent += `
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px;margin-bottom:12px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;display:flex;align-items:center;gap:8px;">
+              <svg style="width:14px;height:14px;color:var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Material descargable
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--primary);font-weight:700;background:color-mix(in srgb,var(--primary) 14%,transparent);padding:3px 9px;border-radius:12px;">${totalMat} archivo${totalMat!==1?'s':''}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="mat-preview-${id}">
+            ${c.materiales.slice(0, PREVIEW_COUNT).map(matCard).join('')}
+          </div>
+        `;
+
+        // Si hay más de 3, agregar botón "Ver los X restantes" expandible inline
+        if (totalMat > PREVIEW_COUNT) {
+          const restantes = totalMat - PREVIEW_COUNT;
+          const restoHTML = c.materiales.slice(PREVIEW_COUNT).map(matCard).join('');
+          bodyContent += `
+            <div id="mat-extra-${id}" style="display:none;flex-direction:column;gap:8px;margin-top:8px;animation:slideDown .35s cubic-bezier(.2,.8,.25,1);">
+              ${restoHTML}
+            </div>
+            <button type="button" id="mat-toggle-${id}" data-bypass-paywall="true" style="margin-top:12px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 16px;background:transparent;border:1px dashed color-mix(in srgb,var(--primary) 40%,transparent);border-radius:12px;color:var(--primary);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s cubic-bezier(.2,.8,.25,1);letter-spacing:-.1px;" onmouseover="this.style.background='color-mix(in srgb,var(--primary) 10%,transparent)';this.style.borderStyle='solid';" onmouseout="this.style.background='transparent';this.style.borderStyle='dashed';">
+              <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              <span class="mat-toggle-label">Ver los ${restantes} material${restantes!==1?'es':''} restante${restantes!==1?'s':''}</span>
+            </button>
+            <style>@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}</style>
+          `;
+        }
+      }
+    }
+
+    const footer = document.createElement('div');
+    footer.innerHTML = `<button class="btn btn--ghost" id="cd-close">Cerrar</button>`;
+    const m = Modal.open({
+      id: 'curso-' + id,
+      title: 'Detalle del curso',
+      subtitle: c.titulo.length > 40 ? c.titulo.slice(0,40) + '…' : c.titulo,
+      icon: iconArea,
+      size: 'lg',
+      body: bodyContent,
+      footer
+    });
+    footer.querySelector('#cd-close').addEventListener('click', () => m.close());
+
+    // ─── Handler del toggle de materiales (Ver los X restantes / Ocultar) ───
+    setTimeout(() => {
+      const toggleBtn = document.getElementById('mat-toggle-' + id);
+      const extraBox = document.getElementById('mat-extra-' + id);
+      if (toggleBtn && extraBox) {
+        const restantes = c.materiales.length - 3;
+        toggleBtn.addEventListener('click', () => {
+          const isOpen = extraBox.style.display === 'flex';
+          if (isOpen) {
+            extraBox.style.display = 'none';
+            toggleBtn.querySelector('.mat-toggle-label').textContent = `Ver los ${restantes} material${restantes!==1?'es':''} restante${restantes!==1?'s':''}`;
+            toggleBtn.querySelector('svg').style.transform = 'rotate(0deg)';
+          } else {
+            extraBox.style.display = 'flex';
+            toggleBtn.querySelector('.mat-toggle-label').textContent = 'Ocultar material adicional';
+            toggleBtn.querySelector('svg').style.transform = 'rotate(180deg)';
+          }
+        });
+        toggleBtn.querySelector('svg').style.transition = 'transform .3s cubic-bezier(.2,.8,.25,1)';
+      }
+    }, 50);
   }
+
   function moduloTitulo(c,i){
     const g={'Seguridad':['Introducción y normativa','Identificación de peligros','Evaluación de riesgos','Controles operativos','Equipo de protección','Casos prácticos','Plan de acción','Evaluación final'],'Logística':['Fundamentos','Indicadores clave','Medición OTIF','Fill Rate avanzado','Rotación de inventario','Casos reales','Mejora continua','Evaluación'],'Calidad':['Bases de mejora continua','7 mudas','Value stream mapping','5S en planta','Kaizen y kanban','Casos prácticos','Implementación','Evaluación'],'Mantenimiento':['Introducción al TPM','Mantenimiento autónomo','Mantenimiento planeado','Capacitación','Mejora enfocada','Calidad cero','Casos prácticos','Evaluación']};
     const t=g[c.area]||g['Seguridad'];return 'Módulo '+i+': '+t[(i-1)%t.length];

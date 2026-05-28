@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Seed Cursos · IMDIIL Admin</title>
+<link rel="icon" type="image/png" href="assets/imdiil-favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══ Paleta agri-futurista warm black (IMDIIL) ═══ */
+:root{
+  --bg:#0E0A06;--bg-deep:#070503;
+  --surface:#1A130D;--surface-2:#251C13;--surface-3:#33271C;
+  --text:#F4EFE3;--text-2:#a89e8a;--text-3:#6F6555;
+  --border:rgba(255,255,255,.08);--border-2:rgba(255,255,255,.14);
+  --primary:#FF7A2D;--primary-soft:#FFB377;--primary-deep:#E85A14;
+  --highlight:#FFB347;
+  --success:#34D399;--danger:#EF4444;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:-50%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 20%,color-mix(in srgb,var(--primary) 22%,transparent),transparent 45%),
+    radial-gradient(circle at 82% 80%,color-mix(in srgb,var(--highlight) 14%,transparent),transparent 50%);
+  animation:drift 20s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(to right,rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(circle at 50% 30%,black 30%,transparent 80%);
+}
+@keyframes drift{0%{transform:translate(0,0)}100%{transform:translate(3%,-3%)}}
+
+.app{position:relative;z-index:1;max-width:640px;width:100%}
+
+/* Card principal */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:22px;padding:36px;
+  box-shadow:0 24px 72px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);
+}
+@media (max-width:560px){.card{padding:24px;border-radius:18px}}
+
+/* Brand */
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.brand__logo{
+  width:54px;height:54px;border-radius:13px;
+  background:#0E0A06;border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 8px 20px rgba(0,0,0,.4);
+}
+.brand__logo img{width:42px;height:42px;object-fit:contain}
+.brand__name{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.3px;line-height:1.1}
+.brand__sub{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--primary);font-weight:700;margin-top:4px}
+
+/* Headings */
+.hero-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.7px;line-height:1.15;margin-bottom:10px}
+.hero-title em{font-style:italic;color:var(--primary)}
+.hero-sub{font-size:14px;color:var(--text-2);line-height:1.65;margin-bottom:24px}
+
+/* Warning box */
+.warning{
+  background:color-mix(in srgb,var(--primary) 8%,var(--surface-2));
+  border:1px solid color-mix(in srgb,var(--primary) 28%,transparent);
+  border-left:3px solid var(--primary);
+  border-radius:11px;padding:14px 16px;margin-bottom:24px;
+  display:flex;gap:12px;font-size:12.5px;color:var(--text-2);line-height:1.6;
+}
+.warning__ic{color:var(--primary);font-size:16px;flex-shrink:0;line-height:1.2}
+.warning strong{color:var(--text);font-weight:600}
+
+/* Form */
+.field{margin-bottom:16px}
+.field__label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:700;margin-bottom:7px}
+.field__input{
+  width:100%;padding:13px 14px;
+  background:var(--surface-2);
+  border:1px solid var(--border-2);
+  border-radius:11px;
+  font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text);
+  transition:border-color .15s ease;
+}
+.field__input:focus{outline:none;border-color:var(--primary)}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;
+  padding:13px 22px;border-radius:12px;
+  cursor:pointer;text-decoration:none;color:inherit;
+  border:1px solid transparent;
+  transition:transform .15s ease,background .15s ease,box-shadow .2s ease;
+  white-space:nowrap;letter-spacing:-.1px;
+}
+.btn--primary{
+  background:linear-gradient(135deg,var(--primary),var(--highlight));
+  color:#0E0A06;
+  box-shadow:0 8px 24px color-mix(in srgb,var(--primary) 28%,transparent);
+}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:0 12px 32px color-mix(in srgb,var(--primary) 40%,transparent)}
+.btn--primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn--ghost{background:transparent;color:var(--text);border-color:var(--border-2)}
+.btn--ghost:hover{background:var(--surface-2)}
+.btn--block{width:100%}
+
+/* Stats grid */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.stat{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:11px;
+  padding:12px 14px;text-align:center;
+}
+.stat__num{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:var(--primary);font-feature-settings:"tnum" 1;letter-spacing:-.5px;line-height:1}
+.stat__lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-top:6px}
+
+/* Cursos list (preview) */
+.cursos-list{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:13px;
+  padding:8px;max-height:280px;overflow-y:auto;margin-bottom:20px;
+}
+.cursos-list::-webkit-scrollbar{width:7px}
+.cursos-list::-webkit-scrollbar-track{background:transparent}
+.cursos-list::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+.cur-row{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 11px;border-radius:9px;
+  transition:background .15s ease;
+}
+.cur-row + .cur-row{margin-top:2px}
+.cur-row.is-doing{background:color-mix(in srgb,var(--primary) 14%,transparent)}
+.cur-row.is-done{opacity:.7}
+.cur-row__num{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--surface-3);
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+  color:var(--text-3);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.cur-row.is-doing .cur-row__num{background:var(--primary);color:#0E0A06}
+.cur-row.is-done .cur-row__num{background:var(--success);color:#0E0A06}
+.cur-row__title{font-size:12.5px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cur-row__meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);flex-shrink:0}
+.cur-row__check{color:var(--success);font-size:14px;flex-shrink:0}
+
+/* Progress bar */
+.progress{
+  height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;
+  margin-bottom:14px;
+}
+.progress__fill{
+  height:100%;background:linear-gradient(90deg,var(--primary),var(--highlight));
+  border-radius:3px;
+  transition:width .4s cubic-bezier(.2,.8,.25,1);
+  width:0%;
+}
+
+/* Success state */
+.success-screen{text-align:center;padding:8px}
+.success-screen__ic{
+  width:88px;height:88px;border-radius:50%;
+  background:color-mix(in srgb,var(--success) 18%,transparent);
+  color:var(--success);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 22px;
+  animation:popIn .5s cubic-bezier(.2,.8,.25,1);
+}
+.success-screen__ic svg{width:42px;height:42px}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Error message */
+.alert{
+  background:color-mix(in srgb,var(--danger) 10%,var(--surface-2));
+  border:1px solid color-mix(in srgb,var(--danger) 28%,transparent);
+  border-radius:11px;padding:12px 14px;margin-bottom:16px;
+  font-size:12.5px;color:#fca5a5;line-height:1.5;
+}
+
+/* Loading spinner */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* View transitions */
+.view{display:none}
+.view.is-active{display:block;animation:fadeUp .4s cubic-bezier(.2,.8,.25,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="card">
+
+    <div class="brand">
+      <div class="brand__logo"><img src="assets/imdiil-isotipo.png" alt="IMDIIL"></div>
+      <div>
+        <div class="brand__name">IMDIIL · Seed Cursos</div>
+        <div class="brand__sub">⚠ Herramienta admin · uso único</div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW 1: LOGIN ═══ -->
+    <div class="view is-active" id="view-login">
+      <h1 class="hero-title">Iniciar sesión <em>admin</em></h1>
+      <p class="hero-sub">Esta herramienta sube los 12 cursos iniciales de IMDIIL a Firestore. Solo cuentas administrativas pueden ejecutarla.</p>
+
+      <div class="warning">
+        <span class="warning__ic">⚠</span>
+        <div>
+          <strong>Uso único.</strong> Después de ejecutarla y confirmar que los cursos están en el panel VIP, <strong>borra este archivo del repo</strong>. Esta página queda no indexada en Google pero es buena práctica eliminarla.
+        </div>
+      </div>
+
+      <div id="login-alert" style="display:none" class="alert"></div>
+
+      <div class="field">
+        <label class="field__label">Correo administrativo</label>
+        <input class="field__input" type="email" id="email" placeholder="teccapitalweb@gmail.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="field__label">Contraseña</label>
+        <input class="field__input" type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn btn--primary btn--block" id="btn-login">
+        <span class="label">Iniciar sesión</span>
+      </button>
+    </div>
+
+    <!-- ═══ VIEW 2: PREVIEW + CONFIRM ═══ -->
+    <div class="view" id="view-preview">
+      <h1 class="hero-title">Listo para <em>publicar</em></h1>
+      <p class="hero-sub">Vas a publicar <strong style="color:var(--text)">12 cursos</strong> en la colección <code style="background:var(--surface-2);padding:2px 6px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--primary);">cursos</code> de Firestore. Cada curso se publica con <strong style="color:var(--text)">disponibleSiempre: true</strong> para que puedas validarlos y luego ir desbloqueando progresivamente.</p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat__num">12</div>
+          <div class="stat__lbl">Cursos</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num" id="stat-sesiones">57</div>
+          <div class="stat__lbl">Clases</div>
+        </div>
+        <div class="stat">
+          <div class="stat__num" id="stat-materiales">31</div>
+          <div class="stat__lbl">Materiales</div>
+        </div>
+      </div>
+
+      <div id="cursos-preview" class="cursos-list"></div>
+
+      <div id="upload-alert" style="display:none" class="alert"></div>
+
+      <button class="btn btn--primary btn--block" id="btn-upload" style="margin-bottom:8px;">
+        <span class="label">Publicar 12 cursos en Firestore</span>
+      </button>
+      <button class="btn btn--ghost btn--block" id="btn-logout">Cerrar sesión</button>
+    </div>
+
+    <!-- ═══ VIEW 3: UPLOADING ═══ -->
+    <div class="view" id="view-uploading">
+      <h1 class="hero-title">Publicando cursos…</h1>
+      <p class="hero-sub" id="upload-status">Subiendo curso <strong>1 de 12</strong>…</p>
+
+      <div class="progress">
+        <div class="progress__fill" id="progress-fill"></div>
+      </div>
+
+      <div id="cursos-progress" class="cursos-list" style="max-height:340px"></div>
+    </div>
+
+    <!-- ═══ VIEW 4: SUCCESS ═══ -->
+    <div class="view" id="view-success">
+      <div class="success-screen">
+        <div class="success-screen__ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h1 class="hero-title">¡Listo! <em>12 cursos publicados</em></h1>
+        <p class="hero-sub">Los cursos ya están en Firestore. Abre el panel VIP para confirmar que se ven bien. Recuerda <strong style="color:var(--text)">borrar este archivo</strong> del repo después.</p>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat__num" style="color:var(--success);">12</div>
+            <div class="stat__lbl">Cursos OK</div>
+          </div>
+          <div class="stat">
+            <div class="stat__num" style="color:var(--success);">57</div>
+            <div class="stat__lbl">Clases</div>
+          </div>
+          <div class="stat">
+            <div class="stat__num" style="color:var(--success);">31</div>
+            <div class="stat__lbl">Materiales</div>
+          </div>
+        </div>
+
+        <a class="btn btn--primary btn--block" href="vip-panel.html" style="margin-bottom:8px">Ver panel VIP →</a>
+        <button class="btn btn--ghost btn--block" id="btn-logout-2">Cerrar sesión</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ⚠️ Misma config de Firebase del panel
+const firebaseConfig = {
+  apiKey: "AIzaSyCqIA02j-Pu48aZ4QUPMU5sJSDi2lEKVag",
+  authDomain: "imdiil-vip.firebaseapp.com",
+  projectId: "imdiil-vip",
+  storageBucket: "imdiil-vip.firebasestorage.app",
+  messagingSenderId: "987058923184",
+  appId: "1:987058923184:web:67e3f10dd16d57e9d51c08"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_EMAILS = ['teccapitalweb@gmail.com','imdiilmx@gmail.com','imdiilconsultoria@gmail.com'];
+
+// ═══ Los 12 cursos (parseados del documento de Britney) ═══
+const CURSOS = [
+  { titulo: "Normatividad y Regulación de Energías Renovables", descripcion: "Marco legal mexicano e internacional aplicable a proyectos de energías limpias: leyes, normas, permisos y certificación para profesionales del sector energético.", area: "Energía", nivel: "Intermedio", instructor: "Equipo IMDIIL", horas: 8, emoji: "⚡", sesiones: [
+    { numero: 1, titulo: "Clase 1: Marco normativo general", url: "https://drive.google.com/file/d/1QJNX_X6N_xBWoKm_Q4CcaI3kJ5G_jk6J/view?usp=sharing" },
+    { numero: 2, titulo: "Clases 2 y 3: Permisos y certificación", url: "https://drive.google.com/file/d/1JJNSMo_VgbXtiAb8pzzfHrGSUyVYk23B/view?usp=drive_link" },
+    { numero: 3, titulo: "Clases 4 y 5: Cumplimiento y auditoría", url: "https://drive.google.com/file/d/13SfwdxlCudLwkFdSPuWtpVue5rYB304z/view?usp=drive_link" }
+  ], materiales: [] },
+  { titulo: "Tratamiento Biológico de Aguas Residuales", descripcion: "Procesos biológicos para depuración de aguas industriales: lodos activados, biorreactores, biofiltros y sistemas anaerobios. Aplicación en plantas industriales y municipales.", area: "Medio Ambiente", nivel: "Intermedio", instructor: "Equipo IMDIIL", horas: 12, emoji: "💧", sesiones: [
+    { numero: 1, titulo: "Clase 1: Fundamentos de tratamiento biológico", url: "https://drive.google.com/file/d/1kcCq9EAcJuzQmB6TBmbOYk9ixq1OyG5l/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Procesos aerobios", url: "https://drive.google.com/file/d/167jXbb6Ir9-8Q4T2xl_KUnIgrXU1GwBN/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Lodos activados", url: "https://drive.google.com/file/d/1McirP4NKW_7lubn5zgPJJFC6F1A9O5kv/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Sistemas anaerobios", url: "https://drive.google.com/file/d/1I3yyOWWQpEgzQS3YfrD_QG3C7ZuD2gzy/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Diseño y operación de plantas", url: "https://drive.google.com/file/d/1JMhhBZcXWdHZZz64debxCd12KqBfnn3y/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Módulo 1: Fundamentos", url: "https://drive.google.com/file/d/1xQVIPZV_qGLOK89NHX2pxNV6Jz_LCCby/view?usp=drive_link" },
+    { titulo: "Módulo 2: Procesos aerobios", url: "https://drive.google.com/file/d/1rYNIX_OltqhyHzL8dsk9vyBAV3H2M7dV/view?usp=drive_link" },
+    { titulo: "Módulo 3: Presentación lodos activados", url: "https://docs.google.com/presentation/d/1GwQLqrnH9lIGoTtp2VeojbuSq2_LQ8pK/edit?usp=drive_link" },
+    { titulo: "Módulo 4: Sistemas anaerobios", url: "https://drive.google.com/file/d/1bcSn3GNl5d2LtOf1pou9g3XH8M4FjC2G/view?usp=drive_link" },
+    { titulo: "Módulo 5: Operación", url: "https://drive.google.com/file/d/153gudfP28Ho4cNu1slO-2ZIR6I7b_4ZO/view?usp=drive_link" },
+    { titulo: "Módulo 6: Casos prácticos", url: "https://drive.google.com/file/d/15yexeegHkoPyPOGsKpU4GfU2ZOI5Rp1J/view?usp=drive_link" }
+  ] },
+  { titulo: "Supervisión de Producción (Nivel Avanzado)", descripcion: "Liderazgo y gestión avanzada en piso de planta: planificación, KPIs, equipos de alto desempeño, resolución de conflictos y mejora continua para supervisores experimentados.", area: "Operaciones", nivel: "Avanzado", instructor: "Equipo IMDIIL", horas: 14, emoji: "🏭", sesiones: [
+    { numero: 1, titulo: "Clase 1: Rol del supervisor avanzado", url: "https://drive.google.com/file/d/1P7cT0_0tF1_vAwiMfpIKFTF-BHeuMYXH/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Planificación y KPIs", url: "https://drive.google.com/file/d/1Jv-aoQNkTQDl_1BznHioGkrGIddta6tv/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Liderazgo de equipos", url: "https://drive.google.com/file/d/1wHVI5MkOTa9sTp8POJ5B7zL1LaoIw8uC/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Resolución de conflictos", url: "https://drive.google.com/file/d/1dV95e5Ye7UyQMX-Rd9_udlO5fZnSBLWz/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Mejora continua aplicada", url: "https://drive.google.com/file/d/1o95t-BBprPZy-KSp-FzeXMfnHeURhQGP/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Presentación 1: Fundamentos", url: "https://docs.google.com/presentation/d/1OOwigrEfg1nePeCMcfIHD6TglfQ_tP8m/edit?usp=sharing" },
+    { titulo: "Presentación 2: Planificación", url: "https://docs.google.com/presentation/d/1Xd3K4_3rPZbbp7Pf1Olbl0Z2zJ7AQ4xa/edit?usp=sharing" },
+    { titulo: "Presentación 3: Liderazgo", url: "https://docs.google.com/presentation/d/1RfoWuf-GEirGSqf0f_iSTtcCGXNGOg8y/edit?usp=sharing" },
+    { titulo: "Presentación 4: Conflictos", url: "https://docs.google.com/presentation/d/1LeXTyFF1jW7PPcbBJyO7BoYql7lC_lMH/edit?usp=sharing" },
+    { titulo: "Presentación 5: Mejora continua", url: "https://docs.google.com/presentation/d/12jydqwEcHX71Nz9lZQhhP_C-tjTGGL6Q/edit?usp=sharing" },
+    { titulo: "Plantilla Excel 1", url: "https://docs.google.com/spreadsheets/d/1xVuIne5n1azeeQlPTQtATLKVHtXsfCIc/edit?usp=sharing" },
+    { titulo: "Plantilla Excel 2", url: "https://docs.google.com/spreadsheets/d/1ub4mqgQoxDwRqvT_Q_hnDlplwh5MK5aE/edit?usp=sharing" },
+    { titulo: "Plantilla Excel 3", url: "https://docs.google.com/spreadsheets/d/1oT35RXuhh4epik8_rrPZg74vTL5Mgd2A/edit?usp=sharing" },
+    { titulo: "Plantilla Excel 4", url: "https://docs.google.com/spreadsheets/d/1B9mD7jNUZu6fvZ8CrJXrIeg6EVkLn1gH/edit?usp=sharing" }
+  ] },
+  { titulo: "Forecasting Maestro: Domina la Demanda", descripcion: "Pronóstico de demanda para cadena de suministro: métodos cuantitativos, análisis de series de tiempo, modelos estadísticos y aplicación práctica con datos reales.", area: "Logística", nivel: "Avanzado", instructor: "Equipo IMDIIL", horas: 10, emoji: "📈", sesiones: [
+    { numero: 1, titulo: "Clase 1: Introducción al forecasting", url: "https://drive.google.com/drive/folders/1iB8pAjwGLS-EVWlJ-zSY70fov2zZl8_J?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Métodos cuantitativos", url: "https://drive.google.com/file/d/1A60kJipHEYNmJbt_denoMiqfGZfRjqEL/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Series de tiempo", url: "https://drive.google.com/file/d/1p595t6MpqlQcsLvvKcfqE5nKCbPOfmy_/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Modelos estadísticos", url: "https://drive.google.com/file/d/1LkQr9O-igJZWcQ8_YhVBC3XyjIgkreCT/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Casos prácticos", url: "https://drive.google.com/file/d/1qr51dLHHD738OWUz22cJLzdOzL2GIC9Z/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Material del curso", url: "https://drive.google.com/file/d/1Zf0KHd1rjHPz_o1JUQDaxEMtKV209VxP/view?usp=drive_link" }
+  ] },
+  { titulo: "Kaizen: Innovación Continua", descripcion: "Filosofía Kaizen aplicada al piso de planta: las 7 mudas, gemba walk, eventos kaizen, círculos de calidad y mentalidad de mejora diaria para equipos de trabajo.", area: "Calidad", nivel: "Intermedio", instructor: "Equipo IMDIIL", horas: 10, emoji: "🎯", sesiones: [
+    { numero: 1, titulo: "Clase 1: Filosofía Kaizen", url: "https://drive.google.com/file/d/1eOW3rQyOWsE_PlqITk0Y9t-Nx23MkHzX/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Las 7 mudas", url: "https://drive.google.com/file/d/1La7NwIbT3cIsfMdpavAB9r7_X3ucC8Tw/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Gemba walk", url: "https://drive.google.com/file/d/1tGuaBP_RB9omFCN-loCoGud96rVuaWX0/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Eventos Kaizen", url: "https://drive.google.com/file/d/1rZLjVuidI6Iw3sy9zp-Lq97xoVAXXyDk/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Círculos de calidad", url: "https://drive.google.com/file/d/17MkvsDEg__20J2splEGyXQqTSB8Rtewx/view?usp=drive_link" }
+  ], materiales: [] },
+  { titulo: "Lean Manufacturing 4.0 y Mejora Continua", descripcion: "Lean Manufacturing en la era de la Industria 4.0: integración con IoT, automatización, VSM digital, kanban electrónico y gestión visual con dashboards en tiempo real.", area: "Calidad", nivel: "Avanzado", instructor: "Equipo IMDIIL", horas: 12, emoji: "⚙️", sesiones: [
+    { numero: 1, titulo: "Clase 1: Lean 4.0 y la Industria 4.0", url: "https://drive.google.com/file/d/1gOtmacKGCQtFbpbNa8-75P56eY2HdEZ3/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: VSM digital y mapeo", url: "https://drive.google.com/file/d/1eX_TaXVMYUuvn7DxfHrSCvtgOo73PtmE/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Kanban electrónico", url: "https://drive.google.com/file/d/1--7nxNmatKyCOEfXhELGFb7AvW1p-FJj/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: IoT y automatización", url: "https://drive.google.com/file/d/1a7hH-Ph6RT3NpuMBC6vaWCNPBjVogl2W/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Gestión visual digital", url: "https://drive.google.com/file/d/1PrOI4TzM_VMEnmUlyn1GVM5UE03wbfSH/view?usp=drive_link" }
+  ], materiales: [] },
+  { titulo: "Planificación y Control de Costos", descripcion: "Sistemas de costeo, presupuestación y control financiero en operaciones industriales: costos estándar, ABC costing, análisis de variaciones y reportes ejecutivos.", area: "Finanzas", nivel: "Intermedio", instructor: "Equipo IMDIIL", horas: 10, emoji: "💰", sesiones: [
+    { numero: 1, titulo: "Clase 1: Fundamentos de costos", url: "https://drive.google.com/file/d/1Hzqb17qsc21Ws6olS_mh737rozd7HGNe/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Sistemas de costeo", url: "https://drive.google.com/file/d/1mWe-5_vqIWh_9CWvnScgG_lTbJbBK1Hd/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Presupuestación", url: "https://drive.google.com/file/d/1O_BV7NTW14TECvcz-TgLIfz_MGLGcagx/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: ABC costing", url: "https://drive.google.com/file/d/1lqPaX_EQznl6syC9mFHFjEcF5nyrQwNi/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Análisis de variaciones", url: "https://drive.google.com/file/d/1XP6yPY0iNX_Mh9_oPrAJzDlu1YG-Cuv1/view?usp=drive_link" }
+  ], materiales: [] },
+  { titulo: "Project Management", descripcion: "Gestión profesional de proyectos basada en PMBOK: alcance, tiempo, costos, calidad, riesgos. Herramientas como Gantt, ruta crítica, EVM y metodologías ágiles.", area: "Gestión", nivel: "Intermedio", instructor: "Equipo IMDIIL", horas: 12, emoji: "📋", sesiones: [
+    { numero: 1, titulo: "Clase 1: Fundamentos PMBOK", url: "https://drive.google.com/file/d/1w3viKjCAIckkfukaI7QVdDmw5Ap2oNBu/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Alcance y tiempo", url: "https://drive.google.com/file/d/1nOZ66C4aOPVYKfLpyFVk8ngRrS9-K7mc/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Costos y calidad", url: "https://drive.google.com/file/d/1PjLo_apTV2bvbfhPIY7CaLOI-gq-B5lf/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Gestión de riesgos", url: "https://drive.google.com/file/d/1Sd5_m0WDPjd1FqYdmCKT__dbt9UXOof-/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Metodologías ágiles", url: "https://drive.google.com/file/d/1IwjICNU8YSF5bk9huF0b-LsZ9gMQLX_V/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Material del curso", url: "https://drive.google.com/file/d/17ieaig3Y814RnZFyxI14aR3BKGePVvD0/view?usp=drive_link" }
+  ] },
+  { titulo: "Ingeniería de Procesos: Lean, Six Sigma y Mejora Continua", descripcion: "Optimización de procesos industriales con DMAIC, herramientas estadísticas, control de calidad y reducción de variabilidad. Camino al Green Belt y Black Belt.", area: "Calidad", nivel: "Avanzado", instructor: "Equipo IMDIIL", horas: 16, emoji: "📊", sesiones: [
+    { numero: 1, titulo: "Clase 1: Lean Six Sigma fundamentos", url: "https://drive.google.com/file/d/1u5o9DD63EVryLbXo1mns6vc1MKPYhLNF/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Metodología DMAIC", url: "https://drive.google.com/file/d/1TgrUEUhi1ES5zPvsFmXtWpdjqgvLbsOY/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Herramientas estadísticas", url: "https://drive.google.com/file/d/1hA7pURKn63qlcMjHsrwmVnAtMNLcSOQD/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Control estadístico de procesos", url: "https://drive.google.com/file/d/10QIFHesbI0Ns56fkGlzoyu7_dTJaeDAL/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Proyectos Black Belt", url: "https://drive.google.com/file/d/1rEr20kt5v_tvvURfMe_NU00S5FYuUpXp/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Material 1: Six Sigma intro", url: "https://drive.google.com/file/d/1LCtBm8HkHZd-qhMhgX4ic3I_fRbUxwTV/view?usp=drive_link" },
+    { titulo: "Material 2: DMAIC en detalle", url: "https://drive.google.com/file/d/14TR3li2fJCXDo81QTBT5Q8X_CJbbdKpg/view?usp=drive_link" },
+    { titulo: "Material 3: Herramientas avanzadas", url: "https://drive.google.com/file/d/15iF-vrQTF4X7sPQIRtItnhxMclFQS9SK/view?usp=drive_link" },
+    { titulo: "Material 4: Casos prácticos", url: "https://drive.google.com/file/d/1KjkHQ1DFL7QPQUSJW2PwmTKtv_8kxjwd/view?usp=drive_link" },
+    { titulo: "Material 5: SPC", url: "https://drive.google.com/file/d/14lb2EfP_RI45OKtsm2AQ9il29bRjMHrT/view?usp=drive_link" },
+    { titulo: "Material 6: Proyectos certificación", url: "https://drive.google.com/file/d/1DSkt2uTgCfiRBH5T5YcCC91T6Y-I_ame/view?usp=drive_link" }
+  ] },
+  { titulo: "Controller JR Avanzado: Finanzas, Gestión y Reporting Estratégico", descripcion: "Rol del Controller financiero en empresas industriales: análisis financiero, KPIs estratégicos, reportes ejecutivos, planificación y soporte a la toma de decisiones.", area: "Finanzas", nivel: "Avanzado", instructor: "Equipo IMDIIL", horas: 14, emoji: "📊", sesiones: [
+    { numero: 1, titulo: "Clase 1: Rol del Controller", url: "https://drive.google.com/file/d/1C6VpvLj4x_6pFIftk2kvLBleFjBTuEPR/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Análisis financiero", url: "https://drive.google.com/file/d/1aX5RAg0fiyHmjRlGOnhuwJ0rM3MJyoj0/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: KPIs estratégicos", url: "https://drive.google.com/file/d/1O_oXJFUxcwgQt8jkCl0DSs--7d3aaOV6/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: Reporting ejecutivo", url: "https://drive.google.com/file/d/1h3L0cPtEdA8mFtDlqcSO6DRGGqu1CvzS/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Toma de decisiones estratégicas", url: "https://drive.google.com/file/d/1E4L2RstY2R-YvjT7lsqdyoFjGRI7tyHj/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Material del curso", url: "https://drive.google.com/file/d/1iR4yasX7ZfkBbPcD9v0rDeIZl7EN0JOJ/view?usp=sharing" }
+  ] },
+  { titulo: "Gestión de Inventario y Buenas Prácticas de Almacén", descripcion: "Gestión profesional de inventarios y operaciones de almacén: layout, slotting, picking, conteos cíclicos, KPIs de almacén y prácticas de Lean Warehousing.", area: "Logística", nivel: "Intermedio", instructor: "Equipo IMDIIL", horas: 12, emoji: "📦", sesiones: [
+    { numero: 1, titulo: "Clase 1: Fundamentos de inventario", url: "https://drive.google.com/file/d/1vPEGUcoSeMS_LwUwscQ7sheJzMolQm5I/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Layout y slotting", url: "https://drive.google.com/file/d/1tUIt3j2vREOwEzAkUkwuxahJdVGWWOSI/view?usp=drive_link" },
+    { numero: 3, titulo: "Clase 3: Picking y operación", url: "https://drive.google.com/file/d/1qZozr867vdwKw49cXL3F4c76S9FTMCij/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 4: KPIs de almacén", url: "https://drive.google.com/file/d/1RcbYi8QTpv9h7ZFur7QuEXbwlR5MHPVz/view?usp=drive_link" },
+    { numero: 5, titulo: "Clase 5: Lean warehousing", url: "https://drive.google.com/file/d/1-Y8JWAdCDE0wGlCU7FgdNQYjF8D2i6ZL/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Presentación 1: Fundamentos", url: "https://docs.google.com/presentation/d/1_pSy0w-fhqWlzDoKVAz4S7RlWYdR-SnR/edit" },
+    { titulo: "Presentación 2: Layout", url: "https://docs.google.com/presentation/d/1muLpFVIzst4pS2VpXm4sDDQGdlJpJsqw/edit" },
+    { titulo: "Presentación 3: Picking", url: "https://docs.google.com/presentation/d/1MxMzavfSm1qQiYJvgfYo-NsxXKzlLKiV/edit" },
+    { titulo: "Presentación 4: KPIs", url: "https://docs.google.com/presentation/d/1f5rT-U9Mc2OZk2RoZnEJzOpVsueId1AX/edit" },
+    { titulo: "Presentación 5: Lean", url: "https://docs.google.com/presentation/d/16sWG5hiUxGjza_fc5sizCbUmoNBwPGSx/edit" },
+    { titulo: "Documento de referencia", url: "https://docs.google.com/document/d/1dlgnmPHeekOGHBUauM7nDy-sbkDGmqE7/edit" }
+  ] },
+  { titulo: "Secretariado Administrativo: Oferta y Demanda Actual", descripcion: "Habilidades modernas del rol secretarial-administrativo en empresas: comunicación efectiva, gestión documental, herramientas digitales y atención profesional al cliente interno.", area: "Administrativo", nivel: "Básico", instructor: "Equipo IMDIIL", horas: 8, emoji: "📝", sesiones: [
+    { numero: 1, titulo: "Clase 1: Rol secretarial moderno", url: "https://drive.google.com/file/d/1pXTA5I7ST2QgfQJ4FteXVItxFPJ4sGgJ/view?usp=drive_link" },
+    { numero: 2, titulo: "Clase 2: Comunicación efectiva", url: "https://drive.google.com/file/d/1R8-bcdD8VPizpJQv1vvR-TdzM163ENsz/view?usp=drive_link" },
+    { numero: 3, titulo: "Clases 3 y 4: Gestión documental y herramientas", url: "https://drive.google.com/file/d/1W5Twmp57J8I--GFsx81ZpRxmXP5NB7NL/view?usp=drive_link" },
+    { numero: 4, titulo: "Clase 5: Atención al cliente interno", url: "https://drive.google.com/file/d/1K8Ks-X3ZQSZIgySMow1FCrdPncrRcd-u/view?usp=drive_link" }
+  ], materiales: [
+    { titulo: "Material del curso", url: "https://drive.google.com/file/d/10xtV1_00KCameXDFPFqFc4TrAoCBhY2M/view?usp=drive_link" }
+  ] }
+];
+
+// ─── Pintar la lista preview ───
+function pintarPreview(){
+  const wrap = document.getElementById('cursos-preview');
+  wrap.innerHTML = CURSOS.map((c, i) => `
+    <div class="cur-row" id="cur-row-${i}">
+      <div class="cur-row__num">${i+1}</div>
+      <div class="cur-row__title">${c.emoji} ${c.titulo}</div>
+      <div class="cur-row__meta">${c.sesiones.length}c · ${c.materiales.length}m</div>
+    </div>
+  `).join('');
+  // Stats reales
+  const totalSes = CURSOS.reduce((s,c)=>s+c.sesiones.length, 0);
+  const totalMat = CURSOS.reduce((s,c)=>s+c.materiales.length, 0);
+  document.getElementById('stat-sesiones').textContent = totalSes;
+  document.getElementById('stat-materiales').textContent = totalMat;
+}
+
+function pintarProgress(){
+  const wrap = document.getElementById('cursos-progress');
+  wrap.innerHTML = CURSOS.map((c, i) => `
+    <div class="cur-row" id="prog-row-${i}">
+      <div class="cur-row__num">${i+1}</div>
+      <div class="cur-row__title">${c.emoji} ${c.titulo}</div>
+      <div class="cur-row__meta">${c.sesiones.length}c · ${c.materiales.length}m</div>
+    </div>
+  `).join('');
+}
+
+// ─── Cambiar vista ───
+function show(viewId){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
+  document.getElementById(viewId).classList.add('is-active');
+}
+
+function showAlert(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideAlert(id){ document.getElementById(id).style.display = 'none'; }
+
+// ─── Auth ───
+onAuthStateChanged(auth, (user) => {
+  if (user && ADMIN_EMAILS.includes((user.email||'').toLowerCase())) {
+    pintarPreview();
+    show('view-preview');
+  } else {
+    show('view-login');
+  }
+});
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value;
+  if (!email || !pass) { showAlert('login-alert', 'Completa correo y contraseña'); return; }
+  if (!ADMIN_EMAILS.includes(email.toLowerCase())) { showAlert('login-alert', 'Este correo no tiene permisos administrativos'); return; }
+  hideAlert('login-alert');
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true;
+  btn.querySelector('.label').innerHTML = '<span class="spin"></span> Iniciando sesión…';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    // onAuthStateChanged se encarga del resto
+  } catch (e) {
+    btn.disabled = false;
+    btn.querySelector('.label').textContent = 'Iniciar sesión';
+    showAlert('login-alert', 'Credenciales incorrectas o cuenta sin permisos');
+  }
+});
+
+document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+document.getElementById('btn-logout-2').addEventListener('click', () => signOut(auth));
+
+// ─── UPLOAD ───
+document.getElementById('btn-upload').addEventListener('click', async () => {
+  hideAlert('upload-alert');
+  pintarProgress();
+  show('view-uploading');
+  const total = CURSOS.length;
+  const progFill = document.getElementById('progress-fill');
+  const statusEl = document.getElementById('upload-status');
+  let errores = 0;
+
+  for (let i = 0; i < total; i++) {
+    const curso = CURSOS[i];
+    const row = document.getElementById('prog-row-' + i);
+    row?.classList.add('is-doing');
+    statusEl.innerHTML = `Subiendo curso <strong>${i+1} de ${total}</strong>…<br><span style="font-size:12px;color:var(--text-3)">${curso.titulo}</span>`;
+
+    try {
+      await addDoc(collection(db, 'cursos'), {
+        ...curso,
+        orden: i + 1,
+        disponibleSiempre: true,  // todos visibles al inicio para validar
+        marcarProximamente: false,
+        createdAt: serverTimestamp()
+      });
+      row?.classList.remove('is-doing');
+      row?.classList.add('is-done');
+      const numCell = row?.querySelector('.cur-row__num');
+      if (numCell) numCell.innerHTML = '✓';
+    } catch (e) {
+      console.error('Error subiendo curso', curso.titulo, e);
+      errores++;
+      row?.classList.remove('is-doing');
+      const numCell = row?.querySelector('.cur-row__num');
+      if (numCell) {
+        numCell.style.background = 'var(--danger)';
+        numCell.style.color = '#fff';
+        numCell.textContent = '!';
+      }
+    }
+    progFill.style.width = (((i+1)/total)*100) + '%';
+  }
+
+  setTimeout(() => {
+    if (errores === 0) {
+      show('view-success');
+    } else {
+      statusEl.innerHTML = `Terminó con <strong style="color:var(--danger)">${errores} error${errores!==1?'es':''}</strong>. Revisa la consola (F12) para más detalles.`;
+    }
+  }, 700);
+});
+</script>
+
+</body>
+</html>
