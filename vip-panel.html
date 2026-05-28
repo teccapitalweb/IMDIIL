@@ -3849,56 +3849,151 @@ const Sections = (function(){
     return Math.max(0, (indexCurso * 10) - dias);
   }
 
-  // ─── Portadas automáticas para cursos según el título ───
-  // (adaptado a temas de ingeniería industrial / IMDIIL)
-  const PORTADAS_CURSOS = {
-    // Seguridad industrial
-    'nom-019':       'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=800&auto=format&fit=crop&q=80',
-    'nom-001':       'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&auto=format&fit=crop&q=80',
-    'nom-029':       'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&auto=format&fit=crop&q=80',
-    'nom-017':       'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=800&auto=format&fit=crop&q=80',
-    'nom-035':       'https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=800&auto=format&fit=crop&q=80',
-    'iso 45001':     'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
-    'seguridad':     'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&auto=format&fit=crop&q=80',
-    'eléctric':      'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&auto=format&fit=crop&q=80',
-    'iper':          'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&auto=format&fit=crop&q=80',
-    'riesgo':        'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=800&auto=format&fit=crop&q=80',
-    // Logística y almacenes
-    'logístic':      'https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&auto=format&fit=crop&q=80',
-    'almacen':       'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80',
-    'wms':           'https://images.unsplash.com/photo-1601158935942-52255782d322?w=800&auto=format&fit=crop&q=80',
-    'inventario':    'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80',
-    'cadena':        'https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&auto=format&fit=crop&q=80',
-    'transporte':    'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=800&auto=format&fit=crop&q=80',
-    // Calidad y procesos
-    'lean':          'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=800&auto=format&fit=crop&q=80',
-    'six sigma':     'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop&q=80',
-    'amef':          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
-    'calidad':       'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop&q=80',
-    '5s':            'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=800&auto=format&fit=crop&q=80',
-    'iso 9001':      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80',
-    // Mantenimiento
-    'tpm':           'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=800&auto=format&fit=crop&q=80',
-    'mantenimiento': 'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=800&auto=format&fit=crop&q=80',
-    'oee':           'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&auto=format&fit=crop&q=80',
-    'producción':    'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80',
-    'mecánic':       'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=800&auto=format&fit=crop&q=80',
-    // Supervisión y liderazgo
-    'supervisi':     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&auto=format&fit=crop&q=80',
-    'liderazgo':     'https://images.unsplash.com/photo-1552581234-26160f608093?w=800&auto=format&fit=crop&q=80',
-    'planta':        'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80',
-    'ingeniería':    'https://images.unsplash.com/photo-1581092794074-0c81d266c0d8?w=800&auto=format&fit=crop&q=80',
-    'industrial':    'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80'
+  // ═══════════════════════════════════════════════════════════════
+  // 🎬 VISOR EMBEBIDO · estilo Sinergia
+  // Convierte URLs de Drive a /preview y abre en iframe interno
+  // ═══════════════════════════════════════════════════════════════
+  function convertirUrlDrive(url) {
+    if (!url) return '';
+    // https://drive.google.com/open?id=XXXX → /file/d/XXXX/preview
+    if (url.includes('drive.google.com/open?id=')) {
+      const id = url.split('id=')[1].split('&')[0];
+      return `https://drive.google.com/file/d/${id}/preview`;
+    }
+    // https://drive.google.com/file/d/XXXX/view → /preview
+    // https://docs.google.com/document/d/XXXX/edit → /preview
+    // https://docs.google.com/presentation/d/XXXX/edit → /preview
+    // https://docs.google.com/spreadsheets/d/XXXX/edit → /preview
+    return url.replace(/\/view(\?.*)?$/, '/preview')
+              .replace(/\/edit(\?.*)?$/, '/preview')
+              .replace(/\/edit$/, '/preview');
+  }
+
+  window.abrirVisor = function(url, titulo) {
+    if (!url) return;
+    const overlay = document.getElementById('visorOverlay');
+    const frame = document.getElementById('visorFrame');
+    const titleEl = document.getElementById('visorTitle');
+    const dlEl = document.getElementById('visorDownload');
+    if (!overlay || !frame) return;
+
+    frame.src = convertirUrlDrive(url);
+    titleEl.textContent = titulo || 'Visor';
+    if (dlEl) dlEl.href = url;
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
   };
 
-  // Portada por defecto (industrial genérica)
-  const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1581092794074-0c81d266c0d8?w=800&auto=format&fit=crop&q=80';
+  window.cerrarVisor = function() {
+    const overlay = document.getElementById('visorOverlay');
+    const frame = document.getElementById('visorFrame');
+    if (overlay) overlay.style.display = 'none';
+    if (frame) frame.src = ''; // detener video
+    document.body.style.overflow = '';
+  };
+
+  // Bind del botón de cerrar y tecla Esc (una sola vez al cargar)
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('visorClose')?.addEventListener('click', window.cerrarVisor);
+    document.getElementById('visorOverlay')?.addEventListener('click', (e) => {
+      if (e.target.id === 'visorOverlay') window.cerrarVisor();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('visorOverlay')?.style.display === 'flex') {
+        window.cerrarVisor();
+      }
+    });
+  });
+
+  // ─── Portadas automáticas para cursos según el título ───
+  // Imágenes Unsplash CURADAS · 100% industrial / ingeniería / planta
+  // (NO retail, NO oficinas genéricas)
+  const PORTADAS_CURSOS = {
+    // Energías renovables / Energía
+    'energías renovables':'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&auto=format&fit=crop&q=80',
+    'energía':            'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
+    'renovable':          'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=900&auto=format&fit=crop&q=80',
+    'solar':              'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
+    'eólic':              'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=900&auto=format&fit=crop&q=80',
+    // Aguas residuales / Medio Ambiente
+    'aguas residuales':   'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'tratamiento':        'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'biológic':           'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'agua':               'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'medio ambiente':     'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    // Supervisión / Operaciones / Planta industrial
+    'supervisión':        'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'supervisor':         'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'producción':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'planta':             'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'manufactur':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'operaciones':        'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    // Forecasting / Pronóstico (dashboard industrial)
+    'forecasting':        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'pronóstic':          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'demanda':            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    // Kaizen / Lean / Six Sigma / Mejora continua (manufactura)
+    'kaizen':             'https://images.unsplash.com/photo-1581094794329-c8112c4418fc?w=900&auto=format&fit=crop&q=80',
+    'lean':               'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
+    'six sigma':          'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
+    'mejora continua':    'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
+    'ingeniería de procesos':'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
+    'procesos':           'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=900&auto=format&fit=crop&q=80',
+    'innovación':         'https://images.unsplash.com/photo-1581094794329-c8112c4418fc?w=900&auto=format&fit=crop&q=80',
+    // Costos / Finanzas / Controller (dashboards financieros industriales)
+    'costos':             'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
+    'control de costos':  'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
+    'planificación':      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'finanzas':           'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
+    'controller':         'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'reporting':          'https://images.unsplash.com/photo-1554224155-1696413565d3?w=900&auto=format&fit=crop&q=80',
+    // Project Management / Gestión (proyectos industriales)
+    'project management': 'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=900&auto=format&fit=crop&q=80',
+    'gestión de proyect': 'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=900&auto=format&fit=crop&q=80',
+    'pmbok':              'https://images.unsplash.com/photo-1572177812156-58036aae439c?w=900&auto=format&fit=crop&q=80',
+    // Inventario y almacén INDUSTRIAL (racks, montacargas, NO retail)
+    'inventario':         'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
+    'almacén':            'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
+    'warehouse':          'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
+    'logístic':           'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
+    'wms':                'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=900&auto=format&fit=crop&q=80',
+    // Secretariado / Administrativo (oficina profesional)
+    'secretariad':        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'administrativ':      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    // Seguridad industrial / NOM-STPS (cascos, EPP, industria)
+    'nom-019':            'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
+    'nom-001':            'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
+    'nom-029':            'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
+    'nom-017':            'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?w=900&auto=format&fit=crop&q=80',
+    'nom-035':            'https://images.unsplash.com/photo-1573497019418-b400bb3ab074?w=900&auto=format&fit=crop&q=80',
+    'iso 45001':          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'seguridad':          'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
+    'eléctric':           'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
+    'iper':               'https://images.unsplash.com/photo-1581094794329-c8112c4418fc?w=900&auto=format&fit=crop&q=80',
+    'riesgo':             'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=900&auto=format&fit=crop&q=80',
+    // Calidad / Auditoría
+    'amef':               'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'calidad':            'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=900&auto=format&fit=crop&q=80',
+    '5s':                 'https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=900&auto=format&fit=crop&q=80',
+    'iso 9001':           'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    // Mantenimiento (TPM, mecánico, OEE)
+    'tpm':                'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'mantenimiento':      'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=900&auto=format&fit=crop&q=80',
+    'oee':                'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=900&auto=format&fit=crop&q=80',
+    'mecánic':            'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    // Liderazgo industrial
+    'liderazgo':          'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&auto=format&fit=crop&q=80',
+    'ingeniería':         'https://images.unsplash.com/photo-1581092794074-0c81d266c0d8?w=900&auto=format&fit=crop&q=80',
+    'industrial':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80'
+  };
+
+  // Portada por defecto (planta industrial genérica de calidad)
+  const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80';
 
   function getPortadaCurso(curso){
-    // Si el curso tiene portada custom, úsala
     if (curso.portada) return curso.portada;
     const titulo = (curso.titulo || '').toLowerCase();
-    // Buscar la primera keyword que matche en el título
+    // Las keywords se evalúan en orden; las más específicas primero
     for (const [keyword, url] of Object.entries(PORTADAS_CURSOS)) {
       if (titulo.includes(keyword)) return url;
     }
@@ -4206,21 +4301,24 @@ const Sections = (function(){
         </div>
       `;
     } else {
-      // Sesiones (clases) reales
+      // Sesiones (clases) reales — abren en visor embebido (no en pestaña nueva)
       if (c.sesiones && c.sesiones.length > 0) {
         bodyContent += `
           <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px;">📺 Clases del curso</div>
           <div class="modulos-list" style="margin-bottom:18px;">
-            ${c.sesiones.map((s, i) => `
-              <a class="modulo" href="${s.url}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;cursor:pointer;" data-bypass-paywall="true">
+            ${c.sesiones.map((s, i) => {
+              const titEsc = (s.titulo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+              const urlEsc = (s.url || '').replace(/'/g, "\\'");
+              return `
+              <div class="modulo" onclick="window.abrirVisor('${urlEsc}', '${titEsc}')" style="cursor:pointer;" data-bypass-paywall="true">
                 <div class="modulo__num">${s.numero || (i+1)}</div>
                 <div style="flex:1;min-width:0;">
                   <div class="modulo__title">${s.titulo}</div>
-                  <div class="modulo__meta">▶ Ver clase</div>
+                  <div class="modulo__meta">▶ Click para ver la clase</div>
                 </div>
                 <svg class="ic" style="color:var(--primary);"><use href="#i-arrow-right"/></svg>
-              </a>
-            `).join('')}
+              </div>
+            `;}).join('')}
           </div>
         `;
       } else {
@@ -4246,19 +4344,21 @@ const Sections = (function(){
         // Renderiza una tarjeta de material
         const matCard = (m) => {
           const t = tipoMat(m.url);
+          const titEsc = (m.titulo || 'Material del curso').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const urlEsc = (m.url || '').replace(/'/g, "\\'");
           return `
-            <a href="${m.url}" target="_blank" rel="noopener" data-bypass-paywall="true" class="mat-card" style="display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;text-decoration:none;color:inherit;transition:all .18s cubic-bezier(.2,.8,.25,1);position:relative;overflow:hidden;" onmouseover="this.style.borderColor='${t.color}';this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
+            <div class="mat-card" onclick="window.abrirVisor('${urlEsc}', '${titEsc}')" data-bypass-paywall="true" style="display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;cursor:pointer;color:inherit;transition:all .18s cubic-bezier(.2,.8,.25,1);position:relative;overflow:hidden;" onmouseover="this.style.borderColor='${t.color}';this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
               <div style="width:38px;height:38px;border-radius:9px;background:color-mix(in srgb,${t.color} 16%,transparent);color:${t.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="width:18px;height:18px;display:block;">${t.ic}</span></div>
               <div style="flex:1;min-width:0;">
                 <div style="font-size:13.5px;font-weight:600;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.titulo || 'Material del curso'}</div>
                 <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
                   <span style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:${t.color};">${t.lbl}</span>
                   <span style="font-size:11px;color:var(--text-3);">·</span>
-                  <span style="font-size:11px;color:var(--text-3);">Click para abrir</span>
+                  <span style="font-size:11px;color:var(--text-3);">Click para ver</span>
                 </div>
               </div>
-              <svg class="ic" style="color:${t.color};opacity:.7;flex-shrink:0;width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>
-            </a>
+              <svg class="ic" style="color:${t.color};opacity:.7;flex-shrink:0;width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
           `;
         };
 
@@ -6113,5 +6213,38 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+<!-- ═══ Visor embebido (clases + materiales) · estilo Sinergia ═══ -->
+<div id="visorOverlay" class="visor-overlay" style="display:none;">
+  <div class="visor-container">
+    <div class="visor-header">
+      <div class="visor-title" id="visorTitle">Cargando...</div>
+      <div class="visor-actions">
+        <a id="visorDownload" class="visor-btn visor-btn--ghost" href="#" target="_blank" rel="noopener" title="Abrir en pestaña nueva">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>
+        </a>
+        <button id="visorClose" class="visor-btn visor-btn--close" title="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="visor-frame-wrap">
+      <iframe id="visorFrame" class="visor-frame" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+<style>
+.visor-overlay{position:fixed;inset:0;z-index:9999;background:rgba(7,5,3,.94);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:24px;animation:visorFadeIn .25s ease}
+@keyframes visorFadeIn{from{opacity:0}to{opacity:1}}
+.visor-container{width:100%;max-width:1200px;height:88vh;background:#0E0A06;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.visor-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 20px;background:linear-gradient(180deg,#1A130D,#0E0A06);border-bottom:1px solid rgba(255,255,255,.08)}
+.visor-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:#F4EFE3;letter-spacing:-.2px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.visor-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.visor-btn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#F4EFE3;cursor:pointer;transition:all .15s ease;text-decoration:none}
+.visor-btn:hover{background:rgba(255,255,255,.06);border-color:rgba(255,122,45,.5);color:#FF7A2D}
+.visor-btn--close:hover{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.5);color:#EF4444}
+.visor-frame-wrap{flex:1;background:#000;position:relative;overflow:hidden}
+.visor-frame{width:100%;height:100%;border:0;background:#000}
+@media (max-width:560px){.visor-overlay{padding:8px}.visor-container{height:94vh;border-radius:14px}.visor-header{padding:11px 14px}}
+</style>
 </body>
 </html>
