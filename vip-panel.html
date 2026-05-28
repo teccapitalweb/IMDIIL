@@ -524,8 +524,8 @@ body::after{
 .btn--sm{padding:7px 12px;font-size:11px}
 
 /* MODALES */
-.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
-:root[data-theme="day"] .modal-backdrop{background:rgba(26,20,16,0.35)}
+.modal-backdrop{position:fixed;inset:0;z-index:9500;background:rgba(7,5,3,0.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
+:root[data-theme="day"] .modal-backdrop{background:rgba(26,20,16,0.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .modal-backdrop.is-open{opacity:1;pointer-events:auto}
 .modal{background:var(--bg);border:0.5px solid var(--border-2);border-radius:18px;width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);transform:translateY(20px) scale(.98);opacity:0;transition:transform .3s,opacity .25s}
 .modal-backdrop.is-open .modal{transform:translateY(0) scale(1);opacity:1}
@@ -2767,7 +2767,7 @@ if (window.__isDemoMode) {
     document.body.style.visibility = 'visible';
 
     if (isCheckoutSuccess && window.UserState.modo === 'vip') {
-      setTimeout(() => { window.__showSuccessToast && window.__showSuccessToast(); }, 400);
+      setTimeout(() => { window.__showWelcomeSplash && window.__showWelcomeSplash(); }, 600);
     }
 
     setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 50);
@@ -2777,6 +2777,54 @@ if (window.__isDemoMode) {
 window.__signOut = async () => {
   try { await signOut(auth); window.location.href = 'vip-auth.html'; }
   catch(e){ alert('No pudimos cerrar sesión.'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 🎉 SPLASH DE BIENVENIDA POST-PAGO
+// Se muestra cuando el usuario regresa de Stripe con ?checkout=success
+// ═══════════════════════════════════════════════════════════════
+window.__showWelcomeSplash = function() {
+  const S = window.UserState || {};
+  const nombre = (S.displayName || 'Ingeniero').split(' ')[0];
+  const planLabel = S.plan === 'anual' ? 'VIP Anual' : (S.plan === 'mensual' ? 'VIP Mensual' : 'VIP');
+
+  // Quitar el query param de la URL (para que al recargar no se re-muestre)
+  if (window.history.replaceState) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('checkout');
+    window.history.replaceState({}, '', url.toString());
+  }
+
+  let splash = document.getElementById('splash-bienvenida');
+  if (splash) splash.remove();
+  splash = document.createElement('div');
+  splash.id = 'splash-bienvenida';
+  splash.innerHTML = `
+    <div class="splash-bnv__overlay"></div>
+    <div class="splash-bnv__box">
+      <button class="splash-bnv__close" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="splash-bnv__confetti">
+        ${Array.from({length:32}).map((_,i)=>`<span class="splash-bnv__bit" style="--d:${i*.06}s;--x:${(Math.random()*280-140)|0}px;--c:${['#FF7A2D','#FFB347','#34D399','#60A5FA','#F87171','#A78BFA'][i%6]}"></span>`).join('')}
+      </div>
+      <div class="splash-bnv__icon">⚙️</div>
+      <div class="splash-bnv__kicker">¡PAGO CONFIRMADO!</div>
+      <h1 class="splash-bnv__title">Bienvenida al <em>club ${planLabel}</em></h1>
+      <p class="splash-bnv__desc">${nombre}, acabas de unirte a la comunidad de ingenieros industriales más activa de México. Tienes acceso completo a <strong>todos los cursos, clases en vivo, herramientas pro y materiales descargables</strong>.</p>
+      <div class="splash-bnv__perks">
+        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">📚</span><div><strong>12 cursos</strong> con clases reales</div></div>
+        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">🛠️</span><div><strong>Herramientas pro</strong> IPER, OEE, ATS</div></div>
+        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">🎓</span><div><strong>Certificados</strong> con folio oficial IMDIIL</div></div>
+        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">💬</span><div><strong>Foro VIP</strong> + canal de WhatsApp</div></div>
+      </div>
+      <button class="splash-bnv__btn" onclick="document.getElementById('splash-bienvenida').remove()">Entrar al panel →</button>
+      <div class="splash-bnv__foot">Cualquier duda · <a href="https://wa.me/5212211832603" target="_blank" rel="noopener">WhatsApp +52 221 183 2603</a></div>
+    </div>
+  `;
+  document.body.appendChild(splash);
+  splash.querySelector('.splash-bnv__close').addEventListener('click', () => splash.remove());
+  splash.querySelector('.splash-bnv__overlay').addEventListener('click', () => splash.remove());
 };
 
 window.__resetPassword = async () => {
@@ -2836,7 +2884,7 @@ window.__resetPassword = async () => {
       </div>
       <div>
         <div class="brand__name">IMDIIL</div>
-        <div class="brand__plan">VIP Anual</div>
+        <div class="brand__plan" id="brand-plan-badge">VIP Anual</div>
       </div>
     </div>
 
@@ -3822,7 +3870,20 @@ const Sections = (function(){
   // ─── Lógica de desbloqueo progresivo (copiada de Sinergia) ───
   // Un curso se desbloquea cada 10 días desde fechaAlta del miembro
   // EXCEPCIÓN: si disponibleSiempre === true, visible desde día 1
+  // ═══ Modo preview para admins (probar como usuario VIP sin crear cuenta) ═══
+  // URL params: ?como=user → ignora isAdmin, se comporta como usuario normal
+  //             &dias=N    → simula N días desde el alta (para probar desbloqueos)
+  const _urlParams = new URLSearchParams(window.location.search);
+  const PREVIEW_AS_USER = _urlParams.get('como') === 'user';
+  const PREVIEW_DIAS = _urlParams.get('dias') !== null ? parseInt(_urlParams.get('dias'), 10) : null;
+
+  function esAdminReal() {
+    return window.UserState?.isAdmin && !PREVIEW_AS_USER;
+  }
+
   function calcularDiasMembresia(){
+    // Si hay override por URL (?dias=N), usar ese valor
+    if (PREVIEW_DIAS !== null && !isNaN(PREVIEW_DIAS)) return PREVIEW_DIAS;
     const md = window.memberData;
     if (!md) return 0;
     const fecha = md.fechaAlta?.toDate
@@ -3834,8 +3895,7 @@ const Sections = (function(){
   }
 
   function cursoDesbloqueado(indexCurso, curso){
-    // Admins y modo demo ven todo (para que validen contenido)
-    if (window.UserState?.isAdmin) return true;
+    if (esAdminReal()) return true;
     if (curso && curso.disponibleSiempre === true) return true;
     if (curso && curso.marcarProximamente === true) return false;
     const dias = calcularDiasMembresia();
@@ -3843,10 +3903,24 @@ const Sections = (function(){
   }
 
   function diasParaDesbloquear(indexCurso, curso){
-    if (window.UserState?.isAdmin) return 0;
+    if (esAdminReal()) return 0;
     if (curso && curso.disponibleSiempre === true) return 0;
     const dias = calcularDiasMembresia();
     return Math.max(0, (indexCurso * 8) - dias);  // ← cada 8 días
+  }
+
+  // Mostrar banner si está en modo preview (solo admins lo ven)
+  if (PREVIEW_AS_USER) {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!window.UserState?.isAdmin) return;
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:9998;background:linear-gradient(135deg,#FF7A2D,#FFB347);color:#0E0A06;padding:11px 18px;border-radius:13px;font-family:Inter,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:-.1px;box-shadow:0 12px 28px rgba(255,122,45,.35);display:flex;align-items:center;gap:14px;';
+      banner.innerHTML = `
+        <span>👁️ Vista previa como usuario VIP · día ${calcularDiasMembresia()} de membresía</span>
+        <a href="?" style="background:#0E0A06;color:#FFB347;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.3px;">Salir del preview</a>
+      `;
+      document.body.appendChild(banner);
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -3894,7 +3968,7 @@ const Sections = (function(){
   };
 
   function claseDesbloqueada(cursoId, indexClase, sesiones) {
-    if (window.UserState?.isAdmin) return true;
+    if (esAdminReal()) return true;
     if (indexClase === 0) return true; // primera siempre desbloqueada
     const prog = getProgresoCurso(cursoId);
     const anterior = sesiones[indexClase - 1];
@@ -4336,13 +4410,17 @@ const Sections = (function(){
             <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
             <input type="text" placeholder="Buscar curso o instructor…" id="cur-search" value="${cursosState.search.replace(/"/g,'&quot;')}">
           </div>
-          <select class="select" id="cur-area" style="max-width:200px;">
-            <option value="todas" ${cursosState.area==='todas'?'selected':''}>Todas las áreas</option>
-            ${(function(){
-              const set = new Set(cursos.map(c=>c.area).filter(Boolean));
-              return Array.from(set).sort().map(a=>`<option value="${a}" ${cursosState.area===a?'selected':''}>${a}</option>`).join('');
-            })()}
-          </select>
+          <div class="select-fancy">
+            <svg class="select-fancy__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <select class="select select-fancy__input" id="cur-area">
+              <option value="todas" ${cursosState.area==='todas'?'selected':''}>Todas las áreas</option>
+              ${(function(){
+                const set = new Set(cursos.map(c=>c.area).filter(Boolean));
+                return Array.from(set).sort().map(a=>`<option value="${a}" ${cursosState.area===a?'selected':''}>${a}</option>`).join('');
+              })()}
+            </select>
+            <svg class="select-fancy__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
         </div>
         <div id="cur-list"></div>
       </div>
@@ -6165,15 +6243,25 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         : (S.displayName || 'Ingeniero').split(' ').slice(0,2).join(' ');
     }
     if (avatarPlan) {
+      // Ocultamos el segundo renglón del avatar para que se vea limpio (solo nombre)
+      // El estado (VIP / Sin membresía) aparece en el brand del sidebar, no junto al avatar
+      avatarPlan.style.display = 'none';
+    }
+
+    // ─── Brand badge del sidebar (IMDIIL · estado real) ───
+    const brandPlan = document.getElementById('brand-plan-badge');
+    if (brandPlan) {
       if (S.modo === 'vip') {
-        avatarPlan.textContent = (PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name;
-        avatarPlan.style.color = '';
-      } else if (S.modo === 'sin-membresia') {
-        avatarPlan.textContent = 'SIN SUSCRIPCIÓN';
-        avatarPlan.style.color = 'var(--text-3)';
-      } else {
-        avatarPlan.textContent = 'MODO DEMO';
-        avatarPlan.style.color = 'var(--primary)';
+        const planLabel = (PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name;
+        brandPlan.textContent = planLabel;
+        brandPlan.style.color = '';
+        brandPlan.style.background = '';
+      } else if (S.modo === 'invitado') {
+        brandPlan.textContent = 'Modo demo';
+        brandPlan.style.color = '#FFB347';
+      } else { // sin-membresia
+        brandPlan.textContent = 'Sin membresía';
+        brandPlan.style.color = 'var(--text-3)';
       }
     }
 
@@ -6476,6 +6564,56 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 @keyframes splashFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes splashPopIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 @media (max-width:560px){.splash-cmp__box{padding:24px 20px;border-radius:18px}.splash-cmp__title{font-size:22px}.splash-cmp__cert{padding:16px 18px}.splash-cmp__cert-name{font-size:16px}}
+</style>
+<style>
+/* ═══ Select fancy industrial ═══ */
+.select-fancy{position:relative;display:inline-flex;align-items:center;min-width:220px;max-width:260px}
+.select-fancy__icon{position:absolute;left:14px;width:14px;height:14px;color:var(--primary);pointer-events:none;z-index:1}
+.select-fancy__chevron{position:absolute;right:13px;width:14px;height:14px;color:var(--text-2);pointer-events:none;transition:transform .2s ease;z-index:1}
+.select-fancy:hover .select-fancy__chevron{color:var(--primary)}
+.select-fancy__input{
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  width:100%;padding:11px 36px 11px 38px;
+  background:linear-gradient(180deg, var(--surface-2), var(--surface)) !important;
+  border:1px solid var(--border-2) !important;
+  border-radius:11px !important;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text);
+  letter-spacing:-.1px;cursor:pointer;transition:border-color .15s ease, box-shadow .15s ease;
+  background-image:none !important;
+}
+.select-fancy__input:hover{border-color:color-mix(in srgb,var(--primary) 45%,var(--border-2)) !important;box-shadow:0 0 0 1px color-mix(in srgb,var(--primary) 20%,transparent)}
+.select-fancy__input:focus{outline:none;border-color:var(--primary) !important;box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 30%,transparent)}
+.select-fancy__input option{background:#0E0A06;color:var(--text);padding:8px}
+</style>
+<style>
+/* ═══ Splash de BIENVENIDA post-pago ═══ */
+#splash-bienvenida{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;animation:bnvFadeIn .4s ease}
+.splash-bnv__overlay{position:absolute;inset:0;background:rgba(7,5,3,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.splash-bnv__box{position:relative;width:100%;max-width:600px;background:linear-gradient(160deg,#1A130D,#0E0A06);border:1px solid rgba(255,179,71,.3);border-radius:24px;padding:40px 36px 32px;text-align:center;box-shadow:0 36px 100px rgba(0,0,0,.7),0 0 80px color-mix(in srgb,var(--primary) 28%,transparent),inset 0 0 0 1px rgba(255,255,255,.04);animation:bnvPop .65s cubic-bezier(.22,1.4,.36,1)}
+.splash-bnv__close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease}
+.splash-bnv__close:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.splash-bnv__confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:24px}
+.splash-bnv__bit{position:absolute;top:50%;left:50%;width:9px;height:9px;background:var(--c);border-radius:2px;animation:bnvBurst 1.8s cubic-bezier(.2,.8,.25,1) var(--d) forwards;opacity:0}
+@keyframes bnvBurst{0%{opacity:0;transform:translate(0,0) rotate(0deg) scale(0)}10%{opacity:1;transform:translate(0,0) rotate(30deg) scale(1)}100%{opacity:0;transform:translate(var(--x),360px) rotate(720deg) scale(.4)}}
+.splash-bnv__icon{font-size:60px;line-height:1;margin-bottom:8px;animation:bnvSpin 6s linear infinite}
+@keyframes bnvSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.splash-bnv__kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.8px;text-transform:uppercase;font-weight:700;color:var(--primary);margin-bottom:12px}
+.splash-bnv__title{font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:800;letter-spacing:-.9px;line-height:1.15;margin-bottom:14px;color:var(--text)}
+.splash-bnv__title em{font-style:italic;background:linear-gradient(135deg,var(--primary),var(--highlight));-webkit-background-clip:text;background-clip:text;color:transparent}
+.splash-bnv__desc{font-size:14.5px;color:var(--text-2);line-height:1.65;margin-bottom:24px;max-width:480px;margin-left:auto;margin-right:auto}
+.splash-bnv__desc strong{color:var(--text);font-weight:700}
+.splash-bnv__perks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;text-align:left}
+.splash-bnv__perk{display:flex;align-items:center;gap:11px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:11px;font-size:12.5px;color:var(--text-2)}
+.splash-bnv__perk strong{color:var(--text);font-weight:700}
+.splash-bnv__perk-ic{font-size:20px;line-height:1;flex-shrink:0}
+.splash-bnv__btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:13px;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;border:1px solid transparent;cursor:pointer;background:linear-gradient(135deg,var(--primary),var(--highlight));color:#0E0A06;letter-spacing:-.1px;box-shadow:0 12px 28px color-mix(in srgb,var(--primary) 35%,transparent);transition:transform .15s ease;width:100%}
+.splash-bnv__btn:hover{transform:translateY(-1px)}
+.splash-bnv__foot{font-size:11.5px;color:var(--text-3);margin-top:18px}
+.splash-bnv__foot a{color:var(--primary);text-decoration:none;font-weight:600}
+.splash-bnv__foot a:hover{text-decoration:underline}
+@keyframes bnvFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bnvPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@media (max-width:560px){.splash-bnv__box{padding:28px 22px 24px;border-radius:18px}.splash-bnv__title{font-size:24px}.splash-bnv__perks{grid-template-columns:1fr}}
 </style>
 </body>
 </html>
