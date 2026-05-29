@@ -5592,11 +5592,14 @@ const Sections = (function(){
         aplicarFiltros();
       });
 
-      // Click en cards: si disponible → abrir Drive · si no → toast con días restantes
+      // Click en cards: si disponible → abrir visor enbebed (igual que clases) · si no → toast con días restantes
       container.querySelectorAll('.pdf-card[data-disponible="true"]').forEach(card => {
         card.addEventListener('click', () => {
           const url = card.dataset.url;
-          if (url) window.open(url, '_blank', 'noopener,noreferrer');
+          const titulo = card.dataset.titulo;
+          if (url && typeof window.abrirVisor === 'function') {
+            window.abrirVisor(url, titulo);
+          }
         });
       });
       container.querySelectorAll('.pdf-card[data-disponible="false"]').forEach(card => {
@@ -5650,7 +5653,7 @@ const Sections = (function(){
           </div>
           <div class="pdf-card__tags">
             ${disponible
-              ? `<span class="tag tag--soon" style="color:#0E0A06;border-color:#34D399;background:#34D399;font-weight:700;">Disponible</span><button class="row-btn pdf-card__btn-soon" style="margin-left:auto;background:linear-gradient(135deg, var(--primary), var(--highlight));color:#0E0A06;cursor:pointer;" onclick="event.stopPropagation();window.open('${(m.url||'').replace(/'/g,'%27')}','_blank','noopener,noreferrer')"><svg class="ic"><use href="#i-download"/></svg>Descargar</button>`
+              ? `<span class="tag tag--soon" style="color:#0E0A06;border-color:#34D399;background:#34D399;font-weight:700;">Disponible</span><button class="row-btn pdf-card__btn-soon" style="margin-left:auto;background:linear-gradient(135deg, var(--primary), var(--highlight));color:#0E0A06;cursor:pointer;" onclick="event.stopPropagation();if(typeof window.abrirVisor==='function'){window.abrirVisor('${(m.url||'').replace(/'/g,'%27')}','${tituloEsc.replace(/'/g,'&apos;')}');}"><svg class="ic"><use href="#i-download"/></svg>Abrir</button>`
               : `<span class="tag tag--soon">${diasFaltan === 1 ? 'Mañana' : 'En '+diasFaltan+' días'}</span><button class="row-btn pdf-card__btn-soon" style="margin-left:auto;opacity:.55;cursor:not-allowed;" disabled><svg class="ic"><use href="#i-clock"/></svg>Disponible pronto</button>`
             }
           </div>
