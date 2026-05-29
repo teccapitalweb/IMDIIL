@@ -2684,7 +2684,7 @@ window.UserState = {
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -2700,7 +2700,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.__db = db;
 // Exponer funciones de Firestore para que el script no-module pueda usarlas
-window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, serverTimestamp, Timestamp, db };
+window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, updateDoc, serverTimestamp, Timestamp, db };
 setPersistence(auth, browserLocalPersistence);
 
 // ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
@@ -2780,6 +2780,25 @@ if (window.__isDemoMode) {
       setTimeout(() => { window.__showWelcomeSplash && window.__showWelcomeSplash(); }, 600);
     }
 
+    // ─── Splash de activación MANUAL (admin) · lee notificacionPendiente ───
+    // El admin (activar mensual/anual o regalar días) siembra notificacionPendiente
+    // en miembros/{uid}. Aquí lo detectamos, mostramos el splash y lo marcamos.
+    if (!isCheckoutSuccess && window.UserState.modo === 'vip') {
+      try {
+        const np = window.memberData && window.memberData.notificacionPendiente;
+        if (np && !np.mostrada) {
+          setTimeout(() => {
+            window.__showWelcomeSplash && window.__showWelcomeSplash({
+              tipo: np.tipo || null,
+              plan: window.UserState.plan,
+              dias: np.dias || window.UserState.diasRegalo || null,
+              fromNotif: true
+            });
+          }, 700);
+        }
+      } catch(e) { console.warn('notificacionPendiente:', e.message); }
+    }
+
     setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 50);
 
     // Arrancar listener de notificaciones de Firestore (tiempo real)
@@ -2793,13 +2812,18 @@ window.__signOut = async () => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// 🎉 SPLASH DE BIENVENIDA POST-PAGO
-// Se muestra cuando el usuario regresa de Stripe con ?checkout=success
+// 🎉 SPLASH DE BIENVENIDA · cinematográfico
+// Se dispara: (a) post-pago Stripe (?checkout=success, sin args)
+//             (b) activación manual del admin (notificacionPendiente)
+// opts = { tipo, plan, dias, fromNotif }
 // ═══════════════════════════════════════════════════════════════
-window.__showWelcomeSplash = function() {
+window.__showWelcomeSplash = function(opts) {
+  opts = opts || {};
   const S = window.UserState || {};
   const nombre = (S.displayName || 'Ingeniero').split(' ')[0];
-  const planLabel = S.plan === 'anual' ? 'VIP Anual' : (S.plan === 'mensual' ? 'VIP Mensual' : 'VIP');
+  const plan = opts.plan || S.plan || 'mensual';
+  const esRegalo = opts.tipo === 'bienvenida_regalo' || plan === 'regalo';
+  const dias = opts.dias || null;
 
   // Quitar el query param de la URL (para que al recargar no se re-muestre)
   if (window.history.replaceState) {
@@ -2808,36 +2832,161 @@ window.__showWelcomeSplash = function() {
     window.history.replaceState({}, '', url.toString());
   }
 
+  // ── Textos de la portada según el caso ──
+  let icono, kicker, titulo, desc;
+  if (esRegalo) {
+    icono = '🎁';
+    kicker = 'ACCESO DE CORTESÍA';
+    titulo = dias ? `IMDIIL te regaló <em>${dias} días VIP</em>` : `IMDIIL te regaló <em>acceso VIP</em>`;
+    desc = `${nombre}, disfruta acceso completo sin costo durante tu periodo de cortesía. Esto es lo que tienes desbloqueado:`;
+  } else if (plan === 'anual') {
+    icono = '⭐';
+    kicker = '¡BIENVENIDO AL CLUB VIP!';
+    titulo = `Bienvenido al <em>club VIP Anual</em>`;
+    desc = `${nombre}, te uniste por todo un año a la comunidad de ingenieros industriales más activa de México. Esto es tuyo:`;
+  } else {
+    icono = '⚙️';
+    kicker = '¡MEMBRESÍA VIP ACTIVA!';
+    titulo = `Bienvenido al <em>club VIP Mensual</em>`;
+    desc = `${nombre}, ya eres parte de la comunidad de ingenieros industriales más activa de México. Esto es tuyo:`;
+  }
+
+  // ── Recorrido "película" · los beneficios del panel ──
+  const beneficios = [
+    { ic:'📚', t:'Cursos premium',   d:'Catálogo completo con clases reales que se desbloquean a tu ritmo.' },
+    { ic:'🎥', t:'Clases en vivo',   d:'Webinars con expertos y acceso a las grabaciones cuando quieras.' },
+    { ic:'📂', t:'PDFs y material',  d:'Plantillas, formatos y recursos descargables listos para usar.' },
+    { ic:'🛠️', t:'Herramientas pro', d:'IPER, OEE, generador de ATS y tablas NOM-STPS a la mano.' },
+    { ic:'🎓', t:'Certificados',     d:'Con folio oficial IMDIIL para respaldar lo que aprendes.' }
+  ];
+
+  // ── Slides: portada → beneficios → cierre ──
+  const slides = [];
+  slides.push({ tipo:'portada', icono, kicker, titulo, desc, confetti:true });
+  beneficios.forEach(b => slides.push({ tipo:'beneficio', ic:b.ic, t:b.t, d:b.d }));
+  slides.push({
+    tipo:'cierre',
+    icono: esRegalo ? '🎁' : '🚀',
+    kicker: 'TODO LISTO',
+    titulo: esRegalo ? `Aprovecha tu <em>acceso de cortesía</em>` : `Todo esto <em>ya es tuyo</em>`,
+    desc: esRegalo
+      ? 'Cuando termine tu cortesía podrás volverte miembro VIP para no perder el acceso.'
+      : 'Explora a tu ritmo. Tu panel completo te está esperando.',
+    confetti:true
+  });
+
+  const TOTAL = slides.length;
+  const AUTO_MS = 2600;
+
   let splash = document.getElementById('splash-bienvenida');
   if (splash) splash.remove();
   splash = document.createElement('div');
   splash.id = 'splash-bienvenida';
   splash.innerHTML = `
     <div class="splash-bnv__overlay"></div>
-    <div class="splash-bnv__box">
+    <div class="splash-bnv__box splash-film">
       <button class="splash-bnv__close" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <div class="splash-bnv__confetti">
-        ${Array.from({length:32}).map((_,i)=>`<span class="splash-bnv__bit" style="--d:${i*.06}s;--x:${(Math.random()*280-140)|0}px;--c:${['#FF7A2D','#FFB347','#34D399','#60A5FA','#F87171','#A78BFA'][i%6]}"></span>`).join('')}
+      <div class="splash-film__progress"><span class="splash-film__bar"></span></div>
+      <div class="splash-bnv__confetti" id="splash-confetti"></div>
+      <div class="splash-film__stage" id="splash-stage"></div>
+      <div class="splash-film__nav">
+        <button class="splash-film__skip" id="splash-skip">Saltar e ir al panel</button>
+        <div class="splash-film__dots" id="splash-dots"></div>
+        <button class="splash-bnv__btn splash-film__next" id="splash-next">Siguiente →</button>
       </div>
-      <div class="splash-bnv__icon">⚙️</div>
-      <div class="splash-bnv__kicker">¡PAGO CONFIRMADO!</div>
-      <h1 class="splash-bnv__title">Bienvenida al <em>club ${planLabel}</em></h1>
-      <p class="splash-bnv__desc">${nombre}, acabas de unirte a la comunidad de ingenieros industriales más activa de México. Tienes acceso completo a <strong>todos los cursos, clases en vivo, herramientas pro y materiales descargables</strong>.</p>
-      <div class="splash-bnv__perks">
-        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">📚</span><div><strong>12 cursos</strong> con clases reales</div></div>
-        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">🛠️</span><div><strong>Herramientas pro</strong> IPER, OEE, ATS</div></div>
-        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">🎓</span><div><strong>Certificados</strong> con folio oficial IMDIIL</div></div>
-        <div class="splash-bnv__perk"><span class="splash-bnv__perk-ic">💬</span><div><strong>Foro VIP</strong> + canal de WhatsApp</div></div>
-      </div>
-      <button class="splash-bnv__btn" onclick="document.getElementById('splash-bienvenida').remove()">Entrar al panel →</button>
       <div class="splash-bnv__foot">Cualquier duda · <a href="https://wa.me/5212211832603" target="_blank" rel="noopener">WhatsApp +52 221 183 2603</a></div>
     </div>
   `;
   document.body.appendChild(splash);
-  splash.querySelector('.splash-bnv__close').addEventListener('click', () => splash.remove());
-  splash.querySelector('.splash-bnv__overlay').addEventListener('click', () => splash.remove());
+
+  const stage   = splash.querySelector('#splash-stage');
+  const barEl   = splash.querySelector('.splash-film__bar');
+  const dotsEl  = splash.querySelector('#splash-dots');
+  const nextBtn = splash.querySelector('#splash-next');
+  const confEl  = splash.querySelector('#splash-confetti');
+
+  // dots
+  dotsEl.innerHTML = slides.map((_,i)=>`<span class="splash-film__dot" data-i="${i}"></span>`).join('');
+  const dots = Array.from(dotsEl.querySelectorAll('.splash-film__dot'));
+
+  let cur = -1, timer = null, marcado = false;
+
+  function confetti(){
+    confEl.innerHTML = Array.from({length:32}).map((_,i)=>
+      `<span class="splash-bnv__bit" style="--d:${i*.05}s;--x:${(Math.random()*280-140)|0}px;--c:${['#FF7A2D','#FFB347','#34D399','#60A5FA','#F87171','#A78BFA'][i%6]}"></span>`
+    ).join('');
+  }
+
+  function render(i){
+    const s = slides[i];
+    let html = '';
+    if (s.tipo === 'beneficio') {
+      html = `
+        <div class="splash-film__feat">
+          <div class="splash-film__feat-ic">${s.ic}</div>
+          <div class="splash-film__feat-t">${s.t}</div>
+          <div class="splash-film__feat-d">${s.d}</div>
+        </div>`;
+    } else {
+      html = `
+        <div class="splash-bnv__icon">${s.icono}</div>
+        <div class="splash-bnv__kicker">${s.kicker}</div>
+        <h1 class="splash-bnv__title">${s.titulo}</h1>
+        <p class="splash-bnv__desc">${s.desc}</p>`;
+    }
+    stage.innerHTML = `<div class="splash-film__slide">${html}</div>`;
+    if (s.confetti) confetti(); else confEl.innerHTML = '';
+  }
+
+  function paintNav(i){
+    dots.forEach((d,k)=> d.classList.toggle('is-on', k===i));
+    barEl.style.width = (((i+1)/TOTAL)*100) + '%';
+    nextBtn.textContent = (i >= TOTAL-1) ? 'Entrar al panel →' : 'Siguiente →';
+  }
+
+  function goTo(i){
+    if (i < 0) i = 0;
+    if (i > TOTAL-1) { close(); return; }
+    cur = i;
+    render(cur);
+    paintNav(cur);
+    restartAuto();
+  }
+
+  function restartAuto(){
+    if (timer) clearInterval(timer);
+    if (cur >= TOTAL-1) return; // en el cierre no auto-avanza
+    timer = setInterval(() => goTo(cur+1), AUTO_MS);
+  }
+
+  function marcarMostrada(){
+    if (marcado || !opts.fromNotif) return;
+    marcado = true;
+    try {
+      const fs = window.__fs;
+      if (fs && fs.updateDoc && S.uid) {
+        fs.updateDoc(fs.doc(fs.db, 'miembros', S.uid), { 'notificacionPendiente.mostrada': true }).catch(()=>{});
+      }
+    } catch(e){ /* noop */ }
+  }
+
+  function close(){
+    if (timer) clearInterval(timer);
+    marcarMostrada();
+    splash.style.animation = 'bnvFadeOut .3s ease forwards';
+    setTimeout(() => splash.remove(), 300);
+  }
+
+  // listeners
+  nextBtn.addEventListener('click', () => goTo(cur+1));
+  splash.querySelector('#splash-skip').addEventListener('click', close);
+  splash.querySelector('.splash-bnv__close').addEventListener('click', close);
+  splash.querySelector('.splash-bnv__overlay').addEventListener('click', close);
+  dots.forEach(d => d.addEventListener('click', () => goTo(parseInt(d.dataset.i,10))));
+
+  goTo(0);
 };
 
 window.__resetPassword = async () => {
@@ -7409,6 +7558,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   const PLAN_LABELS = {
     mensual: { name:'VIP Mensual', price:'$199', period:'MXN/mes', cycle:'mes' },
     anual:   { name:'VIP Anual',   price:'$1,899', period:'MXN/año', cycle:'año' },
+    regalo:  { name:'Acceso temporal', price:'—', period:'cortesía', cycle:'cortesía' },
     admin:   { name:'ADMIN',       price:'—',     period:'',         cycle:'—' }
   };
 
@@ -7843,8 +7993,28 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .splash-bnv__foot a{color:var(--primary);text-decoration:none;font-weight:600}
 .splash-bnv__foot a:hover{text-decoration:underline}
 @keyframes bnvFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bnvFadeOut{from{opacity:1}to{opacity:0}}
 @keyframes bnvPop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
-@media (max-width:560px){.splash-bnv__box{padding:28px 22px 24px;border-radius:18px}.splash-bnv__title{font-size:24px}.splash-bnv__perks{grid-template-columns:1fr}}
+/* ─── Recorrido "película" ─── */
+.splash-film{padding-top:34px}
+.splash-film__progress{position:absolute;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.07);border-radius:24px 24px 0 0;overflow:hidden}
+.splash-film__bar{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--highlight));transition:width .5s cubic-bezier(.4,0,.2,1)}
+.splash-film__stage{min-height:230px;display:flex;align-items:center;justify-content:center}
+.splash-film__slide{width:100%;animation:filmIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes filmIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.splash-film__feat{text-align:center;padding:8px 4px}
+.splash-film__feat-ic{font-size:66px;line-height:1;margin-bottom:18px;animation:featPop .55s cubic-bezier(.22,1.5,.36,1)}
+@keyframes featPop{from{opacity:0;transform:scale(.4) rotate(-12deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.splash-film__feat-t{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.6px;color:var(--text);margin-bottom:10px}
+.splash-film__feat-d{font-size:14.5px;color:var(--text-2);line-height:1.6;max-width:420px;margin:0 auto}
+.splash-film__nav{display:flex;align-items:center;gap:14px;margin-top:24px}
+.splash-film__skip{flex-shrink:0;background:transparent;border:none;color:var(--text-3);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 2px;transition:color .15s ease}
+.splash-film__skip:hover{color:var(--text-2);text-decoration:underline}
+.splash-film__dots{flex:1;display:flex;align-items:center;justify-content:center;gap:7px}
+.splash-film__dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:all .25s ease}
+.splash-film__dot.is-on{background:var(--primary);width:22px;border-radius:4px}
+.splash-film__next{width:auto;flex-shrink:0;padding:13px 22px}
+@media (max-width:560px){.splash-bnv__box{padding:28px 22px 24px;border-radius:18px}.splash-bnv__title{font-size:24px}.splash-bnv__perks{grid-template-columns:1fr}.splash-film__feat-ic{font-size:54px}.splash-film__feat-t{font-size:22px}.splash-film__nav{flex-wrap:wrap;gap:10px}.splash-film__next{width:100%;order:3}.splash-film__dots{order:1;width:100%}.splash-film__skip{order:2}}
 </style>
 <style>
 /* ═══ Dropdown custom · usa variables CSS para día/noche ═══ */
