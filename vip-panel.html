@@ -5431,10 +5431,35 @@ const Sections = (function(){
       </div>
     `;
     container.querySelectorAll('[data-wtab]').forEach(b=>b.addEventListener('click',()=>{webState.tab=b.dataset.wtab;renderWebinars(container);}));
-    container.querySelector('#wh-register')?.addEventListener('click',()=>{prox.registrado=!prox.registrado;Toast.success(prox.registrado?'Te inscribiste':'Cancelaste registro',prox.registrado?'Recibirás recordatorio una hora antes':'');renderWebinars(container);});
+    container.querySelector('#wh-register')?.addEventListener('click',()=>{
+      // ⚡ Paywall · solo VIP puede inscribirse a la lista de la clase
+      const S = window.UserState;
+      if (S && S.modo !== 'vip') {
+        if (typeof window.__showPaywallModal === 'function') {
+          window.__showPaywallModal({
+            title: 'Inscripción exclusiva para VIP',
+            sub: 'Activa tu suscripción para registrarte y recibir el recordatorio una hora antes'
+          });
+        }
+        return;
+      }
+      prox.registrado=!prox.registrado;
+      Toast.success(prox.registrado?'Te inscribiste':'Cancelaste registro',prox.registrado?'Recibirás recordatorio una hora antes':'');
+      renderWebinars(container);
+    });
     container.querySelector('#wh-join')?.addEventListener('click',()=>{
-      // ⚡ Abrir el enlace REAL siempre · sin importar si la clase ya empezó
-      // (los miembros se sienten más conectados pudiendo ver el enlace antes)
+      // ⚡ Bloqueo paywall · invitados y sin-membresia ven el countdown PERO no pueden unirse
+      const S = window.UserState;
+      if (S && S.modo !== 'vip') {
+        if (typeof window.__showPaywallModal === 'function') {
+          window.__showPaywallModal({
+            title: 'Clase exclusiva para miembros VIP',
+            sub: 'Activa tu suscripción para unirte a las transmisiones en vivo y ver las grabaciones'
+          });
+        }
+        return;
+      }
+      // ⚡ Solo VIP: abrir el enlace REAL siempre (sin importar si ya empezó)
       const url = prox.link || prox.zoom || window.IMDIIL_CONTACT?.zoom;
       if (!url) {
         Toast.info('Sin enlace', 'El instructor aún no ha configurado el link de transmisión');
@@ -5451,7 +5476,7 @@ const Sections = (function(){
   function renderProxHero(w){
     const f=new Date(w.fecha);
     return `
-      <div class="webinar-hero">
+      <div class="webinar-hero" data-skip-overlay="true">
         <div class="webinar-hero__info">
           <span class="sec-hero__eyebrow">Próximo en vivo</span>
           <h2 class="webinar-hero__title">${w.titulo}</h2>
@@ -5466,7 +5491,7 @@ const Sections = (function(){
           <div class="webinar-hero__actions">
             <button class="btn btn--accent" id="wh-join"><svg class="ic"><use href="#i-broadcast"/></svg>Unirme a la clase</button>
             <button class="btn btn--ghost" id="wh-register">${w.registrado?'Ya registrado ✓':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>
-            <button class="btn btn--ghost" id="wh-cal"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
+            <button class="btn btn--ghost" id="wh-cal" data-bypass-paywall="true"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
           </div>
         </div>
         <div class="webinar-hero__countdown">
@@ -5579,6 +5604,17 @@ const Sections = (function(){
     footer.querySelector('#wd-ics')?.addEventListener('click',()=>descargarICS(w));
     footer.querySelector('#wd-toggle')?.addEventListener('click',()=>{w.registrado=!w.registrado;Toast.success(w.registrado?'Te inscribiste':'Cancelaste registro',w.registrado?'Recibirás recordatorio una hora antes':'');m.close();renderWebinars(document.getElementById('dynamic-section'));});
     footer.querySelector('#wd-join')?.addEventListener('click',()=>{
+      // ⚡ Bloqueo paywall · solo VIP puede unirse
+      const S = window.UserState;
+      if (S && S.modo !== 'vip') {
+        if (typeof window.__showPaywallModal === 'function') {
+          window.__showPaywallModal({
+            title: 'Clase exclusiva para miembros VIP',
+            sub: 'Activa tu suscripción para unirte a las transmisiones en vivo'
+          });
+        }
+        return;
+      }
       const url = w.link || w.zoom;
       if (!url) { Toast.info('Sin enlace', 'El instructor aún no ha configurado el link'); return; }
       Toast.success('Abriendo transmisión…', w.titulo);
@@ -7569,7 +7605,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
     // Selectores de cards susceptibles de bloqueo
     const lockableSelectors = [
-      '.curso-card', '.webinar-card', '.pdf-card', '.cert-card',
+      '.curso-card', '.webinar-card', '.webinar-hero', '.pdf-card', '.cert-card',
       '[data-lockable="true"]', '.foro-thread', '.canal-card'
     ];
     document.querySelectorAll(lockableSelectors.join(',')).forEach(card => {
@@ -7578,19 +7614,24 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       if (card.dataset.free === 'true') return;
       card.dataset.locked = 'true';
       card.style.position = card.style.position || 'relative';
-      const overlay = document.createElement('div');
-      overlay.className = 'lock-overlay';
-      overlay.innerHTML = `
-        <div class="lock-overlay__ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <div class="lock-overlay__txt">Solo VIP</div>
-      `;
-      overlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showPaywallModal();
-      });
-      card.appendChild(overlay);
+      // ⚡ Si tiene data-skip-overlay no agregamos el overlay grande "Solo VIP"
+      // (útil cuando queremos que el contenido se vea · ej. countdown del webinar hero)
+      // Pero igual interceptamos los clicks en botones/links para mostrar paywall
+      if (card.dataset.skipOverlay !== 'true') {
+        const overlay = document.createElement('div');
+        overlay.className = 'lock-overlay';
+        overlay.innerHTML = `
+          <div class="lock-overlay__ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="lock-overlay__txt">Solo VIP</div>
+        `;
+        overlay.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showPaywallModal();
+        });
+        card.appendChild(overlay);
+      }
       // Interceptar clicks dentro de la card
       const originalClickables = card.querySelectorAll('a, button');
       originalClickables.forEach(el => {

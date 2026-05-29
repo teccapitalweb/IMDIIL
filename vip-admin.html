@@ -4260,10 +4260,13 @@ const AdminStore = {
     } catch(e) {}
 
     // ─── 4. MIEMBROS ───
+    // ⚡ NO usamos orderBy(createdAt) porque Firestore EXCLUYE docs sin ese campo.
+    // Los docs creados por el webhook Stripe pueden no tener createdAt.
+    // Ordenamos en cliente con activadoEn/lastUpdatedAt/createdAt en orden de preferencia.
     try {
-      const q = query(collection(db, 'miembros'), orderBy('createdAt', 'desc'), limit(500));
+      const q = query(collection(db, 'miembros'), limit(500));
       const u = onSnapshot(q, (snap) => {
-        this.miembros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this.miembros = snap.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
         this._emit('miembros');
       }, (err) => console.warn('[AdminStore] miembros:', err.message));
       this.unsubs.push(u);
