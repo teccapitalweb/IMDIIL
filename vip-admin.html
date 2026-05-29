@@ -3935,6 +3935,56 @@ const Pages={
       return;
     }
 
+    // 🔍 Panel de diagnóstico visible si miembros está vacío
+    // Para entender por qué no aparecen sin tener que abrir consola
+    let diagBanner = '';
+    if (store.miembros.length === 0 && window.__mbDiag) {
+      const d = window.__mbDiag;
+      let titulo = '', detalle = '', accion = '';
+      if (d.status === 'ok' && d.count === 0) {
+        titulo = 'La colección `miembros` existe pero está VACÍA';
+        detalle = 'El query a Firestore funcionó · pero no hay ningún documento en la colección. Verifica desde Firebase Console que los registros nuevos sí se estén creando.';
+        accion = 'Abre <strong>console.firebase.google.com → imdiil-vip → Firestore Database</strong>. Busca la col `miembros`. Si está vacía o no existe, los registros desde vip-auth no están escribiendo.';
+      } else if (d.status === 'error-snapshot' || d.status === 'error-getDocs') {
+        const err = d.error || {};
+        if (err.code === 'permission-denied' || (err.message || '').includes('permission')) {
+          titulo = 'Reglas Firestore bloquean la lectura';
+          detalle = `Error: <code>${err.code || ''} · ${err.message || ''}</code>`;
+          accion = 'Las reglas de Firestore no permiten que admins lean la col `miembros`. Necesitas publicar reglas que permitan a admins leer toda la colección.';
+        } else {
+          titulo = 'Error al consultar `miembros`';
+          detalle = `Código: <code>${err.code || 'sin código'}</code> · Mensaje: ${err.message || 'sin mensaje'}`;
+          accion = 'Revisa la consola del navegador para más detalles.';
+        }
+      } else if (d.status === 'iniciando') {
+        titulo = 'Aún cargando…';
+        detalle = 'El query a Firestore no ha terminado todavía.';
+        accion = 'Espera 2-3 segundos y refresca.';
+      }
+      if (titulo) {
+        diagBanner = `
+          <div style="background:linear-gradient(135deg, color-mix(in srgb,#F59E0B 18%,var(--surface-2)), var(--surface-2));border:1px solid #F59E0B;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#F59E0B;color:#0E0A06;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;color:#F59E0B;margin-bottom:4px;">🔍 Diagnóstico: ${titulo}</div>
+                <div style="font-size:13px;color:var(--text);line-height:1.55;margin-bottom:8px;">${detalle}</div>
+                <div style="font-size:12.5px;color:var(--text-2);line-height:1.55;padding:10px 12px;background:var(--surface-3);border-radius:8px;border-left:3px solid #F59E0B;">
+                  <strong style="color:var(--text);">¿Qué hacer?</strong> ${accion}
+                </div>
+                <details style="margin-top:10px;font-size:11px;color:var(--text-3);">
+                  <summary style="cursor:pointer;user-select:none;">Ver detalles técnicos</summary>
+                  <pre style="margin-top:8px;padding:10px;background:var(--surface-3);border-radius:6px;overflow-x:auto;font-size:11px;color:var(--text-2);font-family:'JetBrains Mono',monospace;line-height:1.6;">${JSON.stringify(d, null, 2).replace(/</g,'&lt;')}</pre>
+                </details>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
     const S = Pages._mbState;
     let miembros = [...store.miembros];
 
@@ -3969,14 +4019,15 @@ const Pages={
       const aA = Pages._mbEstaActivo(a) ? 1 : 0;
       const bA = Pages._mbEstaActivo(b) ? 1 : 0;
       if (aA !== bA) return bA - aA;
-      const fa = Pages._mbToDate(a.lastUpdatedAt || a.activadoEn || a.createdAt)?.getTime() || 0;
-      const fb = Pages._mbToDate(b.lastUpdatedAt || b.activadoEn || b.createdAt)?.getTime() || 0;
+      const fa = Pages._mbToDate(a.lastUpdatedAt || a.activadoEn || a.createdAt || a.fechaRegistro)?.getTime() || 0;
+      const fb = Pages._mbToDate(b.lastUpdatedAt || b.activadoEn || b.createdAt || b.fechaRegistro)?.getTime() || 0;
       return fb - fa;
     });
 
     if (miembros.length === 0) {
       const hayMiembros = store.miembros.length > 0;
       wrap.innerHTML = `
+        ${diagBanner}
         <div class="curso-empty">
           <div class="curso-empty__icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
@@ -3990,7 +4041,7 @@ const Pages={
       return;
     }
 
-    wrap.innerHTML = `<div class="curso-list">${miembros.map(m => Pages._cardMiembro(m)).join('')}</div>`;
+    wrap.innerHTML = `${diagBanner}<div class="curso-list">${miembros.map(m => Pages._cardMiembro(m)).join('')}</div>`;
   },
 
   _cardMiembro(m) {
@@ -4290,33 +4341,65 @@ const AdminStore = {
     } catch(e) {}
 
     // ─── 4. MIEMBROS ───
-    // ⚡ NO usamos orderBy porque Firestore EXCLUYE docs sin ese campo de orden.
-    // Diagnóstico: si falla, intenta también col `membresias` (algunos proyectos la usan).
+    // ⚡ Doble estrategia: onSnapshot (real-time) + getDocs fallback (lectura única).
+    // Capturamos el resultado en window.__mbDiag para mostrar diagnóstico en pantalla.
+    window.__mbDiag = { status: 'iniciando', count: 0, error: null, intentos: [] };
+    const getDocsFn = fb.getDocs;
     try {
       const q = query(collection(db, 'miembros'), limit(500));
       const u = onSnapshot(q, (snap) => {
         this.miembros = snap.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
-        console.log(`[AdminStore] miembros cargados: ${this.miembros.length} docs`);
-        if (this.miembros.length > 0) {
-          console.log('[AdminStore] primer miembro (debug):', this.miembros[0]);
-        }
+        window.__mbDiag = {
+          status: 'ok',
+          count: this.miembros.length,
+          error: null,
+          intentos: [...(window.__mbDiag?.intentos || []), `onSnapshot OK: ${this.miembros.length} docs`],
+          firstDoc: this.miembros[0] ? { id: this.miembros[0].id, email: this.miembros[0].email, plan: this.miembros[0].plan, activa: this.miembros[0].activa } : null
+        };
+        console.log(`[AdminStore] miembros · onSnapshot OK · ${this.miembros.length} docs`);
         this._emit('miembros');
-      }, (err) => {
-        console.error('[AdminStore] miembros ERROR:', err.code, err.message);
-        // Fallback: probar col `membresias` (usada por ICADEM y similares)
-        console.warn('[AdminStore] Intentando col `membresias`…');
-        try {
-          const q2 = query(collection(db, 'membresias'), limit(500));
-          const u2 = onSnapshot(q2, (snap2) => {
-            this.miembros = snap2.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
-            console.log(`[AdminStore] membresias cargados: ${this.miembros.length} docs`);
+        Pages._renderKpisMiembros?.();
+        Pages._renderListaMiembros?.();
+      }, async (err) => {
+        console.error('[AdminStore] miembros onSnapshot ERROR:', err.code, err.message);
+        window.__mbDiag = {
+          status: 'error-snapshot',
+          count: 0,
+          error: { code: err.code, message: err.message },
+          intentos: [...(window.__mbDiag?.intentos || []), `onSnapshot FALLO: ${err.code} · ${err.message}`]
+        };
+        // Fallback: getDocs (lectura única, sin real-time)
+        if (typeof getDocsFn === 'function') {
+          try {
+            const snap = await getDocsFn(query(collection(db, 'miembros'), limit(500)));
+            this.miembros = snap.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
+            window.__mbDiag = {
+              status: 'ok-getDocs',
+              count: this.miembros.length,
+              error: null,
+              intentos: [...(window.__mbDiag?.intentos || []), `getDocs OK: ${this.miembros.length} docs`],
+              firstDoc: this.miembros[0] ? { id: this.miembros[0].id, email: this.miembros[0].email } : null
+            };
+            console.log(`[AdminStore] miembros · getDocs fallback OK · ${this.miembros.length} docs`);
             this._emit('miembros');
-          }, (err2) => console.error('[AdminStore] membresias ERROR:', err2.code, err2.message));
-          this.unsubs.push(u2);
-        } catch(e2) { console.error('[AdminStore] membresias init:', e2.message); }
+            Pages._renderKpisMiembros?.();
+            Pages._renderListaMiembros?.();
+          } catch (e2) {
+            window.__mbDiag = {
+              status: 'error-getDocs',
+              count: 0,
+              error: { code: e2.code, message: e2.message },
+              intentos: [...(window.__mbDiag?.intentos || []), `getDocs FALLO: ${e2.code} · ${e2.message}`]
+            };
+            console.error('[AdminStore] miembros getDocs ERROR:', e2.code, e2.message);
+          }
+        }
       });
       this.unsubs.push(u);
-    } catch(e) { console.error('[AdminStore] miembros init exception:', e.message); }
+    } catch(e) {
+      window.__mbDiag = { status: 'exception', count: 0, error: { message: e.message }, intentos: [`Exception: ${e.message}`] };
+      console.error('[AdminStore] miembros init exception:', e.message);
+    }
 
     // ─── 5. CERTIFICADOS ───
     try {

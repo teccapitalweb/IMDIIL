@@ -511,7 +511,7 @@ setPersistence(auth, browserLocalPersistence);
      { activa:true, plan:'mensual'|'anual', activadoEn, expiraEn, ... }
    ========================================================= */
 async function ensureMiembroDoc(user, displayName, origen) {
-  if (!user || !user.uid) return;
+  if (!user || !user.uid) return { ok: false, reason: 'no-user' };
   try {
     const ref = doc(db, 'miembros', user.uid);
     const snap = await getDoc(ref);
@@ -526,9 +526,11 @@ async function ensureMiembroDoc(user, displayName, origen) {
           lastUpdatedAt: serverTimestamp()
         }, { merge: true });
       }
-      return;
+      console.log('[ensureMiembroDoc] ya existía:', user.uid);
+      return { ok: true, action: 'exists', uid: user.uid };
     }
     // No existe · crear doc inicial
+    // ⚠️ Las reglas Firestore exigen activa:false y plan:null para crear desde cliente
     await setDoc(ref, {
       uid: user.uid,
       email: (user.email || '').toLowerCase(),
@@ -541,9 +543,15 @@ async function ensureMiembroDoc(user, displayName, origen) {
       lastUpdatedAt: serverTimestamp(),
       origen: origen || 'login-web'
     });
+    console.log('[ensureMiembroDoc] ✅ doc creado en miembros/' + user.uid);
+    return { ok: true, action: 'created', uid: user.uid };
   } catch (e) {
-    // Si las reglas Firestore no permiten escritura, NO bloqueamos el flujo de auth
-    console.warn('[ensureMiembroDoc] No se pudo crear/actualizar doc miembro:', e.message);
+    console.error('[ensureMiembroDoc] ❌ Error:', e.code, '·', e.message);
+    if (e.code === 'permission-denied') {
+      console.error('  ⚠️ Las reglas Firestore están bloqueando la creación del doc.');
+      console.error('  ⚠️ Necesitas actualizar las reglas para permitir que cada usuario cree su propio doc en miembros/{uid} con activa:false');
+    }
+    return { ok: false, reason: e.code || e.message };
   }
 }
 
