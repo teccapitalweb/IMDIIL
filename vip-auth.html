@@ -6,8 +6,7 @@
 <meta name="theme-color" content="#0E0A06">
 <meta name="description" content="IMDIIL · Inicia sesión o crea tu cuenta">
 <title>IMDIIL · Acceso</title>
-<link rel="icon" type="image/png" href="assets/imdiil-favicon.png">
-<link rel="apple-touch-icon" href="assets/imdiil-apple-touch.png">
+<link rel="icon" type="image/png" href="/assets/img/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -100,7 +99,6 @@ body::after{
 }
 @keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
 .brand__logo svg{width:38px;height:38px}
-.brand__logo img{width:54px;height:54px;object-fit:contain;display:block;position:relative;z-index:1}
 .brand__name{
   font-family:'Plus Jakarta Sans','Inter',sans-serif;
   font-size:22px;font-weight:800;letter-spacing:-.6px;
@@ -291,135 +289,6 @@ body::after{
   .brand__logo{width:54px;height:54px}
   .brand__name{font-size:20px}
 }
-
-/* ═══════════════════════════════════════════════════════════════════
-   Sprint 7 · Stepper visual + Plan banner + Demo link
-   ═══════════════════════════════════════════════════════════════════ */
-
-/* Stepper visual */
-.stepper{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:6px;margin:0 0 26px;padding:0 4px;
-}
-.stepper__step{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  flex:1;min-width:0;
-}
-.stepper__dot{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--surface-2);
-  border:1.5px solid var(--border-2);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
-  color:var(--text-3);
-  flex-shrink:0;
-  transition:all .25s ease;
-}
-.stepper__step.is-done .stepper__dot{
-  background:var(--success);
-  border-color:var(--success);
-  color:#0E0A06;
-}
-.stepper__step.is-active .stepper__dot{
-  background:linear-gradient(135deg,var(--primary),var(--primary-soft));
-  border-color:var(--primary);
-  color:#0E0A06;
-  box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent);
-}
-.stepper__label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;
-  color:var(--text-3);font-weight:600;
-  text-align:center;line-height:1.3;
-}
-.stepper__step.is-active .stepper__label,
-.stepper__step.is-done .stepper__label{color:var(--text-2)}
-.stepper__step.is-active .stepper__label{color:var(--primary)}
-.stepper__connector{
-  flex:0 0 18px;height:2px;
-  background:var(--border-2);
-  margin-top:-18px;
-  border-radius:1px;
-  transition:background .25s ease;
-}
-.stepper__connector.is-done{background:var(--success)}
-@media (max-width:420px){
-  .stepper{margin-bottom:18px}
-  .stepper__label{font-size:8.5px;letter-spacing:.5px}
-  .stepper__dot{width:24px;height:24px;font-size:10px}
-  .stepper__connector{flex:0 0 10px}
-}
-
-/* Plan banner (visible cuando viene ?plan=mensual o ?plan=anual) */
-.plan-banner{
-  display:flex;align-items:center;gap:12px;
-  padding:12px 14px;border-radius:12px;
-  background:linear-gradient(135deg,
-    color-mix(in srgb,var(--primary) 10%,var(--surface-2)),
-    var(--surface-2));
-  border:1px solid color-mix(in srgb,var(--primary) 22%,transparent);
-  margin-bottom:18px;
-}
-.plan-banner__icon{
-  width:32px;height:32px;border-radius:9px;
-  background:color-mix(in srgb,var(--primary) 18%,transparent);
-  color:var(--primary);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.plan-banner__icon svg{width:16px;height:16px}
-.plan-banner__info{flex:1;min-width:0}
-.plan-banner__lbl{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9.5px;letter-spacing:1px;text-transform:uppercase;
-  color:var(--text-3);font-weight:600;margin-bottom:2px;
-}
-.plan-banner__plan{
-  font-size:13px;font-weight:700;letter-spacing:-.2px;
-  color:var(--text);
-}
-.plan-banner__price{
-  font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:18px;font-weight:800;letter-spacing:-.4px;
-  color:var(--primary);font-feature-settings:"tnum" 1;
-  white-space:nowrap;
-}
-.plan-banner__price-sub{
-  font-size:10px;color:var(--text-3);font-weight:500;
-  font-family:'JetBrains Mono',monospace;letter-spacing:.4px;
-  text-align:right;margin-top:1px;
-}
-.plan-banner__change{
-  font-size:11px;color:var(--text-3);text-decoration:none;
-  margin-left:4px;padding:4px 8px;border-radius:6px;
-  transition:all .15s ease;
-}
-.plan-banner__change:hover{color:var(--primary);background:color-mix(in srgb,var(--primary) 10%,transparent)}
-
-/* Demo link en footer del card */
-.demo-link-row{
-  margin-top:18px;padding-top:18px;
-  border-top:1px solid var(--border);
-  text-align:center;
-}
-.demo-link-row__txt{
-  font-size:11.5px;color:var(--text-3);
-  margin-bottom:8px;letter-spacing:.2px;
-}
-.demo-link-row__cta{
-  display:inline-flex;align-items:center;gap:7px;
-  font-size:12.5px;color:var(--text-2);
-  text-decoration:none;font-weight:500;
-  padding:7px 14px;border-radius:9px;
-  border:1px solid var(--border-2);
-  transition:all .15s ease;
-}
-.demo-link-row__cta:hover{
-  color:var(--primary);
-  border-color:color-mix(in srgb,var(--primary) 35%,var(--border-2));
-  background:color-mix(in srgb,var(--primary) 6%,transparent);
-}
-.demo-link-row__cta svg{width:13px;height:13px}
 </style>
 </head>
 <body>
@@ -431,52 +300,13 @@ body::after{
 <div class="wrap">
   <div class="brand">
     <div class="brand__logo">
-      <img src="assets/imdiil-isotipo.png" alt="IMDIIL">
+      <svg viewBox="0 0 64 64"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg>
     </div>
     <div class="brand__name">IMDIIL</div>
     <div class="brand__sub">Instituto Mexicano · Ing. Industrial</div>
   </div>
 
   <div class="card">
-    <!-- Stepper visual · cambia según si hay plan elegido -->
-    <div class="stepper" id="stepper">
-      <div class="stepper__step is-done" data-step="plan">
-        <div class="stepper__dot">✓</div>
-        <div class="stepper__label">Plan</div>
-      </div>
-      <div class="stepper__connector"></div>
-      <div class="stepper__step is-active" data-step="acceso">
-        <div class="stepper__dot">2</div>
-        <div class="stepper__label">Acceso</div>
-      </div>
-      <div class="stepper__connector"></div>
-      <div class="stepper__step" data-step="pago">
-        <div class="stepper__dot">3</div>
-        <div class="stepper__label">Pago</div>
-      </div>
-      <div class="stepper__connector"></div>
-      <div class="stepper__step" data-step="panel">
-        <div class="stepper__dot">4</div>
-        <div class="stepper__label">Panel</div>
-      </div>
-    </div>
-
-    <!-- Plan banner · solo visible si vino con ?plan=X -->
-    <div class="plan-banner" id="plan-banner" style="display:none">
-      <div class="plan-banner__icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3 7l7 0l-6 5l3 7l-7-4l-7 4l3-7l-6-5l7 0z"/></svg>
-      </div>
-      <div class="plan-banner__info">
-        <div class="plan-banner__lbl">Plan elegido</div>
-        <div class="plan-banner__plan" id="plan-banner-name">VIP Anual</div>
-      </div>
-      <div>
-        <div class="plan-banner__price" id="plan-banner-price">$1,899</div>
-        <div class="plan-banner__price-sub" id="plan-banner-period">MXN/año</div>
-      </div>
-      <a class="plan-banner__change" href="vip.html#planes">cambiar</a>
-    </div>
-
     <div class="tabs">
       <button class="tab is-active" data-tab="login">Iniciar sesión</button>
       <button class="tab" data-tab="register">Crear cuenta</button>
@@ -542,19 +372,10 @@ body::after{
         <span>Acepto los <a href="#" target="_blank">Términos y condiciones</a> y la <a href="#" target="_blank">Política de privacidad</a> de IMDIIL.</span>
       </label>
       <button class="btn" id="btn-register">
-        <span class="btn-label">Crear cuenta y continuar</span>
+        <span class="btn-label">Crear cuenta</span>
         <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
-      <div class="helper-text" style="margin-top:10px;text-align:center;" id="register-helper">Al crearla, te llevamos al panel para activar tu membresía.</div>
-    </div>
-
-    <!-- Link al demo · siempre visible al final del card -->
-    <div class="demo-link-row">
-      <div class="demo-link-row__txt">¿Aún no decides?</div>
-      <a class="demo-link-row__cta" href="vip-panel.html?modo=demo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8s11 8 11 8s-4 8-11 8s-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Ver el panel sin compromiso · 5 min
-      </a>
+      <div class="helper-text" style="margin-top:10px;text-align:center;">Al crearla, te llevamos al checkout para activar tu membresía VIP.</div>
     </div>
   </div>
 
@@ -586,60 +407,6 @@ const Theme = {
 };
 Theme.init();
 document.getElementById('theme-toggle').addEventListener('click', () => Theme.toggle());
-
-/* ═══════════════════════════════════════════════════════════════════
-   Sprint 7 · Detección de plan y stepper
-   ═══════════════════════════════════════════════════════════════════ */
-const PLAN_INFO = {
-  mensual: { name:'VIP Mensual', price:'$199',   period:'MXN/mes' },
-  anual:   { name:'VIP Anual',   price:'$1,899', period:'MXN/año' }
-};
-
-(function detectPlan(){
-  const params = new URLSearchParams(window.location.search);
-  let plan = params.get('plan');
-
-  // Si no viene en URL, intentar leer del localStorage (recordamos su última elección)
-  if (!plan) plan = localStorage.getItem('imdiil_intent_plan');
-
-  if (plan && PLAN_INFO[plan]) {
-    // Mostrar plan banner
-    const banner = document.getElementById('plan-banner');
-    const info = PLAN_INFO[plan];
-    document.getElementById('plan-banner-name').textContent = info.name;
-    document.getElementById('plan-banner-price').textContent = info.price;
-    document.getElementById('plan-banner-period').textContent = info.period;
-    banner.style.display = '';
-
-    // Guardar en localStorage para que el panel lo lea cuando entre
-    localStorage.setItem('imdiil_intent_plan', plan);
-
-    // Si vino con plan, abrir directamente la tab de Registro (es comprador caliente)
-    if (params.get('plan')) {
-      setTimeout(() => {
-        document.querySelector('[data-tab="register"]')?.click();
-      }, 50);
-    }
-  } else {
-    // Sin plan, el stepper inicia con "Plan" en estado activo (no done)
-    const stepperPlan = document.querySelector('.stepper__step[data-step="plan"]');
-    const firstConnector = document.querySelectorAll('.stepper__connector')[0];
-    if (stepperPlan) {
-      stepperPlan.classList.remove('is-done');
-      stepperPlan.classList.add('is-active');
-      stepperPlan.querySelector('.stepper__dot').textContent = '1';
-    }
-    const stepperAcceso = document.querySelector('.stepper__step[data-step="acceso"]');
-    if (stepperAcceso) {
-      stepperAcceso.classList.remove('is-active');
-    }
-    if (firstConnector) firstConnector.classList.remove('is-done');
-
-    // Helper text: si NO eligió plan todavía, decirle que después elegirá
-    const helper = document.getElementById('register-helper');
-    if (helper) helper.textContent = 'Al crearla, podrás elegir tu plan y activar tu suscripción.';
-  }
-})();
 
 /* ===== Tabs ===== */
 document.querySelectorAll('[data-tab]').forEach(b => {
@@ -699,6 +466,13 @@ import {
   browserLocalPersistence,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* =========================================================
    CONFIG · Firebase IMDIIL
@@ -723,11 +497,61 @@ const ADMINS = [
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 setPersistence(auth, browserLocalPersistence);
 
-/* Si ya está logueado, redirige inmediatamente */
-onAuthStateChanged(auth, (user) => {
+/* =========================================================
+   Crear o actualizar documento del miembro en Firestore
+   Se llama tanto al REGISTRARSE (crear) como al hacer LOGIN
+   (verificar que existe el doc, crear si no existe)
+   Estructura inicial:
+     { uid, email, nombre, displayName, activa:false, plan:null,
+       fechaRegistro: serverTimestamp(), origen: 'registro-web' }
+   Cuando el webhook de Stripe procese el pago, actualizará:
+     { activa:true, plan:'mensual'|'anual', activadoEn, expiraEn, ... }
+   ========================================================= */
+async function ensureMiembroDoc(user, displayName, origen) {
+  if (!user || !user.uid) return;
+  try {
+    const ref = doc(db, 'miembros', user.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      // Ya existe · si tiene activa:true NO tocar nada (es miembro pagado)
+      // Si tiene activa:false pero le falta nombre, actualizar solo eso
+      const data = snap.data();
+      if (data.activa !== true && displayName && !data.nombre) {
+        await setDoc(ref, {
+          nombre: displayName,
+          displayName: displayName,
+          lastUpdatedAt: serverTimestamp()
+        }, { merge: true });
+      }
+      return;
+    }
+    // No existe · crear doc inicial
+    await setDoc(ref, {
+      uid: user.uid,
+      email: (user.email || '').toLowerCase(),
+      nombre: displayName || user.displayName || (user.email || '').split('@')[0] || 'Sin nombre',
+      displayName: displayName || user.displayName || '',
+      activa: false,
+      plan: null,
+      fechaRegistro: serverTimestamp(),
+      createdAt: serverTimestamp(),
+      lastUpdatedAt: serverTimestamp(),
+      origen: origen || 'login-web'
+    });
+  } catch (e) {
+    // Si las reglas Firestore no permiten escritura, NO bloqueamos el flujo de auth
+    console.warn('[ensureMiembroDoc] No se pudo crear/actualizar doc miembro:', e.message);
+  }
+}
+
+/* Si ya está logueado, redirige inmediatamente · pero PRIMERO asegura el doc */
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+    // Asegurar que existe el doc (si entró por login y no tenía uno, lo creamos)
+    await ensureMiembroDoc(user, user.displayName, 'login-web');
     const isAdmin = ADMINS.includes((user.email || "").toLowerCase());
     window.location.href = isAdmin ? "vip-admin.html" : "vip-panel.html";
   }
@@ -786,13 +610,18 @@ document.getElementById('btn-register').addEventListener('click', async () => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, { displayName: name });
+
+    // ⚡ Crear doc en col `miembros` con activa:false + fechaRegistro
+    // Así el admin puede ver TODOS los registrados, no solo los que pagan
+    await ensureMiembroDoc(cred.user, name, 'registro-web');
+
     const isAdmin = ADMINS.includes(email);
-    showAlert('success', '¡Cuenta creada!', isAdmin ? 'Redirigiendo al panel admin…' : 'Redirigiendo al panel…');
+    showAlert('success', '¡Cuenta creada!', isAdmin ? 'Redirigiendo al panel admin…' : 'Redirigiendo al checkout…');
     setTimeout(() => {
-      window.location.href = isAdmin ? 'vip-admin.html' : 'vip-panel.html';
+      window.location.href = isAdmin ? 'vip-admin.html' : 'vip-checkout.html';
     }, 700);
   } catch (e) {
-    setLoading(btn, false, 'Crear cuenta y continuar');
+    setLoading(btn, false, 'Crear cuenta');
     showAlert('error', 'No pudimos crear tu cuenta', translateError(e.code));
   }
 });

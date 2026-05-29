@@ -3756,7 +3756,7 @@ const Pages={
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Comunidad</span>
           <h1 class="sec-hero__title">Miembros VIP</h1>
-          <p class="sec-hero__sub">Lista de miembros reales conectada a Firestore. <strong style="color:var(--text-2);">Gestiona planes, renovaciones y accesos manuales</strong> sin pasar por Stripe.</p>
+          <p class="sec-hero__sub">Aquí ves <strong style="color:var(--text-2);">todos los registrados</strong> (los que crearon cuenta) y <strong style="color:var(--text-2);">todos los miembros activos</strong> (los que ya pagaron). Cada uno con su fecha de registro y/o fecha de activación.</p>
           <div class="sec-hero__actions">
             <button class="btn btn--accent" id="new-mb-btn" disabled style="opacity:.55;cursor:not-allowed;" title="Llega en sub-fase 5B.2">
               <svg class="ic"><use href="#i-plus"/></svg>
@@ -3875,6 +3875,7 @@ const Pages={
     const miembros = ready ? store.miembros : [];
 
     const activos = miembros.filter(m => Pages._mbEstaActivo(m)).length;
+    const registradosSinPagar = miembros.filter(m => (m.activa !== true && m.activo !== true) && !m.plan).length;
     const mensuales = miembros.filter(m => m.plan === 'mensual' && Pages._mbEstaActivo(m)).length;
     const anuales = miembros.filter(m => m.plan === 'anual' && Pages._mbEstaActivo(m)).length;
     const regalos = miembros.filter(m => (m.esRegalo === true || m.plan === 'regalo') && Pages._mbEstaActivo(m)).length;
@@ -3884,11 +3885,20 @@ const Pages={
     const ingresoAnualProrrateado = Math.round((anuales * 1899) / 12);
     const mrr = ingresoMensual + ingresoAnualProrrateado;
 
+    // Tasa de conversión
+    const totalConCuenta = miembros.length;
+    const conversion = totalConCuenta > 0 ? Math.round((activos / totalConCuenta) * 100) : 0;
+
     wrap.innerHTML = `
       <div class="kpi-card" style="--c1:#34D399;--c2:#22C55E;">
-        <div class="kpi-card__label">Activos ahora</div>
+        <div class="kpi-card__label">Miembros activos</div>
         <div class="kpi-card__value">${activos}</div>
-        <div class="kpi-card__sub">${ready ? `de ${miembros.length} registrados` : 'Cargando…'}</div>
+        <div class="kpi-card__sub">${ready ? `de ${totalConCuenta} con cuenta · ${conversion}% conversión` : 'Cargando…'}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#94A3B8;--c2:#CBD5E1;">
+        <div class="kpi-card__label">Registrados sin pagar</div>
+        <div class="kpi-card__value">${registradosSinPagar}</div>
+        <div class="kpi-card__sub">${registradosSinPagar > 0 ? 'Oportunidad de venta' : 'Aún no hay'}</div>
       </div>
       <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
         <div class="kpi-card__label">Plan Mensual</div>
@@ -3973,8 +3983,8 @@ const Pages={
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
-          <div class="curso-empty__title">${(S.search || S.plan !== 'todos' || S.estado !== 'todos') ? 'Sin resultados' : (hayMiembros ? 'Sin miembros visibles' : 'Aún no hay miembros registrados')}</div>
-          <div class="curso-empty__sub">${(S.search || S.plan !== 'todos' || S.estado !== 'todos') ? 'Prueba con otros filtros' : 'Cuando alguien se registre aparecerá aquí'}</div>
+          <div class="curso-empty__title">${(S.search || S.plan !== 'todos' || S.estado !== 'todos') ? 'Sin resultados' : (hayMiembros ? 'Sin miembros visibles' : 'Aún no hay registros')}</div>
+          <div class="curso-empty__sub">${(S.search || S.plan !== 'todos' || S.estado !== 'todos') ? 'Prueba con otros filtros' : 'Cuando alguien cree cuenta en imdiil.com aparecerá aquí como "Sin pagar". Cuando pague, cambiará a Mensual/Anual.'}</div>
         </div>
       `;
       return;
@@ -3987,42 +3997,62 @@ const Pages={
     const activo = Pages._mbEstaActivo(m);
     const expirado = Pages._mbEstaExpirado(m);
     const esRegalo = m.esRegalo === true || m.plan === 'regalo';
+    // ⚡ Distinguir REGISTRADO (solo se registró pero no pagó) vs MIEMBRO (ya pagó)
+    const esSoloRegistrado = (m.activa !== true && m.activo !== true) && !m.plan;
 
     const planLabels = {
-      mensual: { label:'MENSUAL', color:'#3B82F6', precio:'$199' },
-      anual:   { label:'ANUAL',   color:'#FF7A2D', precio:'$1,899' },
-      regalo:  { label:'REGALO',  color:'#A855F7', precio:'GRATIS' },
-      admin:   { label:'ADMIN',   color:'#FBBF24', precio:'—' }
+      mensual: { label:'MENSUAL', color:'#3B82F6' },
+      anual:   { label:'ANUAL',   color:'#FF7A2D' },
+      regalo:  { label:'REGALO',  color:'#A855F7' },
+      admin:   { label:'ADMIN',   color:'#FBBF24' }
     };
-    const pInfo = planLabels[m.plan] || { label:'SIN PLAN', color:'#9CA3AF', precio:'—' };
-    if (esRegalo) {
-      pInfo.label = 'REGALO';
-      pInfo.color = '#A855F7';
-      pInfo.precio = m.duracionDias ? m.duracionDias + ' días' : 'GRATIS';
-    }
+    let pInfo = planLabels[m.plan] || { label:'REGISTRADO', color:'#94A3B8' };
+    if (esRegalo) pInfo = { label:'REGALO', color:'#A855F7' };
 
     const nombre = m.nombre || m.displayName || m.email?.split('@')[0] || 'Sin nombre';
     const iniciales = nombre.split(' ').filter(Boolean).slice(0,2).map(s => s[0]).join('').toUpperCase() || '??';
     const email = m.email || '—';
     const uidCorto = (m.uid || m.id || '').slice(0, 8);
 
+    // Fechas: registro vs activación
+    const fechaRegistro = Pages._mbToDate(m.fechaRegistro || m.createdAt);
+    const fechaActivacion = Pages._mbToDate(m.activadoEn || m.startedAt);
     const expira = Pages._mbToDate(m.expiraEn);
+
+    const fmtFecha = (d) => d ? d.toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' }) : '—';
+
+    // Estado · 3 escenarios visuales
     let estadoTxt = '';
     let estadoColor = '#9CA3AF';
-    if (activo) {
+    let fechaContextual = ''; // qué fecha mostrar bajo el email
+
+    if (activo && fechaActivacion) {
       estadoColor = '#34D399';
       if (expira) {
         const dias = Math.ceil((expira.getTime() - Date.now()) / 86400000);
-        estadoTxt = dias <= 7 ? `Expira en ${dias}d` : `Activo · ${expira.toLocaleDateString('es-MX', { day:'numeric', month:'short' })}`;
+        estadoTxt = dias <= 7 ? `Expira en ${dias}d` : `Hasta ${fmtFecha(expira)}`;
       } else {
         estadoTxt = 'Activo';
       }
+      fechaContextual = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;color:#34D399;"><polyline points="20 6 9 17 4 12"/></svg>Miembro desde ${fmtFecha(fechaActivacion)}`;
+    } else if (activo) {
+      // Activo pero sin fechaActivacion (raro · admin manual sin fecha)
+      estadoColor = '#34D399';
+      estadoTxt = 'Activo';
+      fechaContextual = fechaRegistro ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;color:#94A3B8;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Registrado ${fmtFecha(fechaRegistro)}` : '';
     } else if (expirado) {
       estadoColor = '#EF4444';
-      estadoTxt = `Expiró ${expira.toLocaleDateString('es-MX', { day:'numeric', month:'short' })}`;
+      estadoTxt = `Expiró ${fmtFecha(expira)}`;
+      fechaContextual = fechaActivacion ? `Era miembro desde ${fmtFecha(fechaActivacion)}` : '';
+    } else if (esSoloRegistrado) {
+      // 👈 Lo más común para el caso de Britney · solo se registró, no pagó
+      estadoColor = '#94A3B8';
+      estadoTxt = 'Sin pagar';
+      fechaContextual = fechaRegistro ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;color:#94A3B8;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Se registró ${fmtFecha(fechaRegistro)}` : 'Sin fecha de registro';
     } else {
       estadoColor = '#9CA3AF';
       estadoTxt = 'Inactivo';
+      fechaContextual = fechaRegistro ? `Registrado ${fmtFecha(fechaRegistro)}` : '';
     }
 
     const nombreEsc = nombre.replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -4036,9 +4066,9 @@ const Pages={
         </div>
         <div class="curso-row__body">
           <div class="curso-row__title">${nombreEsc}</div>
-          <div class="curso-row__meta">
-            <span class="curso-row__instructor" title="${emailEsc}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${emailEsc.length > 32 ? emailEsc.slice(0,32)+'…' : emailEsc}</span>
-            ${uidCorto ? `<span style="color:var(--text-3);font-size:11px;" title="${tooltip}">· ${uidCorto}…</span>` : ''}
+          <div class="curso-row__meta" style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">
+            <span class="curso-row__instructor" title="${emailEsc}" style="font-size:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${emailEsc.length > 36 ? emailEsc.slice(0,36)+'…' : emailEsc}${uidCorto ? ` <span style="color:var(--text-3);font-size:10.5px;" title="${tooltip}">· ${uidCorto}…</span>` : ''}</span>
+            <span style="font-size:11px;color:var(--text-3);">${fechaContextual}</span>
           </div>
         </div>
         <div class="curso-row__stats" style="gap:8px;">
@@ -4260,17 +4290,33 @@ const AdminStore = {
     } catch(e) {}
 
     // ─── 4. MIEMBROS ───
-    // ⚡ NO usamos orderBy(createdAt) porque Firestore EXCLUYE docs sin ese campo.
-    // Los docs creados por el webhook Stripe pueden no tener createdAt.
-    // Ordenamos en cliente con activadoEn/lastUpdatedAt/createdAt en orden de preferencia.
+    // ⚡ NO usamos orderBy porque Firestore EXCLUYE docs sin ese campo de orden.
+    // Diagnóstico: si falla, intenta también col `membresias` (algunos proyectos la usan).
     try {
       const q = query(collection(db, 'miembros'), limit(500));
       const u = onSnapshot(q, (snap) => {
         this.miembros = snap.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
+        console.log(`[AdminStore] miembros cargados: ${this.miembros.length} docs`);
+        if (this.miembros.length > 0) {
+          console.log('[AdminStore] primer miembro (debug):', this.miembros[0]);
+        }
         this._emit('miembros');
-      }, (err) => console.warn('[AdminStore] miembros:', err.message));
+      }, (err) => {
+        console.error('[AdminStore] miembros ERROR:', err.code, err.message);
+        // Fallback: probar col `membresias` (usada por ICADEM y similares)
+        console.warn('[AdminStore] Intentando col `membresias`…');
+        try {
+          const q2 = query(collection(db, 'membresias'), limit(500));
+          const u2 = onSnapshot(q2, (snap2) => {
+            this.miembros = snap2.docs.map(d => ({ id: d.id, uid: d.id, ...d.data() }));
+            console.log(`[AdminStore] membresias cargados: ${this.miembros.length} docs`);
+            this._emit('miembros');
+          }, (err2) => console.error('[AdminStore] membresias ERROR:', err2.code, err2.message));
+          this.unsubs.push(u2);
+        } catch(e2) { console.error('[AdminStore] membresias init:', e2.message); }
+      });
       this.unsubs.push(u);
-    } catch(e) { console.warn('[AdminStore] miembros init:', e.message); }
+    } catch(e) { console.error('[AdminStore] miembros init exception:', e.message); }
 
     // ─── 5. CERTIFICADOS ───
     try {
