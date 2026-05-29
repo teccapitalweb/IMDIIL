@@ -195,6 +195,7 @@ body{
   border-radius:20px 20px 0 0;
 }
 @keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .kpi-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--c1,var(--primary)) 35%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.12)}
 .kpi-card__label{
   font-family:'JetBrains Mono',monospace;
@@ -563,10 +564,11 @@ body{
 </head>
 <body style="visibility:hidden">
 
-<!-- ===== AUTH GUARD (Firebase) ===== -->
+<!-- ===== AUTH GUARD + FIRESTORE (Firebase) ===== -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, where, limit, onSnapshot, serverTimestamp, Timestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -580,18 +582,32 @@ const ADMINS = ["teccapitalweb@gmail.com","imdiilmx@gmail.com","imdiilconsultori
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 setPersistence(auth, browserLocalPersistence);
+
+// Exponer Firebase y helpers globalmente para que el script no-module los use
+window._fb = {
+  db, auth,
+  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
+  query, orderBy, where, limit, onSnapshot,
+  serverTimestamp, Timestamp, writeBatch, increment
+};
+window.__adminEmails = ADMINS;
 
 onAuthStateChanged(auth, (user) => {
   if (!user) { window.location.href = 'vip-auth.html'; return; }
   const email = (user.email||'').toLowerCase();
   if (!ADMINS.includes(email)) { window.location.href = 'vip-panel.html'; return; }
   // Es admin: mostrar contenido + actualizar avatar
+  window.__currentAdmin = { uid: user.uid, email, displayName: user.displayName || email };
   document.body.style.visibility = 'visible';
   const nameEl = document.querySelector('.avatar__name');
   const picEl = document.querySelector('.avatar__pic');
   if (nameEl && user.displayName) nameEl.textContent = user.displayName.split(' ').slice(0,2).join(' ');
   if (picEl) picEl.textContent = (user.displayName||email).split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase().slice(0,2);
+
+  // Disparar evento para que el resto del JS sepa que Firebase está listo
+  window.dispatchEvent(new CustomEvent('adminready', { detail: { email, uid: user.uid } }));
 });
 
 // Cerrar sesión real
@@ -856,54 +872,80 @@ const SEED={
    ========================================================= */
 const Pages={
   dashboard(p){
-    const stats={
-      miembrosActivos:SEED.miembros.filter(m=>m.activo).length,
-      miembrosTotal:SEED.miembros.length,
-      cursosActivos:SEED.cursos.filter(c=>c.activo).length,
-      certEmitidos:SEED.certificados.length,
-      webinarsProx:SEED.webinars.filter(w=>new Date(w.fecha)>new Date()).length,
-      pdfsPubl:SEED.pdfs.filter(p=>p.publicado).length,
-      ingresoMes:486*199 + 0,
-      noticiasHoy:SEED.noticias.filter(n=>n.fecha==='Hoy').length
+    // Stats reales desde AdminStore (que lee Firestore)
+    // Si AdminStore aún no carga, mostramos esqueleto · luego se re-renderea automáticamente
+    const store = window.AdminStore;
+    const ready = store?.ready;
+    const stats = ready ? store.stats : {
+      miembrosActivos: 0, miembrosTotal: 0,
+      cursosActivos: 0, cursosTotal: 0, cursosInactivos: 0,
+      certEmitidos: 0, webinarsProx: 0, pdfsPubl: 0, pdfsTotal: 0,
+      noticiasHoy: 0, notifTotal: 0
     };
+
+    // Calcular ingresos del mes basado en miembros reales (199 mensual / 1899 anual)
+    const ingresoMes = ready ? store.miembros.reduce((sum, m) => {
+      if (m.activo === false) return sum;
+      return sum + (m.plan === 'anual' || m.plan === 'Anual' ? 158 : 199); // anual ≈ 1899/12 = 158/mes
+    }, 0) : 0;
+
+    // Próximo webinar real
+    const proxWebinar = ready ? store.webinars
+      .filter(w => {
+        const f = w.fecha?.toDate ? w.fecha.toDate() : (w.fecha ? new Date(w.fecha) : null);
+        return f && f > new Date();
+      })
+      .sort((a,b) => {
+        const fa = a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha);
+        const fb = b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha);
+        return fa - fb;
+      })[0] : null;
+    const proxWebinarFmt = proxWebinar
+      ? (() => { const f = proxWebinar.fecha?.toDate ? proxWebinar.fecha.toDate() : new Date(proxWebinar.fecha); return f.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}); })()
+      : '—';
+
+    // Loader si aún no ha cargado Firestore
+    const loadingBadge = ready ? '' : `<div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;margin-top:8px;"><span style="width:8px;height:8px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;"></span>Cargando Firestore…</div>`;
+
     p.innerHTML=`
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Resumen general</span>
           <h1 class="sec-hero__title">Dashboard</h1>
           <p class="sec-hero__sub">Vista general del panel IMDIIL · miembros, contenido, certificados emitidos e ingresos del mes.</p>
+          ${loadingBadge}
         </div>
 
         <div class="kpi-grid">
           <div class="kpi-card" style="--c1:#34D399;--c2:#22C55E;">
             <div class="kpi-card__label">Miembros activos</div>
             <div class="kpi-card__value">${stats.miembrosActivos}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/${stats.miembrosTotal}</span></div>
-            <div class="kpi-card__sub"><strong>+12</strong> nuevos este mes</div>
+            <div class="kpi-card__sub">${stats.miembrosTotal > 0 ? `<strong>${Math.round(stats.miembrosActivos/stats.miembrosTotal*100)}%</strong> activos` : 'Sin miembros aún'}</div>
           </div>
           <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
-            <div class="kpi-card__label">Ingresos del mes</div>
-            <div class="kpi-card__value">$96,714</div>
-            <div class="kpi-card__sub">MXN · <strong>+18%</strong> vs abril</div>
+            <div class="kpi-card__label">Ingresos estimados/mes</div>
+            <div class="kpi-card__value">$${ingresoMes.toLocaleString('es-MX')}</div>
+            <div class="kpi-card__sub">MXN · basado en miembros activos</div>
           </div>
           <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
             <div class="kpi-card__label">Cursos activos</div>
-            <div class="kpi-card__value">${stats.cursosActivos}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/12</span></div>
-            <div class="kpi-card__sub">1 inactivo · 0 borradores</div>
+            <div class="kpi-card__value">${stats.cursosActivos}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/${stats.cursosTotal}</span></div>
+            <div class="kpi-card__sub">${stats.cursosInactivos} inactivo${stats.cursosInactivos!==1?'s':''}</div>
           </div>
           <div class="kpi-card" style="--c1:#A855F7;--c2:#C084FC;">
             <div class="kpi-card__label">Certificados emitidos</div>
             <div class="kpi-card__value">${stats.certEmitidos}</div>
-            <div class="kpi-card__sub">Este mes · <strong>+1</strong> ayer</div>
+            <div class="kpi-card__sub">Total acumulado</div>
           </div>
           <div class="kpi-card" style="--c1:#EF4444;--c2:#F87171;">
             <div class="kpi-card__label">Clases programadas</div>
             <div class="kpi-card__value">${stats.webinarsProx}</div>
-            <div class="kpi-card__sub">Próxima · 28 mayo</div>
+            <div class="kpi-card__sub">Próxima · ${proxWebinarFmt}</div>
           </div>
           <div class="kpi-card" style="--c1:#10B981;--c2:#34D399;">
             <div class="kpi-card__label">Material publicado</div>
-            <div class="kpi-card__value">${stats.pdfsPubl}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/9</span></div>
-            <div class="kpi-card__sub">1 sin publicar</div>
+            <div class="kpi-card__value">${stats.pdfsPubl}<span style="font-size:18px;color:var(--text-3);margin-left:4px;">/${stats.pdfsTotal}</span></div>
+            <div class="kpi-card__sub">${stats.pdfsTotal === 0 ? 'Sin material aún' : `${stats.pdfsTotal - stats.pdfsPubl} sin publicar`}</div>
           </div>
         </div>
 
@@ -915,16 +957,27 @@ const Pages={
               <a class="dash-card__link" data-go="miembros">Ver todos<svg class="ic"><use href="#i-arrow-right"/></svg></a>
             </div>
             <div class="mini-list">
-              ${SEED.miembros.slice(0,4).map(m=>`
-                <div class="mini-row" style="--c1:${m.plan==='Anual'?'#FF7A2D':'#3B82F6'};">
-                  <div class="mini-row__dot"><svg class="ic"><use href="#i-user"/></svg></div>
-                  <div class="mini-row__body">
-                    <div class="mini-row__title">${m.nombre}</div>
-                    <div class="mini-row__meta">${m.email} · Plan ${m.plan}</div>
-                  </div>
-                  <span class="tag ${m.activo?'tag--success':'tag--danger'}">${m.activo?'Activo':'Inactivo'}</span>
-                </div>
-              `).join('')}
+              ${(() => {
+                const arr = ready ? store.miembros.slice(0,4) : [];
+                if (arr.length === 0) {
+                  return `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">${ready ? 'Sin miembros registrados aún' : 'Cargando…'}</div>`;
+                }
+                return arr.map(m => {
+                  const planLabel = m.plan === 'anual' || m.plan === 'Anual' ? 'Anual' : 'Mensual';
+                  const c1 = planLabel === 'Anual' ? '#FF7A2D' : '#3B82F6';
+                  const activo = m.activo !== false;
+                  return `
+                    <div class="mini-row" style="--c1:${c1};">
+                      <div class="mini-row__dot"><svg class="ic"><use href="#i-user"/></svg></div>
+                      <div class="mini-row__body">
+                        <div class="mini-row__title">${m.nombre || m.displayName || m.email?.split('@')[0] || 'Miembro'}</div>
+                        <div class="mini-row__meta">${m.email || '—'} · Plan ${planLabel}</div>
+                      </div>
+                      <span class="tag ${activo?'tag--success':'tag--danger'}">${activo?'Activo':'Inactivo'}</span>
+                    </div>
+                  `;
+                }).join('');
+              })()}
             </div>
           </div>
 
@@ -934,37 +987,53 @@ const Pages={
               <a class="dash-card__link" data-go="webinars">Programar<svg class="ic"><use href="#i-arrow-right"/></svg></a>
             </div>
             <div class="mini-list">
-              ${SEED.webinars.filter(w=>new Date(w.fecha)>new Date()).map(w=>{
-                const f=new Date(w.fecha);const fmt=f.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})+' · '+String(f.getHours()).padStart(2,'0')+':'+String(f.getMinutes()).padStart(2,'0');
-                return `
-                <div class="mini-row" style="--c1:#EF4444;">
-                  <div class="mini-row__dot"><svg class="ic"><use href="#i-broadcast"/></svg></div>
-                  <div class="mini-row__body">
-                    <div class="mini-row__title">${w.titulo}</div>
-                    <div class="mini-row__meta">${w.instructor} · ${w.registrados} registrados</div>
-                  </div>
-                  <span class="mini-row__right">${fmt}</span>
-                </div>`;
-              }).join('')}
+              ${(() => {
+                const proximas = ready ? store.webinars.filter(w => {
+                  const f = w.fecha?.toDate ? w.fecha.toDate() : (w.fecha ? new Date(w.fecha) : null);
+                  return f && f > new Date();
+                }) : [];
+                if (proximas.length === 0) {
+                  return `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">${ready ? 'Sin clases programadas' : 'Cargando…'}</div>`;
+                }
+                return proximas.slice(0,4).map(w => {
+                  const f = w.fecha?.toDate ? w.fecha.toDate() : new Date(w.fecha);
+                  const fmt = f.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}) + ' · ' + String(f.getHours()).padStart(2,'0') + ':' + String(f.getMinutes()).padStart(2,'0');
+                  return `
+                    <div class="mini-row" style="--c1:#EF4444;">
+                      <div class="mini-row__dot"><svg class="ic"><use href="#i-broadcast"/></svg></div>
+                      <div class="mini-row__body">
+                        <div class="mini-row__title">${w.titulo || 'Sin título'}</div>
+                        <div class="mini-row__meta">${w.instructor || '—'} · ${w.registrados || 0} registrados</div>
+                      </div>
+                      <span class="mini-row__right">${fmt}</span>
+                    </div>`;
+                }).join('');
+              })()}
             </div>
           </div>
 
           <div class="dash-card">
             <div class="dash-card__header">
-              <div class="dash-card__title"><svg class="ic"><use href="#i-book"/></svg>Cursos top</div>
+              <div class="dash-card__title"><svg class="ic"><use href="#i-book"/></svg>Cursos publicados</div>
               <a class="dash-card__link" data-go="cursos">Gestionar<svg class="ic"><use href="#i-arrow-right"/></svg></a>
             </div>
             <div class="mini-list">
-              ${[...SEED.cursos].sort((a,b)=>b.inscritos-a.inscritos).slice(0,4).map(c=>`
-                <div class="mini-row" style="--c1:#FF7A2D;">
-                  <div class="mini-row__dot"><svg class="ic"><use href="#i-book"/></svg></div>
-                  <div class="mini-row__body">
-                    <div class="mini-row__title">${c.titulo}</div>
-                    <div class="mini-row__meta">${c.area} · ${c.horas}h</div>
+              ${(() => {
+                const arr = ready ? [...store.cursos].sort((a,b) => (b.inscritos||0) - (a.inscritos||0)).slice(0,4) : [];
+                if (arr.length === 0) {
+                  return `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">${ready ? 'Sin cursos publicados' : 'Cargando…'}</div>`;
+                }
+                return arr.map(c => `
+                  <div class="mini-row" style="--c1:#FF7A2D;">
+                    <div class="mini-row__dot"><svg class="ic"><use href="#i-book"/></svg></div>
+                    <div class="mini-row__body">
+                      <div class="mini-row__title">${(c.titulo || 'Sin título').slice(0,55)}${(c.titulo||'').length>55?'…':''}</div>
+                      <div class="mini-row__meta">${c.area || '—'} · ${c.horas || c.sesiones?.length || 0}h</div>
+                    </div>
+                    <span class="mini-row__right">${c.inscritos || 0}</span>
                   </div>
-                  <span class="mini-row__right">${c.inscritos}</span>
-                </div>
-              `).join('')}
+                `).join('');
+              })()}
             </div>
           </div>
 
@@ -974,16 +1043,33 @@ const Pages={
               <a class="dash-card__link" data-go="noticias">Ver cron<svg class="ic"><use href="#i-arrow-right"/></svg></a>
             </div>
             <div class="mini-list">
-              ${SEED.noticias.slice(0,4).map(n=>`
-                <div class="mini-row" style="--c1:${n.color};">
-                  <div class="mini-row__dot"><svg class="ic"><use href="#i-news"/></svg></div>
-                  <div class="mini-row__body">
-                    <div class="mini-row__title">${n.titulo.length>50?n.titulo.slice(0,50)+'…':n.titulo}</div>
-                    <div class="mini-row__meta">${n.fuente} · ${n.cat}</div>
-                  </div>
-                  <span class="mini-row__right">${n.fecha}</span>
-                </div>
-              `).join('')}
+              ${(() => {
+                const arr = ready ? store.noticias.slice(0,4) : [];
+                if (arr.length === 0) {
+                  return `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">${ready ? 'Sin noticias del cron' : 'Cargando…'}</div>`;
+                }
+                return arr.map(n => {
+                  const colorMap = {'Seguridad':'#FF7A2D','NOM-STPS':'#3B82F6','Industria MX':'#10B981','Logística':'#A855F7'};
+                  const c = colorMap[n.categoria] || colorMap[n.cat] || '#FF7A2D';
+                  const titulo = n.titulo || 'Sin título';
+                  const f = n.fecha?.toDate ? n.fecha.toDate() : (n.fecha ? new Date(n.fecha) : null);
+                  let fechaStr = '—';
+                  if (f) {
+                    const diff = (Date.now() - f.getTime()) / 86400000;
+                    fechaStr = diff < 1 ? 'Hoy' : (diff < 2 ? 'Ayer' : f.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}));
+                  }
+                  return `
+                    <div class="mini-row" style="--c1:${c};">
+                      <div class="mini-row__dot"><svg class="ic"><use href="#i-news"/></svg></div>
+                      <div class="mini-row__body">
+                        <div class="mini-row__title">${titulo.length>50 ? titulo.slice(0,50)+'…' : titulo}</div>
+                        <div class="mini-row__meta">${n.fuente || '—'} · ${n.categoria || n.cat || 'General'}</div>
+                      </div>
+                      <span class="mini-row__right">${fechaStr}</span>
+                    </div>
+                  `;
+                }).join('');
+              })()}
             </div>
           </div>
 
@@ -1540,12 +1626,185 @@ function navigate(section){
   document.querySelector('.main')?.scrollTo({top:0,behavior:'instant'});
 }
 
+/* =========================================================
+   ADMIN STORE · estado reactivo conectado a Firestore
+   Inspirado en la lógica de Sinergia · cargas en tiempo real
+   ========================================================= */
+const AdminStore = {
+  // Datos vivos (se llenan al conectar con Firestore)
+  cursos: [],
+  pdfs: [],
+  webinars: [],
+  miembros: [],
+  certificados: [],
+  noticias: [],
+  notificaciones: [],
+
+  // Estado del store
+  ready: false,
+  unsubs: [],  // listeners de onSnapshot para limpiar al cerrar sesión
+  listeners: new Set(),  // callbacks que se ejecutan al cambiar el store
+
+  /**
+   * Inicializa todos los listeners de Firestore.
+   * Se llama UNA SOLA VEZ cuando admin está autenticado.
+   */
+  init() {
+    const fb = window._fb;
+    if (!fb || !fb.db) {
+      console.warn('[AdminStore] Firebase no listo · reintentando en 500ms');
+      setTimeout(() => this.init(), 500);
+      return;
+    }
+    if (this.ready) return; // ya inicializado
+    this.ready = true;
+
+    const { db, collection, query, orderBy, onSnapshot, limit } = fb;
+
+    // ─── 1. CURSOS ───
+    try {
+      const q = query(collection(db, 'cursos'), orderBy('titulo', 'asc'));
+      const u = onSnapshot(q, (snap) => {
+        this.cursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('cursos');
+      }, (err) => console.warn('[AdminStore] cursos:', err.message));
+      this.unsubs.push(u);
+    } catch(e) { console.warn('[AdminStore] cursos init:', e.message); }
+
+    // ─── 2. MATERIALES (PDFs) ───
+    try {
+      const q = query(collection(db, 'materiales'), orderBy('fecha', 'desc'));
+      const u = onSnapshot(q, (snap) => {
+        this.pdfs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('pdfs');
+      }, (err) => { /* col aún no existe · OK */ });
+      this.unsubs.push(u);
+    } catch(e) { /* OK · se creará al primer doc */ }
+
+    // ─── 3. WEBINARS / Clases en vivo ───
+    try {
+      const q = query(collection(db, 'webinars'), orderBy('fecha', 'desc'));
+      const u = onSnapshot(q, (snap) => {
+        this.webinars = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('webinars');
+      }, (err) => { /* OK */ });
+      this.unsubs.push(u);
+    } catch(e) {}
+
+    // ─── 4. MIEMBROS ───
+    try {
+      const q = query(collection(db, 'miembros'), orderBy('createdAt', 'desc'), limit(500));
+      const u = onSnapshot(q, (snap) => {
+        this.miembros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('miembros');
+      }, (err) => console.warn('[AdminStore] miembros:', err.message));
+      this.unsubs.push(u);
+    } catch(e) { console.warn('[AdminStore] miembros init:', e.message); }
+
+    // ─── 5. CERTIFICADOS ───
+    try {
+      const q = query(collection(db, 'certificados'), orderBy('emitido', 'desc'), limit(200));
+      const u = onSnapshot(q, (snap) => {
+        this.certificados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('certificados');
+      }, (err) => { /* OK · col puede no existir aún */ });
+      this.unsubs.push(u);
+    } catch(e) {}
+
+    // ─── 6. NOTICIAS (col que ya existe del cron) ───
+    try {
+      const q = query(collection(db, 'noticias_auto'), orderBy('fecha', 'desc'), limit(20));
+      const u = onSnapshot(q, (snap) => {
+        this.noticias = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('noticias');
+      }, (err) => { /* OK */ });
+      this.unsubs.push(u);
+    } catch(e) {}
+
+    // ─── 7. NOTIFICACIONES ───
+    try {
+      const q = query(collection(db, 'notificaciones'), orderBy('createdAt', 'desc'), limit(50));
+      const u = onSnapshot(q, (snap) => {
+        this.notificaciones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        this._emit('notificaciones');
+      }, (err) => { /* OK */ });
+      this.unsubs.push(u);
+    } catch(e) {}
+
+    console.log('[AdminStore] ✅ Listeners de Firestore activos');
+  },
+
+  // KPIs calculados en tiempo real
+  get stats() {
+    const miembrosActivos = this.miembros.filter(m => m.activo !== false).length;
+    const cursosActivos = this.cursos.filter(c => c.activo !== false && c.disponible !== false).length;
+    const cursosInactivos = this.cursos.length - cursosActivos;
+    const ahora = new Date();
+    const webinarsProx = this.webinars.filter(w => {
+      const f = w.fecha?.toDate ? w.fecha.toDate() : (w.fecha ? new Date(w.fecha) : null);
+      return f && f > ahora;
+    }).length;
+    const pdfsPubl = this.pdfs.filter(p => p.publicado !== false).length;
+    const noticiasHoy = this.noticias.filter(n => {
+      const f = n.fecha?.toDate ? n.fecha.toDate() : (n.fecha ? new Date(n.fecha) : null);
+      if (!f) return false;
+      const diff = (Date.now() - f.getTime()) / 86400000;
+      return diff < 1;
+    }).length;
+    return {
+      miembrosActivos,
+      miembrosTotal: this.miembros.length,
+      cursosActivos,
+      cursosTotal: this.cursos.length,
+      cursosInactivos,
+      certEmitidos: this.certificados.length,
+      webinarsProx,
+      pdfsPubl,
+      pdfsTotal: this.pdfs.length,
+      noticiasHoy,
+      notifTotal: this.notificaciones.length
+    };
+  },
+
+  // Sistema de suscripción a cambios (para re-renderear vistas que dependen de los datos)
+  subscribe(callback) {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  },
+  _emit(what) {
+    // Re-renderear la sección actual si depende de los datos
+    this.listeners.forEach(cb => { try { cb(what); } catch(e){} });
+    // Auto re-render de la sección actual del panel
+    this._autoRerender();
+  },
+  _autoRerender() {
+    // Detecta cuál es la sección activa y re-renderiza
+    const active = document.querySelector('.nav-item.is-active[data-section]');
+    if (!active) return;
+    const section = active.dataset.section;
+    const p = document.getElementById('page');
+    if (!p) return;
+    // Solo dashboard se auto-rerendera ahora · las demás secciones se harán en Fases siguientes
+    if (section === 'dashboard' && Pages[section]) {
+      Pages[section](p);
+    }
+  },
+
+  // Limpiar listeners (al cerrar sesión)
+  destroy() {
+    this.unsubs.forEach(u => { try { u(); } catch(e){} });
+    this.unsubs = [];
+    this.ready = false;
+  }
+};
+window.AdminStore = AdminStore;
+
 document.addEventListener('DOMContentLoaded',()=>{
   Theme.init();
   document.getElementById('theme-toggle').addEventListener('click',()=>Theme.toggle());
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(b=>b.addEventListener('click',e=>{
     e.preventDefault();
-    if(b.id==='btn-logout'){if(confirm('¿Cerrar sesión?')){if(window.__signOut)window.__signOut();else Toast.info('Cerrando…');}return;}
+    if(b.id==='btn-logout'){if(confirm('¿Cerrar sesión?')){AdminStore.destroy();if(window.__signOut)window.__signOut();else Toast.info('Cerrando…');}return;}
     if(b.dataset.section)navigate(b.dataset.section);
   }));
   document.getElementById('modal-close').addEventListener('click',()=>Modal.close());
@@ -1553,6 +1812,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('keydown',e=>{if(e.key==='Escape')Modal.close();});
   navigate('dashboard');
 });
+
+// Cuando Firebase confirma admin, arrancar listeners de Firestore
+window.addEventListener('adminready', () => {
+  AdminStore.init();
+});
+// Por si el evento ya pasó antes de que carguemos esto
+if (window.__currentAdmin) AdminStore.init();
 </script>
 
 </body>
