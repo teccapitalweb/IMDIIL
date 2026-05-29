@@ -2053,9 +2053,9 @@ const Pages={
       });
     });
 
-    // ─── Botón nuevo curso (placeholder para 3B) ───
+    // ─── Botón Nuevo curso · abre modal vacío ───
     p.querySelector('#new-curso-btn')?.addEventListener('click', () => {
-      Toast.info('Próximamente', 'El modal de crear curso llega en la siguiente entrega · Fase 3B');
+      Pages._abrirModalCurso(null);
     });
   },
 
@@ -2328,19 +2328,444 @@ const Pages={
       });
     });
 
-    // Editar (placeholder)
+    // Editar curso · abre modal con datos precargados
     wrap.querySelectorAll('[data-edit]').forEach(btn => {
       btn.addEventListener('click', () => {
-        Toast.info('Próximamente', 'El editor de cursos llega en la siguiente entrega · Fase 3B');
+        const id = btn.dataset.edit;
+        const curso = window.AdminStore.cursos.find(c => c.id === id);
+        if (!curso) { Toast.error('Curso no encontrado'); return; }
+        Pages._abrirModalCurso(curso);
       });
     });
 
-    // Eliminar (placeholder)
+    // Eliminar curso · confirmación + deleteDoc
     wrap.querySelectorAll('[data-del]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        Toast.info('Próximamente', 'La eliminación segura llega en la entrega 3C · con confirmación');
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.del;
+        const curso = window.AdminStore.cursos.find(c => c.id === id);
+        if (!curso) return;
+        const titulo = curso.titulo || 'este curso';
+        const ok = confirm(`¿Eliminar el curso "${titulo}"?\n\nSe eliminará con todas sus clases y materiales. Los miembros perderán acceso a este contenido.\n\nEsta acción NO se puede deshacer.`);
+        if (!ok) return;
+        const fb = window._fb;
+        if (!fb || !fb.deleteDoc || !fb.doc || !fb.db) { Toast.error('Firestore no listo'); return; }
+        try {
+          await fb.deleteDoc(fb.doc(fb.db, 'cursos', id));
+          Toast.success('Curso eliminado', titulo);
+        } catch (err) {
+          console.error('[curso] error eliminar:', err);
+          Toast.error('No se pudo eliminar', err.message || 'Intenta de nuevo');
+        }
       });
     });
+  },
+
+  // ════════════════════════════════════════════════════════════════════
+  // MODAL CREAR/EDITAR CURSO · Sub-fase 3B (lógica copiada de Sinergia)
+  // Si recibe null → crea curso nuevo · si recibe objeto → edita
+  // ════════════════════════════════════════════════════════════════════
+
+  // Estado del modal (sesiones y materiales que se editan)
+  _modalCurso: {
+    sesiones: [],
+    materiales: [],
+    editandoId: null
+  },
+
+  _abrirModalCurso(curso) {
+    const esEdicion = !!curso;
+    this._modalCurso.editandoId = esEdicion ? curso.id : null;
+    // Clonar para no mutar el original
+    this._modalCurso.sesiones = esEdicion && Array.isArray(curso.sesiones)
+      ? curso.sesiones.map(s => ({ numero: s.numero, titulo: s.titulo || '', url: s.url || '' }))
+      : [];
+    this._modalCurso.materiales = esEdicion && Array.isArray(curso.materiales)
+      ? curso.materiales.map(m => ({
+          titulo: m.titulo || '',
+          url: m.url || '',
+          disponibleSiempre: m.disponibleSiempre === true,
+          desbloquearEnDias: typeof m.desbloquearEnDias === 'number' ? m.desbloquearEnDias : null
+        }))
+      : [];
+
+    // Áreas dinámicas (de los cursos existentes + las estándar de IMDIIL)
+    const store = window.AdminStore;
+    const areasExistentes = store?.ready
+      ? Array.from(new Set(store.cursos.map(c => c.area).filter(Boolean)))
+      : [];
+    const areasEstandar = ['Calidad','Seguridad','Logística','Mantenimiento','Producción','Energía','Medio Ambiente','Operaciones','Gestión','Finanzas','Administrativo'];
+    const areas = Array.from(new Set([...areasEstandar, ...areasExistentes])).sort();
+
+    const c = esEdicion ? curso : {};
+    const horasAuto = (c.sesiones?.length) || 0;
+    const horasVal = (typeof c.horas === 'number' && c.horas > 0) ? c.horas : horasAuto;
+    const dispSiempre = c.disponibleSiempre === true;
+
+    // ─── Construcción del body del modal ───
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <input type="hidden" id="curso-edit-id" value="${esEdicion ? c.id : ''}">
+
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <label class="label" for="cf-titulo">Título del curso *</label>
+          <input type="text" class="input" id="cf-titulo" maxlength="120" value="${(c.titulo || '').replace(/"/g,'&quot;')}" placeholder="Ej: Kaizen · Innovación continua" required>
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label" for="cf-desc">Descripción</label>
+          <textarea class="input" id="cf-desc" rows="3" maxlength="500" placeholder="Descripción breve · qué aprenderá el estudiante">${(c.descripcion || '').replace(/</g,'&lt;')}</textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="label" for="cf-area">Área *</label>
+          <select class="select" id="cf-area">
+            ${areas.map(a => `<option value="${a}" ${a === c.area ? 'selected' : ''}>${a}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="label" for="cf-nivel">Nivel</label>
+          <select class="select" id="cf-nivel">
+            <option value="Básico" ${c.nivel === 'Básico' ? 'selected' : ''}>Básico</option>
+            <option value="Intermedio" ${(c.nivel === 'Intermedio' || !c.nivel) ? 'selected' : ''}>Intermedio</option>
+            <option value="Avanzado" ${c.nivel === 'Avanzado' ? 'selected' : ''}>Avanzado</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="label" for="cf-instructor">Instructor</label>
+          <input type="text" class="input" id="cf-instructor" value="${(c.instructor || '').replace(/"/g,'&quot;')}" placeholder="Ej: Ing. María López">
+        </div>
+
+        <div class="form-field">
+          <label class="label" for="cf-horas">Horas totales <span style="font-weight:400;color:var(--text-3);font-size:11px;">(default = nº de clases)</span></label>
+          <input type="number" class="input" id="cf-horas" min="1" max="200" value="${horasVal}" placeholder="${horasAuto || 1}">
+        </div>
+        <div class="form-field">
+          <label class="label" for="cf-portada">URL portada <span style="font-weight:400;color:var(--text-3);font-size:11px;">(opcional)</span></label>
+          <input type="url" class="input" id="cf-portada" value="${(c.portada || '').replace(/"/g,'&quot;')}" placeholder="https://…">
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label">Disponibilidad para los miembros</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+            <label class="curso-disp-opt" style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--border-2);border-radius:10px;cursor:pointer;background:var(--surface-2);">
+              <input type="radio" name="cf-disp" value="progresivo" style="margin-top:3px;flex-shrink:0;" ${!dispSiempre ? 'checked' : ''}>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Desbloqueo progresivo (cada 8 días)</div>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.4;">El curso aparece según su <strong>orden</strong>: curso 0 → día 0 · curso 1 → día 8 · curso 2 → día 16 · etc.</div>
+              </div>
+            </label>
+            <label class="curso-disp-opt" style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--border-2);border-radius:10px;cursor:pointer;background:var(--surface-2);">
+              <input type="radio" name="cf-disp" value="siempre" style="margin-top:3px;flex-shrink:0;" ${dispSiempre ? 'checked' : ''}>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Disponible ahora (modo prueba)</div>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.4;">El curso se ve <strong>de inmediato</strong>, sin esperar los 8 días. Útil para verificar que las clases funcionen antes de lanzarlo.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sesiones (clases) -->
+      <div style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:12px;padding:14px;margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--text);">Clases del curso (videos)</div>
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">Las clases se desbloquean en orden. El alumno completa una para acceder a la siguiente.</div>
+          </div>
+          <button type="button" class="btn btn--ghost" id="cf-add-sesion" style="font-size:12px;padding:7px 13px;">
+            <svg class="ic" style="width:13px;height:13px;"><use href="#i-plus"/></svg>
+            Agregar clase
+          </button>
+        </div>
+        <div id="cf-sesiones-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Materiales (PDFs) -->
+      <div style="background:var(--surface-2);border:1px solid var(--border-2);border-radius:12px;padding:14px;margin-top:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--text);">Materiales descargables (PDFs, Excel, etc.)</div>
+            <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">Documentos extra · cada uno con su propia disponibilidad.</div>
+          </div>
+          <button type="button" class="btn btn--ghost" id="cf-add-material" style="font-size:12px;padding:7px 13px;">
+            <svg class="ic" style="width:13px;height:13px;"><use href="#i-plus"/></svg>
+            Agregar material
+          </button>
+        </div>
+        <div id="cf-materiales-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    `;
+
+    // ─── Footer ───
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="cf-cancel">Cancelar</button>
+      <button class="btn btn--accent" id="cf-save">
+        <svg class="ic"><use href="#i-check"/></svg>
+        ${esEdicion ? 'Guardar cambios' : 'Crear curso'}
+      </button>
+    `;
+
+    // ─── Abrir modal ───
+    Modal.open({
+      title: esEdicion ? 'Editar curso' : 'Nuevo curso',
+      subtitle: esEdicion ? c.titulo : 'Define datos, clases y materiales',
+      icon: 'i-book',
+      body,
+      footer
+    });
+
+    // ─── Renderizar listas dinámicas iniciales ───
+    this._renderSesionesModal();
+    this._renderMaterialesModal();
+
+    // ─── Bindings ───
+    body.querySelector('#cf-add-sesion').addEventListener('click', () => Pages._agregarSesionModal());
+    body.querySelector('#cf-add-material').addEventListener('click', () => Pages._agregarMaterialModal());
+    footer.querySelector('#cf-cancel').addEventListener('click', () => Modal.close());
+    footer.querySelector('#cf-save').addEventListener('click', () => Pages._submitCurso());
+  },
+
+  // ─── Sesiones dinámicas ───
+  _renderSesionesModal() {
+    const cont = document.getElementById('cf-sesiones-list');
+    if (!cont) return;
+    const sesiones = this._modalCurso.sesiones;
+    if (sesiones.length === 0) {
+      cont.innerHTML = `<div style="padding:18px;text-align:center;color:var(--text-3);font-size:12.5px;font-style:italic;">Aún no hay clases. Usa "+ Agregar clase" arriba.</div>`;
+      return;
+    }
+    cont.innerHTML = sesiones.map((s, idx) => `
+      <div style="display:flex;gap:8px;align-items:flex-start;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <span style="background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;letter-spacing:.6px;padding:5px 8px;border-radius:6px;flex-shrink:0;margin-top:4px;white-space:nowrap;">CLASE ${idx + 1}</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;">
+          <input type="text" class="input" placeholder="Título de la clase" value="${(s.titulo || '').replace(/"/g,'&quot;')}" data-sesion-idx="${idx}" data-sesion-campo="titulo" style="font-size:13px;padding:8px 11px;">
+          <input type="url" class="input" placeholder="URL del video (Google Drive, YouTube, etc.)" value="${(s.url || '').replace(/"/g,'&quot;')}" data-sesion-idx="${idx}" data-sesion-campo="url" style="font-size:13px;padding:8px 11px;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+          <button type="button" class="curso-card__action" data-sesion-mover="${idx}" data-delta="-1" ${idx === 0 ? 'disabled' : ''} title="Subir" style="width:28px;height:24px;${idx === 0 ? 'opacity:.4;cursor:not-allowed;' : ''}">▲</button>
+          <button type="button" class="curso-card__action" data-sesion-mover="${idx}" data-delta="1" ${idx === sesiones.length - 1 ? 'disabled' : ''} title="Bajar" style="width:28px;height:24px;${idx === sesiones.length - 1 ? 'opacity:.4;cursor:not-allowed;' : ''}">▼</button>
+          <button type="button" class="curso-card__action curso-card__action--danger" data-sesion-del="${idx}" title="Eliminar clase" style="width:28px;height:24px;">✕</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Bindings
+    cont.querySelectorAll('[data-sesion-campo]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(input.dataset.sesionIdx, 10);
+        const campo = input.dataset.sesionCampo;
+        if (Pages._modalCurso.sesiones[idx]) Pages._modalCurso.sesiones[idx][campo] = e.target.value;
+      });
+    });
+    cont.querySelectorAll('[data-sesion-mover]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.sesionMover, 10);
+        const delta = parseInt(btn.dataset.delta, 10);
+        Pages._moverSesionModal(idx, delta);
+      });
+    });
+    cont.querySelectorAll('[data-sesion-del]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.sesionDel, 10);
+        Pages._eliminarSesionModal(idx);
+      });
+    });
+  },
+
+  _agregarSesionModal() {
+    this._modalCurso.sesiones.push({ numero: this._modalCurso.sesiones.length + 1, titulo: '', url: '' });
+    this._renderSesionesModal();
+  },
+  _moverSesionModal(idx, delta) {
+    const arr = this._modalCurso.sesiones;
+    const newIdx = idx + delta;
+    if (newIdx < 0 || newIdx >= arr.length) return;
+    [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+    arr.forEach((s, i) => { s.numero = i + 1; });
+    this._renderSesionesModal();
+  },
+  _eliminarSesionModal(idx) {
+    this._modalCurso.sesiones.splice(idx, 1);
+    this._modalCurso.sesiones.forEach((s, i) => { s.numero = i + 1; });
+    this._renderSesionesModal();
+  },
+
+  // ─── Materiales dinámicos ───
+  _renderMaterialesModal() {
+    const cont = document.getElementById('cf-materiales-list');
+    if (!cont) return;
+    const mats = this._modalCurso.materiales;
+    if (mats.length === 0) {
+      cont.innerHTML = `<div style="padding:18px;text-align:center;color:var(--text-3);font-size:12.5px;font-style:italic;">Sin materiales por ahora. Usa "+ Agregar material".</div>`;
+      return;
+    }
+    cont.innerHTML = mats.map((m, idx) => `
+      <div style="display:flex;gap:8px;align-items:flex-start;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <span style="background:color-mix(in srgb,#3B82F6 14%,transparent);color:#3B82F6;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:800;letter-spacing:.6px;padding:5px 8px;border-radius:6px;flex-shrink:0;margin-top:4px;white-space:nowrap;">MAT ${idx + 1}</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;">
+          <input type="text" class="input" placeholder="Título (ej. Guía OEE.pdf)" value="${(m.titulo || '').replace(/"/g,'&quot;')}" data-mat-idx="${idx}" data-mat-campo="titulo" style="font-size:13px;padding:8px 11px;">
+          <input type="url" class="input" placeholder="URL de descarga (Google Drive, etc.)" value="${(m.url || '').replace(/"/g,'&quot;')}" data-mat-idx="${idx}" data-mat-campo="url" style="font-size:13px;padding:8px 11px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-2);cursor:pointer;margin-top:2px;">
+            <input type="checkbox" data-mat-idx="${idx}" data-mat-siempre="1" ${m.disponibleSiempre ? 'checked' : ''} style="cursor:pointer;">
+            Disponible siempre (sin esperar desbloqueo)
+          </label>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+          <button type="button" class="curso-card__action curso-card__action--danger" data-mat-del="${idx}" title="Eliminar material" style="width:28px;height:24px;">✕</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Bindings
+    cont.querySelectorAll('[data-mat-campo]').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(input.dataset.matIdx, 10);
+        const campo = input.dataset.matCampo;
+        if (Pages._modalCurso.materiales[idx]) Pages._modalCurso.materiales[idx][campo] = e.target.value;
+      });
+    });
+    cont.querySelectorAll('[data-mat-siempre]').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const idx = parseInt(cb.dataset.matIdx, 10);
+        if (Pages._modalCurso.materiales[idx]) Pages._modalCurso.materiales[idx].disponibleSiempre = e.target.checked;
+      });
+    });
+    cont.querySelectorAll('[data-mat-del]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.matDel, 10);
+        Pages._eliminarMaterialModal(idx);
+      });
+    });
+  },
+
+  _agregarMaterialModal() {
+    this._modalCurso.materiales.push({ titulo: '', url: '', disponibleSiempre: false, desbloquearEnDias: null });
+    this._renderMaterialesModal();
+  },
+  _eliminarMaterialModal(idx) {
+    this._modalCurso.materiales.splice(idx, 1);
+    this._renderMaterialesModal();
+  },
+
+  // ─── Submit del modal · guarda en Firestore ───
+  async _submitCurso() {
+    const btn = document.getElementById('cf-save');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.65'; btn.style.cursor = 'wait'; }
+
+    try {
+      // Recolectar
+      const editId = document.getElementById('curso-edit-id').value.trim();
+      const titulo = document.getElementById('cf-titulo').value.trim();
+      const descripcion = document.getElementById('cf-desc').value.trim();
+      const area = document.getElementById('cf-area').value;
+      const nivel = document.getElementById('cf-nivel').value;
+      const instructor = document.getElementById('cf-instructor').value.trim();
+      const portada = document.getElementById('cf-portada').value.trim();
+      const horasRaw = parseInt(document.getElementById('cf-horas').value, 10);
+      const dispRadio = document.querySelector('input[name="cf-disp"]:checked');
+      const disponibleSiempre = dispRadio?.value === 'siempre';
+
+      // Validaciones
+      if (!titulo) { Toast.error('Falta el título', 'El curso necesita un nombre'); document.getElementById('cf-titulo')?.focus(); throw new Error('skip'); }
+      if (!area) { Toast.error('Falta el área', 'Selecciona una categoría'); throw new Error('skip'); }
+
+      // Validar sesiones (todas necesitan título + URL válida)
+      const sesionesLimpias = [];
+      for (let i = 0; i < this._modalCurso.sesiones.length; i++) {
+        const s = this._modalCurso.sesiones[i];
+        if (!s.titulo?.trim() || !s.url?.trim()) {
+          Toast.error(`Clase ${i + 1} incompleta`, 'Completa el título y la URL del video');
+          throw new Error('skip');
+        }
+        try { new URL(s.url); } catch(e) {
+          Toast.error(`Clase ${i + 1}: URL inválida`, 'Verifica que el enlace sea correcto');
+          throw new Error('skip');
+        }
+        sesionesLimpias.push({ numero: i + 1, titulo: s.titulo.trim(), url: s.url.trim() });
+      }
+
+      // Validar materiales (si tienen título, también necesitan URL · y al revés)
+      const matsLimpios = [];
+      for (let i = 0; i < this._modalCurso.materiales.length; i++) {
+        const m = this._modalCurso.materiales[i];
+        const tieneTit = !!m.titulo?.trim();
+        const tieneUrl = !!m.url?.trim();
+        if (tieneTit !== tieneUrl) {
+          Toast.error(`Material ${i + 1} incompleto`, 'Necesita título Y URL');
+          throw new Error('skip');
+        }
+        if (!tieneTit && !tieneUrl) continue; // skip vacío
+        try { new URL(m.url); } catch(e) {
+          Toast.error(`Material ${i + 1}: URL inválida`, 'Verifica el enlace');
+          throw new Error('skip');
+        }
+        matsLimpios.push({
+          titulo: m.titulo.trim(),
+          url: m.url.trim(),
+          disponibleSiempre: m.disponibleSiempre === true,
+          desbloquearEnDias: typeof m.desbloquearEnDias === 'number' ? m.desbloquearEnDias : null
+        });
+      }
+
+      // Horas: si el usuario no puso nada o puso 0/inválido → usa nº de sesiones (mínimo 1)
+      const horas = (Number.isFinite(horasRaw) && horasRaw > 0) ? horasRaw : Math.max(1, sesionesLimpias.length);
+
+      // Construir objeto base
+      const data = {
+        titulo,
+        descripcion,
+        area,
+        nivel,
+        instructor,
+        horas,
+        sesiones: sesionesLimpias,
+        materiales: matsLimpios,
+        disponibleSiempre,
+        activo: true,
+        disponible: true
+      };
+      if (portada) data.portada = portada;
+
+      // Firebase
+      const fb = window._fb;
+      if (!fb || !fb.db || !fb.addDoc || !fb.updateDoc || !fb.collection || !fb.doc || !fb.serverTimestamp) {
+        Toast.error('Firestore no listo', 'Espera unos segundos y reintenta');
+        throw new Error('skip');
+      }
+
+      if (editId) {
+        // ─── EDITAR ───
+        await fb.updateDoc(fb.doc(fb.db, 'cursos', editId), data);
+        Toast.success('Curso actualizado', titulo);
+      } else {
+        // ─── CREAR ───
+        // Asignar orden al final del catálogo
+        const store = window.AdminStore;
+        const ordenes = store?.cursos?.map(c => typeof c.orden === 'number' ? c.orden : 0) || [];
+        const maxOrden = ordenes.length ? Math.max(...ordenes) : -1;
+        data.orden = maxOrden + 1;
+        data.createdAt = fb.serverTimestamp();
+        data.creadoPor = window.__currentAdmin?.email || 'admin';
+        await fb.addDoc(fb.collection(fb.db, 'cursos'), data);
+        Toast.success('¡Curso creado!', `${titulo} · aparecerá en orden #${data.orden}`);
+      }
+
+      Modal.close();
+    } catch (err) {
+      if (err.message !== 'skip') {
+        console.error('[curso submit]', err);
+        if (err.message?.includes('permission')) {
+          Toast.error('Permisos faltantes', 'Las reglas de Firestore no permiten escritura en `cursos`');
+        } else {
+          Toast.error('Error al guardar', err.message || 'Intenta de nuevo');
+        }
+      }
+    } finally {
+      const btn2 = document.getElementById('cf-save');
+      if (btn2) { btn2.disabled = false; btn2.style.opacity = '1'; btn2.style.cursor = 'pointer'; }
+    }
   },
 
   cursos_oldPlaceholder(p){
