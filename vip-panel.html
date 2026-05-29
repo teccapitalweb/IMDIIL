@@ -4552,6 +4552,12 @@ const Sections = (function(){
     }
   }
   window.__cargarWebinarsFirestore = cargarWebinarsFirestore;
+  // Permite forzar re-carga después de que auth esté listo
+  window.__resetWebinarsCache = function() {
+    _webinarsLoaded = false;
+    _webinarsLoading = false;
+    webinars.length = 0;
+  };
 
   const usuario = {nombre:'Ingeniero',xp:450,racha:7,diasActivos:23};
 
@@ -5417,16 +5423,15 @@ const Sections = (function(){
     container.querySelectorAll('[data-wtab]').forEach(b=>b.addEventListener('click',()=>{webState.tab=b.dataset.wtab;renderWebinars(container);}));
     container.querySelector('#wh-register')?.addEventListener('click',()=>{prox.registrado=!prox.registrado;Toast.success(prox.registrado?'Te inscribiste':'Cancelaste registro',prox.registrado?'Recibirás recordatorio una hora antes':'');renderWebinars(container);});
     container.querySelector('#wh-join')?.addEventListener('click',()=>{
-      const target=new Date(prox.fecha);
-      const now=new Date();
-      const diffMin=(target-now)/60000;
-      if(diffMin>15){
-        Toast.info('Aún no es momento','La sala abre 15 min antes · '+formatFechaLarga(target));
+      // ⚡ Abrir el enlace REAL siempre · sin importar si la clase ya empezó
+      // (los miembros se sienten más conectados pudiendo ver el enlace antes)
+      const url = prox.link || prox.zoom || window.IMDIIL_CONTACT?.zoom;
+      if (!url) {
+        Toast.info('Sin enlace', 'El instructor aún no ha configurado el link de transmisión');
         return;
       }
-      const url=prox.zoom||window.IMDIIL_CONTACT.zoom;
-      Toast.success('Abriendo Zoom…',prox.titulo);
-      window.open(url,'_blank');
+      Toast.success('Abriendo transmisión…', prox.titulo);
+      window.open(url, '_blank', 'noopener,noreferrer');
     });
     container.querySelector('#wh-cal')?.addEventListener('click',()=>descargarICS(prox));
     renderWebList();
@@ -5553,7 +5558,9 @@ const Sections = (function(){
     `;
     const footer=document.createElement('div');
     if(isProx){
-      footer.innerHTML=`<button class="btn btn--ghost" id="wd-close">Cerrar</button><button class="btn btn--ghost" id="wd-ics"><svg class="ic"><use href="#i-calendar"/></svg>Calendario</button><button class="btn btn--accent" id="wd-toggle">${w.registrado?'Cancelar registro':'Inscribirme'}<svg class="ic"><use href="#i-arrow-right"/></svg></button>`;
+      const linkUrl = (w.link || w.zoom || '').replace(/"/g,'&quot;');
+      const joinBtn = linkUrl ? `<button class="btn btn--accent" id="wd-join"><svg class="ic"><use href="#i-broadcast"/></svg>Unirme a la clase</button>` : '';
+      footer.innerHTML=`<button class="btn btn--ghost" id="wd-close">Cerrar</button><button class="btn btn--ghost" id="wd-ics"><svg class="ic"><use href="#i-calendar"/></svg>Calendario</button><button class="btn btn--ghost" id="wd-toggle">${w.registrado?'Cancelar registro':'Inscribirme'}</button>${joinBtn}`;
     } else {
       footer.innerHTML=`<button class="btn btn--ghost" id="wd-close">Cerrar</button><button class="btn btn--accent" id="wd-play">${w.visto?'Volver a ver':'Reproducir'}<svg class="ic"><use href="#i-play"/></svg></button>`;
     }
@@ -5561,6 +5568,12 @@ const Sections = (function(){
     footer.querySelector('#wd-close').addEventListener('click',()=>m.close());
     footer.querySelector('#wd-ics')?.addEventListener('click',()=>descargarICS(w));
     footer.querySelector('#wd-toggle')?.addEventListener('click',()=>{w.registrado=!w.registrado;Toast.success(w.registrado?'Te inscribiste':'Cancelaste registro',w.registrado?'Recibirás recordatorio una hora antes':'');m.close();renderWebinars(document.getElementById('dynamic-section'));});
+    footer.querySelector('#wd-join')?.addEventListener('click',()=>{
+      const url = w.link || w.zoom;
+      if (!url) { Toast.info('Sin enlace', 'El instructor aún no ha configurado el link'); return; }
+      Toast.success('Abriendo transmisión…', w.titulo);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    });
     footer.querySelector('#wd-play')?.addEventListener('click',()=>{w.visto=true;Toast.info('Reproductor','En Sprint 4 esto reproducirá el video real.');m.close();renderWebinars(document.getElementById('dynamic-section'));});
   }
 
@@ -7478,6 +7491,19 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
     // 6. Aplicar candados a contenido bloqueado (re-aplica al cambiar de sección)
     setTimeout(applyLocksToCurrentView, 100);
+
+    // 7. ⚡ Re-cargar el widget "Próxima clase en vivo" AHORA que Firebase auth está listo
+    // Antes corría en init() pero las reglas Firestore bloqueaban sin auth.
+    // Lo llamamos en background sin bloquear el resto del UI.
+    setTimeout(() => {
+      if (typeof initCountdown === 'function') {
+        // Resetear cache para forzar la re-carga de Firestore con auth válido
+        if (typeof window.__resetWebinarsCache === 'function') {
+          window.__resetWebinarsCache();
+        }
+        initCountdown().catch(e => console.warn('[initCountdown post-auth]', e));
+      }
+    }, 150);
   };
 
   // ─── Timer del demo ───
