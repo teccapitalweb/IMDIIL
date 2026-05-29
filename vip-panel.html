@@ -5432,100 +5432,231 @@ const Sections = (function(){
   }
 
   /* ============================ PDFs Y MATERIAL ============================ */
-  const pdfs = [
-    {titulo:'Plantilla de Matriz IPER en Excel',cat:'Seguridad industrial',paginas:14,size:'2.4 MB',fecha:'2026-05-22',tag:'new'},
-    {titulo:'NOM-035-STPS · Cuestionario de identificación',cat:'Seguridad industrial',paginas:22,size:'1.8 MB',fecha:'2026-05-15',tag:'down'},
-    {titulo:'Guía OEE: cálculo y mejora paso a paso',cat:'Calidad',paginas:32,size:'4.1 MB',fecha:'2026-05-10',tag:null},
-    {titulo:'Checklist auditoría 5S en planta',cat:'Calidad',paginas:8,size:'820 KB',fecha:'2026-05-08',tag:'down'},
-    {titulo:'Formato ATS · Análisis de Trabajo Seguro',cat:'Seguridad industrial',paginas:6,size:'480 KB',fecha:'2026-05-03',tag:null},
-    {titulo:'Indicadores logísticos · Excel con Power Query',cat:'Logística',paginas:18,size:'3.6 MB',fecha:'2026-04-28',tag:null},
-    {titulo:'NOM-019-STPS · Acta de constitución de comisión',cat:'Seguridad industrial',paginas:4,size:'320 KB',fecha:'2026-04-22',tag:'down'},
-    {titulo:'Procedimiento LOTO (Lock Out · Tag Out)',cat:'Seguridad industrial',paginas:12,size:'1.5 MB',fecha:'2026-04-15',tag:null},
-    {titulo:'Plantilla AMEF de proceso (FMEA)',cat:'Calidad',paginas:6,size:'540 KB',fecha:'2026-04-10',tag:null}
-  ];
+  // ⚡ AHORA conectado a Firestore · agrega los materiales de TODOS los cursos
+  // Lógica idéntica a Sinergia · respeta desbloqueo progresivo (8 días) y "siempre disponible"
 
-  function renderPDFs(container){
+  // Recorre todos los cursos y aplana sus materiales con metadata del curso de origen
+  function _allMaterialesFromCursos() {
+    if (!Array.isArray(cursos)) return [];
+    const out = [];
+    cursos.forEach((c, cursoIdx) => {
+      if (!Array.isArray(c.materiales)) return;
+      c.materiales.forEach((m, idx) => {
+        out.push({
+          id: `${c.id}_${idx}`,
+          cursoId: c.id,
+          cursoOrden: typeof c.orden === 'number' ? c.orden : cursoIdx,
+          cursoTitulo: c.titulo || 'Sin título',
+          cursoArea: c.area || 'General',
+          cursoDisponibleSiempre: c.disponibleSiempre === true,
+          titulo: m.titulo || 'Sin título',
+          url: m.url || '',
+          disponibleSiempre: m.disponibleSiempre === true,
+          desbloquearEnDias: typeof m.desbloquearEnDias === 'number' ? m.desbloquearEnDias : null
+        });
+      });
+    });
+    return out;
+  }
+
+  // Determina si un material está disponible para este usuario AHORA
+  function _materialDisponible(mat) {
+    if (esAdminReal()) return true;
+    if (mat.disponibleSiempre === true) return true;
+    if (mat.cursoDisponibleSiempre === true) return true;
+    const dias = calcularDiasMembresia();
+    // Si tiene día manual, usar ese · si no, usar la cola por orden del curso
+    const diaDesbloqueo = (mat.desbloquearEnDias !== null && mat.desbloquearEnDias !== undefined)
+      ? mat.desbloquearEnDias
+      : (mat.cursoOrden * 8);
+    return dias >= diaDesbloqueo;
+  }
+
+  function _diasParaMaterial(mat) {
+    if (_materialDisponible(mat)) return 0;
+    const dias = calcularDiasMembresia();
+    const diaDesbloqueo = (mat.desbloquearEnDias !== null && mat.desbloquearEnDias !== undefined)
+      ? mat.desbloquearEnDias
+      : (mat.cursoOrden * 8);
+    return Math.max(0, diaDesbloqueo - dias);
+  }
+
+  // Inferir tamaño desde la URL (heurística simple · solo si no hay metadata)
+  function _inferirTipoMaterial(url) {
+    const u = (url || '').toLowerCase();
+    if (u.endsWith('.xlsx') || u.endsWith('.xls') || u.includes('sheets.google')) return 'excel';
+    if (u.endsWith('.pdf')) return 'pdf';
+    if (u.endsWith('.pptx') || u.endsWith('.ppt') || u.includes('presentation')) return 'ppt';
+    if (u.endsWith('.docx') || u.endsWith('.doc') || u.includes('document')) return 'doc';
+    return 'pdf'; // default
+  }
+
+  async function renderPDFs(container){
+    // Asegurar cursos cargados antes de renderizar
+    if (!_cursosLoaded && !_cursosLoading) {
+      container.innerHTML = `
+        <div class="fade-up">
+          <div class="sec-hero">
+            <span class="sec-hero__eyebrow">Descargables</span>
+            <h1 class="sec-hero__title">PDFs y material</h1>
+            <p class="sec-hero__sub">Cargando materiales desde Firestore…</p>
+          </div>
+        </div>`;
+      await cargarCursosFirestore();
+    }
+
+    // Re-leer materiales aplanados (de los cursos reales)
+    const materialesTodos = _allMaterialesFromCursos();
+    const areasUnicas = Array.from(new Set(materialesTodos.map(m => m.cursoArea).filter(Boolean))).sort();
+
+    // KPIs
+    const total = materialesTodos.length;
+    const disponiblesAhora = materialesTodos.filter(m => _materialDisponible(m)).length;
+    const proximos = total - disponiblesAhora;
+    const tipos = { excel:0, pdf:0, ppt:0, doc:0 };
+    materialesTodos.forEach(m => { const t = _inferirTipoMaterial(m.url); tipos[t]++; });
+
     container.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Descargables</span>
           <h1 class="sec-hero__title">PDFs y material</h1>
-          <p class="sec-hero__sub">Plantillas en Excel, checklists, procedimientos y formatos oficiales listos para usar en tu planta. <strong style="color:var(--primary);">Estamos preparando los materiales reales</strong> — pronto disponibles para descarga.</p>
+          <p class="sec-hero__sub">Plantillas en Excel, checklists, procedimientos y formatos oficiales listos para tu planta. <strong style="color:var(--primary);">Se desbloquean según tus días de membresía</strong>, igual que las clases.</p>
         </div>
-        <div class="kpi-grid">
-          <div class="kpi-card"><div class="kpi-card__label">Total PDFs</div><div class="kpi-card__value">${pdfs.length}</div></div>
-          <div class="kpi-card"><div class="kpi-card__label">Descargados</div><div class="kpi-card__value">0</div></div>
-          <div class="kpi-card"><div class="kpi-card__label">Nuevos este mes</div><div class="kpi-card__value">${pdfs.filter(p=>p.tag==='new').length}</div></div>
-          <div class="kpi-card"><div class="kpi-card__label">Plantillas Excel</div><div class="kpi-card__value">5</div></div>
-        </div>
-        <div class="toolbar">
-          <div class="searchbar">
-            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
-            <input type="text" placeholder="Buscar material…">
+        ${total === 0 ? `
+          <div style="text-align:center;padding:60px 24px;background:var(--surface-2);border:1px dashed var(--border-2);border-radius:14px;margin-top:18px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:color-mix(in srgb, var(--primary) 12%, transparent);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">Sin materiales aún</div>
+            <div style="font-size:13px;color:var(--text-3);max-width:360px;margin:0 auto;line-height:1.5;">Los materiales descargables aparecerán aquí cuando se suban desde el panel de administración.</div>
           </div>
-          <div class="dd-fancy" data-dd="pdf-area">
-            <button type="button" class="dd-fancy__trigger" id="pdf-area-trigger" aria-haspopup="listbox" aria-expanded="false">
-              <svg class="dd-fancy__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              <span class="dd-fancy__label" id="pdf-area-label">Todas las áreas</span>
-              <svg class="dd-fancy__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="dd-fancy__menu" id="pdf-area-menu" role="listbox">
-              <button type="button" class="dd-fancy__item is-selected" data-value="todas" role="option">Todas las áreas</button>
-              <button type="button" class="dd-fancy__item" data-value="Seguridad industrial" role="option">Seguridad industrial</button>
-              <button type="button" class="dd-fancy__item" data-value="Calidad" role="option">Calidad</button>
-              <button type="button" class="dd-fancy__item" data-value="Logística" role="option">Logística</button>
+        ` : `
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-card__label">Total materiales</div><div class="kpi-card__value">${total}</div></div>
+            <div class="kpi-card"><div class="kpi-card__label">Disponibles ahora</div><div class="kpi-card__value">${disponiblesAhora}</div></div>
+            <div class="kpi-card"><div class="kpi-card__label">Próximamente</div><div class="kpi-card__value">${proximos}</div></div>
+            <div class="kpi-card"><div class="kpi-card__label">Plantillas Excel</div><div class="kpi-card__value">${tipos.excel}</div></div>
+          </div>
+          <div class="toolbar">
+            <div class="searchbar">
+              <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
+              <input type="text" id="pdf-search-input" placeholder="Buscar material…">
+            </div>
+            <div class="dd-fancy" data-dd="pdf-area">
+              <button type="button" class="dd-fancy__trigger" id="pdf-area-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <svg class="dd-fancy__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                <span class="dd-fancy__label" id="pdf-area-label">Todas las áreas</span>
+                <svg class="dd-fancy__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="dd-fancy__menu" id="pdf-area-menu" role="listbox">
+                <button type="button" class="dd-fancy__item is-selected" data-value="todas" role="option">Todas las áreas</button>
+                ${areasUnicas.map(a => `<button type="button" class="dd-fancy__item" data-value="${a}" role="option">${a}</button>`).join('')}
+              </div>
             </div>
           </div>
-        </div>
-        <div class="pdfs-grid">
-          ${pdfs.map(p=>{
-            const colorMap={'Seguridad industrial':'#FF7A2D','Calidad':'#10B981','Logística':'#3B82F6'};
-            const iconMap={'Seguridad industrial':'i-shield-check','Calidad':'i-gauge','Logística':'i-chart-bar'};
-            const c=colorMap[p.cat]||'#10B981';
-            const ic=iconMap[p.cat]||'i-news';
-            return `
-            <article class="pdf-card pdf-card--soon" style="--pdf-color:${c};">
-              <div class="pdf-card__top">
-                <div class="pdf-card__icon"><svg class="ic"><use href="#${ic}"/></svg></div>
-                <span class="pdf-card__size">${p.size}</span>
-              </div>
-              <div class="pdf-card__body">
-                <div class="pdf-card__title">${p.titulo}</div>
-                <div class="pdf-card__meta">
-                  <span><svg class="ic"><use href="#i-folder"/></svg>${p.cat}</span>
-                  <span><svg class="ic"><use href="#i-news"/></svg>${p.paginas} pág.</span>
-                </div>
-                <div class="pdf-card__tags">
-                  <span class="tag tag--soon">Próximamente</span>
-                  <button class="row-btn pdf-card__btn-soon" style="margin-left:auto;opacity:.55;cursor:not-allowed;" data-soon><svg class="ic"><use href="#i-clock"/></svg>Disponible pronto</button>
-                </div>
-              </div>
-            </article>
-          `;}).join('')}
-        </div>
+          <div class="pdfs-grid" id="pdfs-grid-container">
+            ${materialesTodos.map(m => _renderPdfCard(m)).join('')}
+          </div>
+        `}
       </div>
     `;
-    // Bind del dropdown custom de áreas (PDFs)
+
+    // Bind búsqueda
     setTimeout(() => {
-      bindFancyDropdown('pdf-area', (value) => {
-        const cards = container.querySelectorAll('.pdf-card');
+      const grid = container.querySelector('#pdfs-grid-container');
+      const search = container.querySelector('#pdf-search-input');
+      let currentArea = 'todas';
+
+      const aplicarFiltros = () => {
+        if (!grid) return;
+        const q = (search?.value || '').toLowerCase().trim();
+        const cards = grid.querySelectorAll('.pdf-card');
         cards.forEach(card => {
-          if (value === 'todas') { card.style.display = ''; return; }
-          const cat = card.querySelector('.pdf-card__meta span')?.textContent?.trim() || '';
-          card.style.display = cat.includes(value) ? '' : 'none';
+          const titulo = (card.dataset.titulo || '').toLowerCase();
+          const curso = (card.dataset.curso || '').toLowerCase();
+          const area = card.dataset.area || '';
+          const matchArea = currentArea === 'todas' || area === currentArea;
+          const matchSearch = !q || titulo.includes(q) || curso.includes(q);
+          card.style.display = (matchArea && matchSearch) ? '' : 'none';
+        });
+      };
+
+      if (search) search.addEventListener('input', aplicarFiltros);
+
+      // Bind del dropdown custom de áreas
+      bindFancyDropdown('pdf-area', (value) => {
+        currentArea = value;
+        aplicarFiltros();
+      });
+
+      // Click en cards: si disponible → abrir Drive · si no → toast con días restantes
+      container.querySelectorAll('.pdf-card[data-disponible="true"]').forEach(card => {
+        card.addEventListener('click', () => {
+          const url = card.dataset.url;
+          if (url) window.open(url, '_blank', 'noopener,noreferrer');
         });
       });
-      // Bind click "Disponible pronto" → toast honesto
-      container.querySelectorAll('[data-soon]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (typeof Toast !== 'undefined') {
-            Toast.info('Próximamente', 'Estamos preparando los materiales reales para descarga');
+      container.querySelectorAll('.pdf-card[data-disponible="false"]').forEach(card => {
+        card.addEventListener('click', () => {
+          const dias = parseInt(card.dataset.diasFaltan, 10);
+          if (Toast) {
+            Toast.info(
+              dias === 1 ? 'Disponible mañana' : `Disponible en ${dias} días`,
+              'Este material se desbloqueará junto con su curso · sigue avanzando'
+            );
           }
         });
       });
     }, 50);
+  }
+
+  function _renderPdfCard(m) {
+    const colorMap = {
+      'Seguridad':'#EF4444','Calidad':'#10B981','Logística':'#3B82F6',
+      'Mantenimiento':'#A855F7','Producción':'#F59E0B','Energía':'#FFB347',
+      'Medio Ambiente':'#14B8A6','Operaciones':'#F97316','Gestión':'#8B5CF6',
+      'Finanzas':'#06B6D4','Administrativo':'#EC4899','General':'#FF7A2D'
+    };
+    const c = colorMap[m.cursoArea] || '#FF7A2D';
+    const tipo = _inferirTipoMaterial(m.url);
+    const iconMap = { excel:'i-chart-bar', pdf:'i-news', ppt:'i-chart-bar', doc:'i-news' };
+    const ic = iconMap[tipo] || 'i-news';
+    const tipoLabel = { excel:'Excel', pdf:'PDF', ppt:'PPT', doc:'DOC' }[tipo] || 'Archivo';
+    const disponible = _materialDisponible(m);
+    const diasFaltan = _diasParaMaterial(m);
+    const tituloEsc = (m.titulo || '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const cursoEsc = (m.cursoTitulo || '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+    return `
+      <article class="pdf-card ${!disponible ? 'pdf-card--soon' : ''}" style="--pdf-color:${c};cursor:pointer;"
+        data-disponible="${disponible}"
+        data-url="${(m.url||'').replace(/"/g,'&quot;')}"
+        data-dias-faltan="${diasFaltan}"
+        data-titulo="${tituloEsc}"
+        data-curso="${cursoEsc}"
+        data-area="${m.cursoArea}">
+        <div class="pdf-card__top">
+          <div class="pdf-card__icon"><svg class="ic"><use href="#${ic}"/></svg></div>
+          <span class="pdf-card__size">${tipoLabel}</span>
+        </div>
+        <div class="pdf-card__body">
+          <div class="pdf-card__title">${tituloEsc}</div>
+          <div class="pdf-card__meta">
+            <span><svg class="ic"><use href="#i-folder"/></svg>${m.cursoArea}</span>
+            <span title="${cursoEsc}"><svg class="ic"><use href="#i-book"/></svg>${cursoEsc.length > 28 ? cursoEsc.slice(0,28)+'…' : cursoEsc}</span>
+          </div>
+          <div class="pdf-card__tags">
+            ${disponible
+              ? `<span class="tag tag--soon" style="color:#0E0A06;border-color:#34D399;background:#34D399;font-weight:700;">Disponible</span><button class="row-btn pdf-card__btn-soon" style="margin-left:auto;background:linear-gradient(135deg, var(--primary), var(--highlight));color:#0E0A06;cursor:pointer;" onclick="event.stopPropagation();window.open('${(m.url||'').replace(/'/g,'%27')}','_blank','noopener,noreferrer')"><svg class="ic"><use href="#i-download"/></svg>Descargar</button>`
+              : `<span class="tag tag--soon">${diasFaltan === 1 ? 'Mañana' : 'En '+diasFaltan+' días'}</span><button class="row-btn pdf-card__btn-soon" style="margin-left:auto;opacity:.55;cursor:not-allowed;" disabled><svg class="ic"><use href="#i-clock"/></svg>Disponible pronto</button>`
+            }
+          </div>
+        </div>
+      </article>
+    `;
   }
 
   /* ============================ BIBLIOTECA POR MES ============================ */
