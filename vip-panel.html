@@ -5119,10 +5119,12 @@ const Sections = (function(){
 
   // Refresca el DETALLE del curso abierto (re-render) para que la siguiente clase
   // se desbloquee al instante tras marcar una como vista, sin recargar la página.
+  // IMPORTANTE: el modal cierra con animación de 250ms; reabrimos DESPUÉS de eso
+  // para no chocar con la animación y dejar el modal huérfano (no-cerrable).
   window.__refrescarCursoDetalle = function(cid){
     if (!cid) return;
     try { if (typeof Modal !== 'undefined' && Modal.close) Modal.close('curso-' + cid); } catch(e){}
-    setTimeout(() => { try { openCursoDetalle(cid); } catch(e){} }, 60);
+    setTimeout(() => { try { openCursoDetalle(cid); } catch(e){} }, 300);
   };
 
   function moduloTitulo(c,i){
