@@ -621,13 +621,45 @@ document.getElementById('btn-register').addEventListener('click', async () => {
 
     // ⚡ Crear doc en col `miembros` con activa:false + fechaRegistro
     // Así el admin puede ver TODOS los registrados, no solo los que pagan
-    await ensureMiembroDoc(cred.user, name, 'registro-web');
+    const docResult = await ensureMiembroDoc(cred.user, name, 'registro-web');
 
     const isAdmin = ADMINS.includes(email);
-    showAlert('success', '¡Cuenta creada!', isAdmin ? 'Redirigiendo al panel admin…' : 'Redirigiendo al checkout…');
+
+    // 🔍 Diagnóstico visible: si NO se creó el doc, mostrar alert claro al usuario
+    // (esto ayuda a Britney a detectar problemas de reglas Firestore en producción)
+    if (docResult && docResult.ok === false) {
+      const motivo = docResult.reason || 'desconocido';
+      console.error('❌ DIAGNÓSTICO: doc miembro NO se creó. Razón:', motivo);
+      if (motivo === 'permission-denied') {
+        showAlert('error',
+          '⚠️ Cuenta creada pero falta actualizar reglas Firestore',
+          'Tu cuenta SÍ se creó en Auth, pero no se pudo guardar en Firestore (permission-denied). El admin debe actualizar las reglas. Continúa al checkout para activar tu VIP.');
+        setTimeout(() => {
+          window.location.href = isAdmin ? 'vip-admin.html' : 'vip-checkout.html';
+        }, 4500);
+        return;
+      } else {
+        showAlert('error',
+          '⚠️ Cuenta creada · advertencia',
+          `Tu cuenta se creó pero hubo un problema al guardar tu perfil (${motivo}). Continúa al checkout.`);
+        setTimeout(() => {
+          window.location.href = isAdmin ? 'vip-admin.html' : 'vip-checkout.html';
+        }, 4500);
+        return;
+      }
+    }
+
+    // Camino feliz · todo funcionó
+    showAlert('success',
+      '¡Cuenta creada!',
+      isAdmin
+        ? 'Redirigiendo al panel admin…'
+        : (docResult && docResult.action === 'created'
+            ? '✅ Perfil guardado · redirigiendo al checkout…'
+            : 'Redirigiendo al checkout…'));
     setTimeout(() => {
       window.location.href = isAdmin ? 'vip-admin.html' : 'vip-checkout.html';
-    }, 700);
+    }, 900);
   } catch (e) {
     setLoading(btn, false, 'Crear cuenta');
     showAlert('error', 'No pudimos crear tu cuenta', translateError(e.code));
