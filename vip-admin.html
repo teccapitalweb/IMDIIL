@@ -196,6 +196,7 @@ body{
 }
 @keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.spin{animation:spin 0.9s linear infinite}
 @keyframes shimmerSkeleton{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* Notificaciones · móvil */
@@ -3758,7 +3759,7 @@ const Pages={
           <h1 class="sec-hero__title">Miembros VIP</h1>
           <p class="sec-hero__sub">Aquí ves <strong style="color:var(--text-2);">todos los registrados</strong> (los que crearon cuenta) y <strong style="color:var(--text-2);">todos los miembros activos</strong> (los que ya pagaron). Cada uno con su fecha de registro y/o fecha de activación.</p>
           <div class="sec-hero__actions">
-            <button class="btn btn--accent" id="new-mb-btn" disabled style="opacity:.55;cursor:not-allowed;" title="Llega en sub-fase 5B.2">
+            <button class="btn btn--accent" id="new-mb-btn">
               <svg class="ic"><use href="#i-plus"/></svg>
               Agregar acceso manual
             </button>
@@ -3835,9 +3836,20 @@ const Pages={
       });
     });
 
-    // Botón nuevo miembro (placeholder · llega en 5B.2)
+    // Botón "Agregar acceso manual" · abre modal de búsqueda por email
     p.querySelector('#new-mb-btn')?.addEventListener('click', () => {
-      Toast.info('Próximamente', 'El modal de activación manual llega en la siguiente entrega · Sub-fase 5B.2');
+      Pages._abrirModalBuscarEmail();
+    });
+
+    // Click en botón "..." de cada card · abre menú de acciones
+    p.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-mb-action]');
+      if (btn) {
+        e.stopPropagation();
+        const uid = btn.dataset.mbAction;
+        const m = window.AdminStore.miembros.find(x => (x.uid || x.id) === uid);
+        if (m) Pages._abrirAccionesMiembro(m, btn);
+      }
     });
   },
 
@@ -3935,17 +3947,14 @@ const Pages={
       return;
     }
 
-    // 🔍 Panel de diagnóstico visible si miembros está vacío
-    // Para entender por qué no aparecen sin tener que abrir consola
+    // 🔍 Panel de diagnóstico SOLO si hubo error real al consultar Firestore
+    // Si la col está simplemente vacía (status ok, count 0) NO mostramos alarma
     let diagBanner = '';
     if (store.miembros.length === 0 && window.__mbDiag) {
       const d = window.__mbDiag;
       let titulo = '', detalle = '', accion = '';
-      if (d.status === 'ok' && d.count === 0) {
-        titulo = 'La colección `miembros` existe pero está VACÍA';
-        detalle = 'El query a Firestore funcionó · pero no hay ningún documento en la colección. Verifica desde Firebase Console que los registros nuevos sí se estén creando.';
-        accion = 'Abre <strong>console.firebase.google.com → imdiil-vip → Firestore Database</strong>. Busca la col `miembros`. Si está vacía o no existe, los registros desde vip-auth no están escribiendo.';
-      } else if (d.status === 'error-snapshot' || d.status === 'error-getDocs') {
+      // Solo mostrar banner si hubo ERROR REAL (no si la col está simplemente vacía)
+      if (d.status === 'error-snapshot' || d.status === 'error-getDocs' || d.status === 'exception') {
         const err = d.error || {};
         if (err.code === 'permission-denied' || (err.message || '').includes('permission')) {
           titulo = 'Reglas Firestore bloquean la lectura';
@@ -3956,28 +3965,18 @@ const Pages={
           detalle = `Código: <code>${err.code || 'sin código'}</code> · Mensaje: ${err.message || 'sin mensaje'}`;
           accion = 'Revisa la consola del navegador para más detalles.';
         }
-      } else if (d.status === 'iniciando') {
-        titulo = 'Aún cargando…';
-        detalle = 'El query a Firestore no ha terminado todavía.';
-        accion = 'Espera 2-3 segundos y refresca.';
-      }
-      if (titulo) {
         diagBanner = `
-          <div style="background:linear-gradient(135deg, color-mix(in srgb,#F59E0B 18%,var(--surface-2)), var(--surface-2));border:1px solid #F59E0B;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+          <div style="background:linear-gradient(135deg, color-mix(in srgb,#EF4444 18%,var(--surface-2)), var(--surface-2));border:1px solid #EF4444;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
             <div style="display:flex;gap:12px;align-items:flex-start;">
-              <div style="width:36px;height:36px;border-radius:50%;background:#F59E0B;color:#0E0A06;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#EF4444;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               </div>
               <div style="flex:1;min-width:0;">
-                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;color:#F59E0B;margin-bottom:4px;">🔍 Diagnóstico: ${titulo}</div>
+                <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;color:#EF4444;margin-bottom:4px;">⚠️ ${titulo}</div>
                 <div style="font-size:13px;color:var(--text);line-height:1.55;margin-bottom:8px;">${detalle}</div>
-                <div style="font-size:12.5px;color:var(--text-2);line-height:1.55;padding:10px 12px;background:var(--surface-3);border-radius:8px;border-left:3px solid #F59E0B;">
+                <div style="font-size:12.5px;color:var(--text-2);line-height:1.55;padding:10px 12px;background:var(--surface-3);border-radius:8px;border-left:3px solid #EF4444;">
                   <strong style="color:var(--text);">¿Qué hacer?</strong> ${accion}
                 </div>
-                <details style="margin-top:10px;font-size:11px;color:var(--text-3);">
-                  <summary style="cursor:pointer;user-select:none;">Ver detalles técnicos</summary>
-                  <pre style="margin-top:8px;padding:10px;background:var(--surface-3);border-radius:6px;overflow-x:auto;font-size:11px;color:var(--text-2);font-family:'JetBrains Mono',monospace;line-height:1.6;">${JSON.stringify(d, null, 2).replace(/</g,'&lt;')}</pre>
-                </details>
               </div>
             </div>
           </div>
@@ -4127,12 +4126,570 @@ const Pages={
           <span class="curso-row__area" style="color:${estadoColor};border-color:color-mix(in srgb, ${estadoColor} 35%, transparent);background:color-mix(in srgb, ${estadoColor} 10%, transparent);font-size:9px;">${estadoTxt}</span>
         </div>
         <div class="curso-row__actions">
-          <button class="curso-card__action" data-mb-action="${m.uid || m.id}" title="Próximamente: acciones (activar, regalar días, cancelar, eliminar)" style="opacity:.55;cursor:not-allowed;" disabled>
+          <button class="curso-card__action" data-mb-action="${m.uid || m.id}" data-mb-activo="${activo ? '1' : '0'}" title="Acciones">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
           </button>
         </div>
       </div>
     `;
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // ACCIONES SOBRE MIEMBROS (Sub-fase 5B.2)
+  // ═══════════════════════════════════════════════════════════════
+
+  // URL del webhook Railway (donde están los endpoints admin)
+  _webhookUrl: 'https://imdiil-webhook-production.up.railway.app',
+
+  // Obtener token de Firebase Auth para llamar al webhook
+  async _getAuthToken() {
+    const user = window._fb?.auth?.currentUser;
+    if (!user) throw new Error('No hay usuario autenticado');
+    return await user.getIdToken();
+  },
+
+  // Modal de búsqueda por email (cuando admin quiere activar a alguien manualmente)
+  _abrirModalBuscarEmail() {
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <label class="label" for="mb-search-email">Buscar miembro por email</label>
+          <input type="email" class="input" id="mb-search-email" placeholder="ejemplo@correo.com" autocomplete="off">
+          <div style="font-size:11px;color:var(--text-3);margin-top:6px;">
+            ⚡ El usuario debe haberse registrado ya en imdiil.com. Si solo quieres activar a alguien existente, búscalo aquí.
+          </div>
+        </div>
+        <div id="mb-search-result" class="form-field form-field--full" style="min-height:60px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px dashed var(--border);border-radius:10px;padding:14px;color:var(--text-3);font-size:13px;">
+          Escribe el email para buscar
+        </div>
+      </div>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="mb-search-cancel">Cancelar</button>
+    `;
+    Modal.open({
+      title: 'Buscar miembro',
+      subtitle: 'Para activar/regalar acceso manual a alguien ya registrado',
+      icon: 'i-users',
+      body,
+      footer
+    });
+    footer.querySelector('#mb-search-cancel').addEventListener('click', () => Modal.close());
+
+    const input = body.querySelector('#mb-search-email');
+    const result = body.querySelector('#mb-search-result');
+    input.focus();
+    input.addEventListener('input', () => {
+      const q = (input.value || '').toLowerCase().trim();
+      if (!q) { result.innerHTML = 'Escribe el email para buscar'; result.style.color = 'var(--text-3)'; return; }
+      const matches = window.AdminStore.miembros.filter(m =>
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.nombre || '').toLowerCase().includes(q)
+      ).slice(0, 5);
+      if (matches.length === 0) {
+        result.innerHTML = `<div style="text-align:center;"><div style="color:#EF4444;font-weight:600;margin-bottom:4px;">No encontrado</div><div style="font-size:11.5px;color:var(--text-3);">Esta persona no se ha registrado en imdiil.com aún. Pídele que cree cuenta primero.</div></div>`;
+        result.style.color = '';
+        return;
+      }
+      result.innerHTML = matches.map(m => {
+        const activo = Pages._mbEstaActivo(m);
+        const colorBadge = activo ? '#34D399' : '#94A3B8';
+        const nombre = (m.nombre || m.displayName || m.email?.split('@')[0] || 'Sin nombre').replace(/</g,'&lt;');
+        const email = (m.email || '').replace(/</g,'&lt;');
+        return `
+          <button type="button" data-pick-uid="${m.uid || m.id}" style="display:flex;width:100%;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-3);border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:6px;transition:all .15s;text-align:left;" onmouseover="this.style.borderColor='var(--primary)';this.style.background='color-mix(in srgb, var(--primary) 8%, var(--surface-3))'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface-3)'">
+            <div style="width:8px;height:8px;border-radius:50%;background:${colorBadge};flex-shrink:0;"></div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;font-size:13px;color:var(--text);">${nombre}</div>
+              <div style="font-size:11.5px;color:var(--text-3);">${email} · ${activo ? 'Activo' : 'Sin pagar'}</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        `;
+      }).join('');
+      result.style.flexDirection = 'column';
+      result.style.justifyContent = 'flex-start';
+      result.style.alignItems = 'stretch';
+      result.style.color = '';
+
+      result.querySelectorAll('[data-pick-uid]').forEach(b => {
+        b.addEventListener('click', () => {
+          const uid = b.dataset.pickUid;
+          const m = window.AdminStore.miembros.find(x => (x.uid || x.id) === uid);
+          if (m) {
+            Modal.close();
+            setTimeout(() => Pages._abrirAccionesMiembro(m, null), 100);
+          }
+        });
+      });
+    });
+  },
+
+  // Menú principal de acciones · contextual según si es miembro activo o no
+  _abrirAccionesMiembro(m, anchorBtn) {
+    const activo = Pages._mbEstaActivo(m);
+    const nombre = (m.nombre || m.displayName || m.email?.split('@')[0] || 'Sin nombre').replace(/</g,'&lt;');
+    const email = (m.email || '').replace(/</g,'&lt;');
+    const planActual = m.plan || null;
+
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div style="background:linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, var(--surface-2)), var(--surface-2));border:1px solid color-mix(in srgb, var(--primary) 35%, transparent);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg, var(--primary), var(--highlight));color:#0E0A06;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;flex-shrink:0;">
+            ${nombre.split(' ').filter(Boolean).slice(0,2).map(s => s[0]).join('').toUpperCase() || '??'}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:800;color:var(--text);font-size:15px;">${nombre}</div>
+            <div style="font-size:12px;color:var(--text-3);">${email}</div>
+            <div style="margin-top:4px;font-size:11px;color:${activo ? '#34D399' : '#94A3B8'};font-weight:700;text-transform:uppercase;letter-spacing:.3px;">
+              ${activo ? '● Miembro activo' : '○ Sin pagar'}${planActual ? ' · ' + planActual.toUpperCase() : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${!activo ? `
+          <!-- ─── ACCIONES PARA NO-MIEMBRO ─── -->
+          <button class="mb-action-btn" data-act="activar-mensual" style="--c:#3B82F6;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div class="mb-action-btn__body">
+              <div class="mb-action-btn__title">Activar Plan Mensual</div>
+              <div class="mb-action-btn__sub">$199 MXN · 30 días de acceso</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <button class="mb-action-btn" data-act="activar-anual" style="--c:#FF7A2D;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <div class="mb-action-btn__body">
+              <div class="mb-action-btn__title">Activar Plan Anual</div>
+              <div class="mb-action-btn__sub">$1,899 MXN · 365 días · ahorra 21%</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <button class="mb-action-btn" data-act="regalar" style="--c:#A855F7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+            <div class="mb-action-btn__body">
+              <div class="mb-action-btn__title">Regalar acceso temporal</div>
+              <div class="mb-action-btn__sub">3, 7, 10 o 30 días de cortesía</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        ` : `
+          <!-- ─── ACCIONES PARA MIEMBRO ACTIVO ─── -->
+          <button class="mb-action-btn" data-act="renovar" style="--c:#34D399;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <div class="mb-action-btn__body">
+              <div class="mb-action-btn__title">Renovar membresía</div>
+              <div class="mb-action-btn__sub">Extender por otro periodo</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <button class="mb-action-btn" data-act="cancelar" style="--c:#F59E0B;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            <div class="mb-action-btn__body">
+              <div class="mb-action-btn__title">Cancelar suscripción</div>
+              <div class="mb-action-btn__sub">Detiene cobros de Stripe automáticamente</div>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        `}
+
+        <!-- ─── ELIMINAR · siempre disponible ─── -->
+        <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border-2);"></div>
+
+        <button class="mb-action-btn" data-act="eliminar" style="--c:#EF4444;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          <div class="mb-action-btn__body">
+            <div class="mb-action-btn__title">Eliminar miembro</div>
+            <div class="mb-action-btn__sub">Borra de Firestore y Firebase Auth · irreversible</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <style>
+        .mb-action-btn {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 16px;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all .18s cubic-bezier(.2,.8,.25,1);
+          text-align: left;
+          color: var(--text);
+          width: 100%;
+        }
+        .mb-action-btn:hover {
+          border-color: var(--c, var(--primary));
+          background: color-mix(in srgb, var(--c, var(--primary)) 8%, var(--surface-2));
+          transform: translateY(-1px);
+          box-shadow: 0 8px 22px rgba(0,0,0,.25);
+        }
+        .mb-action-btn > svg:first-child {
+          color: var(--c, var(--primary));
+          flex-shrink: 0;
+        }
+        .mb-action-btn__body { flex: 1; min-width: 0; }
+        .mb-action-btn__title {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 700;
+          font-size: 14px;
+          color: var(--text);
+          margin-bottom: 2px;
+        }
+        .mb-action-btn__sub {
+          font-size: 12px;
+          color: var(--text-3);
+          line-height: 1.4;
+        }
+      </style>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = `<button class="btn btn--ghost" id="mb-acc-cancel">Cerrar</button>`;
+    Modal.open({
+      title: 'Acciones del miembro',
+      subtitle: activo ? 'Miembro activo' : 'Aún no es miembro',
+      icon: 'i-users',
+      body,
+      footer
+    });
+    footer.querySelector('#mb-acc-cancel').addEventListener('click', () => Modal.close());
+
+    // Bind acciones
+    body.querySelectorAll('[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const act = btn.dataset.act;
+        Modal.close();
+        setTimeout(() => Pages._ejecutarAccion(m, act), 150);
+      });
+    });
+  },
+
+  // Ejecutar la acción específica · cada una abre su modal de confirmación
+  _ejecutarAccion(m, accion) {
+    if (accion === 'activar-mensual') return Pages._modalActivar(m, 'mensual', 30);
+    if (accion === 'activar-anual')   return Pages._modalActivar(m, 'anual', 365);
+    if (accion === 'regalar')         return Pages._modalRegalar(m);
+    if (accion === 'renovar')         return Pages._modalRenovar(m);
+    if (accion === 'cancelar')        return Pages._modalCancelar(m);
+    if (accion === 'eliminar')        return Pages._modalEliminar(m);
+  },
+
+  // Modal confirmar activación mensual o anual
+  _modalActivar(m, plan, days) {
+    const planLabel = plan === 'mensual' ? 'Plan Mensual' : 'Plan Anual';
+    const precio = plan === 'mensual' ? '$199 MXN' : '$1,899 MXN';
+    const color = plan === 'mensual' ? '#3B82F6' : '#FF7A2D';
+    const nombre = (m.nombre || m.email || 'Este miembro').replace(/</g,'&lt;');
+    const expiraDate = new Date(Date.now() + days * 86400 * 1000);
+    const expiraFmt = expiraDate.toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' });
+
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg, ${color}, color-mix(in srgb, ${color} 60%, #fff));color:#fff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;">Activar ${planLabel}</div>
+        <div style="font-size:13px;color:var(--text-3);">para <strong style="color:var(--text);">${nombre}</strong></div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;">
+          <span style="color:var(--text-3);font-size:12.5px;">Plan</span>
+          <span style="font-weight:700;color:${color};font-size:13px;">${planLabel.toUpperCase()}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--border-2);">
+          <span style="color:var(--text-3);font-size:12.5px;">Duración</span>
+          <span style="font-weight:700;color:var(--text);font-size:13px;">${days} días</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--border-2);">
+          <span style="color:var(--text-3);font-size:12.5px;">Expira el</span>
+          <span style="font-weight:700;color:var(--text);font-size:13px;">${expiraFmt}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--border-2);">
+          <span style="color:var(--text-3);font-size:12.5px;">Precio referencia</span>
+          <span style="font-weight:700;color:var(--text);font-size:13px;">${precio}</span>
+        </div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:color-mix(in srgb, var(--primary) 8%, var(--surface-2));border-left:3px solid var(--primary);border-radius:6px;line-height:1.55;">
+        ⚡ Esta es una activación <strong style="color:var(--text);">manual sin pasar por Stripe</strong>. El miembro tendrá acceso completo durante ${days} días. Al expirar, podrás renovar o cancelar.
+      </div>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="mb-cancel">Cancelar</button>
+      <button class="btn btn--accent" id="mb-confirm" style="background:${color};border-color:${color};">
+        <svg class="ic"><use href="#i-check"/></svg>
+        Confirmar y activar
+      </button>
+    `;
+    Modal.open({ title: 'Confirmar activación', subtitle: planLabel, icon: 'i-users', body, footer });
+    footer.querySelector('#mb-cancel').addEventListener('click', () => Modal.close());
+    footer.querySelector('#mb-confirm').addEventListener('click', async () => {
+      const btn = footer.querySelector('#mb-confirm');
+      btn.disabled = true; btn.style.opacity = '.7'; btn.style.cursor = 'wait';
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Activando…`;
+      const r = await Pages._llamarActivar(m.uid || m.id, plan, days, false);
+      if (r.ok) {
+        Toast.success('¡Activado!', `${nombre} ahora tiene ${planLabel}`);
+        Modal.close();
+      } else {
+        Toast.error('No se pudo activar', r.error || 'Error desconocido');
+        btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+        btn.innerHTML = `<svg class="ic"><use href="#i-check"/></svg>Reintentar`;
+      }
+    });
+  },
+
+  // Modal regalar acceso · 4 opciones de duración
+  _modalRegalar(m) {
+    const nombre = (m.nombre || m.email || 'Este miembro').replace(/</g,'&lt;');
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg, #A855F7, #C084FC);color:#fff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;">Regalar acceso a</div>
+        <div style="font-size:14px;color:var(--text-2);font-weight:600;">${nombre}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;">
+        ${[
+          {dias:3,label:'3 días',sub:'Vista previa'},
+          {dias:7,label:'7 días',sub:'Una semana'},
+          {dias:10,label:'10 días',sub:'Decisión'},
+          {dias:30,label:'30 días',sub:'Mes completo'}
+        ].map(opt => `
+          <button class="mb-gift-opt" data-days="${opt.dias}" style="padding:14px 12px;background:var(--surface-2);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;transition:all .18s;color:var(--text);font-family:inherit;" onmouseover="this.style.borderColor='#A855F7';this.style.background='color-mix(in srgb, #A855F7 10%, var(--surface-2))';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface-2)';this.style.transform='none'">
+            <div style="font-size:22px;font-weight:800;color:#A855F7;font-family:'Plus Jakarta Sans',sans-serif;line-height:1;margin-bottom:4px;">${opt.label}</div>
+            <div style="font-size:11px;color:var(--text-3);">${opt.sub}</div>
+          </button>
+        `).join('')}
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:color-mix(in srgb, #A855F7 8%, var(--surface-2));border-left:3px solid #A855F7;border-radius:6px;line-height:1.55;">
+        🎁 El miembro recibirá acceso completo durante los días seleccionados. Al expirar volverá a "Sin pagar" y podrás regalar de nuevo o pedirle que pague.
+      </div>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = `<button class="btn btn--ghost" id="mb-cancel">Cancelar</button>`;
+    Modal.open({ title: 'Regalar acceso', subtitle: 'Cortesía temporal', icon: 'i-users', body, footer });
+    footer.querySelector('#mb-cancel').addEventListener('click', () => Modal.close());
+
+    body.querySelectorAll('[data-days]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const days = parseInt(btn.dataset.days, 10);
+        btn.style.opacity = '.6'; btn.style.cursor = 'wait';
+        body.querySelectorAll('[data-days]').forEach(b => b.disabled = true);
+        const r = await Pages._llamarActivar(m.uid || m.id, 'regalo', days, true);
+        if (r.ok) {
+          Toast.success('🎁 Regalo enviado', `${nombre} tiene ${days} días gratis`);
+          Modal.close();
+        } else {
+          Toast.error('No se pudo regalar', r.error || 'Error desconocido');
+          body.querySelectorAll('[data-days]').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.style.cursor = 'pointer'; });
+        }
+      });
+    });
+  },
+
+  // Renovar es activar de nuevo (mismo plan, suma 30 o 365 días)
+  _modalRenovar(m) {
+    const planActual = m.plan || 'mensual';
+    const days = planActual === 'anual' ? 365 : 30;
+    Pages._modalActivar(m, planActual, days);
+  },
+
+  // Modal confirmar cancelación · 2 opciones (al final del periodo o inmediata)
+  _modalCancelar(m) {
+    const nombre = (m.nombre || m.email || 'Este miembro').replace(/</g,'&lt;');
+    const expira = Pages._mbToDate(m.expiraEn);
+    const expiraFmt = expira ? expira.toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' }) : 'fecha desconocida';
+
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg, #F59E0B, #FBBF24);color:#0E0A06;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;">Cancelar suscripción</div>
+        <div style="font-size:13px;color:var(--text-3);">de <strong style="color:var(--text);">${nombre}</strong></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <button class="mb-cancel-opt" data-mode="period-end" style="padding:14px 16px;background:var(--surface-2);border:1.5px solid #34D399;border-radius:12px;cursor:pointer;text-align:left;color:var(--text);font-family:inherit;display:flex;align-items:center;gap:12px;transition:all .18s;" onmouseover="this.style.background='color-mix(in srgb, #34D399 10%, var(--surface-2))'" onmouseout="this.style.background='var(--surface-2)'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:14px;color:#34D399;margin-bottom:3px;">Recomendado · Al final del periodo</div>
+            <div style="font-size:12px;color:var(--text-3);line-height:1.45;">No habrá más cobros. El miembro sigue activo hasta el <strong style="color:var(--text);">${expiraFmt}</strong>.</div>
+          </div>
+        </button>
+        <button class="mb-cancel-opt" data-mode="immediate" style="padding:14px 16px;background:var(--surface-2);border:1.5px solid #EF4444;border-radius:12px;cursor:pointer;text-align:left;color:var(--text);font-family:inherit;display:flex;align-items:center;gap:12px;transition:all .18s;" onmouseover="this.style.background='color-mix(in srgb, #EF4444 10%, var(--surface-2))'" onmouseout="this.style.background='var(--surface-2)'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:14px;color:#EF4444;margin-bottom:3px;">Cancelar inmediato</div>
+            <div style="font-size:12px;color:var(--text-3);line-height:1.45;">Pierde acceso AHORA. No habrá reembolso de Stripe. Usar solo si hay problema serio.</div>
+          </div>
+        </button>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:color-mix(in srgb, #F59E0B 8%, var(--surface-2));border-left:3px solid #F59E0B;border-radius:6px;line-height:1.55;">
+        ⚡ Cancelar Stripe es automático. El backend de Railway llama a la API de Stripe con tu service account.
+      </div>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = `<button class="btn btn--ghost" id="mb-cancel">Cerrar sin cancelar</button>`;
+    Modal.open({ title: 'Cancelar suscripción', subtitle: 'Confirmación', icon: 'i-users', body, footer });
+    footer.querySelector('#mb-cancel').addEventListener('click', () => Modal.close());
+
+    body.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const mode = btn.dataset.mode;
+        const confirmTxt = mode === 'immediate'
+          ? `¿Cancelar AHORA MISMO la suscripción de ${nombre}? Perderá acceso al instante.`
+          : `¿Cancelar la renovación de ${nombre} al final del periodo? Seguirá activo hasta ${expiraFmt}.`;
+        if (!confirm(confirmTxt)) return;
+        btn.style.opacity = '.6';
+        body.querySelectorAll('[data-mode]').forEach(b => b.disabled = true);
+        const r = await Pages._llamarCancelar(m.uid || m.id, mode === 'period-end');
+        if (r.ok) {
+          const msg = mode === 'immediate' ? 'Membresía terminada' : 'Renovación cancelada';
+          Toast.success(msg, mode === 'immediate' ? `${nombre} ya no es miembro` : `Sigue activo hasta ${expiraFmt}`);
+          Modal.close();
+        } else {
+          Toast.error('No se pudo cancelar', r.error || 'Error desconocido');
+          body.querySelectorAll('[data-mode]').forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+        }
+      });
+    });
+  },
+
+  // Modal confirmar eliminación · escribir "ELIMINAR" para confirmar
+  _modalEliminar(m) {
+    const nombre = (m.nombre || m.email || 'Este miembro').replace(/</g,'&lt;');
+    const email = (m.email || '').replace(/</g,'&lt;');
+    const activo = Pages._mbEstaActivo(m);
+
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg, #EF4444, #F87171);color:#fff;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px;">⚠️ Eliminar miembro</div>
+        <div style="font-size:13px;color:var(--text-3);">Esta acción es <strong style="color:#EF4444;">IRREVERSIBLE</strong></div>
+      </div>
+      <div style="background:color-mix(in srgb, #EF4444 8%, var(--surface-2));border:1px solid #EF4444;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-weight:700;color:var(--text);font-size:14px;margin-bottom:8px;">Vas a eliminar a:</div>
+        <div style="font-size:14px;color:var(--text-2);margin-bottom:4px;"><strong>${nombre}</strong></div>
+        <div style="font-size:12px;color:var(--text-3);">${email}</div>
+      </div>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
+        <div style="font-weight:700;font-size:12.5px;color:var(--text);margin-bottom:8px;">Lo que va a pasar:</div>
+        <ul style="margin:0;padding-left:20px;font-size:12px;color:var(--text-2);line-height:1.7;">
+          ${activo ? '<li style="color:#F59E0B;">Su suscripción Stripe se cancelará automáticamente</li>' : ''}
+          <li>Su documento en Firestore col <code style="background:var(--surface-3);padding:2px 5px;border-radius:3px;">miembros</code> será borrado</li>
+          <li>Su cuenta en Firebase Auth será eliminada</li>
+          <li>NO podrá iniciar sesión nunca más</li>
+          <li>Si vuelve a registrarse, será una cuenta NUEVA</li>
+        </ul>
+      </div>
+      <div style="margin-bottom:6px;">
+        <label style="display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Para confirmar, escribe <strong style="color:#EF4444;">ELIMINAR</strong> abajo:</label>
+        <input type="text" id="mb-delete-confirm-input" class="input" placeholder="Escribe ELIMINAR" autocomplete="off" style="border-color:var(--border);font-family:'JetBrains Mono',monospace;letter-spacing:1px;">
+      </div>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="mb-cancel">Cancelar</button>
+      <button class="btn btn--accent" id="mb-confirm-delete" disabled style="background:#EF4444;border-color:#EF4444;opacity:.5;cursor:not-allowed;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Eliminar definitivamente
+      </button>
+    `;
+    Modal.open({ title: 'Eliminar miembro', subtitle: '⚠️ Irreversible', icon: 'i-users', body, footer });
+    footer.querySelector('#mb-cancel').addEventListener('click', () => Modal.close());
+
+    const input = body.querySelector('#mb-delete-confirm-input');
+    const btn = footer.querySelector('#mb-confirm-delete');
+    input.focus();
+    input.addEventListener('input', () => {
+      const ok = input.value.trim().toUpperCase() === 'ELIMINAR';
+      btn.disabled = !ok;
+      btn.style.opacity = ok ? '1' : '.5';
+      btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+    });
+
+    btn.addEventListener('click', async () => {
+      if (input.value.trim().toUpperCase() !== 'ELIMINAR') return;
+      btn.disabled = true; btn.style.opacity = '.7'; btn.style.cursor = 'wait';
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" class="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Eliminando…`;
+      const r = await Pages._llamarEliminar(m.uid || m.id);
+      if (r.ok) {
+        Toast.success('Miembro eliminado', `${nombre} ya no existe en el sistema`);
+        Modal.close();
+      } else {
+        Toast.error('No se pudo eliminar', r.error || 'Error desconocido');
+        btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+        btn.innerHTML = `Reintentar eliminación`;
+      }
+    });
+  },
+
+  // ─── Llamadas reales al webhook Railway ───
+  async _llamarActivar(uid, plan, durationDays, esRegalo) {
+    try {
+      const token = await Pages._getAuthToken();
+      const res = await fetch(`${Pages._webhookUrl}/admin/activar-manual`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ uid, plan, durationDays, esRegalo: !!esRegalo })
+      });
+      const data = await res.json();
+      if (!res.ok) return { ok: false, error: data.error || res.statusText };
+      return { ok: true, data };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  },
+
+  async _llamarCancelar(uid, atPeriodEnd) {
+    try {
+      const token = await Pages._getAuthToken();
+      const res = await fetch(`${Pages._webhookUrl}/admin/cancelar-stripe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ uid, atPeriodEnd })
+      });
+      const data = await res.json();
+      if (!res.ok) return { ok: false, error: data.error || res.statusText };
+      return { ok: true, data };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  },
+
+  async _llamarEliminar(uid) {
+    try {
+      const token = await Pages._getAuthToken();
+      const res = await fetch(`${Pages._webhookUrl}/admin/eliminar-miembro`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ uid })
+      });
+      const data = await res.json();
+      if (!res.ok) return { ok: false, error: data.error || res.statusText };
+      return { ok: true, data };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
   },
 
   noticias(p){
