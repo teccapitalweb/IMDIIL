@@ -3244,11 +3244,18 @@ async function initCountdown(){
     try { await window.__cargarWebinarsFirestore(); } catch(e) {}
   }
 
+  // ⚡ Leer el array de webinars desde el closure via función expuesta
+  // (la variable `webinars` vive en otro scope · no la podemos leer directo)
+  let arrWebs = [];
+  if (typeof window.__getWebinars === 'function') {
+    arrWebs = window.__getWebinars() || [];
+  }
+
   // Buscar el próximo webinar real
   let proximo = null;
-  if (typeof webinars !== 'undefined' && Array.isArray(webinars)) {
+  if (Array.isArray(arrWebs) && arrWebs.length > 0) {
     const ahora = Date.now();
-    const proximos = webinars
+    const proximos = arrWebs
       .filter(w => {
         const fMs = w.fechaMs || (w.fecha ? new Date(w.fecha).getTime() : 0);
         return fMs > ahora;
@@ -4558,6 +4565,9 @@ const Sections = (function(){
     _webinarsLoading = false;
     webinars.length = 0;
   };
+  // ⚡ Exponer array para que initCountdown (que vive en scope global) pueda leerlo
+  window.__getWebinars = function() { return webinars; };
+  window.__webinarsReady = function() { return _webinarsLoaded; };
 
   const usuario = {nombre:'Ingeniero',xp:450,racha:7,diasActivos:23};
 
