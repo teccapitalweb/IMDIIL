@@ -3738,97 +3738,320 @@ const Pages={
     }
   },
 
-  miembros(p){
-    p.innerHTML=`
+  // ════════════════════════════════════════════════════════════════════
+  // MIEMBROS VIP · Lectura real Firestore (Sub-fase 5B.1)
+  // Listado · búsqueda · filtros · KPIs
+  // Los botones de activar/regalar/cancelar llegan en 5B.2 y 5B.3
+  // ════════════════════════════════════════════════════════════════════
+
+  _mbState: {
+    search: '',
+    plan: 'todos',     // todos / mensual / anual / regalo / sin-pagar
+    estado: 'todos'    // todos / activos / inactivos / expirados
+  },
+
+  miembros(p) {
+    p.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Comunidad</span>
           <h1 class="sec-hero__title">Miembros VIP</h1>
-          <p class="sec-hero__sub">Lista de miembros activos e inactivos. Gestiona planes, renovaciones y accesos manuales sin pasar por Stripe.</p>
+          <p class="sec-hero__sub">Lista de miembros reales conectada a Firestore. <strong style="color:var(--text-2);">Gestiona planes, renovaciones y accesos manuales</strong> sin pasar por Stripe.</p>
           <div class="sec-hero__actions">
-            <button class="btn btn--accent" id="new-mb"><svg class="ic"><use href="#i-plus"/></svg>Agregar acceso manual</button>
+            <button class="btn btn--accent" id="new-mb-btn" disabled style="opacity:.55;cursor:not-allowed;" title="Llega en sub-fase 5B.2">
+              <svg class="ic"><use href="#i-plus"/></svg>
+              Agregar acceso manual
+            </button>
           </div>
         </div>
-        <div class="toolbar">
-          <div class="searchbar">
-            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
-            <input type="text" placeholder="Buscar por nombre o email…" id="mb-search">
+
+        <div class="kpi-grid" id="mb-kpis"></div>
+
+        <div class="curso-toolbar">
+          <div class="curso-search-wrap">
+            <svg class="curso-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="mb-search-input" placeholder="Buscar por nombre, email o UID…" class="curso-search__input">
+            <button id="mb-search-clear" class="curso-search__clear" style="display:none;" aria-label="Limpiar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-          <select class="select" id="mb-plan" style="max-width:160px;"><option value="todos">Todos los planes</option><option>Anual</option><option>Mensual</option></select>
-          <select class="select" id="mb-estado" style="max-width:160px;"><option value="todos">Todos</option><option value="activo">Activos</option><option value="inactivo">Inactivos</option></select>
         </div>
-        <div class="adm-list" id="mb-list"></div>
+
+        <div class="curso-pills">
+          <button class="curso-pill" data-mb-plan="todos" data-active="1">Todos los planes</button>
+          <button class="curso-pill" data-mb-plan="mensual"><span class="curso-pill__dot" style="background:#3B82F6;"></span>Mensual</button>
+          <button class="curso-pill" data-mb-plan="anual"><span class="curso-pill__dot" style="background:#FF7A2D;"></span>Anual</button>
+          <button class="curso-pill" data-mb-plan="regalo"><span class="curso-pill__dot" style="background:#A855F7;"></span>Regalo</button>
+          <button class="curso-pill" data-mb-plan="sin-pagar"><span class="curso-pill__dot" style="background:#9CA3AF;"></span>Sin pagar</button>
+        </div>
+        <div class="curso-pills">
+          <button class="curso-pill" data-mb-estado="todos" data-active="1">Todos los estados</button>
+          <button class="curso-pill" data-mb-estado="activos"><span class="curso-pill__dot" style="background:#34D399;"></span>Activos</button>
+          <button class="curso-pill" data-mb-estado="inactivos"><span class="curso-pill__dot" style="background:#9CA3AF;"></span>Inactivos</button>
+          <button class="curso-pill" data-mb-estado="expirados"><span class="curso-pill__dot" style="background:#EF4444;"></span>Expirados</button>
+        </div>
+
+        <div id="mb-container"></div>
       </div>
     `;
-    document.getElementById('new-mb').addEventListener('click',()=>mbModal());
-    ['mb-search','mb-plan','mb-estado'].forEach(i=>document.getElementById(i).addEventListener('input',()=>renderMb()));
-    renderMb();
-    function renderMb(){
-      const q=(document.getElementById('mb-search').value||'').toLowerCase();
-      const pl=document.getElementById('mb-plan').value;
-      const es=document.getElementById('mb-estado').value;
-      const items=SEED.miembros.filter(m=>{
-        if(pl!=='todos'&&m.plan!==pl)return false;
-        if(es==='activo'&&!m.activo)return false;
-        if(es==='inactivo'&&m.activo)return false;
-        if(q&&!m.nombre.toLowerCase().includes(q)&&!m.email.toLowerCase().includes(q))return false;
-        return true;
+
+    Pages._renderKpisMiembros();
+    Pages._renderListaMiembros();
+
+    // Búsqueda
+    const searchInput = p.querySelector('#mb-search-input');
+    const searchClear = p.querySelector('#mb-search-clear');
+    searchInput?.addEventListener('input', (e) => {
+      Pages._mbState.search = e.target.value.toLowerCase().trim();
+      searchClear.style.display = e.target.value ? '' : 'none';
+      Pages._renderListaMiembros();
+    });
+    searchClear?.addEventListener('click', () => {
+      searchInput.value = '';
+      Pages._mbState.search = '';
+      searchClear.style.display = 'none';
+      Pages._renderListaMiembros();
+    });
+
+    // Pills plan
+    p.querySelectorAll('[data-mb-plan]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('[data-mb-plan]').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._mbState.plan = btn.dataset.mbPlan;
+        Pages._renderListaMiembros();
       });
-      const list=document.getElementById('mb-list');
-      if(items.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-users"/></svg></div><h3>Sin resultados</h3><p>Ajusta los filtros.</p></div>`;return;}
-      list.innerHTML=items.map(m=>{
-        const iniciales=m.nombre.split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase();
-        return `
-        <div class="adm-row" style="--c1:${m.plan==='Anual'?'#FF7A2D':'#3B82F6'};">
-          <div class="adm-row__thumb"><span style="font-family:'Plus Jakarta Sans','Inter',sans-serif;font-weight:800;font-size:14px;">${iniciales}</span></div>
-          <div class="adm-row__body">
-            <div class="adm-row__title">${m.nombre}</div>
-            <div class="adm-row__meta">
-              <span><svg class="ic"><use href="#i-mail"/></svg>${m.email}</span>
-              <span><svg class="ic"><use href="#i-calendar"/></svg>Renueva ${m.renovacion}</span>
-              <span><svg class="ic"><use href="#i-book"/></svg>${m.cursos} cursos</span>
-            </div>
-          </div>
-          <span class="tag ${m.plan==='Anual'?'tag--primary':'tag--info'}">${m.plan}</span>
-          <span class="tag ${m.activo?'tag--success':'tag--danger'}">${m.activo?'Activo':'Inactivo'}</span>
-          <div class="adm-row__actions">
-            <button class="icon-action" data-edit="${m.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
-            <button class="icon-action icon-action--danger" data-del="${m.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
-          </div>
-        </div>
-        `;
-      }).join('');
-      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>mbModal(b.dataset.edit)));
-      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
-        if(confirm('¿Eliminar el acceso de este miembro? Si pagó por Stripe, también deberás cancelar la suscripción.')){
-          const i=SEED.miembros.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.miembros.splice(i,1);renderMb();Toast.success('Miembro eliminado');}
-        }
-      }));
+    });
+
+    // Pills estado
+    p.querySelectorAll('[data-mb-estado]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('[data-mb-estado]').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._mbState.estado = btn.dataset.mbEstado;
+        Pages._renderListaMiembros();
+      });
+    });
+
+    // Botón nuevo miembro (placeholder · llega en 5B.2)
+    p.querySelector('#new-mb-btn')?.addEventListener('click', () => {
+      Toast.info('Próximamente', 'El modal de activación manual llega en la siguiente entrega · Sub-fase 5B.2');
+    });
+  },
+
+  // ─── Helper: convertir cualquier formato de fecha a Date ───
+  _mbToDate(val) {
+    if (!val) return null;
+    if (val?.toDate) return val.toDate();
+    if (val?.seconds) return new Date(val.seconds * 1000);
+    if (val instanceof Date) return val;
+    if (typeof val === 'string' || typeof val === 'number') {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
     }
-    function mbModal(id){
-      const m=id?SEED.miembros.find(x=>x.id===id):{nombre:'',email:'',plan:'Anual',inicio:new Date().toISOString().slice(0,10),renovacion:'',activo:true,cursos:0};
-      const body=`
-        <div class="form-grid">
-          <div class="form-field form-field--full"><label class="label">Nombre completo</label><input type="text" class="input" id="mb-nom" value="${(m.nombre||'').replace(/"/g,'&quot;')}" placeholder="Nombre del miembro"></div>
-          <div class="form-field form-field--full"><label class="label">Email</label><input type="email" class="input" id="mb-email" value="${(m.email||'').replace(/"/g,'&quot;')}" placeholder="email@example.com"></div>
-          <div class="form-field"><label class="label">Plan</label><select class="select" id="mb-pl"><option ${m.plan==='Anual'?'selected':''}>Anual</option><option ${m.plan==='Mensual'?'selected':''}>Mensual</option></select></div>
-          <div class="form-field"><label class="label">Fecha de inicio</label><input type="date" class="input" id="mb-ini" value="${m.inicio||''}"></div>
-          <div class="form-field"><label class="label">Renovación</label><input type="date" class="input" id="mb-ren" value="${m.renovacion||''}"></div>
-          <div class="form-field" style="display:flex;align-items:center;gap:10px;flex-direction:row;align-self:flex-end;"><input type="checkbox" id="mb-act" ${m.activo?'checked':''}><label for="mb-act" style="cursor:pointer;font-size:13px;font-weight:500;">Acceso activo</label></div>
+    return null;
+  },
+
+  _mbEstaActivo(m) {
+    if (m.activa !== true && m.activo !== true) return false;
+    const expira = Pages._mbToDate(m.expiraEn);
+    if (!expira) return true; // si no hay fecha, asume activo
+    return expira.getTime() > Date.now();
+  },
+
+  _mbEstaExpirado(m) {
+    const expira = Pages._mbToDate(m.expiraEn);
+    if (!expira) return false;
+    return expira.getTime() <= Date.now();
+  },
+
+  _renderKpisMiembros() {
+    const wrap = document.getElementById('mb-kpis');
+    if (!wrap) return;
+    const store = window.AdminStore;
+    const ready = store?.ready;
+    const miembros = ready ? store.miembros : [];
+
+    const activos = miembros.filter(m => Pages._mbEstaActivo(m)).length;
+    const mensuales = miembros.filter(m => m.plan === 'mensual' && Pages._mbEstaActivo(m)).length;
+    const anuales = miembros.filter(m => m.plan === 'anual' && Pages._mbEstaActivo(m)).length;
+    const regalos = miembros.filter(m => (m.esRegalo === true || m.plan === 'regalo') && Pages._mbEstaActivo(m)).length;
+
+    // Calcular MRR estimado
+    const ingresoMensual = mensuales * 199;
+    const ingresoAnualProrrateado = Math.round((anuales * 1899) / 12);
+    const mrr = ingresoMensual + ingresoAnualProrrateado;
+
+    wrap.innerHTML = `
+      <div class="kpi-card" style="--c1:#34D399;--c2:#22C55E;">
+        <div class="kpi-card__label">Activos ahora</div>
+        <div class="kpi-card__value">${activos}</div>
+        <div class="kpi-card__sub">${ready ? `de ${miembros.length} registrados` : 'Cargando…'}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
+        <div class="kpi-card__label">Plan Mensual</div>
+        <div class="kpi-card__value">${mensuales}</div>
+        <div class="kpi-card__sub">$${(mensuales * 199).toLocaleString('es-MX')} MXN/mes</div>
+      </div>
+      <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
+        <div class="kpi-card__label">Plan Anual</div>
+        <div class="kpi-card__value">${anuales}</div>
+        <div class="kpi-card__sub">${anuales > 0 ? '$' + (anuales * 1899).toLocaleString('es-MX') + ' MXN al año' : 'Sin anuales'}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#A855F7;--c2:#C084FC;">
+        <div class="kpi-card__label">MRR estimado</div>
+        <div class="kpi-card__value">$${mrr.toLocaleString('es-MX')}</div>
+        <div class="kpi-card__sub">${regalos} con acceso de regalo</div>
+      </div>
+    `;
+  },
+
+  _renderListaMiembros() {
+    const wrap = document.getElementById('mb-container');
+    if (!wrap) return;
+    const store = window.AdminStore;
+
+    if (!store?.ready) {
+      wrap.innerHTML = `<div class="curso-list">${[1,2,3,4].map(()=>`
+        <div class="curso-row" style="--area-color:#34D399;">
+          <div class="curso-row__thumb skeleton-shimmer" style="background-image:none;border-radius:50%;"></div>
+          <div class="curso-row__body">
+            <div class="skeleton-line skeleton-shimmer" style="width:50%;height:13px;"></div>
+            <div class="skeleton-line skeleton-shimmer" style="width:65%;height:11px;margin-top:8px;"></div>
+          </div>
+        </div>`).join('')}</div>`;
+      return;
+    }
+
+    const S = Pages._mbState;
+    let miembros = [...store.miembros];
+
+    // Filtro por plan
+    if (S.plan !== 'todos') {
+      if (S.plan === 'regalo') {
+        miembros = miembros.filter(m => m.esRegalo === true || m.plan === 'regalo');
+      } else if (S.plan === 'sin-pagar') {
+        miembros = miembros.filter(m => !m.plan || (m.activa !== true && m.activo !== true));
+      } else {
+        miembros = miembros.filter(m => m.plan === S.plan);
+      }
+    }
+
+    // Filtro por estado
+    if (S.estado === 'activos') miembros = miembros.filter(m => Pages._mbEstaActivo(m));
+    else if (S.estado === 'inactivos') miembros = miembros.filter(m => !Pages._mbEstaActivo(m) && !Pages._mbEstaExpirado(m));
+    else if (S.estado === 'expirados') miembros = miembros.filter(m => Pages._mbEstaExpirado(m));
+
+    // Búsqueda
+    if (S.search) {
+      miembros = miembros.filter(m => {
+        const n = (m.nombre || '').toLowerCase();
+        const e = (m.email || '').toLowerCase();
+        const u = (m.uid || m.id || '').toLowerCase();
+        return n.includes(S.search) || e.includes(S.search) || u.includes(S.search);
+      });
+    }
+
+    // Ordenar: activos primero, luego por fecha de actividad descendente
+    miembros.sort((a, b) => {
+      const aA = Pages._mbEstaActivo(a) ? 1 : 0;
+      const bA = Pages._mbEstaActivo(b) ? 1 : 0;
+      if (aA !== bA) return bA - aA;
+      const fa = Pages._mbToDate(a.lastUpdatedAt || a.activadoEn || a.createdAt)?.getTime() || 0;
+      const fb = Pages._mbToDate(b.lastUpdatedAt || b.activadoEn || b.createdAt)?.getTime() || 0;
+      return fb - fa;
+    });
+
+    if (miembros.length === 0) {
+      const hayMiembros = store.miembros.length > 0;
+      wrap.innerHTML = `
+        <div class="curso-empty">
+          <div class="curso-empty__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="curso-empty__title">${(S.search || S.plan !== 'todos' || S.estado !== 'todos') ? 'Sin resultados' : (hayMiembros ? 'Sin miembros visibles' : 'Aún no hay miembros registrados')}</div>
+          <div class="curso-empty__sub">${(S.search || S.plan !== 'todos' || S.estado !== 'todos') ? 'Prueba con otros filtros' : 'Cuando alguien se registre aparecerá aquí'}</div>
         </div>
       `;
-      const footer=document.createElement('div');
-      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar':'Agregar'}<svg class="ic"><use href="#i-check"/></svg></button>`;
-      Modal.open({title:id?'Editar miembro':'Acceso manual',subtitle:id?m.email:'Sin pasar por Stripe',icon:'i-users',body,footer});
-      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
-      footer.querySelector('#m-save').addEventListener('click',()=>{
-        const data={nombre:document.getElementById('mb-nom').value.trim(),email:document.getElementById('mb-email').value.trim(),plan:document.getElementById('mb-pl').value,inicio:document.getElementById('mb-ini').value,renovacion:document.getElementById('mb-ren').value,activo:document.getElementById('mb-act').checked};
-        if(!data.nombre||!data.email){Toast.error('Faltan datos');return;}
-        if(id){Object.assign(m,data);Toast.success('Miembro actualizado',data.nombre);}
-        else{SEED.miembros.unshift({id:'m'+Date.now(),cursos:0,...data});Toast.success('Acceso creado',data.email);}
-        Modal.close();renderMb();
-      });
+      return;
     }
+
+    wrap.innerHTML = `<div class="curso-list">${miembros.map(m => Pages._cardMiembro(m)).join('')}</div>`;
+  },
+
+  _cardMiembro(m) {
+    const activo = Pages._mbEstaActivo(m);
+    const expirado = Pages._mbEstaExpirado(m);
+    const esRegalo = m.esRegalo === true || m.plan === 'regalo';
+
+    const planLabels = {
+      mensual: { label:'MENSUAL', color:'#3B82F6', precio:'$199' },
+      anual:   { label:'ANUAL',   color:'#FF7A2D', precio:'$1,899' },
+      regalo:  { label:'REGALO',  color:'#A855F7', precio:'GRATIS' },
+      admin:   { label:'ADMIN',   color:'#FBBF24', precio:'—' }
+    };
+    const pInfo = planLabels[m.plan] || { label:'SIN PLAN', color:'#9CA3AF', precio:'—' };
+    if (esRegalo) {
+      pInfo.label = 'REGALO';
+      pInfo.color = '#A855F7';
+      pInfo.precio = m.duracionDias ? m.duracionDias + ' días' : 'GRATIS';
+    }
+
+    const nombre = m.nombre || m.displayName || m.email?.split('@')[0] || 'Sin nombre';
+    const iniciales = nombre.split(' ').filter(Boolean).slice(0,2).map(s => s[0]).join('').toUpperCase() || '??';
+    const email = m.email || '—';
+    const uidCorto = (m.uid || m.id || '').slice(0, 8);
+
+    const expira = Pages._mbToDate(m.expiraEn);
+    let estadoTxt = '';
+    let estadoColor = '#9CA3AF';
+    if (activo) {
+      estadoColor = '#34D399';
+      if (expira) {
+        const dias = Math.ceil((expira.getTime() - Date.now()) / 86400000);
+        estadoTxt = dias <= 7 ? `Expira en ${dias}d` : `Activo · ${expira.toLocaleDateString('es-MX', { day:'numeric', month:'short' })}`;
+      } else {
+        estadoTxt = 'Activo';
+      }
+    } else if (expirado) {
+      estadoColor = '#EF4444';
+      estadoTxt = `Expiró ${expira.toLocaleDateString('es-MX', { day:'numeric', month:'short' })}`;
+    } else {
+      estadoColor = '#9CA3AF';
+      estadoTxt = 'Inactivo';
+    }
+
+    const nombreEsc = nombre.replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const emailEsc = email.replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const tooltip = (m.uid || m.id || '');
+
+    return `
+      <div class="curso-row" data-mb-uid="${m.uid || m.id}" style="--area-color:${pInfo.color};">
+        <div class="curso-row__thumb" style="background:linear-gradient(135deg, ${pInfo.color}, color-mix(in srgb, ${pInfo.color} 60%, #fff));color:#fff;display:flex;align-items:center;justify-content:center;background-image:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;letter-spacing:.3px;">
+          ${iniciales}
+        </div>
+        <div class="curso-row__body">
+          <div class="curso-row__title">${nombreEsc}</div>
+          <div class="curso-row__meta">
+            <span class="curso-row__instructor" title="${emailEsc}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${emailEsc.length > 32 ? emailEsc.slice(0,32)+'…' : emailEsc}</span>
+            ${uidCorto ? `<span style="color:var(--text-3);font-size:11px;" title="${tooltip}">· ${uidCorto}…</span>` : ''}
+          </div>
+        </div>
+        <div class="curso-row__stats" style="gap:8px;">
+          <span class="curso-row__area" style="color:${pInfo.color};border-color:color-mix(in srgb, ${pInfo.color} 35%, transparent);background:color-mix(in srgb, ${pInfo.color} 10%, transparent);">${pInfo.label}</span>
+          <span class="curso-row__area" style="color:${estadoColor};border-color:color-mix(in srgb, ${estadoColor} 35%, transparent);background:color-mix(in srgb, ${estadoColor} 10%, transparent);font-size:9px;">${estadoTxt}</span>
+        </div>
+        <div class="curso-row__actions">
+          <button class="curso-card__action" data-mb-action="${m.uid || m.id}" title="Próximamente: acciones (activar, regalar días, cancelar, eliminar)" style="opacity:.55;cursor:not-allowed;" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
   },
 
   noticias(p){
@@ -4152,6 +4375,10 @@ const AdminStore = {
       // Webinars: refrescar KPIs + lista
       if (typeof Pages._renderKpisWebs === 'function') Pages._renderKpisWebs();
       if (typeof Pages._renderListaWebs === 'function') Pages._renderListaWebs();
+    } else if (section === 'miembros' && Pages[section]) {
+      // Miembros: refrescar KPIs + lista
+      if (typeof Pages._renderKpisMiembros === 'function') Pages._renderKpisMiembros();
+      if (typeof Pages._renderListaMiembros === 'function') Pages._renderListaMiembros();
     }
   },
 
