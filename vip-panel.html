@@ -2674,6 +2674,9 @@ window.UserState = {
   }
 
   document.body.style.visibility = 'visible';
+
+  // Listener de notificaciones también en modo demo (usa fallback si no hay Firebase)
+  setTimeout(() => { if (typeof setupNotificacionesListener === 'function') setupNotificacionesListener(); }, 600);
 })();
 </script>
 
@@ -2681,7 +2684,7 @@ window.UserState = {
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -2697,7 +2700,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.__db = db;
 // Exponer funciones de Firestore para que el script no-module pueda usarlas
-window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot };
+window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, serverTimestamp, Timestamp, db };
 setPersistence(auth, browserLocalPersistence);
 
 // ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
@@ -2778,6 +2781,9 @@ if (window.__isDemoMode) {
     }
 
     setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 50);
+
+    // Arrancar listener de notificaciones de Firestore (tiempo real)
+    setTimeout(() => { if (typeof setupNotificacionesListener === 'function') setupNotificacionesListener(); }, 100);
   });
 }
 
@@ -4359,7 +4365,7 @@ const Sections = (function(){
           area: data.area || 'General',
           nivel: data.nivel || 'Intermedio',
           instructor: data.instructor || 'Equipo IMDIIL',
-          horas: data.horas || (data.sesiones?.length * 1.5) || 0,
+          horas: data.horas || (data.sesiones?.length) || 0,
           modulos: data.sesiones?.length || data.modulos || 0,
           // Sesiones (clases) y materiales (PDFs)
           sesiones: Array.isArray(data.sesiones) ? data.sesiones : [],
@@ -5444,11 +5450,11 @@ const Sections = (function(){
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Descargables</span>
           <h1 class="sec-hero__title">PDFs y material</h1>
-          <p class="sec-hero__sub">Plantillas en Excel, checklists, procedimientos y formatos oficiales listos para usar en tu planta. Todos editables y con folio IMDIIL.</p>
+          <p class="sec-hero__sub">Plantillas en Excel, checklists, procedimientos y formatos oficiales listos para usar en tu planta. <strong style="color:var(--primary);">Estamos preparando los materiales reales</strong> — pronto disponibles para descarga.</p>
         </div>
         <div class="kpi-grid">
           <div class="kpi-card"><div class="kpi-card__label">Total PDFs</div><div class="kpi-card__value">${pdfs.length}</div></div>
-          <div class="kpi-card"><div class="kpi-card__label">Descargados</div><div class="kpi-card__value">${pdfs.filter(p=>p.tag==='down').length}</div></div>
+          <div class="kpi-card"><div class="kpi-card__label">Descargados</div><div class="kpi-card__value">0</div></div>
           <div class="kpi-card"><div class="kpi-card__label">Nuevos este mes</div><div class="kpi-card__value">${pdfs.filter(p=>p.tag==='new').length}</div></div>
           <div class="kpi-card"><div class="kpi-card__label">Plantillas Excel</div><div class="kpi-card__value">5</div></div>
         </div>
@@ -5478,7 +5484,7 @@ const Sections = (function(){
             const c=colorMap[p.cat]||'#10B981';
             const ic=iconMap[p.cat]||'i-news';
             return `
-            <article class="pdf-card" style="--pdf-color:${c};">
+            <article class="pdf-card pdf-card--soon" style="--pdf-color:${c};">
               <div class="pdf-card__top">
                 <div class="pdf-card__icon"><svg class="ic"><use href="#${ic}"/></svg></div>
                 <span class="pdf-card__size">${p.size}</span>
@@ -5490,9 +5496,8 @@ const Sections = (function(){
                   <span><svg class="ic"><use href="#i-news"/></svg>${p.paginas} pág.</span>
                 </div>
                 <div class="pdf-card__tags">
-                  ${p.tag==='new'?'<span class="tag tag--new">Nuevo</span>':''}
-                  ${p.tag==='down'?'<span class="tag tag--down">Descargado</span>':''}
-                  <button class="row-btn" style="margin-left:auto;"><svg class="ic"><use href="#i-download"/></svg>Descargar</button>
+                  <span class="tag tag--soon">Próximamente</span>
+                  <button class="row-btn pdf-card__btn-soon" style="margin-left:auto;opacity:.55;cursor:not-allowed;" data-soon><svg class="ic"><use href="#i-clock"/></svg>Disponible pronto</button>
                 </div>
               </div>
             </article>
@@ -5508,6 +5513,16 @@ const Sections = (function(){
           if (value === 'todas') { card.style.display = ''; return; }
           const cat = card.querySelector('.pdf-card__meta span')?.textContent?.trim() || '';
           card.style.display = cat.includes(value) ? '' : 'none';
+        });
+      });
+      // Bind click "Disponible pronto" → toast honesto
+      container.querySelectorAll('[data-soon]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof Toast !== 'undefined') {
+            Toast.info('Próximamente', 'Estamos preparando los materiales reales para descarga');
+          }
         });
       });
     }, 50);
@@ -6506,49 +6521,261 @@ function loadProfileFromLS(){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Notificaciones · dropdown estático con seed
+// Notificaciones · sistema REAL conectado a Firestore (col `notificaciones`)
+// Lee en tiempo real con onSnapshot. Marca leídas por usuario en localStorage.
 // ═══════════════════════════════════════════════════════════════════
+
+// Cache global de notificaciones (se actualiza con onSnapshot)
+window.__notifsState = { items: [], unsubscribe: null, loaded: false };
+
+// Notificaciones de fallback para modo demo/sin-membresia (sin Firebase auth)
+const NOTIFS_DEMO = [
+  {id:'demo-1', tipo:'clase', icono:'i-broadcast', color:'#FF7A2D', titulo:'Próxima clase en vivo', descripcion:'OEE · Ing. María López · 28 mayo 19:00 hrs', createdAtMs: Date.now()-3600000},
+  {id:'demo-2', tipo:'certificado', icono:'i-certificate', color:'#34D399', titulo:'¿Sabías qué? Cada curso tiene su certificado', descripcion:'Folio único con código QR verificable', createdAtMs: Date.now()-86400000},
+  {id:'demo-3', tipo:'logro', icono:'i-trophy', color:'#FBBF24', titulo:'5 niveles de progresión', descripcion:'Desde Aprendiz hasta Maestro Industrial', createdAtMs: Date.now()-2*86400000}
+];
+
+// Setup del listener de notificaciones — se llama al cargar el panel
+// Es robusto: si __fs aún no está listo (módulo Firebase aún cargando), reintenta hasta 10s
+function setupNotificacionesListener(intento = 0) {
+  const fs = window.__fs;
+
+  // Si __fs aún no está listo, reintentar hasta 10 segundos (cada 500ms)
+  if (!fs || !fs.db || !fs.collection || !fs.onSnapshot) {
+    if (intento < 20) {
+      setTimeout(() => setupNotificacionesListener(intento + 1), 500);
+      return;
+    }
+    // Después de 10s sin Firebase = modo demo (sin login o sin internet)
+    console.warn('[notif] Firebase no disponible después de 10s · usando notif demo');
+    window.__notifsState.items = NOTIFS_DEMO;
+    window.__notifsState.loaded = true;
+    window.__notifsState.source = 'fallback-timeout';
+    actualizarBadgeNotif();
+    return;
+  }
+
+  // Cancelar listener previo si existe
+  if (window.__notifsState.unsubscribe) {
+    try { window.__notifsState.unsubscribe(); } catch(e){}
+  }
+
+  try {
+    const q = fs.query(
+      fs.collection(fs.db, 'notificaciones'),
+      fs.orderBy('createdAt', 'desc'),
+      fs.limit(15)
+    );
+    window.__notifsState.unsubscribe = fs.onSnapshot(q, (snap) => {
+      const items = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          tipo: data.tipo || 'general',
+          icono: data.icono || 'i-bell',
+          color: data.color || '#FF7A2D',
+          titulo: data.titulo || 'Sin título',
+          descripcion: data.descripcion || '',
+          createdAtMs: data.createdAt?.toDate?.()?.getTime?.() || data.createdAt?.toMillis?.() || Date.now()
+        };
+      });
+      // Usar SIEMPRE las notif reales de Firestore (aunque esté vacío · ahí el empty state se ve)
+      window.__notifsState.items = items;
+      window.__notifsState.loaded = true;
+      window.__notifsState.source = 'firestore';
+      actualizarBadgeNotif();
+      console.log(`[notif] ${items.length} notificaciones reales cargadas de Firestore`);
+    }, (err) => {
+      console.warn('[notif] Error leyendo Firestore:', err.message, '· usando notif demo de respaldo');
+      window.__notifsState.items = NOTIFS_DEMO;
+      window.__notifsState.loaded = true;
+      window.__notifsState.source = 'fallback-error';
+      actualizarBadgeNotif();
+    });
+  } catch(e) {
+    console.warn('[notif] No se pudo iniciar listener:', e.message);
+    window.__notifsState.items = NOTIFS_DEMO;
+    window.__notifsState.loaded = true;
+    window.__notifsState.source = 'fallback-exception';
+    actualizarBadgeNotif();
+  }
+}
+
+// Devuelve IDs de notificaciones ya leídas (por usuario)
+function getNotifsLeidas() {
+  const uid = window.UserState?.uid || 'guest';
+  try {
+    return JSON.parse(localStorage.getItem('imdiil_notif_read_' + uid) || '[]');
+  } catch(e) { return []; }
+}
+
+// Marca un array de IDs como leídos
+function marcarNotifsLeidas(ids) {
+  const uid = window.UserState?.uid || 'guest';
+  const ya = getNotifsLeidas();
+  const todas = Array.from(new Set([...ya, ...ids]));
+  try {
+    localStorage.setItem('imdiil_notif_read_' + uid, JSON.stringify(todas));
+  } catch(e) {}
+}
+
+// Cuenta cuántas notif son nuevas (no leídas)
+function contarNotifsNuevas() {
+  const leidas = new Set(getNotifsLeidas());
+  return window.__notifsState.items.filter(n => !leidas.has(n.id)).length;
+}
+
+// Actualiza el badge (puntito rojo) según haya notif nuevas
+function actualizarBadgeNotif() {
+  const btn = document.getElementById('btn-notif');
+  if (!btn) return;
+  const dot = btn.querySelector('.dot');
+  if (!dot) return;
+  const nuevas = contarNotifsNuevas();
+  dot.style.display = nuevas > 0 ? '' : 'none';
+}
+
+// Helper de formato relativo de tiempo ("Hoy", "Ayer", "X días", "X h")
+function formatNotifTime(ms) {
+  const diff = Date.now() - ms;
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(diff / 3600000);
+  const d = Math.floor(diff / 86400000);
+  if (m < 5) return 'Ahora';
+  if (m < 60) return `Hace ${m} min`;
+  if (h < 24) return d === 0 ? 'Hoy' : `Hace ${h}h`;
+  if (d === 1) return 'Ayer';
+  if (d < 7) return `Hace ${d} días`;
+  if (d < 30) return `Hace ${Math.floor(d/7)} semanas`;
+  return `Hace ${Math.floor(d/30)} meses`;
+}
+
 function toggleNotifDropdown(){
   let dd=document.getElementById('notif-dropdown');
   if(dd){dd.remove();return;}
-  const notifs=[
-    {icon:'i-broadcast',color:'#FF7A2D',title:'Próxima clase en vivo',sub:'OEE · Ing. María López · 28 mayo 19:00 hrs',time:'Hoy'},
-    {icon:'i-certificate',color:'#34D399',title:'Tu certificado está listo',sub:'Folio IMDIIL-2026-00482 · Matriz IPER avanzada',time:'Ayer'},
-    {icon:'i-trophy',color:'#FBBF24',title:'¡Subiste a nivel Técnico!',sub:'+150 XP · Desbloqueaste 2 medallas nuevas',time:'2 días'}
-  ];
+
+  const notifs = window.__notifsState.items || [];
+  const leidas = new Set(getNotifsLeidas());
+
   dd=document.createElement('div');
   dd.id='notif-dropdown';
-  dd.style.cssText='position:absolute;top:calc(100% + 8px);right:0;width:340px;max-width:calc(100vw - 32px);background:var(--surface);border:0.5px solid var(--border-2);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22);z-index:9999;padding:8px;animation:dropFade .18s ease;';
+  // Responsive: en móvil (<=768) fixed con left+right (sin transform · evita bug Safari iOS)
+  // En desktop absolute al botón
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    dd.style.cssText = 'position:fixed;top:68px;left:12px;right:12px;width:auto;background:var(--surface);border:0.5px solid var(--border-2);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.45);z-index:9999;padding:8px;animation:dropFade .18s ease;max-height:calc(100vh - 90px);overflow-y:auto;';
+  } else {
+    dd.style.cssText = 'position:absolute;top:calc(100% + 8px);right:0;width:360px;max-width:calc(100vw - 32px);background:var(--surface);border:0.5px solid var(--border-2);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22);z-index:9999;padding:8px;animation:dropFade .18s ease;max-height:480px;overflow-y:auto;';
+  }
+
+  const nuevasCount = notifs.filter(n => !leidas.has(n.id)).length;
+
+  let bodyHTML = '';
+  if (notifs.length === 0) {
+    bodyHTML = `
+      <div style="padding:32px 16px;text-align:center;">
+        <div style="width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--text-3) 14%,transparent);color:var(--text-3);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div style="font-size:13px;color:var(--text-2);font-weight:600;margin-bottom:4px;">Sin notificaciones</div>
+        <div style="font-size:11.5px;color:var(--text-3);line-height:1.5;">Te avisaremos cuando haya clases nuevas, certificados listos o eventos importantes.</div>
+      </div>
+    `;
+  } else {
+    bodyHTML = notifs.map(n => {
+      const esNueva = !leidas.has(n.id);
+      return `
+        <div class="notif-item" style="display:flex;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .15s;align-items:flex-start;${esNueva?'background:color-mix(in srgb,'+n.color+' 5%,transparent);':''}">
+          <div style="width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,${n.color} 14%,transparent);color:${n.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg class="ic" style="width:16px;height:16px;"><use href="#${n.icono}"/></svg></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35;display:flex;align-items:center;gap:6px;">${n.titulo} ${esNueva?'<span style="width:6px;height:6px;border-radius:50%;background:'+n.color+';flex-shrink:0;"></span>':''}</div>
+            <div style="font-size:11.5px;color:var(--text-2);line-height:1.45;margin-top:3px;">${n.descripcion}</div>
+            <div style="font-size:10px;color:var(--text-3);margin-top:5px;letter-spacing:.3px;text-transform:uppercase;">${formatNotifTime(n.createdAtMs)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   dd.innerHTML=`
     <div style="padding:10px 12px 12px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <strong style="font-size:13px;font-weight:600;">Notificaciones</strong>
-      <span style="font-size:10px;color:var(--text-3);letter-spacing:.5px;text-transform:uppercase;">${notifs.length} nuevas</span>
+      <span style="font-size:10px;color:${nuevasCount>0?'var(--primary)':'var(--text-3)'};letter-spacing:.5px;text-transform:uppercase;font-weight:700;">${nuevasCount>0 ? nuevasCount + ' nuevas' : 'Al día'}</span>
     </div>
-    ${notifs.map(n=>`
-      <div class="notif-item" style="display:flex;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .15s;align-items:flex-start;">
-        <div style="width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,${n.color} 14%,transparent);color:${n.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg class="ic" style="width:16px;height:16px;"><use href="#${n.icon}"/></svg></div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35;">${n.title}</div>
-          <div style="font-size:11.5px;color:var(--text-2);line-height:1.45;margin-top:3px;">${n.sub}</div>
-          <div style="font-size:10px;color:var(--text-3);margin-top:5px;letter-spacing:.3px;text-transform:uppercase;">${n.time}</div>
-        </div>
-      </div>
-    `).join('')}
-    <div style="padding:9px 12px;border-top:0.5px solid var(--border);text-align:center;">
-      <span style="font-size:11.5px;color:var(--text-3);">Próximamente podrás marcarlas como leídas</span>
-    </div>`;
+    ${bodyHTML}
+    ${notifs.length > 0 ? `<div style="padding:9px 12px;border-top:0.5px solid var(--border);text-align:center;"><span style="font-size:11px;color:var(--text-3);">Mostrando últimas ${notifs.length}</span></div>` : ''}`;
+
   dd.querySelectorAll('.notif-item').forEach(el=>{
     el.addEventListener('mouseenter',()=>el.style.background='var(--surface-2)');
     el.addEventListener('mouseleave',()=>el.style.background='transparent');
   });
-  document.getElementById('btn-notif').style.position='relative';
-  document.getElementById('btn-notif').appendChild(dd);
+
+  if (isMobile) {
+    document.body.appendChild(dd);
+  } else {
+    document.getElementById('btn-notif').style.position='relative';
+    document.getElementById('btn-notif').appendChild(dd);
+  }
+
+  // Marcar todas como leídas después de un pequeño delay (para que el usuario vea la diferencia)
+  if (nuevasCount > 0) {
+    setTimeout(() => {
+      marcarNotifsLeidas(notifs.map(n => n.id));
+      actualizarBadgeNotif();
+    }, 800);
+  }
+
   // Cerrar al click fuera
   setTimeout(()=>{
     const handler=(e)=>{if(!dd.contains(e.target)&&e.target.id!=='btn-notif'){dd.remove();document.removeEventListener('click',handler);}};
     document.addEventListener('click',handler);
   },50);
 }
+
+// Helper global para que admins puedan crear notificaciones desde la consola
+// Uso: crearNotificacion({titulo:'X', descripcion:'Y', tipo:'clase'})
+window.crearNotificacion = async function(opts) {
+  if (!window.UserState?.isAdmin) {
+    console.warn('⛔ Solo admins pueden crear notificaciones. Logueate con un correo admin.');
+    return;
+  }
+  const fs = window.__fs;
+  if (!fs || !fs.db || !fs.addDoc || !fs.collection || !fs.serverTimestamp) {
+    console.error('❌ Firestore aún no está listo. Espera 3 segundos y vuelve a intentar.');
+    return;
+  }
+  if (!opts || typeof opts !== 'object') {
+    console.error('❌ Pasa un objeto: crearNotificacion({titulo:"...", descripcion:"...", tipo:"clase"})');
+    return;
+  }
+  const TIPO_PRESETS = {
+    clase: { icono:'i-broadcast', color:'#FF7A2D' },
+    certificado: { icono:'i-certificate', color:'#34D399' },
+    logro: { icono:'i-trophy', color:'#FBBF24' },
+    sistema: { icono:'i-bell', color:'#60A5FA' },
+    general: { icono:'i-bell', color:'#FF7A2D' }
+  };
+  const preset = TIPO_PRESETS[opts.tipo || 'general'] || TIPO_PRESETS.general;
+  try {
+    const ref = await fs.addDoc(fs.collection(fs.db, 'notificaciones'), {
+      titulo: opts.titulo || 'Notificación',
+      descripcion: opts.descripcion || '',
+      tipo: opts.tipo || 'general',
+      icono: opts.icono || preset.icono,
+      color: opts.color || preset.color,
+      createdAt: fs.serverTimestamp(),
+      creadoPor: window.UserState?.email || 'admin'
+    });
+    console.log('✅ Notificación creada:', ref.id);
+    console.log('   Aparecerá en TODOS los usuarios en tiempo real');
+    return ref.id;
+  } catch(e) {
+    console.error('❌ Error creando notificación:', e.message);
+    if (e.message.includes('permission')) {
+      console.error('   → Las Firestore Rules necesitan permitir write en col `notificaciones` para admins');
+    }
+  }
+};
 
 // ═══════════════════════════════════════════════════════════════════
 // Sistema de referidos · código + copiar + compartir
@@ -7385,6 +7612,31 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
   .mobile-drawer__item .ic{width:18px;height:18px;flex-shrink:0}
 }
+</style>
+<style>
+/* ═══ Tag "Próximamente" para PDFs · honest design ═══ */
+.tag--soon{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 8px;border-radius:6px;
+  background:color-mix(in srgb, var(--text-3) 14%, transparent);
+  color:var(--text-2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+}
+.pdf-card--soon{position:relative;overflow:hidden}
+.pdf-card--soon::after{
+  content:'PRÓXIMAMENTE';
+  position:absolute;top:14px;right:-32px;
+  background:color-mix(in srgb, var(--primary) 18%, transparent);
+  color:var(--primary);
+  font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;
+  padding:3px 36px;transform:rotate(35deg);
+  border-top:1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  border-bottom:1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  pointer-events:none;
+  z-index:2;
+}
+.pdf-card--soon .pdf-card__btn-soon:hover{opacity:.55 !important;transform:none !important}
 </style>
 </body>
 </html>
