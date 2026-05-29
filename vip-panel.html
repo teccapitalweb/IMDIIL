@@ -8015,6 +8015,31 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .splash-film__dot.is-on{background:var(--primary);width:22px;border-radius:4px}
 .splash-film__next{width:auto;flex-shrink:0;padding:13px 22px}
 @media (max-width:560px){.splash-bnv__box{padding:28px 22px 24px;border-radius:18px}.splash-bnv__title{font-size:24px}.splash-bnv__perks{grid-template-columns:1fr}.splash-film__feat-ic{font-size:54px}.splash-film__feat-t{font-size:22px}.splash-film__nav{flex-wrap:wrap;gap:10px}.splash-film__next{width:100%;order:3}.splash-film__dots{order:1;width:100%}.splash-film__skip{order:2}}
+/* ─── Override de contraste · la caja del splash SIEMPRE es oscura,
+   así que forzamos texto claro sin depender del tema día/noche ─── */
+#splash-bienvenida .splash-bnv__kicker{color:#FF9D52}
+#splash-bienvenida .splash-bnv__title{color:#FBF4EC}
+#splash-bienvenida .splash-bnv__title em{display:inline-block;padding:0 .06em;background:linear-gradient(135deg,#FF7A2D,#FFB347);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+#splash-bienvenida .splash-bnv__desc{color:#CDC2B5}
+#splash-bienvenida .splash-bnv__desc strong{color:#FBF4EC}
+#splash-bienvenida .splash-film__feat-t{color:#FBF4EC}
+#splash-bienvenida .splash-film__feat-d{color:#CDC2B5}
+#splash-bienvenida .splash-bnv__foot{color:#9A8E80}
+#splash-bienvenida .splash-bnv__foot a{color:#FF9D52}
+#splash-bienvenida .splash-bnv__close{color:#CDC2B5}
+#splash-bienvenida .splash-film__skip{color:#9A8E80}
+#splash-bienvenida .splash-film__skip:hover{color:#CDC2B5}
+#splash-bienvenida .splash-film__progress{border-radius:0}
+/* Mobile fino: que el título y los slides respiren en pantallas chicas */
+@media (max-width:420px){
+  #splash-bienvenida{padding:12px}
+  #splash-bienvenida .splash-bnv__title{font-size:21px}
+  #splash-bienvenida .splash-bnv__desc{font-size:13.5px}
+  #splash-bienvenida .splash-film__stage{min-height:200px}
+  #splash-bienvenida .splash-film__feat-ic{font-size:48px;margin-bottom:14px}
+  #splash-bienvenida .splash-film__feat-t{font-size:20px}
+  #splash-bienvenida .splash-bnv__icon{font-size:48px}
+}
 </style>
 <style>
 /* ═══ Dropdown custom · usa variables CSS para día/noche ═══ */
