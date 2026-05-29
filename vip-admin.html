@@ -2772,81 +2772,424 @@ const Pages={
     // (placeholder · ya no se usa, el render real está en cursos arriba)
   },
 
-  webinars(p){
-    p.innerHTML=`
+  // ════════════════════════════════════════════════════════════════════
+  // CLASES EN VIVO (WEBINARS) · CRUD real conectado a Firestore col `webinars`
+  // Lógica idéntica a Sinergia · adaptada al diseño IMDIIL
+  // ════════════════════════════════════════════════════════════════════
+
+  _webState: {
+    search: '',
+    tab: 'todos' // todos / proximos / pasados
+  },
+
+  webinars(p) {
+    p.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Programación en vivo</span>
           <h1 class="sec-hero__title">Clases en vivo</h1>
-          <p class="sec-hero__sub">Programa los webinars quincenales con fecha, instructor, link de transmisión y descripción para el panel VIP.</p>
+          <p class="sec-hero__sub">Programa las transmisiones en vivo que verán los miembros VIP. <strong style="color:var(--text-2);">El countdown del Inicio del panel se actualiza automáticamente</strong> con el próximo webinar.</p>
           <div class="sec-hero__actions">
-            <button class="btn btn--accent" id="new-web"><svg class="ic"><use href="#i-plus"/></svg>Nueva clase en vivo</button>
+            <button class="btn btn--accent" id="new-web-btn">
+              <svg class="ic"><use href="#i-plus"/></svg>
+              Nueva clase en vivo
+            </button>
           </div>
         </div>
-        <div class="adm-list" id="web-list"></div>
+
+        <div class="kpi-grid" id="web-kpis"></div>
+
+        <div class="curso-toolbar">
+          <div class="curso-search-wrap">
+            <svg class="curso-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="web-search-input" placeholder="Buscar por título o instructor…" class="curso-search__input">
+            <button id="web-search-clear" class="curso-search__clear" style="display:none;" aria-label="Limpiar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="curso-pills">
+          <button class="curso-pill" data-web-tab="proximos" data-active="1"><span class="curso-pill__dot" style="background:#EF4444;"></span>Próximos</button>
+          <button class="curso-pill" data-web-tab="pasados">Pasados</button>
+          <button class="curso-pill" data-web-tab="todos">Todos</button>
+        </div>
+
+        <div id="web-container"></div>
       </div>
     `;
-    document.getElementById('new-web').addEventListener('click',()=>webModal());
-    renderWebs();
-    function renderWebs(){
-      const list=document.getElementById('web-list');
-      if(SEED.webinars.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-broadcast"/></svg></div><h3>Sin clases programadas</h3><p>Programa la primera clase en vivo del mes.</p></div>`;return;}
-      list.innerHTML=SEED.webinars.map(w=>{
-        const f=new Date(w.fecha);
-        const fmt=f.toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})+' · '+String(f.getHours()).padStart(2,'0')+':'+String(f.getMinutes()).padStart(2,'0')+' hrs';
-        return `
-          <div class="adm-row" style="--c1:#EF4444;">
-            <div class="adm-row__thumb"><svg class="ic"><use href="#i-broadcast"/></svg></div>
-            <div class="adm-row__body">
-              <div class="adm-row__title">${w.titulo}</div>
-              <div class="adm-row__meta">
-                <span><svg class="ic"><use href="#i-user"/></svg>${w.instructor}</span>
-                <span><svg class="ic"><use href="#i-calendar"/></svg>${fmt}</span>
-                <span><svg class="ic"><use href="#i-clock"/></svg>${w.duracion} min</span>
-                <span><svg class="ic"><use href="#i-users"/></svg>${w.registrados} registrados</span>
-              </div>
-            </div>
-            <span class="tag ${w.publicado?'tag--success':'tag--warning'}">${w.publicado?'Publicada':'Borrador'}</span>
-            <div class="adm-row__actions">
-              <button class="icon-action" data-edit="${w.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
-              <button class="icon-action icon-action--danger" data-del="${w.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
-            </div>
-          </div>
-        `;
-      }).join('');
-      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>webModal(b.dataset.edit)));
-      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
-        if(confirm('¿Eliminar esta clase en vivo?')){
-          const i=SEED.webinars.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.webinars.splice(i,1);renderWebs();Toast.success('Clase eliminada');}
-        }
-      }));
+
+    // Por defecto mostrar próximos
+    Pages._webState.tab = 'proximos';
+    Pages._renderKpisWebs();
+    Pages._renderListaWebs();
+
+    const searchInput = p.querySelector('#web-search-input');
+    const searchClear = p.querySelector('#web-search-clear');
+    searchInput?.addEventListener('input', (e) => {
+      Pages._webState.search = e.target.value.toLowerCase().trim();
+      searchClear.style.display = e.target.value ? '' : 'none';
+      Pages._renderListaWebs();
+    });
+    searchClear?.addEventListener('click', () => {
+      searchInput.value = '';
+      Pages._webState.search = '';
+      searchClear.style.display = 'none';
+      Pages._renderListaWebs();
+    });
+
+    p.querySelectorAll('[data-web-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('[data-web-tab]').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._webState.tab = btn.dataset.webTab;
+        Pages._renderListaWebs();
+      });
+    });
+
+    p.querySelector('#new-web-btn')?.addEventListener('click', () => {
+      Pages._abrirModalWebinar(null);
+    });
+  },
+
+  _webFechaToDate(w) {
+    // Acepta Timestamp, string ISO, o Date
+    if (!w?.fecha) return null;
+    const f = w.fecha;
+    if (f?.toDate) return f.toDate();
+    if (f?.seconds) return new Date(f.seconds * 1000);
+    if (typeof f === 'string') return new Date(f);
+    if (f instanceof Date) return f;
+    return null;
+  },
+
+  _renderKpisWebs() {
+    const wrap = document.getElementById('web-kpis');
+    if (!wrap) return;
+    const store = window.AdminStore;
+    const ready = store?.ready;
+    const webs = ready ? store.webinars : [];
+    const ahora = Date.now();
+    const proximos = webs.filter(w => {
+      const f = Pages._webFechaToDate(w);
+      return f && f.getTime() > ahora;
+    });
+    const pasados = webs.length - proximos.length;
+    // Próxima clase
+    const sortProx = [...proximos].sort((a,b) => {
+      const fa = Pages._webFechaToDate(a)?.getTime() || 0;
+      const fb = Pages._webFechaToDate(b)?.getTime() || 0;
+      return fa - fb;
+    });
+    const proxima = sortProx[0];
+    let proximaTxt = '—';
+    if (proxima) {
+      const f = Pages._webFechaToDate(proxima);
+      if (f) proximaTxt = f.toLocaleDateString('es-MX', { day:'numeric', month:'short' }) + ' · ' + String(f.getHours()).padStart(2,'0') + ':' + String(f.getMinutes()).padStart(2,'0');
     }
-    function webModal(id){
-      const w=id?SEED.webinars.find(x=>x.id===id):{titulo:'',instructor:'',area:'Seguridad',fecha:'',duracion:90,link:'',publicado:false,registrados:0};
-      const body=`
-        <div class="form-grid">
-          <div class="form-field form-field--full"><label class="label">Título del webinar</label><input type="text" class="input" id="w-titulo" value="${(w.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: OEE: optimización de líneas…"></div>
-          <div class="form-field"><label class="label">Instructor</label><input type="text" class="input" id="w-instructor" value="${(w.instructor||'').replace(/"/g,'&quot;')}" placeholder="Ing. María López"></div>
-          <div class="form-field"><label class="label">Área</label><select class="select" id="w-area"><option ${w.area==='Seguridad'?'selected':''}>Seguridad</option><option ${w.area==='Logística'?'selected':''}>Logística</option><option ${w.area==='Calidad'?'selected':''}>Calidad</option><option ${w.area==='Mantenimiento'?'selected':''}>Mantenimiento</option></select></div>
-          <div class="form-field"><label class="label">Fecha y hora</label><input type="datetime-local" class="input" id="w-fecha" value="${w.fecha?w.fecha.slice(0,16):''}"></div>
-          <div class="form-field"><label class="label">Duración (min)</label><input type="number" class="input" id="w-duracion" value="${w.duracion}" min="15"></div>
-          <div class="form-field form-field--full"><label class="label">Link de transmisión</label><input type="url" class="input" id="w-link" value="${(w.link||'').replace(/"/g,'&quot;')}" placeholder="https://meet.imdiil.com/…"></div>
-          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="w-publicado" ${w.publicado?'checked':''}><label for="w-publicado" style="cursor:pointer;font-size:13px;font-weight:500;">Publicada · visible para miembros VIP</label></div>
-        </div>
-      `;
-      const footer=document.createElement('div');
-      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar':'Programar'}<svg class="ic"><use href="#i-check"/></svg></button>`;
-      Modal.open({title:id?'Editar clase en vivo':'Nueva clase en vivo',subtitle:id?w.titulo:'Programa una transmisión',icon:'i-broadcast',body,footer});
-      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
-      footer.querySelector('#m-save').addEventListener('click',()=>{
-        const data={titulo:document.getElementById('w-titulo').value.trim(),instructor:document.getElementById('w-instructor').value.trim(),area:document.getElementById('w-area').value,fecha:document.getElementById('w-fecha').value+':00',duracion:+document.getElementById('w-duracion').value,link:document.getElementById('w-link').value.trim(),publicado:document.getElementById('w-publicado').checked};
-        if(!data.titulo){Toast.error('Falta el título');return;}
-        if(!data.fecha||!data.instructor){Toast.error('Faltan datos','Fecha e instructor son obligatorios.');return;}
-        if(id){Object.assign(w,data);Toast.success('Clase actualizada',data.titulo);}
-        else{SEED.webinars.unshift({id:'w'+Date.now(),registrados:0,...data});Toast.success('Clase programada',data.titulo);}
-        Modal.close();renderWebs();
+    wrap.innerHTML = `
+      <div class="kpi-card" style="--c1:#EF4444;--c2:#F87171;">
+        <div class="kpi-card__label">Próximas clases</div>
+        <div class="kpi-card__value">${proximos.length}</div>
+        <div class="kpi-card__sub">Próxima · ${proximaTxt}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#9CA3AF;--c2:#6B7280;">
+        <div class="kpi-card__label">Pasadas</div>
+        <div class="kpi-card__value">${pasados}</div>
+        <div class="kpi-card__sub">Total histórico</div>
+      </div>
+      <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
+        <div class="kpi-card__label">Total programadas</div>
+        <div class="kpi-card__value">${webs.length}</div>
+        <div class="kpi-card__sub">${ready ? 'En Firestore' : 'Cargando…'}</div>
+      </div>
+    `;
+  },
+
+  _renderListaWebs() {
+    const wrap = document.getElementById('web-container');
+    if (!wrap) return;
+    const store = window.AdminStore;
+
+    if (!store?.ready) {
+      wrap.innerHTML = `<div class="curso-list">${[1,2,3].map(()=>`
+        <div class="curso-row" style="--area-color:#EF4444;">
+          <div class="curso-row__thumb skeleton-shimmer" style="background-image:none;"></div>
+          <div class="curso-row__body">
+            <div class="skeleton-line skeleton-shimmer" style="width:60%;height:14px;"></div>
+            <div class="skeleton-line skeleton-shimmer" style="width:40%;height:11px;margin-top:8px;"></div>
+          </div>
+        </div>`).join('')}</div>`;
+      return;
+    }
+
+    const S = Pages._webState;
+    let webs = [...store.webinars];
+    const ahora = Date.now();
+
+    // Filtrar por tab
+    if (S.tab === 'proximos') {
+      webs = webs.filter(w => { const f = Pages._webFechaToDate(w); return f && f.getTime() > ahora; });
+      webs.sort((a,b) => (Pages._webFechaToDate(a)?.getTime() || 0) - (Pages._webFechaToDate(b)?.getTime() || 0));
+    } else if (S.tab === 'pasados') {
+      webs = webs.filter(w => { const f = Pages._webFechaToDate(w); return f && f.getTime() <= ahora; });
+      webs.sort((a,b) => (Pages._webFechaToDate(b)?.getTime() || 0) - (Pages._webFechaToDate(a)?.getTime() || 0));
+    } else {
+      webs.sort((a,b) => (Pages._webFechaToDate(b)?.getTime() || 0) - (Pages._webFechaToDate(a)?.getTime() || 0));
+    }
+
+    // Búsqueda
+    if (S.search) {
+      webs = webs.filter(w => {
+        const t = (w.titulo || '').toLowerCase();
+        const i = (w.instructor || '').toLowerCase();
+        return t.includes(S.search) || i.includes(S.search);
       });
     }
+
+    if (webs.length === 0) {
+      const hayWebs = store.webinars.length > 0;
+      wrap.innerHTML = `
+        <div class="curso-empty">
+          <div class="curso-empty__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+              <circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/>
+            </svg>
+          </div>
+          <div class="curso-empty__title">${S.search ? 'Sin resultados' : (S.tab === 'proximos' ? 'Sin clases programadas' : (S.tab === 'pasados' ? 'Sin clases pasadas' : 'Sin clases aún'))}</div>
+          <div class="curso-empty__sub">${S.search ? 'Prueba con otros términos' : (hayWebs && S.tab !== 'todos' ? 'Cambia el filtro para ver otras' : 'Programa la primera clase en vivo con "Nueva clase en vivo"')}</div>
+        </div>
+      `;
+      return;
+    }
+
+    wrap.innerHTML = `<div class="curso-list">${webs.map(w => Pages._cardWebinar(w)).join('')}</div>`;
+    Pages._bindWebActions(wrap);
+  },
+
+  _cardWebinar(w) {
+    const fecha = Pages._webFechaToDate(w);
+    const ahora = Date.now();
+    const esProximo = fecha && fecha.getTime() > ahora;
+    const fmtFecha = fecha ? fecha.toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' }) : 'Sin fecha';
+    const fmtHora = fecha ? String(fecha.getHours()).padStart(2,'0') + ':' + String(fecha.getMinutes()).padStart(2,'0') : '--:--';
+    const tituloEsc = (w.titulo || 'Sin título').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const colorBorde = esProximo ? '#EF4444' : '#9CA3AF';
+
+    // Diferencia con ahora
+    let proximidadTxt = '';
+    if (fecha) {
+      const diff = fecha.getTime() - ahora;
+      const diffDias = Math.round(diff / 86400000);
+      if (esProximo) {
+        if (diffDias === 0) proximidadTxt = 'HOY';
+        else if (diffDias === 1) proximidadTxt = 'MAÑANA';
+        else if (diffDias < 7) proximidadTxt = 'En ' + diffDias + ' días';
+        else proximidadTxt = 'En ' + Math.ceil(diffDias/7) + ' sem.';
+      } else {
+        const diasAtras = Math.abs(diffDias);
+        if (diasAtras === 0) proximidadTxt = 'Hoy (pasada)';
+        else if (diasAtras === 1) proximidadTxt = 'Ayer';
+        else proximidadTxt = 'Hace ' + diasAtras + 'd';
+      }
+    }
+
+    return `
+      <div class="curso-row" data-web-id="${w.id}" style="--area-color:${colorBorde};">
+        <div class="curso-row__thumb" style="background:color-mix(in srgb,${colorBorde} 14%,transparent);color:${colorBorde};display:flex;align-items:center;justify-content:center;background-image:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+            <circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/>
+          </svg>
+        </div>
+        <div class="curso-row__body">
+          <div class="curso-row__title">${tituloEsc}</div>
+          <div class="curso-row__meta">
+            ${w.instructor ? `<span class="curso-row__instructor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${w.instructor}</span>` : ''}
+            <span style="color:var(--text-3);">·</span>
+            <span class="curso-row__instructor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="display:inline;vertical-align:-2px;margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${fmtFecha} · ${fmtHora}</span>
+            ${esProximo ? `<span class="curso-row__area" style="color:${colorBorde};border-color:color-mix(in srgb, ${colorBorde} 35%, transparent);background:color-mix(in srgb, ${colorBorde} 10%, transparent);">${proximidadTxt}</span>` : `<span class="curso-row__nivel">${proximidadTxt}</span>`}
+          </div>
+        </div>
+        <div class="curso-row__stats">
+          <div class="curso-row__stat">
+            <div class="curso-row__stat-val">${w.duracion || 60}</div>
+            <div class="curso-row__stat-lbl">min</div>
+          </div>
+        </div>
+        <div class="curso-row__actions">
+          ${w.link ? `<a href="${(w.link||'').replace(/"/g,'&quot;')}" target="_blank" rel="noopener noreferrer" class="curso-card__action" title="Abrir transmisión" onclick="event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>` : ''}
+          <button class="curso-card__action" data-web-edit="${w.id}" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="curso-card__action curso-card__action--danger" data-web-del="${w.id}" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </div>
+      </div>
+    `;
+  },
+
+  _bindWebActions(wrap) {
+    wrap.querySelectorAll('[data-web-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.webEdit;
+        const w = window.AdminStore.webinars.find(x => x.id === id);
+        if (!w) { Toast.error('Webinar no encontrado'); return; }
+        Pages._abrirModalWebinar(w);
+      });
+    });
+
+    wrap.querySelectorAll('[data-web-del]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.webDel;
+        const w = window.AdminStore.webinars.find(x => x.id === id);
+        if (!w) return;
+        const ok = confirm(`¿Eliminar la clase "${w.titulo}"?\n\nLos miembros que se hayan registrado ya no la verán.\n\nEsta acción NO se puede deshacer.`);
+        if (!ok) return;
+        const fb = window._fb;
+        if (!fb?.deleteDoc || !fb?.doc || !fb?.db) { Toast.error('Firestore no listo'); return; }
+        try {
+          await fb.deleteDoc(fb.doc(fb.db, 'webinars', id));
+          Toast.success('Clase eliminada', w.titulo);
+        } catch (err) {
+          console.error('[webinar] error eliminar:', err);
+          Toast.error('No se pudo eliminar', err.message || 'Intenta de nuevo');
+        }
+      });
+    });
+  },
+
+  _abrirModalWebinar(w) {
+    const esEdicion = !!w;
+    const fechaActual = esEdicion ? Pages._webFechaToDate(w) : null;
+    // Formato para datetime-local: YYYY-MM-DDTHH:mm
+    const fechaInputVal = fechaActual
+      ? fechaActual.getFullYear() + '-' +
+        String(fechaActual.getMonth()+1).padStart(2,'0') + '-' +
+        String(fechaActual.getDate()).padStart(2,'0') + 'T' +
+        String(fechaActual.getHours()).padStart(2,'0') + ':' +
+        String(fechaActual.getMinutes()).padStart(2,'0')
+      : '';
+
+    const wb = esEdicion ? w : {};
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <input type="hidden" id="web-edit-id" value="${esEdicion ? wb.id : ''}">
+
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <label class="label" for="wf-titulo">Título de la clase *</label>
+          <input type="text" class="input" id="wf-titulo" maxlength="120" value="${(wb.titulo || '').replace(/"/g,'&quot;')}" placeholder="Ej: OEE: optimización de líneas de producción" required>
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label" for="wf-desc">Descripción</label>
+          <textarea class="input" id="wf-desc" rows="3" maxlength="500" placeholder="Qué se cubrirá en la clase, casos reales, herramientas, etc.">${(wb.descripcion || wb.desc || '').replace(/</g,'&lt;')}</textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="label" for="wf-instructor">Instructor *</label>
+          <input type="text" class="input" id="wf-instructor" value="${(wb.instructor || '').replace(/"/g,'&quot;')}" placeholder="Ej: Ing. María López" required>
+        </div>
+
+        <div class="form-field">
+          <label class="label" for="wf-duracion">Duración (minutos)</label>
+          <input type="number" class="input" id="wf-duracion" min="15" max="480" value="${wb.duracion || 60}">
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label" for="wf-fecha">Fecha y hora de la clase *</label>
+          <input type="datetime-local" class="input" id="wf-fecha" value="${fechaInputVal}" required>
+          <div style="font-size:11px;color:var(--text-3);margin-top:5px;">Hora local (CDMX) · el countdown del panel VIP se actualiza automáticamente</div>
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label" for="wf-link">Link de transmisión *</label>
+          <input type="url" class="input" id="wf-link" value="${(wb.link || '').replace(/"/g,'&quot;')}" placeholder="https://meet.google.com/… o https://zoom.us/…" required>
+          <div style="font-size:11px;color:var(--text-3);margin-top:5px;">URL pública (Zoom, Google Meet, YouTube Live, etc.)</div>
+        </div>
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="wf-cancel">Cancelar</button>
+      <button class="btn btn--accent" id="wf-save">
+        <svg class="ic"><use href="#i-check"/></svg>
+        ${esEdicion ? 'Guardar cambios' : 'Programar clase'}
+      </button>
+    `;
+
+    Modal.open({
+      title: esEdicion ? 'Editar clase en vivo' : 'Nueva clase en vivo',
+      subtitle: esEdicion ? wb.titulo : 'Programa una transmisión para los miembros VIP',
+      icon: 'i-broadcast',
+      body,
+      footer
+    });
+
+    footer.querySelector('#wf-cancel').addEventListener('click', () => Modal.close());
+    footer.querySelector('#wf-save').addEventListener('click', async () => {
+      const btn = footer.querySelector('#wf-save');
+      btn.disabled = true; btn.style.opacity = '.65'; btn.style.cursor = 'wait';
+      try {
+        const editId = document.getElementById('web-edit-id').value.trim();
+        const titulo = document.getElementById('wf-titulo').value.trim();
+        const descripcion = document.getElementById('wf-desc').value.trim();
+        const instructor = document.getElementById('wf-instructor').value.trim();
+        const duracion = parseInt(document.getElementById('wf-duracion').value, 10) || 60;
+        const fechaStr = document.getElementById('wf-fecha').value;
+        const link = document.getElementById('wf-link').value.trim();
+
+        if (!titulo) { Toast.error('Falta el título'); document.getElementById('wf-titulo')?.focus(); throw new Error('skip'); }
+        if (!instructor) { Toast.error('Falta el instructor'); document.getElementById('wf-instructor')?.focus(); throw new Error('skip'); }
+        if (!fechaStr) { Toast.error('Falta la fecha'); document.getElementById('wf-fecha')?.focus(); throw new Error('skip'); }
+        if (!link) { Toast.error('Falta el link de transmisión'); document.getElementById('wf-link')?.focus(); throw new Error('skip'); }
+        try { new URL(link); } catch(e) { Toast.error('Link inválido', 'Verifica que sea una URL completa'); throw new Error('skip'); }
+
+        // Convertir datetime-local a Date
+        const fechaDate = new Date(fechaStr);
+        if (isNaN(fechaDate.getTime())) { Toast.error('Fecha inválida'); throw new Error('skip'); }
+
+        const fb = window._fb;
+        if (!fb?.db || !fb?.addDoc || !fb?.updateDoc || !fb?.collection || !fb?.doc || !fb?.serverTimestamp) {
+          Toast.error('Firestore no listo'); throw new Error('skip');
+        }
+
+        const data = {
+          titulo,
+          descripcion,
+          instructor,
+          duracion,
+          fecha: fb.Timestamp ? fb.Timestamp.fromDate(fechaDate) : fechaDate,
+          link,
+          activo: true
+        };
+
+        if (editId) {
+          await fb.updateDoc(fb.doc(fb.db, 'webinars', editId), data);
+          Toast.success('Clase actualizada', titulo);
+        } else {
+          data.createdAt = fb.serverTimestamp();
+          data.creadoPor = window.__currentAdmin?.email || 'admin';
+          data.registrados = 0;
+          await fb.addDoc(fb.collection(fb.db, 'webinars'), data);
+          Toast.success('¡Clase programada!', titulo);
+        }
+        Modal.close();
+      } catch (err) {
+        if (err.message !== 'skip') {
+          console.error('[webinar submit]', err);
+          if (err.message?.includes('permission')) {
+            Toast.error('Permisos faltantes', 'Las reglas de Firestore no permiten escritura en `webinars`');
+          } else {
+            Toast.error('Error al guardar', err.message || 'Intenta de nuevo');
+          }
+        }
+      } finally {
+        btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+      }
+    });
   },
 
   // ════════════════════════════════════════════════════════════════════
@@ -3805,6 +4148,10 @@ const AdminStore = {
       if (typeof Pages._renderKpisPdfs === 'function') Pages._renderKpisPdfs();
       if (typeof Pages._renderPillsCursosPdfs === 'function') Pages._renderPillsCursosPdfs();
       if (typeof Pages._renderListaPdfs === 'function') Pages._renderListaPdfs();
+    } else if (section === 'webinars' && Pages[section]) {
+      // Webinars: refrescar KPIs + lista
+      if (typeof Pages._renderKpisWebs === 'function') Pages._renderKpisWebs();
+      if (typeof Pages._renderListaWebs === 'function') Pages._renderListaWebs();
     }
   },
 

@@ -3096,16 +3096,10 @@ window.__resetPassword = async () => {
 
     <div class="widget widget--next">
       <div class="widget__label">⏱ Próxima clase en vivo</div>
-      <div class="widget__title">OEE: optimización de líneas de producción</div>
-      <div class="widget__meta"><svg class="ic"><use href="#i-user"/></svg>Ing. María López</div>
-      <div class="widget__meta"><svg class="ic"><use href="#i-calendar"/></svg>Jueves 28 mayo · 19:00 hrs</div>
-      <div class="countdown">
-        <div class="cd-box"><span class="cd-num" id="cd-d">00</span><span class="cd-lbl">Días</span></div>
-        <div class="cd-box"><span class="cd-num" id="cd-h">00</span><span class="cd-lbl">Hrs</span></div>
-        <div class="cd-box"><span class="cd-num" id="cd-m">00</span><span class="cd-lbl">Min</span></div>
-        <div class="cd-box"><span class="cd-num" id="cd-s">00</span><span class="cd-lbl">Seg</span></div>
+      <div style="padding:18px 0;text-align:center;color:var(--text-3);font-size:12px;">
+        <div style="width:18px;height:18px;border:2px solid var(--text-3);border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite;margin-bottom:8px;"></div>
+        <div>Cargando…</div>
       </div>
-      <button class="btn btn--accent btn--block btn--sm" id="btn-cal"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
     </div>
 
     <div class="widget widget--wa">
@@ -3240,19 +3234,90 @@ function applyGreeting(){
   const l=document.getElementById('greeting-label');if(l)l.textContent=eyebrow;
 }
 
-function initCountdown(){
-  const target=new Date('2026-05-28T19:00:00');
-  const pad=n=>String(n).padStart(2,'0');
-  const cd={d:document.getElementById('cd-d'),h:document.getElementById('cd-h'),m:document.getElementById('cd-m'),s:document.getElementById('cd-s')};
-  function tick(){
-    const diff=target-new Date();
-    if(diff<=0){Object.values(cd).forEach(e=>{if(e)e.textContent='00';});return;}
-    if(cd.d)cd.d.textContent=pad(Math.floor(diff/86400000));
-    if(cd.h)cd.h.textContent=pad(Math.floor((diff%86400000)/3600000));
-    if(cd.m)cd.m.textContent=pad(Math.floor((diff%3600000)/60000));
-    if(cd.s)cd.s.textContent=pad(Math.floor((diff%60000)/1000));
+// Widget "Próxima clase en vivo" del aside · ahora dinámico desde Firestore
+async function initCountdown(){
+  const widget = document.querySelector('.widget--next');
+  if (!widget) return;
+
+  // Si tenemos cargarWebinarsFirestore disponible, esperamos a que cargue
+  if (typeof window.__cargarWebinarsFirestore === 'function') {
+    try { await window.__cargarWebinarsFirestore(); } catch(e) {}
   }
-  tick();setInterval(tick,1000);
+
+  // Buscar el próximo webinar real
+  let proximo = null;
+  if (typeof webinars !== 'undefined' && Array.isArray(webinars)) {
+    const ahora = Date.now();
+    const proximos = webinars
+      .filter(w => {
+        const fMs = w.fechaMs || (w.fecha ? new Date(w.fecha).getTime() : 0);
+        return fMs > ahora;
+      })
+      .sort((a, b) => {
+        const fa = a.fechaMs || new Date(a.fecha).getTime();
+        const fb = b.fechaMs || new Date(b.fecha).getTime();
+        return fa - fb;
+      });
+    proximo = proximos[0];
+  }
+
+  // Si NO hay próximo webinar, mostrar empty state limpio en el widget
+  if (!proximo) {
+    widget.innerHTML = `
+      <div class="widget__label">⏱ Próxima clase en vivo</div>
+      <div style="padding:18px 0 4px;text-align:center;">
+        <div style="width:42px;height:42px;border-radius:50%;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/></svg>
+        </div>
+        <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:4px;">Sin clases programadas</div>
+        <div style="font-size:11.5px;color:var(--text-3);line-height:1.5;">Te avisaremos cuando haya nuevas transmisiones en vivo.</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Pintar datos del próximo webinar
+  const fecha = new Date(proximo.fechaMs || proximo.fecha);
+  const fechaFmt = fecha.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+  const horaFmt = String(fecha.getHours()).padStart(2,'0') + ':' + String(fecha.getMinutes()).padStart(2,'0');
+  const tituloEsc = (proximo.titulo || 'Próxima clase').replace(/</g,'&lt;');
+  const instructorEsc = (proximo.instructor || 'IMDIIL').replace(/</g,'&lt;');
+
+  widget.innerHTML = `
+    <div class="widget__label">⏱ Próxima clase en vivo</div>
+    <div class="widget__title">${tituloEsc}</div>
+    <div class="widget__meta"><svg class="ic"><use href="#i-user"/></svg>${instructorEsc}</div>
+    <div class="widget__meta"><svg class="ic"><use href="#i-calendar"/></svg>${fechaFmt.charAt(0).toUpperCase() + fechaFmt.slice(1)} · ${horaFmt} hrs</div>
+    <div class="countdown">
+      <div class="cd-box"><span class="cd-num" id="cd-d">00</span><span class="cd-lbl">Días</span></div>
+      <div class="cd-box"><span class="cd-num" id="cd-h">00</span><span class="cd-lbl">Hrs</span></div>
+      <div class="cd-box"><span class="cd-num" id="cd-m">00</span><span class="cd-lbl">Min</span></div>
+      <div class="cd-box"><span class="cd-num" id="cd-s">00</span><span class="cd-lbl">Seg</span></div>
+    </div>
+    <button class="btn btn--accent btn--block btn--sm" id="btn-cal"><svg class="ic"><use href="#i-calendar"/></svg>Agregar al calendario</button>
+  `;
+
+  // Guardar el próximo webinar para que el botón calendario lo use
+  window.__proxWebinar = proximo;
+
+  const target = fecha;
+  const pad = n => String(n).padStart(2,'0');
+  const cd = {
+    d: document.getElementById('cd-d'),
+    h: document.getElementById('cd-h'),
+    m: document.getElementById('cd-m'),
+    s: document.getElementById('cd-s')
+  };
+  function tick(){
+    const diff = target - new Date();
+    if (diff <= 0) { Object.values(cd).forEach(e => { if(e) e.textContent='00'; }); return; }
+    if (cd.d) cd.d.textContent = pad(Math.floor(diff/86400000));
+    if (cd.h) cd.h.textContent = pad(Math.floor((diff%86400000)/3600000));
+    if (cd.m) cd.m.textContent = pad(Math.floor((diff%3600000)/60000));
+    if (cd.s) cd.s.textContent = pad(Math.floor((diff%60000)/1000));
+  }
+  tick();
+  setInterval(tick, 1000);
 }
 
 const Toast=(function(){
@@ -4434,17 +4499,59 @@ const Sections = (function(){
     {id:'l26',cat:'Maestría',nombre:'Maestro IMDIIL',desc:'Completaste 20 cursos. Una leyenda.',xp:1000,unlock:null,criterio:'Termina 20 cursos del catálogo'}
   ];
 
-  const webinars = [
-    {id:'w1',titulo:'OEE: optimización de líneas de producción',instructor:'Ing. María López',fecha:'2026-05-28T19:00:00',duracion:90,status:'proxima',area:'Calidad',desc:'Caso real de una planta automotriz que pasó de 58% a 84% de OEE en 6 meses. Mediciones exactas, proyectos kaizen y cómo replicarlo.',registrado:false},
-    {id:'w2',titulo:'NOM-035 en la práctica',instructor:'Ing. Roberto Méndez',fecha:'2026-06-03T19:00:00',duracion:75,status:'proxima',area:'Seguridad',desc:'Estrategias reales para aplicar la NOM-035 obteniendo información útil. Análisis de 2 cuestionarios reales.',registrado:true},
-    {id:'w3',titulo:'OTIF: cómo medirlo cuando tu sistema no lo calcula',instructor:'Ing. Carlos Vidal',fecha:'2026-06-10T19:00:00',duracion:60,status:'proxima',area:'Logística',desc:'Plantilla Excel + Power Query para calcular OTIF, Fill Rate y rotación cuando tu ERP no tiene el módulo.',registrado:false},
-    {id:'w4',titulo:'AMEF de proceso: del papel al sistema',instructor:'Ing. María López',fecha:'2026-05-15T19:00:00',duracion:80,status:'grabada',area:'Calidad',desc:'Cómo conducir un AMEF efectivo con un equipo multidisciplinario.',visto:false},
-    {id:'w5',titulo:'Investigación de accidentes con árbol de causas',instructor:'Ing. Patricia Solís',fecha:'2026-05-08T19:00:00',duracion:90,status:'grabada',area:'Seguridad',desc:'Metodología práctica para investigar accidentes sin culpar personas.',visto:true},
-    {id:'w6',titulo:'Layout de almacén: 10 errores comunes',instructor:'Ing. Carlos Vidal',fecha:'2026-05-01T19:00:00',duracion:70,status:'grabada',area:'Logística',desc:'Los 10 errores más comunes al diseñar layout y cómo corregirlos sin obras mayores.',visto:false},
-    {id:'w7',titulo:'Las 7 mudas en gemba walk',instructor:'Ing. María López',fecha:'2026-04-24T19:00:00',duracion:60,status:'grabada',area:'Calidad',desc:'Cómo hacer un gemba walk identificando waste en cada estación.',visto:true},
-    {id:'w8',titulo:'NOM-029-STPS: trabajos eléctricos seguros',instructor:'Ing. Roberto Méndez',fecha:'2026-04-17T19:00:00',duracion:85,status:'grabada',area:'Seguridad',desc:'LOTO, evaluación de riesgo eléctrico y EPP especializado.',visto:false},
-    {id:'w9',titulo:'TPM: arrancar mantenimiento autónomo',instructor:'Ing. Patricia Solís',fecha:'2026-04-10T19:00:00',duracion:75,status:'grabada',area:'Mantenimiento',desc:'Los 7 pasos del mantenimiento autónomo aplicados en planta real.',visto:false}
-  ];
+  // ⚡ Webinars: ahora se cargan de Firestore (col `webinars`)
+  // Antes era hardcoded · ahora vacío al iniciar, se llena con cargarWebinarsFirestore()
+  let webinars = [];
+  let _webinarsLoaded = false;
+  let _webinarsLoading = false;
+
+  async function cargarWebinarsFirestore() {
+    if (_webinarsLoading) return;
+    _webinarsLoading = true;
+    try {
+      const db = window.__db;
+      const fs = window.__fs;
+      if (!db || !fs) throw new Error('Firestore no inicializado');
+      const q = fs.query(fs.collection(db, 'webinars'), fs.orderBy('fecha', 'desc'));
+      const snap = await fs.getDocs(q);
+      const ahora = Date.now();
+      webinars = snap.docs.map(d => {
+        const data = d.data();
+        // Convertir fecha (Timestamp o string) a ISO string
+        let fechaIso = '';
+        let fechaMs = 0;
+        const f = data.fecha;
+        if (f?.toDate) { const dt = f.toDate(); fechaIso = dt.toISOString(); fechaMs = dt.getTime(); }
+        else if (f?.seconds) { const dt = new Date(f.seconds * 1000); fechaIso = dt.toISOString(); fechaMs = dt.getTime(); }
+        else if (typeof f === 'string') { const dt = new Date(f); fechaIso = dt.toISOString(); fechaMs = dt.getTime(); }
+        else if (f instanceof Date) { fechaIso = f.toISOString(); fechaMs = f.getTime(); }
+
+        return {
+          id: d.id,
+          titulo: data.titulo || 'Sin título',
+          desc: data.descripcion || data.desc || '',
+          descripcion: data.descripcion || data.desc || '',
+          instructor: data.instructor || 'Equipo IMDIIL',
+          fecha: fechaIso,
+          fechaMs: fechaMs,
+          duracion: data.duracion || 60,
+          link: data.link || '',
+          area: data.area || 'General',
+          status: fechaMs > ahora ? 'proxima' : 'grabada',
+          registrado: false,
+          visto: false
+        };
+      });
+      _webinarsLoaded = true;
+    } catch (e) {
+      console.warn('No se pudieron cargar webinars de Firestore:', e.message);
+      webinars = [];
+      _webinarsLoaded = true;
+    } finally {
+      _webinarsLoading = false;
+    }
+  }
+  window.__cargarWebinarsFirestore = cargarWebinarsFirestore;
 
   const usuario = {nombre:'Ingeniero',xp:450,racha:7,diasActivos:23};
 
@@ -5251,7 +5358,42 @@ const Sections = (function(){
   /* ============================ WEBINARS / CLASES EN VIVO ============================ */
   let webState={tab:'proximas'};
 
-  function renderWebinars(container){
+  async function renderWebinars(container){
+    // Cargar de Firestore si aún no se cargó
+    if (!_webinarsLoaded && !_webinarsLoading) {
+      container.innerHTML = `
+        <div class="fade-up">
+          <div class="sec-hero">
+            <span class="sec-hero__eyebrow">Aprende en directo</span>
+            <h1 class="sec-hero__title">Clases en vivo</h1>
+            <p class="sec-hero__sub">Cargando próximas clases…</p>
+          </div>
+        </div>`;
+      await cargarWebinarsFirestore();
+    }
+
+    // Sin webinars → empty state limpio
+    if (webinars.length === 0) {
+      container.innerHTML = `
+        <div class="fade-up">
+          <div class="sec-hero">
+            <span class="sec-hero__eyebrow">Aprende en directo</span>
+            <h1 class="sec-hero__title">Clases en vivo</h1>
+            <p class="sec-hero__sub">Sesiones en directo con ingenieros y especialistas del sector industrial. Pregunta en vivo, las grabaciones quedan disponibles.</p>
+          </div>
+          <div style="text-align:center;padding:60px 24px;background:var(--surface-2);border:1px dashed var(--border-2);border-radius:14px;margin-top:18px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:color-mix(in srgb, var(--primary) 12%, transparent);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                <circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/>
+              </svg>
+            </div>
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;">Aún no hay clases programadas</div>
+            <div style="font-size:13px;color:var(--text-3);max-width:380px;margin:0 auto;line-height:1.5;">Estamos preparando las próximas transmisiones. Te avisaremos en cuanto haya nuevas clases en vivo.</div>
+          </div>
+        </div>`;
+      return;
+    }
+
     const proximas=webinars.filter(w=>w.status==='proxima').sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
     const grabadas=webinars.filter(w=>w.status==='grabada');
     const mias=proximas.filter(w=>w.registrado);
@@ -5261,7 +5403,7 @@ const Sections = (function(){
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Aprende en directo</span>
           <h1 class="sec-hero__title">Clases en vivo</h1>
-          <p class="sec-hero__sub">Sesiones quincenales con ingenieros y especialistas del sector industrial. Pregunta en vivo, las grabaciones quedan disponibles.</p>
+          <p class="sec-hero__sub">Sesiones en directo con ingenieros y especialistas del sector industrial. Pregunta en vivo, las grabaciones quedan disponibles.</p>
         </div>
         ${prox?renderProxHero(prox):''}
         <div class="tabs">
@@ -7094,13 +7236,40 @@ function initNav(){
   document.getElementById('btn-notif')?.addEventListener('click',(e)=>{e.stopPropagation();toggleNotifDropdown();});
   document.getElementById('btn-avatar')?.addEventListener('click',()=>navigateToSection('perfil'));
 
-  // ─── Calendario .ics (widget panel derecho) ───
-  document.getElementById('btn-cal')?.addEventListener('click',()=>{
-    const target=new Date('2026-05-28T19:00:00');const end=new Date(target.getTime()+90*60*1000);
-    const fmt=d=>d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
-    const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//IMDIIL//ES','BEGIN:VEVENT','UID:oee@imdiil.com','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(target),'DTEND:'+fmt(end),'SUMMARY:OEE: optimización de líneas de producción','DESCRIPTION:Clase en vivo IMDIIL con Ing. María López · Zoom: '+IMDIIL_CONTACT.zoom,'LOCATION:'+IMDIIL_CONTACT.zoom,'END:VEVENT','END:VCALENDAR'].join('\r\n');
-    const blob=new Blob([ics],{type:'text/calendar'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='IMDIIL-clase-oee.ics';a.click();URL.revokeObjectURL(url);
-    Toast.success('Evento descargado','Importa el .ics a tu calendario');
+  // ─── Calendario .ics (widget panel derecho) · ahora dinámico ───
+  // Usa event delegation porque el widget se re-renderea con el webinar real
+  document.addEventListener('click', (e) => {
+    if (!e.target?.closest || !e.target.closest('#btn-cal')) return;
+    const prox = window.__proxWebinar;
+    if (!prox) { Toast.info('Sin próxima clase', 'No hay clases programadas por ahora'); return; }
+    const target = new Date(prox.fechaMs || prox.fecha);
+    const dur = (prox.duracion || 60) * 60 * 1000;
+    const end = new Date(target.getTime() + dur);
+    const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const titulo = (prox.titulo || 'Clase IMDIIL').replace(/[\r\n,;\\]/g, ' ');
+    const instructor = prox.instructor || 'IMDIIL';
+    const link = prox.link || '';
+    const desc = `Clase en vivo IMDIIL con ${instructor}${link ? ' · Link: ' + link : ''}`;
+    const ics = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//IMDIIL//ES',
+      'BEGIN:VEVENT',
+      'UID:' + (prox.id || 'webinar') + '@imdiil.com',
+      'DTSTAMP:' + fmt(new Date()),
+      'DTSTART:' + fmt(target),
+      'DTEND:' + fmt(end),
+      'SUMMARY:' + titulo,
+      'DESCRIPTION:' + desc.replace(/[\r\n]/g, ' '),
+      'LOCATION:' + (link || 'IMDIIL'),
+      'END:VEVENT', 'END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'IMDIIL-' + (prox.id || 'clase') + '.ics';
+    a.click();
+    URL.revokeObjectURL(url);
+    Toast.success('Evento descargado', 'Importa el .ics a tu calendario');
   });
 
   // ═══ EVENT DELEGATION para botones de secciones dinámicas ═══
