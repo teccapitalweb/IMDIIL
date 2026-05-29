@@ -2849,74 +2849,478 @@ const Pages={
     }
   },
 
-  pdfs(p){
-    p.innerHTML=`
+  // ════════════════════════════════════════════════════════════════════
+  // PDFs y MATERIAL · Vista agregada de todos los materiales de Firestore
+  // Cada material vive dentro de su curso (en cursos/{id}.materiales[])
+  // Esta vista los recorre todos y los muestra en una sola lista.
+  // (Lógica de Sinergia · adaptada al diseño IMDIIL)
+  // ════════════════════════════════════════════════════════════════════
+
+  _pdfsState: {
+    search: '',
+    curso: 'todos',
+    estado: 'todos' // todos / disponibles / progresivo
+  },
+
+  pdfs(p) {
+    p.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Material descargable</span>
           <h1 class="sec-hero__title">PDFs y material</h1>
-          <p class="sec-hero__sub">Gestiona plantillas, checklists, formatos y procedimientos. Solo los publicados aparecen en el panel VIP.</p>
+          <p class="sec-hero__sub">Todos los materiales descargables están vinculados a un curso. Aquí ves la <strong style="color:var(--text-2);">lista completa</strong> de Firestore en tiempo real, sin importar a qué curso pertenecen.</p>
           <div class="sec-hero__actions">
-            <button class="btn btn--accent" id="new-pdf"><svg class="ic"><use href="#i-plus"/></svg>Subir material</button>
+            <button class="btn btn--accent" id="new-material-btn">
+              <svg class="ic"><use href="#i-plus"/></svg>
+              Nuevo material
+            </button>
           </div>
         </div>
-        <div class="adm-list" id="pdf-list"></div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid" id="pdfs-kpis"></div>
+
+        <!-- Toolbar -->
+        <div class="curso-toolbar">
+          <div class="curso-search-wrap">
+            <svg class="curso-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="pdf-search-input" placeholder="Buscar por título o curso…" class="curso-search__input">
+            <button id="pdf-search-clear" class="curso-search__clear" style="display:none;" aria-label="Limpiar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pills curso + estado -->
+        <div class="curso-pills" id="pdf-pills-curso"></div>
+        <div class="curso-pills">
+          <button class="curso-pill" data-pdf-estado="todos" data-active="1">Todos</button>
+          <button class="curso-pill" data-pdf-estado="disponibles"><span class="curso-pill__dot" style="background:#34D399;"></span>Disponibles siempre</button>
+          <button class="curso-pill" data-pdf-estado="progresivo"><span class="curso-pill__dot" style="background:#FBBF24;"></span>Desbloqueo progresivo</button>
+        </div>
+
+        <!-- Lista -->
+        <div id="pdf-container"></div>
       </div>
     `;
-    document.getElementById('new-pdf').addEventListener('click',()=>pdfModal());
-    renderPdfs();
-    function renderPdfs(){
-      const list=document.getElementById('pdf-list');
-      const colorCat={'Seguridad industrial':'#FF7A2D','Calidad':'#10B981','Logística':'#3B82F6'};
-      list.innerHTML=SEED.pdfs.map(d=>`
-        <div class="adm-row" style="--c1:${colorCat[d.cat]||'#10B981'};">
-          <div class="adm-row__thumb"><svg class="ic"><use href="#i-news"/></svg></div>
-          <div class="adm-row__body">
-            <div class="adm-row__title">${d.titulo}</div>
-            <div class="adm-row__meta">
-              <span><svg class="ic"><use href="#i-folder"/></svg>${d.cat}</span>
-              <span><svg class="ic"><use href="#i-news"/></svg>${d.paginas} pág.</span>
-              <span><svg class="ic"><use href="#i-download"/></svg>${d.size} · ${d.descargas} descargas</span>
-            </div>
+
+    // Render inicial
+    Pages._renderKpisPdfs();
+    Pages._renderPillsCursosPdfs();
+    Pages._renderListaPdfs();
+
+    // Bind búsqueda
+    const searchInput = p.querySelector('#pdf-search-input');
+    const searchClear = p.querySelector('#pdf-search-clear');
+    searchInput?.addEventListener('input', (e) => {
+      Pages._pdfsState.search = e.target.value.toLowerCase().trim();
+      searchClear.style.display = e.target.value ? '' : 'none';
+      Pages._renderListaPdfs();
+    });
+    searchClear?.addEventListener('click', () => {
+      searchInput.value = '';
+      Pages._pdfsState.search = '';
+      searchClear.style.display = 'none';
+      Pages._renderListaPdfs();
+    });
+
+    // Bind pills estado
+    p.querySelectorAll('[data-pdf-estado]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('[data-pdf-estado]').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._pdfsState.estado = btn.dataset.pdfEstado;
+        Pages._renderListaPdfs();
+      });
+    });
+
+    // Botón nuevo material
+    p.querySelector('#new-material-btn')?.addEventListener('click', () => {
+      Pages._abrirModalMaterial(null);
+    });
+  },
+
+  // ─── Vista agregada: aplanar todos los materiales de todos los cursos ───
+  _allMaterialesAggregated() {
+    const store = window.AdminStore;
+    if (!store?.ready) return [];
+    const out = [];
+    store.cursos.forEach(c => {
+      (c.materiales || []).forEach((m, idx) => {
+        out.push({
+          cursoId: c.id,
+          cursoTitulo: c.titulo || 'Sin título',
+          cursoArea: c.area || '—',
+          idx,
+          titulo: m.titulo || 'Sin título',
+          url: m.url || '',
+          disponibleSiempre: m.disponibleSiempre === true,
+          desbloquearEnDias: typeof m.desbloquearEnDias === 'number' ? m.desbloquearEnDias : null
+        });
+      });
+    });
+    return out;
+  },
+
+  _renderKpisPdfs() {
+    const wrap = document.getElementById('pdfs-kpis');
+    if (!wrap) return;
+    const mats = Pages._allMaterialesAggregated();
+    const total = mats.length;
+    const siempre = mats.filter(m => m.disponibleSiempre).length;
+    const progresivo = total - siempre;
+    const cursosConMat = new Set(mats.map(m => m.cursoId)).size;
+    wrap.innerHTML = `
+      <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
+        <div class="kpi-card__label">Total materiales</div>
+        <div class="kpi-card__value">${total}</div>
+        <div class="kpi-card__sub">${cursosConMat} curso${cursosConMat!==1?'s':''} con material</div>
+      </div>
+      <div class="kpi-card" style="--c1:#34D399;--c2:#22C55E;">
+        <div class="kpi-card__label">Siempre disponibles</div>
+        <div class="kpi-card__value">${siempre}</div>
+        <div class="kpi-card__sub">Sin esperar desbloqueo</div>
+      </div>
+      <div class="kpi-card" style="--c1:#FBBF24;--c2:#F59E0B;">
+        <div class="kpi-card__label">Desbloqueo progresivo</div>
+        <div class="kpi-card__value">${progresivo}</div>
+        <div class="kpi-card__sub">Según días de membresía</div>
+      </div>
+    `;
+  },
+
+  _renderPillsCursosPdfs() {
+    const wrap = document.getElementById('pdf-pills-curso');
+    if (!wrap) return;
+    const store = window.AdminStore;
+    if (!store?.ready) { wrap.innerHTML = ''; return; }
+    const mats = Pages._allMaterialesAggregated();
+    const cursosConMat = Array.from(new Set(mats.map(m => m.cursoId)))
+      .map(id => store.cursos.find(c => c.id === id))
+      .filter(Boolean)
+      .sort((a,b) => (a.titulo||'').localeCompare(b.titulo||''));
+    const active = Pages._pdfsState.curso;
+    wrap.innerHTML = `
+      <button class="curso-pill" data-pdf-curso="todos" data-active="${active === 'todos' ? '1' : ''}">
+        Todos los cursos <span class="curso-pill__count">${mats.length}</span>
+      </button>
+      ${cursosConMat.map(c => {
+        const count = mats.filter(m => m.cursoId === c.id).length;
+        const tituloCorto = (c.titulo||'').length > 35 ? (c.titulo.slice(0,35)+'…') : c.titulo;
+        return `<button class="curso-pill" data-pdf-curso="${c.id}" data-active="${active === c.id ? '1' : ''}" title="${(c.titulo||'').replace(/"/g,'&quot;')}">
+          ${tituloCorto} <span class="curso-pill__count">${count}</span>
+        </button>`;
+      }).join('')}
+    `;
+    wrap.querySelectorAll('[data-pdf-curso]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wrap.querySelectorAll('[data-pdf-curso]').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._pdfsState.curso = btn.dataset.pdfCurso;
+        Pages._renderListaPdfs();
+      });
+    });
+  },
+
+  _renderListaPdfs() {
+    const wrap = document.getElementById('pdf-container');
+    if (!wrap) return;
+    const store = window.AdminStore;
+
+    if (!store?.ready) {
+      wrap.innerHTML = `<div class="curso-list">${[1,2,3].map(()=>`
+        <div class="curso-row" style="--area-color:#3B82F6;">
+          <div class="curso-row__thumb skeleton-shimmer" style="background-image:none;"></div>
+          <div class="curso-row__body">
+            <div class="skeleton-line skeleton-shimmer" style="width:60%;height:14px;"></div>
+            <div class="skeleton-line skeleton-shimmer" style="width:40%;height:11px;margin-top:8px;"></div>
           </div>
-          <span class="tag ${d.publicado?'tag--success':'tag--warning'}">${d.publicado?'Publicado':'Borrador'}</span>
-          <div class="adm-row__actions">
-            <button class="icon-action" data-edit="${d.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
-            <button class="icon-action icon-action--danger" data-del="${d.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
-          </div>
-        </div>
-      `).join('');
-      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>pdfModal(b.dataset.edit)));
-      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
-        if(confirm('¿Eliminar este material?')){
-          const i=SEED.pdfs.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.pdfs.splice(i,1);renderPdfs();Toast.success('Material eliminado');}
-        }
-      }));
+        </div>`).join('')}</div>`;
+      return;
     }
-    function pdfModal(id){
-      const d=id?SEED.pdfs.find(x=>x.id===id):{titulo:'',cat:'Seguridad industrial',paginas:1,size:'',publicado:false,descargas:0};
-      const body=`
-        <div class="form-grid">
-          <div class="form-field form-field--full"><label class="label">Título</label><input type="text" class="input" id="d-titulo" value="${(d.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Plantilla de Matriz IPER…"></div>
-          <div class="form-field"><label class="label">Categoría</label><select class="select" id="d-cat"><option ${d.cat==='Seguridad industrial'?'selected':''}>Seguridad industrial</option><option ${d.cat==='Calidad'?'selected':''}>Calidad</option><option ${d.cat==='Logística'?'selected':''}>Logística</option></select></div>
-          <div class="form-field"><label class="label">Páginas</label><input type="number" class="input" id="d-paginas" value="${d.paginas}" min="1"></div>
-          <div class="form-field"><label class="label">Tamaño (ej: 2.4 MB)</label><input type="text" class="input" id="d-size" value="${(d.size||'').replace(/"/g,'&quot;')}"></div>
-          <div class="form-field"><label class="label">Archivo PDF / Excel</label><div style="padding:11px 14px;background:var(--surface-2);border:1px dashed var(--border-2);border-radius:11px;font-size:12px;color:var(--text-3);text-align:center;">📎 Subir archivo (conexión Storage en sprint 6)</div></div>
-          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="d-publicado" ${d.publicado?'checked':''}><label for="d-publicado" style="cursor:pointer;font-size:13px;font-weight:500;">Publicado · visible para miembros VIP</label></div>
-        </div>
-      `;
-      const footer=document.createElement('div');
-      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar':'Subir'}<svg class="ic"><use href="#i-check"/></svg></button>`;
-      Modal.open({title:id?'Editar material':'Nuevo material',subtitle:id?d.titulo:'Sube un PDF/Excel',icon:'i-news',body,footer});
-      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
-      footer.querySelector('#m-save').addEventListener('click',()=>{
-        const data={titulo:document.getElementById('d-titulo').value.trim(),cat:document.getElementById('d-cat').value,paginas:+document.getElementById('d-paginas').value,size:document.getElementById('d-size').value.trim()||'1 MB',publicado:document.getElementById('d-publicado').checked};
-        if(!data.titulo){Toast.error('Falta el título');return;}
-        if(id){Object.assign(d,data);Toast.success('Material actualizado',data.titulo);}
-        else{SEED.pdfs.unshift({id:'p'+Date.now(),descargas:0,...data});Toast.success('Material subido',data.titulo);}
-        Modal.close();renderPdfs();
+
+    let mats = Pages._allMaterialesAggregated();
+    const S = Pages._pdfsState;
+
+    // Filtrar
+    if (S.curso !== 'todos') mats = mats.filter(m => m.cursoId === S.curso);
+    if (S.estado === 'disponibles') mats = mats.filter(m => m.disponibleSiempre);
+    if (S.estado === 'progresivo') mats = mats.filter(m => !m.disponibleSiempre);
+    if (S.search) {
+      mats = mats.filter(m => {
+        const t = (m.titulo || '').toLowerCase();
+        const c = (m.cursoTitulo || '').toLowerCase();
+        return t.includes(S.search) || c.includes(S.search);
       });
     }
+
+    if (mats.length === 0) {
+      const hayCursos = store.cursos.length > 0;
+      wrap.innerHTML = `
+        <div class="curso-empty">
+          <div class="curso-empty__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <div class="curso-empty__title">${(S.search || S.curso !== 'todos' || S.estado !== 'todos') ? 'Sin resultados' : 'Sin materiales aún'}</div>
+          <div class="curso-empty__sub">${(S.search || S.curso !== 'todos' || S.estado !== 'todos') ? 'Prueba con otros filtros o búsqueda' : (hayCursos ? 'Click "Nuevo material" para subir el primero · debe vincularse a un curso' : 'Primero crea cursos en la sección Cursos · los materiales se vinculan a ellos')}</div>
+        </div>
+      `;
+      return;
+    }
+
+    const areaColors = {
+      'Seguridad':'#EF4444','Calidad':'#10B981','Logística':'#3B82F6',
+      'Mantenimiento':'#A855F7','Producción':'#F59E0B','Energía':'#FFB347',
+      'Medio Ambiente':'#14B8A6','Operaciones':'#F97316','Gestión':'#8B5CF6',
+      'Finanzas':'#06B6D4','Administrativo':'#EC4899'
+    };
+
+    wrap.innerHTML = `<div class="curso-list">${mats.map(m => {
+      const areaColor = areaColors[m.cursoArea] || '#3B82F6';
+      const dispLabel = m.disponibleSiempre
+        ? `<span style="color:#34D399;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Siempre</span>`
+        : (m.desbloquearEnDias !== null
+            ? `<span style="color:#FBBF24;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Día ${m.desbloquearEnDias}</span>`
+            : `<span style="color:#9CA3AF;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Progresivo</span>`);
+      const tituloEsc = (m.titulo || '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      const cursoTitEsc = (m.cursoTitulo || '').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      return `
+        <div class="curso-row" style="--area-color:${areaColor};">
+          <div class="curso-row__thumb" style="background:color-mix(in srgb,${areaColor} 14%,transparent);color:${areaColor};display:flex;align-items:center;justify-content:center;background-image:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="curso-row__body">
+            <div class="curso-row__title">${tituloEsc}</div>
+            <div class="curso-row__meta">
+              <span class="curso-row__area" style="color:${areaColor};border-color:color-mix(in srgb, ${areaColor} 35%, transparent);background:color-mix(in srgb, ${areaColor} 10%, transparent);">${m.cursoArea}</span>
+              <span class="curso-row__instructor" title="${cursoTitEsc}">· ${cursoTitEsc.length > 45 ? cursoTitEsc.slice(0,45)+'…' : cursoTitEsc}</span>
+            </div>
+          </div>
+          <div class="curso-row__stats">
+            <div class="curso-row__stat">${dispLabel}</div>
+          </div>
+          <div class="curso-row__actions">
+            <a href="${(m.url||'').replace(/"/g,'&quot;')}" target="_blank" rel="noopener noreferrer" class="curso-card__action" title="Abrir enlace" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+            <button class="curso-card__action" data-mat-edit-cid="${m.cursoId}" data-mat-edit-idx="${m.idx}" title="Editar material">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="curso-card__action curso-card__action--danger" data-mat-del-cid="${m.cursoId}" data-mat-del-idx="${m.idx}" title="Eliminar material">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('')}</div>`;
+
+    // Bind editar
+    wrap.querySelectorAll('[data-mat-edit-cid]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cid = btn.dataset.matEditCid;
+        const idx = parseInt(btn.dataset.matEditIdx, 10);
+        Pages._abrirModalMaterial({ cursoId: cid, idx });
+      });
+    });
+
+    // Bind eliminar
+    wrap.querySelectorAll('[data-mat-del-cid]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const cid = btn.dataset.matDelCid;
+        const idx = parseInt(btn.dataset.matDelIdx, 10);
+        const curso = window.AdminStore.cursos.find(c => c.id === cid);
+        if (!curso) return;
+        const mat = curso.materiales?.[idx];
+        if (!mat) return;
+        const ok = confirm(`¿Eliminar el material "${mat.titulo}"?\n\nSe quitará del curso "${curso.titulo}". Los miembros ya no podrán descargarlo.\n\nEsta acción NO se puede deshacer.`);
+        if (!ok) return;
+        const fb = window._fb;
+        if (!fb?.updateDoc || !fb?.doc || !fb?.db) { Toast.error('Firestore no listo'); return; }
+        try {
+          const nuevos = (curso.materiales || []).slice();
+          nuevos.splice(idx, 1);
+          await fb.updateDoc(fb.doc(fb.db, 'cursos', cid), { materiales: nuevos });
+          Toast.success('Material eliminado', mat.titulo);
+        } catch (err) {
+          console.error('[material] error eliminar:', err);
+          Toast.error('No se pudo eliminar', err.message || 'Intenta de nuevo');
+        }
+      });
+    });
+  },
+
+  // ─── Modal CREAR / EDITAR material global ───
+  // ctx = null para crear, {cursoId, idx} para editar
+  _abrirModalMaterial(ctx) {
+    const store = window.AdminStore;
+    if (!store?.ready || store.cursos.length === 0) {
+      Toast.error('Sin cursos', 'Primero crea un curso · los materiales se vinculan a uno');
+      return;
+    }
+
+    const esEdicion = !!ctx;
+    let cursoId = ctx?.cursoId || store.cursos[0].id;
+    let idx = ctx?.idx ?? -1;
+    let mat = { titulo:'', url:'', disponibleSiempre:false, desbloquearEnDias:null };
+    if (esEdicion) {
+      const c = store.cursos.find(x => x.id === cursoId);
+      const m = c?.materiales?.[idx];
+      if (!c || !m) { Toast.error('Material no encontrado'); return; }
+      mat = {
+        titulo: m.titulo || '',
+        url: m.url || '',
+        disponibleSiempre: m.disponibleSiempre === true,
+        desbloquearEnDias: typeof m.desbloquearEnDias === 'number' ? m.desbloquearEnDias : null
+      };
+    }
+
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <label class="label" for="mf-curso">Curso al que pertenece *</label>
+          <select class="select" id="mf-curso" ${esEdicion ? 'disabled style="opacity:.6;cursor:not-allowed;"' : ''}>
+            ${store.cursos.map(c => `<option value="${c.id}" ${c.id === cursoId ? 'selected' : ''}>${(c.titulo || 'Sin título').replace(/</g,'&lt;')}</option>`).join('')}
+          </select>
+          ${esEdicion ? '<div style="font-size:11px;color:var(--text-3);margin-top:5px;">No se puede cambiar el curso al editar · elimina y vuelve a crear si lo necesitas</div>' : '<div style="font-size:11px;color:var(--text-3);margin-top:5px;">El material aparecerá en este curso dentro del panel VIP</div>'}
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label" for="mf-titulo">Título del material *</label>
+          <input type="text" class="input" id="mf-titulo" maxlength="120" value="${(mat.titulo || '').replace(/"/g,'&quot;')}" placeholder="Ej: Plantilla Matriz IPER.xlsx" required>
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label" for="mf-url">URL del archivo *</label>
+          <input type="url" class="input" id="mf-url" value="${(mat.url || '').replace(/"/g,'&quot;')}" placeholder="https://drive.google.com/file/d/…/view" required>
+          <div style="font-size:11px;color:var(--text-3);margin-top:5px;">Enlace público de Google Drive (compartir → "Cualquiera con el enlace")</div>
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="label">Disponibilidad</label>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+            <label class="curso-disp-opt" style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--border-2);border-radius:10px;cursor:pointer;background:var(--surface-2);">
+              <input type="radio" name="mf-disp" value="progresivo" style="margin-top:3px;flex-shrink:0;" ${!mat.disponibleSiempre ? 'checked' : ''}>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Desbloqueo progresivo</div>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.4;">Se desbloquea según los días de membresía del miembro (sigue la cola del curso).</div>
+              </div>
+            </label>
+            <label class="curso-disp-opt" style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--border-2);border-radius:10px;cursor:pointer;background:var(--surface-2);">
+              <input type="radio" name="mf-disp" value="siempre" style="margin-top:3px;flex-shrink:0;" ${mat.disponibleSiempre ? 'checked' : ''}>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Disponible siempre</div>
+                <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;line-height:1.4;">El miembro puede descargar el material desde el primer día, sin esperar.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field form-field--full" id="mf-dia-wrap" style="${mat.disponibleSiempre ? 'display:none;' : ''}">
+          <label class="label" for="mf-dia">Día de desbloqueo <span style="font-weight:400;color:var(--text-3);font-size:11px;">(opcional · solo para modo progresivo)</span></label>
+          <input type="number" class="input" id="mf-dia" min="0" max="365" value="${mat.desbloquearEnDias !== null && mat.desbloquearEnDias !== undefined ? mat.desbloquearEnDias : ''}" placeholder="Ej: 8 = se desbloquea el día 8 de membresía">
+          <div style="font-size:11px;color:var(--text-3);margin-top:5px;">Déjalo vacío para usar la cola automática del curso</div>
+        </div>
+      </div>
+    `;
+
+    // Toggle visibilidad del input día según disponibilidad
+    body.querySelectorAll('input[name="mf-disp"]').forEach(r => {
+      r.addEventListener('change', () => {
+        const siempre = body.querySelector('input[name="mf-disp"]:checked').value === 'siempre';
+        body.querySelector('#mf-dia-wrap').style.display = siempre ? 'none' : '';
+      });
+    });
+
+    const footer = document.createElement('div');
+    footer.innerHTML = `
+      <button class="btn btn--ghost" id="mf-cancel">Cancelar</button>
+      <button class="btn btn--accent" id="mf-save">
+        <svg class="ic"><use href="#i-check"/></svg>
+        ${esEdicion ? 'Guardar cambios' : 'Crear material'}
+      </button>
+    `;
+
+    Modal.open({
+      title: esEdicion ? 'Editar material' : 'Nuevo material',
+      subtitle: esEdicion ? mat.titulo : 'Agrega un PDF, Excel u otro archivo descargable',
+      icon: 'i-news',
+      body,
+      footer
+    });
+
+    footer.querySelector('#mf-cancel').addEventListener('click', () => Modal.close());
+    footer.querySelector('#mf-save').addEventListener('click', async () => {
+      const btn = footer.querySelector('#mf-save');
+      btn.disabled = true; btn.style.opacity = '.65'; btn.style.cursor = 'wait';
+      try {
+        const cidSel = document.getElementById('mf-curso').value;
+        const titulo = document.getElementById('mf-titulo').value.trim();
+        const url = document.getElementById('mf-url').value.trim();
+        const dispSiempre = document.querySelector('input[name="mf-disp"]:checked')?.value === 'siempre';
+        const diaInput = document.getElementById('mf-dia').value.trim();
+
+        if (!titulo) { Toast.error('Falta el título'); document.getElementById('mf-titulo')?.focus(); throw new Error('skip'); }
+        if (!url) { Toast.error('Falta la URL'); document.getElementById('mf-url')?.focus(); throw new Error('skip'); }
+        try { new URL(url); } catch(e) { Toast.error('URL inválida', 'Verifica el enlace'); throw new Error('skip'); }
+
+        let dia = null;
+        if (!dispSiempre && diaInput !== '') {
+          const n = parseInt(diaInput, 10);
+          if (Number.isFinite(n) && n >= 0) dia = n;
+        }
+
+        const fb = window._fb;
+        if (!fb?.db || !fb?.updateDoc || !fb?.doc) { Toast.error('Firestore no listo'); throw new Error('skip'); }
+
+        const curso = store.cursos.find(c => c.id === cidSel);
+        if (!curso) { Toast.error('Curso no encontrado'); throw new Error('skip'); }
+
+        const nuevos = (curso.materiales || []).slice();
+        const nuevoMat = {
+          titulo,
+          url,
+          disponibleSiempre: dispSiempre,
+          desbloquearEnDias: dispSiempre ? null : dia
+        };
+
+        if (esEdicion) {
+          // Conservar día previo si no se sobreescribió
+          const prev = nuevos[idx] || {};
+          nuevos[idx] = {
+            ...prev,
+            ...nuevoMat,
+            desbloquearEnDias: dispSiempre
+              ? null
+              : (dia !== null ? dia : (typeof prev.desbloquearEnDias === 'number' ? prev.desbloquearEnDias : null))
+          };
+        } else {
+          nuevos.push(nuevoMat);
+        }
+
+        await fb.updateDoc(fb.doc(fb.db, 'cursos', cidSel), { materiales: nuevos });
+        Toast.success(esEdicion ? 'Material actualizado' : '¡Material creado!', titulo);
+        Modal.close();
+      } catch (err) {
+        if (err.message !== 'skip') {
+          console.error('[material submit]', err);
+          if (err.message?.includes('permission')) {
+            Toast.error('Permisos faltantes', 'Las reglas de Firestore no permiten escritura en `cursos`');
+          } else {
+            Toast.error('Error al guardar', err.message || 'Intenta de nuevo');
+          }
+        }
+      } finally {
+        btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+      }
+    });
   },
 
   certificados(p){
@@ -3396,6 +3800,11 @@ const AdminStore = {
       if (typeof Pages._renderKpisCursos === 'function') Pages._renderKpisCursos();
       if (typeof Pages._renderPillsAreas === 'function') Pages._renderPillsAreas();
       if (typeof Pages._renderListaCursos === 'function') Pages._renderListaCursos();
+    } else if (section === 'pdfs' && Pages[section]) {
+      // PDFs: depende de cursos (materiales viven dentro) · refrescar parcialmente
+      if (typeof Pages._renderKpisPdfs === 'function') Pages._renderKpisPdfs();
+      if (typeof Pages._renderPillsCursosPdfs === 'function') Pages._renderPillsCursosPdfs();
+      if (typeof Pages._renderListaPdfs === 'function') Pages._renderListaPdfs();
     }
   },
 
