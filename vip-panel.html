@@ -6659,6 +6659,8 @@ function toggleNotifDropdown(){
 
   dd=document.createElement('div');
   dd.id='notif-dropdown';
+  // ⚠️ Forzar text-align:left en TODO el dropdown · evita que herede el center del topbar/avatar
+  dd.style.textAlign = 'left';
   // Responsive: en móvil (<=768) fixed con left+right (sin transform · evita bug Safari iOS)
   // En desktop absolute al botón
   const isMobile = window.innerWidth <= 768;
@@ -6685,12 +6687,12 @@ function toggleNotifDropdown(){
     bodyHTML = notifs.map(n => {
       const esNueva = !leidas.has(n.id);
       return `
-        <div class="notif-item" style="display:flex;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .15s;align-items:flex-start;${esNueva?'background:color-mix(in srgb,'+n.color+' 5%,transparent);':''}">
+        <div class="notif-item" style="display:flex;gap:11px;padding:11px 12px;border-radius:9px;cursor:pointer;transition:background .15s;align-items:flex-start;text-align:left;${esNueva?'background:color-mix(in srgb,'+n.color+' 5%,transparent);':''}">
           <div style="width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,${n.color} 14%,transparent);color:${n.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg class="ic" style="width:16px;height:16px;"><use href="#${n.icono}"/></svg></div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35;display:flex;align-items:center;gap:6px;">${n.titulo} ${esNueva?'<span style="width:6px;height:6px;border-radius:50%;background:'+n.color+';flex-shrink:0;"></span>':''}</div>
-            <div style="font-size:11.5px;color:var(--text-2);line-height:1.45;margin-top:3px;">${n.descripcion}</div>
-            <div style="font-size:10px;color:var(--text-3);margin-top:5px;letter-spacing:.3px;text-transform:uppercase;">${formatNotifTime(n.createdAtMs)}</div>
+          <div style="flex:1;min-width:0;text-align:left;">
+            <div style="font-size:12.5px;font-weight:600;color:var(--text);line-height:1.35;display:flex;align-items:center;gap:6px;text-align:left;">${n.titulo} ${esNueva?'<span style="width:6px;height:6px;border-radius:50%;background:'+n.color+';flex-shrink:0;"></span>':''}</div>
+            <div style="font-size:11.5px;color:var(--text-2);line-height:1.45;margin-top:3px;text-align:left;">${n.descripcion}</div>
+            <div style="font-size:10px;color:var(--text-3);margin-top:5px;letter-spacing:.3px;text-transform:uppercase;text-align:left;">${formatNotifTime(n.createdAtMs)}</div>
           </div>
         </div>
       `;
