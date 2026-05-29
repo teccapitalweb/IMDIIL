@@ -4230,19 +4230,22 @@ const Sections = (function(){
     return Math.max(0, dias);
   }
 
+  // Día en que se desbloquea el curso (precalculado por orden, sin contar los "siempre")
+  function cursoUnlockDay(curso){
+    return (curso && typeof curso._unlockDay === 'number') ? curso._unlockDay : 0;
+  }
+
   function cursoDesbloqueado(indexCurso, curso){
     if (esAdminReal()) return true;
     if (curso && curso.disponibleSiempre === true) return true;
     if (curso && curso.marcarProximamente === true) return false;
-    const dias = calcularDiasMembresia();
-    return dias >= (indexCurso * 8);  // ← cada 8 días
+    return calcularDiasMembresia() >= cursoUnlockDay(curso);  // ← turno cada 8 días por orden
   }
 
   function diasParaDesbloquear(indexCurso, curso){
     if (esAdminReal()) return 0;
     if (curso && curso.disponibleSiempre === true) return 0;
-    const dias = calcularDiasMembresia();
-    return Math.max(0, (indexCurso * 8) - dias);  // ← cada 8 días
+    return Math.max(0, cursoUnlockDay(curso) - calcularDiasMembresia());
   }
 
   // Mostrar banner si está en modo preview (solo admins lo ven)
@@ -4476,10 +4479,11 @@ const Sections = (function(){
       this.style.borderColor = 'color-mix(in srgb, var(--success) 50%, transparent)';
       this.style.color = 'var(--success)';
       this.disabled = true;
-      // Cerrar después de 1.2s y re-renderizar el modal del curso
+      // Cerrar después de 1.2s y refrescar el DETALLE del curso (no solo la lista)
+      // para que la siguiente clase se desbloquee al instante.
       setTimeout(() => {
         window.cerrarVisor();
-        // Re-renderizar para mostrar progreso actualizado
+        if (typeof window.__refrescarCursoDetalle === 'function') window.__refrescarCursoDetalle(cursoId);
         if (typeof renderCursosList === 'function') renderCursosList();
       }, 1200);
     });
@@ -4601,6 +4605,15 @@ const Sections = (function(){
           status: 'catalogo',
           progreso: 0
         };
+      });
+      // ─── Día de desbloqueo por ORDEN · los "disponibleSiempre" NO consumen turno ───
+      // cursos viene ordenado por `orden` asc. El 1er curso normal = día 0 (abierto
+      // para miembros activos), el siguiente = día 8, etc. Los "siempre abierto" = día 0
+      // y no recorren la fila, así el orden de desbloqueo nunca se desordena.
+      let _rank = 0;
+      cursos.forEach(c => {
+        if (c.disponibleSiempre) { c._unlockDay = 0; }
+        else { c._unlockDay = _rank * 8; _rank++; }
       });
       _cursosLoaded = true;
     } catch (e) {
@@ -4848,7 +4861,13 @@ const Sections = (function(){
       </div>`;
       return;
     }
-    const items=cursosFiltrados();
+    const items=cursosFiltrados().slice().sort((a,b)=>{
+      // Desbloqueados primero (progresivos ya abiertos + los "siempre"),
+      // luego los próximos a desbloquearse en orden de turno. Así nunca se desordena.
+      const da=cursoDesbloqueado(0,a), db=cursoDesbloqueado(0,b);
+      if(da!==db) return da?-1:1;
+      return (a._unlockDay||0)-(b._unlockDay||0);
+    });
     if(items.length===0){
       list.innerHTML=`<div class="empty-state"><div class="empty-state__icon"><svg class="ic ic--xl"><use href="#i-book"/></svg></div><h3>Sin resultados</h3><p>Cambia el filtro o búsqueda para ver más cursos.</p></div>`;
       return;
@@ -5097,6 +5116,14 @@ const Sections = (function(){
       }
     }, 50);
   }
+
+  // Refresca el DETALLE del curso abierto (re-render) para que la siguiente clase
+  // se desbloquee al instante tras marcar una como vista, sin recargar la página.
+  window.__refrescarCursoDetalle = function(cid){
+    if (!cid) return;
+    try { if (typeof Modal !== 'undefined' && Modal.close) Modal.close('curso-' + cid); } catch(e){}
+    setTimeout(() => { try { openCursoDetalle(cid); } catch(e){} }, 60);
+  };
 
   function moduloTitulo(c,i){
     const g={'Seguridad':['Introducción y normativa','Identificación de peligros','Evaluación de riesgos','Controles operativos','Equipo de protección','Casos prácticos','Plan de acción','Evaluación final'],'Logística':['Fundamentos','Indicadores clave','Medición OTIF','Fill Rate avanzado','Rotación de inventario','Casos reales','Mejora continua','Evaluación'],'Calidad':['Bases de mejora continua','7 mudas','Value stream mapping','5S en planta','Kaizen y kanban','Casos prácticos','Implementación','Evaluación'],'Mantenimiento':['Introducción al TPM','Mantenimiento autónomo','Mantenimiento planeado','Capacitación','Mejora enfocada','Calidad cero','Casos prácticos','Evaluación']};
