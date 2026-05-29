@@ -196,6 +196,7 @@ body{
 }
 @keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes shimmerSkeleton{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* Notificaciones · móvil */
 @media (max-width:900px){
@@ -203,6 +204,395 @@ body{
   #notif-layout > .dash-card:first-child{position:static !important;}
 }
 .notif-item-admin:hover{transform:translateX(2px);border-color:var(--border-2)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CURSOS · Sub-fase 3A · Cards estilo Netflix + toolbar fancy
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Toolbar */
+.curso-toolbar{
+  display:flex;align-items:center;gap:14px;
+  margin-top:24px;margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.curso-search-wrap{
+  flex:1;min-width:240px;position:relative;
+  display:flex;align-items:center;
+}
+.curso-search__icon{
+  position:absolute;left:14px;width:16px;height:16px;color:var(--text-3);
+  pointer-events:none;
+}
+.curso-search__input{
+  width:100%;padding:11px 38px 11px 40px;border-radius:11px;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text);font-size:13.5px;font-family:inherit;
+  transition:border-color .15s, background .15s;
+}
+.curso-search__input:focus{
+  outline:none;border-color:var(--primary);
+  background:var(--surface);
+}
+.curso-search__input::placeholder{color:var(--text-3)}
+.curso-search__clear{
+  position:absolute;right:10px;
+  width:24px;height:24px;border-radius:6px;
+  background:var(--surface-3);border:none;color:var(--text-3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.curso-search__clear:hover{background:var(--border-2);color:var(--text)}
+
+.curso-toolbar__right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* Ordenar */
+.curso-orden{
+  display:flex;background:var(--surface-2);
+  border:1px solid var(--border-2);border-radius:11px;
+  padding:3px;gap:2px;
+}
+.curso-orden__btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 11px;border-radius:8px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text-3);font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:12px;font-weight:600;letter-spacing:-.1px;
+  transition:all .15s;
+}
+.curso-orden__btn:hover{color:var(--text)}
+.curso-orden__btn[data-active="1"]{
+  background:var(--surface);
+  color:var(--primary);
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Vista grid/lista */
+.curso-view{
+  display:flex;background:var(--surface-2);
+  border:1px solid var(--border-2);border-radius:11px;
+  padding:3px;gap:2px;
+}
+.curso-view__btn{
+  width:32px;height:32px;border-radius:7px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text-3);display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.curso-view__btn:hover{color:var(--text)}
+.curso-view__btn[data-active="1"]{
+  background:var(--surface);
+  color:var(--primary);
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Pills de filtro */
+.curso-pills{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-bottom:12px;
+}
+.curso-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:9px;
+  background:var(--surface-2);
+  border:1px solid var(--border-2);
+  color:var(--text-2);cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:12.5px;font-weight:600;letter-spacing:-.1px;
+  transition:all .15s;
+}
+.curso-pill:hover{
+  border-color:var(--primary);
+  color:var(--text);
+  transform:translateY(-1px);
+}
+.curso-pill[data-active="1"]{
+  background:color-mix(in srgb, var(--primary) 14%, transparent);
+  border-color:var(--primary);
+  color:var(--primary);
+}
+.curso-pill__count{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:700;
+  padding:1px 6px;border-radius:5px;
+  background:color-mix(in srgb, var(--text-3) 18%, transparent);
+  color:var(--text-2);
+  margin-left:2px;
+}
+.curso-pill[data-active="1"] .curso-pill__count{
+  background:var(--primary);color:#0E0A06;
+}
+.curso-pill__dot{
+  width:7px;height:7px;border-radius:50%;display:inline-block;
+}
+
+/* Grid de cursos · estilo Netflix */
+.curso-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+  gap:18px;
+  margin-top:18px;
+}
+.curso-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  transition:transform .25s cubic-bezier(.2,.8,.25,1), box-shadow .25s, border-color .15s;
+  position:relative;
+}
+.curso-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 40px rgba(0,0,0,.18), 0 4px 12px color-mix(in srgb, var(--area-color, var(--primary)) 22%, transparent);
+  border-color:color-mix(in srgb, var(--area-color, var(--primary)) 35%, transparent);
+}
+.curso-card__cover{
+  position:relative;aspect-ratio:16/9;
+  background-size:cover;background-position:center;
+  background-color:var(--surface-3);
+}
+.curso-card__cover-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(14,10,6,.05) 0%, rgba(14,10,6,.45) 80%, rgba(14,10,6,.7) 100%);
+}
+.curso-card__cover-top{
+  position:absolute;top:10px;left:10px;right:10px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;z-index:2;
+}
+.curso-card__cover-bottom{
+  position:absolute;bottom:10px;left:10px;z-index:2;
+}
+.curso-card__area{
+  display:inline-flex;align-items:center;
+  padding:4px 9px;border-radius:6px;
+  background:rgba(255,122,45,.95);color:#0E0A06;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.curso-card__nivel{
+  display:inline-flex;align-items:center;
+  padding:3px 8px;border-radius:5px;
+  background:rgba(255,255,255,.92);color:#0E0A06;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+}
+/* Toggle on/off · estilo iOS */
+.curso-card__toggle{
+  width:44px;height:24px;border:none;background:transparent;
+  cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.curso-card__toggle-track{
+  width:40px;height:22px;border-radius:11px;
+  background:rgba(156,163,175,.55);
+  display:inline-flex;align-items:center;padding:0 2px;
+  transition:background .25s cubic-bezier(.2,.8,.25,1);
+  position:relative;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.25);
+}
+.curso-card__toggle-thumb{
+  width:18px;height:18px;border-radius:50%;
+  background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+  transition:transform .25s cubic-bezier(.2,.8,.25,1);
+}
+.curso-card__toggle.is-active .curso-card__toggle-track{
+  background:#34D399;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.18), 0 0 0 2px rgba(52,211,153,.18);
+}
+.curso-card__toggle.is-active .curso-card__toggle-thumb{
+  transform:translateX(18px);
+}
+.curso-card__body{padding:14px 14px 12px;}
+.curso-card__title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:14px;font-weight:700;letter-spacing:-.2px;line-height:1.3;
+  color:var(--text);
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  min-height:36px;
+}
+.curso-card__instructor{
+  display:flex;align-items:center;gap:5px;
+  font-size:11.5px;color:var(--text-3);
+  margin-top:5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.curso-card__meta{
+  display:flex;flex-wrap:wrap;gap:10px;
+  margin-top:10px;padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.curso-card__meta-item{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;font-weight:600;letter-spacing:.3px;
+  color:var(--text-2);
+}
+.curso-card__footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:11px;
+}
+.curso-card__status{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+}
+.curso-card__status.is-active{color:#34D399;}
+.curso-card__status.is-inactive{color:var(--text-3);}
+.curso-card__status-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+}
+.curso-card__status.is-active .curso-card__status-dot{
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb, currentColor 22%, transparent)}
+  50%{box-shadow:0 0 0 5px color-mix(in srgb, currentColor 10%, transparent)}
+}
+.curso-card__actions{display:flex;gap:5px;}
+.curso-card__action{
+  width:30px;height:30px;border-radius:7px;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  color:var(--text-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.curso-card__action:hover{
+  background:var(--surface-3);
+  color:var(--primary);
+  border-color:var(--primary);
+}
+.curso-card__action--danger:hover{
+  background:color-mix(in srgb, #EF4444 14%, transparent);
+  color:#EF4444;
+  border-color:#EF4444;
+}
+
+/* Lista compacta */
+.curso-list{
+  display:flex;flex-direction:column;gap:8px;
+  margin-top:18px;
+}
+.curso-row{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid var(--area-color, var(--primary));
+  border-radius:11px;
+  transition:transform .15s, border-color .15s, box-shadow .15s;
+}
+.curso-row:hover{
+  transform:translateX(2px);
+  border-color:var(--area-color, var(--primary));
+  border-left-width:3px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+}
+.curso-row__thumb{
+  width:60px;height:60px;border-radius:9px;
+  background-size:cover;background-position:center;
+  background-color:var(--surface-3);
+  flex-shrink:0;
+}
+.curso-row__body{flex:1;min-width:0;}
+.curso-row__title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13.5px;font-weight:700;letter-spacing:-.2px;
+  color:var(--text);line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
+}
+.curso-row__meta{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  margin-top:4px;
+  font-size:11px;
+}
+.curso-row__area{
+  padding:2px 7px;border-radius:5px;
+  border:1px solid currentColor;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+}
+.curso-row__nivel{
+  padding:2px 7px;border-radius:5px;
+  background:var(--surface-2);
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;font-weight:700;color:var(--text-3);
+  letter-spacing:.5px;text-transform:uppercase;
+}
+.curso-row__instructor{color:var(--text-3);font-size:11.5px;}
+.curso-row__stats{
+  display:flex;gap:12px;flex-shrink:0;
+}
+.curso-row__stat{text-align:center;}
+.curso-row__stat-val{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:15px;font-weight:800;color:var(--text);
+  letter-spacing:-.3px;line-height:1;
+}
+.curso-row__stat-lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--text-3);margin-top:2px;
+}
+.curso-row__actions{display:flex;gap:5px;flex-shrink:0;}
+
+/* Skeleton (mientras carga Firestore) */
+.curso-card--skeleton{pointer-events:none;}
+.curso-card--skeleton .curso-card__cover{
+  aspect-ratio:16/9;background:var(--surface-3);
+}
+.curso-card--skeleton .curso-card__body{padding:14px;}
+.skeleton-line{
+  background:var(--surface-3);border-radius:5px;
+  display:block;
+}
+.skeleton-shimmer{
+  background:linear-gradient(90deg, var(--surface-3) 0%, var(--surface-2) 50%, var(--surface-3) 100%);
+  background-size:200% 100%;
+  animation:shimmerSkeleton 1.4s ease-in-out infinite;
+}
+
+/* Empty state */
+.curso-empty{
+  padding:60px 24px;text-align:center;
+  background:var(--surface-2);
+  border:1px dashed var(--border-2);
+  border-radius:14px;margin-top:18px;
+}
+.curso-empty__icon{
+  width:64px;height:64px;border-radius:50%;
+  background:color-mix(in srgb, var(--primary) 12%, transparent);
+  color:var(--primary);
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:14px;
+}
+.curso-empty__title{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:16px;font-weight:700;color:var(--text);
+  margin-bottom:6px;
+}
+.curso-empty__sub{
+  font-size:13px;color:var(--text-3);
+  line-height:1.5;max-width:360px;margin:0 auto;
+}
+
+/* Móvil */
+@media (max-width:768px){
+  .curso-grid{grid-template-columns:1fr;gap:14px;}
+  .curso-toolbar{gap:10px;}
+  .curso-toolbar__right{width:100%;justify-content:space-between;}
+  .curso-row{flex-wrap:wrap;}
+  .curso-row__stats{order:3;width:100%;justify-content:flex-end;padding-top:8px;border-top:1px dashed var(--border);margin-top:4px;}
+  .curso-row__actions{order:4;}
+  .curso-card__title{min-height:auto;}
+}
 .kpi-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--c1,var(--primary)) 35%,transparent);box-shadow:0 14px 36px rgba(0,0,0,.12)}
 .kpi-card__label{
   font-family:'JetBrains Mono',monospace;
@@ -1476,99 +1866,485 @@ const Pages={
     });
   },
 
-  cursos(p){
-    p.innerHTML=`
+  // ════════════════════════════════════════════════════════════════════
+  // CURSOS · LECTURA REAL desde Firestore + diseño fancy (Sub-fase 3A)
+  // Cards estilo Netflix con portadas auto-asignadas por keyword del título.
+  // Buscar + filtrar por área + ordenar + toggle activar/desactivar inline.
+  // (CREAR/EDITAR/ELIMINAR vienen en 3B y 3C)
+  // ════════════════════════════════════════════════════════════════════
+
+  // Mapeo de portadas auto-asignadas según palabra clave del título
+  // (idéntico al panel VIP · garantiza consistencia visual)
+  _portadasCursos: {
+    'energías renovables':'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
+    'energía':            'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
+    'renovable':          'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
+    'solar':              'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=900&auto=format&fit=crop&q=80',
+    'aguas residuales':   'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'tratamiento':        'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'biológic':           'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=900&auto=format&fit=crop&q=80',
+    'supervisión':        'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'producción':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'forecasting':        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'demanda':            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'kaizen':             'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'mejora continua':    'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'lean':               'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'six sigma':          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'procesos':           'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'costos':             'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'planificación':      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80',
+    'controller':         'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'project management': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'inventario':         'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'almacén':            'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'logístic':           'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+    'secretariad':        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'administrativ':      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&auto=format&fit=crop&q=80',
+    'nom-':               'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
+    'iso ':               'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'seguridad':          'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=900&auto=format&fit=crop&q=80',
+    'calidad':            'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&auto=format&fit=crop&q=80',
+    'mantenimiento':      'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80',
+    'oee':                'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=900&auto=format&fit=crop&q=80'
+  },
+  _portadaDefault: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&auto=format&fit=crop&q=80',
+  _getPortada(curso) {
+    if (curso.portada) return curso.portada;
+    const t = (curso.titulo || '').toLowerCase();
+    for (const [k, url] of Object.entries(Pages._portadasCursos)) {
+      if (t.includes(k)) return url;
+    }
+    return Pages._portadaDefault;
+  },
+
+  // Estado de la sección (filtros, búsqueda, orden)
+  _cursosState: {
+    search: '',
+    area: 'todas',
+    estado: 'todos',  // todos / activos / inactivos
+    orden: 'titulo',  // titulo / recientes / inscritos / horas
+    view: 'grid'      // grid / list
+  },
+
+  cursos(p) {
+    const store = window.AdminStore;
+    const ready = store?.ready;
+    const self = this;
+
+    p.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
-          <span class="sec-hero__eyebrow">Catálogo</span>
+          <span class="sec-hero__eyebrow">Catálogo de cursos</span>
           <h1 class="sec-hero__title">Cursos</h1>
-          <p class="sec-hero__sub">Crea, edita, activa o desactiva los cursos del catálogo. Define instructor, módulos, horas y nivel.</p>
+          <p class="sec-hero__sub">Gestiona tu catálogo · activa o desactiva cursos al toque · busca y filtra. <strong style="color:var(--text-2);">Lectura conectada a Firestore en tiempo real.</strong></p>
           <div class="sec-hero__actions">
-            <button class="btn btn--accent" id="new-curso"><svg class="ic"><use href="#i-plus"/></svg>Nuevo curso</button>
+            <button class="btn btn--accent" id="new-curso-btn">
+              <svg class="ic"><use href="#i-plus"/></svg>
+              Nuevo curso
+            </button>
           </div>
         </div>
 
-        <div class="toolbar">
-          <div class="searchbar">
-            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6 -6"/></svg>
-            <input type="text" placeholder="Buscar curso o instructor…" id="curso-search">
-          </div>
-          <select class="select" id="curso-area" style="max-width:200px;">
-            <option value="todas">Todas las áreas</option>
-            <option>Seguridad</option><option>Logística</option><option>Calidad</option><option>Mantenimiento</option>
-          </select>
-        </div>
+        <!-- KPIs rápidos -->
+        <div class="kpi-grid" id="cursos-kpis"></div>
 
-        <div class="adm-list" id="curso-list"></div>
-      </div>
-    `;
-    document.getElementById('new-curso').addEventListener('click',()=>cursoModal());
-    document.getElementById('curso-search').addEventListener('input',()=>renderCursos());
-    document.getElementById('curso-area').addEventListener('change',()=>renderCursos());
-    renderCursos();
-    function renderCursos(){
-      const q=(document.getElementById('curso-search').value||'').toLowerCase();
-      const a=document.getElementById('curso-area').value;
-      const items=SEED.cursos.filter(c=>{
-        if(a!=='todas'&&c.area!==a)return false;
-        if(q&&!c.titulo.toLowerCase().includes(q)&&!c.instructor.toLowerCase().includes(q))return false;
-        return true;
-      });
-      const list=document.getElementById('curso-list');
-      if(items.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-book"/></svg></div><h3>Sin resultados</h3><p>Cambia el filtro o búsqueda para ver más cursos.</p></div>`;return;}
-      const colorArea={'Seguridad':'#FF7A2D','Logística':'#3B82F6','Calidad':'#10B981','Mantenimiento':'#A855F7'};
-      list.innerHTML=items.map(c=>`
-        <div class="adm-row" style="--c1:${colorArea[c.area]};">
-          <div class="adm-row__thumb"><svg class="ic"><use href="#i-book"/></svg></div>
-          <div class="adm-row__body">
-            <div class="adm-row__title">${c.titulo}</div>
-            <div class="adm-row__meta">
-              <span><svg class="ic"><use href="#i-user"/></svg>${c.instructor}</span>
-              <span><svg class="ic"><use href="#i-folder"/></svg>${c.area}</span>
-              <span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h · ${c.modulos} mód.</span>
-              <span><svg class="ic"><use href="#i-users"/></svg>${c.inscritos}</span>
+        <!-- Toolbar fancy: búsqueda + filtros pill + ordenar + vista -->
+        <div class="curso-toolbar">
+          <div class="curso-search-wrap">
+            <svg class="curso-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="curso-search-input" placeholder="Buscar por título o instructor…" class="curso-search__input">
+            <button id="curso-search-clear" class="curso-search__clear" style="display:none;" aria-label="Limpiar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="curso-toolbar__right">
+            <div class="curso-orden" id="curso-orden">
+              <button class="curso-orden__btn" data-orden="titulo" data-active="1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M3 6h13"/><path d="M3 12h9"/><path d="M3 18h7"/></svg>
+                A-Z
+              </button>
+              <button class="curso-orden__btn" data-orden="horas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Horas
+              </button>
+              <button class="curso-orden__btn" data-orden="inscritos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Populares
+              </button>
+            </div>
+            <div class="curso-view" id="curso-view">
+              <button class="curso-view__btn" data-view="grid" data-active="1" aria-label="Vista grid">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              </button>
+              <button class="curso-view__btn" data-view="list" aria-label="Vista lista">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </button>
             </div>
           </div>
-          <span class="tag ${c.activo?'tag--success':'tag--warning'}">${c.activo?'Activo':'Inactivo'}</span>
-          <div class="adm-row__actions">
-            <button class="icon-action" data-edit="${c.id}" title="Editar"><svg class="ic"><use href="#i-edit"/></svg></button>
-            <button class="icon-action icon-action--danger" data-del="${c.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
-          </div>
         </div>
-      `).join('');
-      list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>cursoModal(b.dataset.edit)));
-      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
-        if(confirm('¿Eliminar este curso del catálogo?')){
-          const i=SEED.cursos.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.cursos.splice(i,1);renderCursos();Toast.success('Curso eliminado','Los inscritos no perderán su progreso.');}
-        }
-      }));
-    }
-    function cursoModal(id){
-      const c=id?SEED.cursos.find(x=>x.id===id):{titulo:'',area:'Seguridad',nivel:'Básico',instructor:'',horas:8,modulos:5,activo:true,inscritos:0};
-      const body=`
-        <div class="form-grid">
-          <div class="form-field form-field--full"><label class="label">Título del curso</label><input type="text" class="input" id="f-titulo" value="${(c.titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: NOM-019-STPS · Comisiones…"></div>
-          <div class="form-field"><label class="label">Área</label><select class="select" id="f-area"><option ${c.area==='Seguridad'?'selected':''}>Seguridad</option><option ${c.area==='Logística'?'selected':''}>Logística</option><option ${c.area==='Calidad'?'selected':''}>Calidad</option><option ${c.area==='Mantenimiento'?'selected':''}>Mantenimiento</option></select></div>
-          <div class="form-field"><label class="label">Nivel</label><select class="select" id="f-nivel"><option ${c.nivel==='Básico'?'selected':''}>Básico</option><option ${c.nivel==='Intermedio'?'selected':''}>Intermedio</option><option ${c.nivel==='Avanzado'?'selected':''}>Avanzado</option></select></div>
-          <div class="form-field form-field--full"><label class="label">Instructor</label><input type="text" class="input" id="f-instructor" value="${(c.instructor||'').replace(/"/g,'&quot;')}" placeholder="Ej: Ing. María López"></div>
-          <div class="form-field"><label class="label">Horas totales</label><input type="number" class="input" id="f-horas" value="${c.horas}" min="1"></div>
-          <div class="form-field"><label class="label">Módulos</label><input type="number" class="input" id="f-modulos" value="${c.modulos}" min="1"></div>
-          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="f-activo" ${c.activo?'checked':''}><label for="f-activo" style="cursor:pointer;font-size:13px;font-weight:500;">Curso activo · visible en el catálogo</label></div>
+
+        <!-- Pills de filtro por área (se llenan dinámicamente) -->
+        <div class="curso-pills" id="curso-pills"></div>
+        <div class="curso-pills" id="curso-pills-estado">
+          <button class="curso-pill" data-estado="todos" data-active="1">Todos los estados</button>
+          <button class="curso-pill" data-estado="activos"><span class="curso-pill__dot" style="background:#34D399;"></span>Activos</button>
+          <button class="curso-pill" data-estado="inactivos"><span class="curso-pill__dot" style="background:#9CA3AF;"></span>Inactivos</button>
+        </div>
+
+        <!-- Contenedor de cursos (grid o lista) -->
+        <div id="curso-container"></div>
+      </div>
+    `;
+
+    // ─── Render dinámico ───
+    const renderTodo = () => {
+      Pages._renderKpisCursos();
+      Pages._renderPillsAreas();
+      Pages._renderListaCursos();
+    };
+
+    renderTodo();
+
+    // ─── Bind: búsqueda ───
+    const searchInput = p.querySelector('#curso-search-input');
+    const searchClear = p.querySelector('#curso-search-clear');
+    searchInput?.addEventListener('input', (e) => {
+      Pages._cursosState.search = e.target.value.toLowerCase().trim();
+      searchClear.style.display = e.target.value ? '' : 'none';
+      Pages._renderListaCursos();
+    });
+    searchClear?.addEventListener('click', () => {
+      searchInput.value = '';
+      Pages._cursosState.search = '';
+      searchClear.style.display = 'none';
+      Pages._renderListaCursos();
+    });
+
+    // ─── Bind: orden ───
+    p.querySelectorAll('#curso-orden .curso-orden__btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('#curso-orden .curso-orden__btn').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._cursosState.orden = btn.dataset.orden;
+        Pages._renderListaCursos();
+      });
+    });
+
+    // ─── Bind: vista grid/list ───
+    p.querySelectorAll('#curso-view .curso-view__btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('#curso-view .curso-view__btn').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._cursosState.view = btn.dataset.view;
+        Pages._renderListaCursos();
+      });
+    });
+
+    // ─── Bind: pills de estado ───
+    p.querySelectorAll('#curso-pills-estado .curso-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        p.querySelectorAll('#curso-pills-estado .curso-pill').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._cursosState.estado = btn.dataset.estado;
+        Pages._renderListaCursos();
+      });
+    });
+
+    // ─── Botón nuevo curso (placeholder para 3B) ───
+    p.querySelector('#new-curso-btn')?.addEventListener('click', () => {
+      Toast.info('Próximamente', 'El modal de crear curso llega en la siguiente entrega · Fase 3B');
+    });
+  },
+
+  // ─── KPIs ───
+  _renderKpisCursos() {
+    const wrap = document.getElementById('cursos-kpis');
+    if (!wrap) return;
+    const store = window.AdminStore;
+    const ready = store?.ready;
+    const cursos = ready ? store.cursos : [];
+    const activos = cursos.filter(c => c.activo !== false && c.disponible !== false).length;
+    const inactivos = cursos.length - activos;
+    const totalClases = cursos.reduce((s, c) => s + (c.sesiones?.length || 0), 0);
+    const totalHoras = cursos.reduce((s, c) => s + (c.horas || c.sesiones?.length || 0), 0);
+
+    wrap.innerHTML = `
+      <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
+        <div class="kpi-card__label">Total catálogo</div>
+        <div class="kpi-card__value">${cursos.length}</div>
+        <div class="kpi-card__sub">${ready ? 'En Firestore' : 'Cargando…'}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#34D399;--c2:#22C55E;">
+        <div class="kpi-card__label">Activos</div>
+        <div class="kpi-card__value">${activos}</div>
+        <div class="kpi-card__sub">${inactivos} inactivo${inactivos!==1?'s':''}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
+        <div class="kpi-card__label">Total clases</div>
+        <div class="kpi-card__value">${totalClases}</div>
+        <div class="kpi-card__sub">${cursos.length > 0 ? `${(totalClases/cursos.length).toFixed(1)} prom. por curso` : '—'}</div>
+      </div>
+      <div class="kpi-card" style="--c1:#A855F7;--c2:#C084FC;">
+        <div class="kpi-card__label">Horas totales</div>
+        <div class="kpi-card__value">${totalHoras}h</div>
+        <div class="kpi-card__sub">Contenido publicado</div>
+      </div>
+    `;
+  },
+
+  // ─── Pills de áreas (dinámicas según cursos reales) ───
+  _renderPillsAreas() {
+    const wrap = document.getElementById('curso-pills');
+    if (!wrap) return;
+    const store = window.AdminStore;
+    const ready = store?.ready;
+    const cursos = ready ? store.cursos : [];
+    const areas = Array.from(new Set(cursos.map(c => c.area).filter(Boolean))).sort();
+    const activeArea = Pages._cursosState.area;
+
+    wrap.innerHTML = `
+      <button class="curso-pill" data-area="todas" data-active="${activeArea === 'todas' ? '1' : ''}">
+        Todas las áreas <span class="curso-pill__count">${cursos.length}</span>
+      </button>
+      ${areas.map(a => {
+        const count = cursos.filter(c => c.area === a).length;
+        return `<button class="curso-pill" data-area="${a}" data-active="${activeArea === a ? '1' : ''}">
+          ${a} <span class="curso-pill__count">${count}</span>
+        </button>`;
+      }).join('')}
+    `;
+
+    wrap.querySelectorAll('.curso-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wrap.querySelectorAll('.curso-pill').forEach(b => b.removeAttribute('data-active'));
+        btn.setAttribute('data-active', '1');
+        Pages._cursosState.area = btn.dataset.area;
+        Pages._renderListaCursos();
+      });
+    });
+  },
+
+  // ─── Lista de cursos (grid o lista) ───
+  _renderListaCursos() {
+    const wrap = document.getElementById('curso-container');
+    if (!wrap) return;
+    const store = window.AdminStore;
+    const ready = store?.ready;
+
+    // Skeleton si aún no carga
+    if (!ready) {
+      wrap.innerHTML = `
+        <div class="curso-grid">
+          ${[1,2,3,4,5,6].map(() => `
+            <div class="curso-card curso-card--skeleton">
+              <div class="curso-card__cover skeleton-shimmer"></div>
+              <div class="curso-card__body">
+                <div class="skeleton-line skeleton-shimmer" style="width:80%;height:14px;"></div>
+                <div class="skeleton-line skeleton-shimmer" style="width:60%;height:11px;margin-top:8px;"></div>
+                <div class="skeleton-line skeleton-shimmer" style="width:90%;height:11px;margin-top:14px;"></div>
+              </div>
+            </div>
+          `).join('')}
         </div>
       `;
-      const footer=document.createElement('div');
-      footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">${id?'Guardar cambios':'Crear curso'}<svg class="ic"><use href="#i-check"/></svg></button>`;
-      Modal.open({title:id?'Editar curso':'Nuevo curso',subtitle:id?c.titulo:'Define los datos del nuevo curso',icon:'i-book',body,footer});
-      footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
-      footer.querySelector('#m-save').addEventListener('click',()=>{
-        const data={titulo:document.getElementById('f-titulo').value.trim(),area:document.getElementById('f-area').value,nivel:document.getElementById('f-nivel').value,instructor:document.getElementById('f-instructor').value.trim(),horas:+document.getElementById('f-horas').value,modulos:+document.getElementById('f-modulos').value,activo:document.getElementById('f-activo').checked};
-        if(!data.titulo){Toast.error('Falta el título','Escribe el nombre del curso.');return;}
-        if(!data.instructor){Toast.error('Falta instructor','Define quién imparte el curso.');return;}
-        if(id){Object.assign(c,data);Toast.success('Curso actualizado',data.titulo);}
-        else{SEED.cursos.unshift({id:'c'+Date.now(),inscritos:0,...data});Toast.success('Curso creado',data.titulo);}
-        Modal.close();renderCursos();
+      return;
+    }
+
+    const S = Pages._cursosState;
+    let cursos = [...store.cursos];
+
+    // Filtrar
+    if (S.area !== 'todas') cursos = cursos.filter(c => c.area === S.area);
+    if (S.estado === 'activos') cursos = cursos.filter(c => c.activo !== false && c.disponible !== false);
+    if (S.estado === 'inactivos') cursos = cursos.filter(c => c.activo === false || c.disponible === false);
+    if (S.search) {
+      cursos = cursos.filter(c => {
+        const t = (c.titulo || '').toLowerCase();
+        const i = (c.instructor || '').toLowerCase();
+        return t.includes(S.search) || i.includes(S.search);
       });
     }
+
+    // Ordenar
+    if (S.orden === 'titulo') cursos.sort((a,b) => (a.titulo||'').localeCompare(b.titulo||''));
+    else if (S.orden === 'horas') cursos.sort((a,b) => (b.horas||b.sesiones?.length||0) - (a.horas||a.sesiones?.length||0));
+    else if (S.orden === 'inscritos') cursos.sort((a,b) => (b.inscritos||0) - (a.inscritos||0));
+
+    // Empty state
+    if (cursos.length === 0) {
+      wrap.innerHTML = `
+        <div class="curso-empty">
+          <div class="curso-empty__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </div>
+          <div class="curso-empty__title">${S.search || S.area !== 'todas' || S.estado !== 'todos' ? 'Sin resultados' : 'Sin cursos en el catálogo'}</div>
+          <div class="curso-empty__sub">${S.search || S.area !== 'todas' || S.estado !== 'todos' ? 'Prueba con otros filtros o búsqueda' : 'Crea tu primer curso para comenzar'}</div>
+        </div>
+      `;
+      return;
+    }
+
+    // Render según vista
+    if (S.view === 'grid') {
+      wrap.innerHTML = `<div class="curso-grid">${cursos.map(c => Pages._cardGrid(c)).join('')}</div>`;
+    } else {
+      wrap.innerHTML = `<div class="curso-list">${cursos.map(c => Pages._cardList(c)).join('')}</div>`;
+    }
+
+    // Bind acciones
+    Pages._bindCursoActions(wrap);
+  },
+
+  // ─── Card estilo grid (Netflix) ───
+  _cardGrid(c) {
+    const portada = Pages._getPortada(c);
+    const horas = c.horas || c.sesiones?.length || 0;
+    const clases = c.sesiones?.length || 0;
+    const materiales = c.materiales?.length || 0;
+    const activo = c.activo !== false && c.disponible !== false;
+    const area = c.area || 'Sin área';
+    const areaColors = {
+      'Seguridad':'#EF4444', 'Calidad':'#10B981', 'Logística':'#3B82F6',
+      'Mantenimiento':'#A855F7', 'Producción':'#F59E0B', 'Energía':'#FFB347',
+      'Medio Ambiente':'#14B8A6', 'Operaciones':'#F97316', 'Gestión':'#8B5CF6',
+      'Finanzas':'#06B6D4', 'Administrativo':'#EC4899'
+    };
+    const areaColor = areaColors[area] || '#FF7A2D';
+    const tituloEsc = (c.titulo || 'Sin título').replace(/"/g,'&quot;');
+
+    return `
+      <div class="curso-card" data-id="${c.id}" style="--area-color:${areaColor};">
+        <div class="curso-card__cover" style="background-image:url('${portada}');">
+          <div class="curso-card__cover-overlay"></div>
+          <div class="curso-card__cover-top">
+            <span class="curso-card__area" style="background:${areaColor};">${area}</span>
+            <button class="curso-card__toggle ${activo ? 'is-active' : ''}" data-toggle="${c.id}" title="${activo ? 'Desactivar' : 'Activar'} curso">
+              <span class="curso-card__toggle-track"><span class="curso-card__toggle-thumb"></span></span>
+            </button>
+          </div>
+          ${c.nivel ? `<div class="curso-card__cover-bottom"><span class="curso-card__nivel">${c.nivel}</span></div>` : ''}
+        </div>
+        <div class="curso-card__body">
+          <div class="curso-card__title" title="${tituloEsc}">${tituloEsc}</div>
+          ${c.instructor ? `<div class="curso-card__instructor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${c.instructor}</div>` : ''}
+          <div class="curso-card__meta">
+            <span class="curso-card__meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>${clases} clase${clases!==1?'s':''}</span>
+            <span class="curso-card__meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${horas}h</span>
+            ${materiales > 0 ? `<span class="curso-card__meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>${materiales} mat.</span>` : ''}
+          </div>
+          <div class="curso-card__footer">
+            <span class="curso-card__status ${activo ? 'is-active' : 'is-inactive'}">
+              <span class="curso-card__status-dot"></span>
+              ${activo ? 'Activo' : 'Inactivo'}
+            </span>
+            <div class="curso-card__actions">
+              <button class="curso-card__action" data-edit="${c.id}" title="Editar curso">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="curso-card__action curso-card__action--danger" data-del="${c.id}" title="Eliminar curso">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  // ─── Card estilo lista (compacta) ───
+  _cardList(c) {
+    const portada = Pages._getPortada(c);
+    const horas = c.horas || c.sesiones?.length || 0;
+    const clases = c.sesiones?.length || 0;
+    const activo = c.activo !== false && c.disponible !== false;
+    const area = c.area || 'Sin área';
+    const areaColors = {
+      'Seguridad':'#EF4444', 'Calidad':'#10B981', 'Logística':'#3B82F6',
+      'Mantenimiento':'#A855F7', 'Producción':'#F59E0B', 'Energía':'#FFB347',
+      'Medio Ambiente':'#14B8A6', 'Operaciones':'#F97316', 'Gestión':'#8B5CF6',
+      'Finanzas':'#06B6D4', 'Administrativo':'#EC4899'
+    };
+    const areaColor = areaColors[area] || '#FF7A2D';
+    const tituloEsc = (c.titulo || 'Sin título').replace(/"/g,'&quot;');
+
+    return `
+      <div class="curso-row" data-id="${c.id}" style="--area-color:${areaColor};">
+        <div class="curso-row__thumb" style="background-image:url('${portada}');"></div>
+        <div class="curso-row__body">
+          <div class="curso-row__title">${tituloEsc}</div>
+          <div class="curso-row__meta">
+            <span class="curso-row__area" style="color:${areaColor};border-color:color-mix(in srgb, ${areaColor} 35%, transparent);background:color-mix(in srgb, ${areaColor} 10%, transparent);">${area}</span>
+            ${c.nivel ? `<span class="curso-row__nivel">${c.nivel}</span>` : ''}
+            ${c.instructor ? `<span class="curso-row__instructor">· ${c.instructor}</span>` : ''}
+          </div>
+        </div>
+        <div class="curso-row__stats">
+          <div class="curso-row__stat"><div class="curso-row__stat-val">${clases}</div><div class="curso-row__stat-lbl">clases</div></div>
+          <div class="curso-row__stat"><div class="curso-row__stat-val">${horas}h</div><div class="curso-row__stat-lbl">horas</div></div>
+        </div>
+        <button class="curso-card__toggle ${activo ? 'is-active' : ''}" data-toggle="${c.id}" title="${activo ? 'Desactivar' : 'Activar'} curso">
+          <span class="curso-card__toggle-track"><span class="curso-card__toggle-thumb"></span></span>
+        </button>
+        <div class="curso-row__actions">
+          <button class="curso-card__action" data-edit="${c.id}" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="curso-card__action curso-card__action--danger" data-del="${c.id}" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </div>
+      </div>
+    `;
+  },
+
+  // ─── Bind acciones de cada card ───
+  _bindCursoActions(wrap) {
+    // Toggle activar/desactivar inline
+    wrap.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.toggle;
+        const curso = window.AdminStore.cursos.find(c => c.id === id);
+        if (!curso) return;
+        const nuevoEstado = !(curso.activo !== false && curso.disponible !== false);
+        const fb = window._fb;
+        if (!fb || !fb.updateDoc || !fb.doc || !fb.db) {
+          Toast.error('Firestore no listo'); return;
+        }
+        // Animación inmediata
+        btn.classList.toggle('is-active', nuevoEstado);
+        try {
+          await fb.updateDoc(fb.doc(fb.db, 'cursos', id), {
+            activo: nuevoEstado,
+            disponible: nuevoEstado
+          });
+          Toast.success(nuevoEstado ? 'Curso activado' : 'Curso desactivado', curso.titulo);
+        } catch (err) {
+          // Revertir animación si falla
+          btn.classList.toggle('is-active', !nuevoEstado);
+          Toast.error('No se pudo cambiar', err.message);
+        }
+      });
+    });
+
+    // Editar (placeholder)
+    wrap.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        Toast.info('Próximamente', 'El editor de cursos llega en la siguiente entrega · Fase 3B');
+      });
+    });
+
+    // Eliminar (placeholder)
+    wrap.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        Toast.info('Próximamente', 'La eliminación segura llega en la entrega 3C · con confirmación');
+      });
+    });
+  },
+
+  cursos_oldPlaceholder(p){
+    // (placeholder · ya no se usa, el render real está en cursos arriba)
   },
 
   webinars(p){
@@ -2185,9 +2961,16 @@ const AdminStore = {
     const section = active.dataset.section;
     const p = document.getElementById('page');
     if (!p) return;
-    // Re-render dashboard y notificaciones cuando hay cambios en sus datos
-    if ((section === 'dashboard' || section === 'notificaciones') && Pages[section]) {
+    // Re-render dashboard, notificaciones y cursos cuando hay cambios en sus datos
+    if (section === 'dashboard' && Pages[section]) {
       Pages[section](p);
+    } else if (section === 'notificaciones' && Pages[section]) {
+      Pages[section](p);
+    } else if (section === 'cursos' && Pages[section]) {
+      // Para cursos, solo refrescar la lista + KPIs (no toda la página · evita perder focus en search)
+      if (typeof Pages._renderKpisCursos === 'function') Pages._renderKpisCursos();
+      if (typeof Pages._renderPillsAreas === 'function') Pages._renderPillsAreas();
+      if (typeof Pages._renderListaCursos === 'function') Pages._renderListaCursos();
     }
   },
 
