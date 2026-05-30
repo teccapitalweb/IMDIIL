@@ -289,6 +289,44 @@ body::after{
   .brand__logo{width:54px;height:54px}
   .brand__name{font-size:20px}
 }
+.auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--text-3,#9a8e80);font-size:11.5px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:1px}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:var(--border,rgba(150,140,128,.25))}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 16px;border-radius:12px;background:#fff;color:#1f1f1f;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;border:1px solid #dadce0;cursor:pointer;transition:box-shadow .15s ease,transform .08s ease}
+.btn-google:hover{box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.btn-google:active{transform:translateY(1px)}
+.btn-google:disabled{opacity:.6;cursor:default}
+.btn-google svg{width:18px;height:18px;flex-shrink:0}
+
+/* ═══ Layout split · hero (izq) + formulario (der) ═══ */
+body{display:block}
+.auth-shell{min-height:100vh;min-height:100dvh;width:100%;display:grid;grid-template-columns:1.05fr .95fr;position:relative;z-index:1}
+.auth-main{display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-main .wrap{padding:0}
+
+/* Hero izquierdo */
+.auth-hero{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:32px;padding:52px 56px;overflow:hidden;background:linear-gradient(157deg,#1A130D 0%,#0E0A06 55%,#070503 100%);border-right:1px solid var(--border-2)}
+.auth-hero::before{content:"";position:absolute;top:-20%;left:-10%;width:70%;height:70%;background:radial-gradient(circle,var(--primary-glow),transparent 60%);filter:blur(70px);pointer-events:none}
+.auth-hero::after{content:"";position:absolute;inset:0;background-image:linear-gradient(to right,rgba(255,230,200,.045) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,230,200,.045) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(ellipse at 30% 40%,#000,transparent 75%);mask-image:radial-gradient(ellipse at 30% 40%,#000,transparent 75%);pointer-events:none}
+.auth-hero > *{position:relative;z-index:1}
+.brand--hero{text-align:left;margin:0;display:flex;align-items:center;gap:14px}
+.brand--hero .brand__logo{margin-bottom:0;width:52px;height:52px}
+.brand--hero .brand__name{font-size:20px}
+.brand--hero .brand__sub{margin-top:2px}
+.auth-hero__title{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:clamp(34px,3.4vw,52px);font-weight:800;line-height:1.04;letter-spacing:-1.4px;color:var(--text);max-width:14ch}
+.auth-hero__title em{font-style:normal;background:linear-gradient(120deg,var(--primary),var(--highlight));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.auth-hero__desc{margin-top:20px;font-size:15px;line-height:1.7;color:var(--text-2);max-width:42ch}
+.auth-hero__stats{display:flex;gap:40px}
+.auth-stat__num{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--primary)}
+.auth-stat__lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3)}
+
+/* Mobile: ocultar hero, formulario a pantalla completa, mostrar brand del form */
+.wrap .brand{display:none}
+@media (max-width:920px){
+  .auth-shell{grid-template-columns:1fr}
+  .auth-hero{display:none}
+  .auth-main{padding:24px 18px}
+  .wrap .brand{display:block}
+}
 </style>
 </head>
 <body>
@@ -297,6 +335,31 @@ body::after{
   <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79z"/></svg>
 </button>
 
+<div class="auth-shell">
+  <aside class="auth-hero">
+    <div class="brand brand--hero">
+      <div class="brand__logo">
+        <svg viewBox="0 0 64 64"><rect x="14" y="12" width="6" height="34" rx="1" fill="#fff" opacity=".9"/><rect x="22" y="18" width="6" height="28" rx="1" fill="#fff" opacity=".7"/><rect x="30" y="14" width="6" height="32" rx="1" fill="#fff" opacity=".9"/><path d="M 14 46 Q 32 54 50 46" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".6"/><path d="M 22 38 Q 32 30 42 38 L 42 44 L 22 44 Z" fill="#FF7A2D"/></svg>
+      </div>
+      <div>
+        <div class="brand__name">IMDIIL</div>
+        <div class="brand__sub">Instituto Mexicano · Ing. Industrial</div>
+      </div>
+    </div>
+
+    <div>
+      <h1 class="auth-hero__title">Te damos la bienvenida al <em>club VIP de IMDIIL</em>.</h1>
+      <p class="auth-hero__desc">Acceso exclusivo a cursos de ingeniería industrial, clases en vivo con expertos, herramientas pro y certificados con folio oficial.</p>
+    </div>
+
+    <div class="auth-hero__stats">
+      <div class="auth-stat"><span class="auth-stat__num">12+</span><span class="auth-stat__lbl">cursos</span></div>
+      <div class="auth-stat"><span class="auth-stat__num">24/7</span><span class="auth-stat__lbl">acceso</span></div>
+      <div class="auth-stat"><span class="auth-stat__num">100%</span><span class="auth-stat__lbl">certificable</span></div>
+    </div>
+  </aside>
+
+  <main class="auth-main">
 <div class="wrap">
   <div class="brand">
     <div class="brand__logo">
@@ -338,6 +401,11 @@ body::after{
         <span class="btn-label">Iniciar sesión</span>
         <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
+      <div class="auth-divider">o</div>
+      <button type="button" class="btn-google" data-google="1">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuar con Google
+      </button>
     </div>
 
     <!-- REGISTER -->
@@ -376,10 +444,17 @@ body::after{
         <svg class="btn-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
       <div class="helper-text" style="margin-top:10px;text-align:center;">Al crearla, te llevamos al checkout para activar tu membresía VIP.</div>
+      <div class="auth-divider">o</div>
+      <button type="button" class="btn-google" data-google="1">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Registrarte con Google
+      </button>
     </div>
   </div>
 
   <div class="legal">IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística<br>© 2026 · Todos los derechos reservados</div>
+</div>
+  </main>
 </div>
 
 <!-- UI independiente de Firebase (tabs, theme, toggle password) -->
@@ -464,7 +539,9 @@ import {
   updateProfile,
   setPersistence,
   browserLocalPersistence,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore,
@@ -578,7 +655,11 @@ function translateError(code) {
     'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos.',
     'auth/network-request-failed': 'Sin conexión. Revisa tu internet.',
     'auth/missing-password': 'Escribe una contraseña.',
-    'auth/missing-email': 'Escribe tu correo electrónico.'
+    'auth/missing-email': 'Escribe tu correo electrónico.',
+    'auth/popup-blocked': 'El navegador bloqueó la ventana de Google. Permite las ventanas emergentes e intenta de nuevo.',
+    'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.',
+    'auth/account-exists-with-different-credential': 'Ya tienes una cuenta con ese correo usando contraseña. Inicia sesión con tu correo.',
+    'auth/unauthorized-domain': 'Este dominio no está autorizado para Google. El admin debe agregarlo en Firebase.'
   };
   return map[code] || 'Algo salió mal. Intenta de nuevo.';
 }
@@ -664,6 +745,28 @@ document.getElementById('btn-register').addEventListener('click', async () => {
     setLoading(btn, false, 'Crear cuenta');
     showAlert('error', 'No pudimos crear tu cuenta', translateError(e.code));
   }
+});
+
+/* ===== GOOGLE SIGN-IN ===== */
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+document.querySelectorAll('[data-google]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    clearAlert();
+    btn.disabled = true;
+    try {
+      // El popup hace login/registro · onAuthStateChanged se encarga de
+      // crear el doc en miembros/{uid} (con el nombre de Google) y redirigir.
+      await signInWithPopup(auth, googleProvider);
+      showAlert('success', '¡Listo!', 'Entrando con Google…');
+    } catch (e) {
+      btn.disabled = false;
+      // Si el usuario solo cerró el popup, no lo regañamos
+      if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+      showAlert('error', 'No pudimos entrar con Google', translateError(e.code));
+    }
+  });
 });
 
 /* ===== FORGOT PASSWORD ===== */
