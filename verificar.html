@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A1322">
+<title>Verificar certificado · IMDIIL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#13294A;--navy-2:#1E416E;--gold:#C9A24B;--gold-lite:#EBCF86;--ink:#1B2C46;--ink-soft:#5C6A80;--ok:#1E9E63;--bad:#D64545}
+body{font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;color:#E8EEF6;background:#0A1322;background-image:radial-gradient(circle at 50% 8%,#142B4D,#0A1322 60%)}
+.card{width:100%;max-width:560px;background:#FFFFFF;color:var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.top{background:linear-gradient(135deg,var(--navy),var(--navy-2));padding:26px 28px;text-align:center;border-bottom:3px solid var(--gold)}
+.top img{height:54px;width:auto;margin:0 auto 6px;display:block}
+.top .sub{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--gold-lite);text-transform:uppercase}
+.body{padding:30px 28px 32px}
+.state{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;margin-bottom:24px}
+.state.ok{background:rgba(30,158,99,.1);border:1px solid rgba(30,158,99,.35)}
+.state.bad{background:rgba(214,69,69,.1);border:1px solid rgba(214,69,69,.35)}
+.state.load{background:#F4F0E4;border:1px solid #E5DAC2}
+.state__ic{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.state.ok .state__ic{background:var(--ok)}.state.bad .state__ic{background:var(--bad)}.state.load .state__ic{background:var(--gold)}
+.state__ic svg{width:24px;height:24px}
+.state__t{font-family:'Cinzel',serif;font-weight:700;font-size:17px;line-height:1.2}
+.state.ok .state__t{color:var(--ok)}.state.bad .state__t{color:var(--bad)}
+.state__d{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.rows{display:none}
+.row{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid #EEE7D8}
+.row:last-child{border-bottom:0}
+.row .k{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-soft);flex-shrink:0;padding-top:2px}
+.row .v{font-size:15px;font-weight:600;color:var(--navy);text-align:right}
+.row .v.mono{font-family:'Cinzel',serif;letter-spacing:.5px}
+.foot{margin-top:22px;text-align:center;font-size:11px;color:var(--ink-soft);line-height:1.6}
+.foot a{color:var(--navy-2);font-weight:700;text-decoration:none}
+.spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+</style></head>
+<body>
+<div class="card">
+  <div class="top"><img src="logo-imdiil.png" alt="IMDIIL" onerror="this.style.display='none'"><div class="sub">Verificación de Certificado</div></div>
+  <div class="body">
+    <div class="state load" id="state">
+      <div class="state__ic"><svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div>
+      <div><div class="state__t" id="st-title">Verificando…</div><div class="state__d" id="st-desc">Consultando el folio en la base de datos oficial.</div></div>
+    </div>
+    <div class="rows" id="rows">
+      <div class="row"><span class="k">Nombre</span><span class="v" id="r-nombre">—</span></div>
+      <div class="row"><span class="k">Curso</span><span class="v" id="r-curso">—</span></div>
+      <div class="row"><span class="k">Área</span><span class="v" id="r-area">—</span></div>
+      <div class="row"><span class="k">Carga académica</span><span class="v" id="r-horas">—</span></div>
+      <div class="row"><span class="k">Fecha de emisión</span><span class="v" id="r-fecha">—</span></div>
+      <div class="row"><span class="k">Folio</span><span class="v mono" id="r-folio">—</span></div>
+    </div>
+    <div class="foot">Certificado emitido digitalmente por <strong>IMDIIL / IPCI Latinoamericano</strong><br><a href="https://www.imdiil.com">www.imdiil.com</a></div>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const app = initializeApp({apiKey:"AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",authDomain:"imdiil-vip.firebaseapp.com",projectId:"imdiil-vip",storageBucket:"imdiil-vip.firebasestorage.app",messagingSenderId:"875137053237",appId:"1:875137053237:web:65d81cceb6b5ec233bb77c"});
+const db = getFirestore(app);
+const params = new URLSearchParams(location.search);
+const folio = (params.get('folio') || params.get('f') || '').trim();
+const $=id=>document.getElementById(id);
+function setState(cls,svg,title,desc){const s=$('state');s.className='state '+cls;s.querySelector('.state__ic').innerHTML=svg;$('st-title').textContent=title;$('st-desc').textContent=desc;}
+const OK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>';
+const BAD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+function fmt(d){try{const dt=d&&d.toDate?d.toDate():new Date(d);return dt.toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});}catch(e){return d||'—';}}
+(async()=>{
+  if(!folio){setState('bad',BAD,'Folio no indicado','Abre el enlace con un folio válido, ej. ?folio=IMDIIL-2026-XXXXXX');return;}
+  try{
+    let data=null;
+    // 1) por id de documento
+    try{const ds=await getDoc(doc(db,'certificados',folio));if(ds.exists())data=ds.data();}catch(e){}
+    // 2) por campo folio
+    if(!data){const qs=await getDocs(query(collection(db,'certificados'),where('folio','==',folio)));if(!qs.empty)data=qs.docs[0].data();}
+    if(!data){setState('bad',BAD,'Certificado no encontrado','El folio '+folio+' no existe en nuestros registros.');return;}
+    setState('ok',OK,'Certificado auténtico','Este folio está registrado oficialmente por IMDIIL.');
+    $('r-nombre').textContent=data.nombre||data.nombreMiembro||'—';
+    $('r-curso').textContent=data.curso||data.tituloCurso||'—';
+    $('r-area').textContent=data.area||'—';
+    $('r-horas').textContent=(data.sesiones?data.sesiones+' sesiones · ':'')+(data.horas?data.horas+' horas':'—');
+    $('r-fecha').textContent=fmt(data.emitido||data.fechaEmision||data.createdAt);
+    $('r-folio').textContent=data.folio||folio;
+    $('rows').style.display='block';
+  }catch(e){console.error(e);setState('bad',BAD,'Error de verificación','No se pudo consultar el folio. Intenta de nuevo más tarde.');}
+})();
+</script>
+</body></html>
