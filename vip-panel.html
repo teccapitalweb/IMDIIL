@@ -2683,7 +2683,7 @@ window.UserState = {
 <!-- ===== AUTH GUARD (Firebase) ===== -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -2773,6 +2773,22 @@ if (window.__isDemoMode) {
         window.memberData = null;
       }
     }
+
+    // ─── Nombre canónico · UNA sola fuente para dashboard, splash y certificados ───
+    // Prioridad: nombre guardado en Firestore (registro) → displayName Auth → local → correo
+    (function(){
+      const md = window.memberData || {};
+      const emailPart = (window.UserState.email || '').split('@')[0];
+      let ls = {};
+      try { ls = JSON.parse(localStorage.getItem('imdiil_profile') || '{}'); } catch(e){}
+      const nombre = (md.nombre && md.nombre.trim())
+        || (user.displayName && user.displayName.trim())
+        || (ls.nombre && ls.nombre.trim())
+        || emailPart || 'Ingeniero';
+      window.UserState.nombre = nombre;
+      window.UserState.displayName = nombre;        // todo el panel lee de aquí
+      window.UserState.iniciales = calcIniciales(nombre);
+    })();
 
     document.body.style.visibility = 'visible';
 
@@ -2995,6 +3011,14 @@ window.__resetPassword = async () => {
     if (!user || !user.email) throw new Error('Sin email');
     await sendPasswordResetEmail(auth, user.email);
     return { ok:true, email:user.email };
+  } catch(e) { return { ok:false, error:e.message }; }
+};
+
+// Actualiza el displayName en Firebase Auth (el nombre que se vincula a la cuenta)
+window.__setDisplayName = async (nombre) => {
+  try {
+    if (auth.currentUser) await updateProfile(auth.currentUser, { displayName: nombre });
+    return { ok:true };
   } catch(e) { return { ok:false, error:e.message }; }
 };
 </script>
@@ -6266,6 +6290,10 @@ const Sections = (function(){
 
   /* ============================ MI PERFIL ============================ */
   function renderPerfil(container){
+    const S = window.UserState || {};
+    const _nom = escapeHtml(S.nombre || S.displayName || 'Ingeniero');
+    const _em  = escapeHtml(S.email || '—');
+    const _ini = (S.iniciales || 'IN');
     container.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
@@ -6275,10 +6303,10 @@ const Sections = (function(){
         </div>
 
         <section class="perfil-hero">
-          <div class="perfil-hero__avatar">IN</div>
+          <div class="perfil-hero__avatar">${_ini}</div>
           <div class="perfil-hero__info">
-            <h2 class="perfil-hero__name">Ingeniero</h2>
-            <div class="perfil-hero__email">usuario@example.com</div>
+            <h2 class="perfil-hero__name">${_nom}</h2>
+            <div class="perfil-hero__email">${_em}</div>
             <div class="perfil-hero__badges">
               <span class="pill"><svg class="ic"><use href="#i-crown"/></svg>VIP Anual</span>
               <span class="tag tag--new">Nivel 2 · Técnico</span>
@@ -6291,8 +6319,8 @@ const Sections = (function(){
         <div class="perfil-grid">
           <div class="perfil-card">
             <div class="perfil-card__title">Datos personales</div>
-            <div class="perfil-field" data-field="nombre"><span class="perfil-field__lbl">Nombre</span><span class="perfil-field__val">Ingeniero</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field" data-field="email" data-readonly="1"><span class="perfil-field__lbl">Email</span><span class="perfil-field__val">usuario@example.com</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="nombre"><span class="perfil-field__lbl">Nombre</span><span class="perfil-field__val">${_nom}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-field" data-field="email" data-readonly="1"><span class="perfil-field__lbl">Email</span><span class="perfil-field__val">${_em}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
             <div class="perfil-field" data-field="whatsapp"><span class="perfil-field__lbl">WhatsApp</span><span class="perfil-field__val">+52 238 ··· ··43</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
             <div class="perfil-field" data-field="empresa"><span class="perfil-field__lbl">Empresa</span><span class="perfil-field__val">—</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
             <div class="perfil-field" data-field="especialidad"><span class="perfil-field__lbl">Especialidad</span><span class="perfil-field__val">Seguridad industrial</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
@@ -6327,6 +6355,7 @@ const Sections = (function(){
         </div>
       </div>
     `;
+    if (typeof loadProfileFromLS==='function') loadProfileFromLS();
   }
 
   /* ============================ SUSCRIPCIÓN ============================ */
@@ -7004,22 +7033,58 @@ function openEditField(field){
   const placeholders={nombre:'Ej: Ing. Juan Pérez',whatsapp:'+52 238 123 4567',empresa:'Ej: Industrias del Centro SA',especialidad:'Ej: Seguridad industrial'};
   const currentVal=wrap.querySelector('.perfil-field__val').textContent.trim();
   const cleanVal=(currentVal==='—'||currentVal.includes('···'))?'':currentVal;
+  const subt = field==='nombre'
+    ? 'Se actualiza en tu panel, tus certificados y tu cuenta'
+    : 'Se guarda en tu perfil';
   Modal.open({
     id:'edit-'+field,
     title:'Editar '+(labels[field]||field),
-    subtitle:'Se guarda solo en tu navegador',
+    subtitle:subt,
     icon:'i-tools',
     size:'sm',
     body:`<input type="text" id="edit-field-input" class="input" value="${cleanVal.replace(/"/g,'&quot;')}" placeholder="${placeholders[field]||''}" style="width:100%;padding:11px 14px;background:var(--surface-2);border:0.5px solid var(--border-2);border-radius:9px;color:var(--text);font:14px 'Inter',sans-serif;outline:none;">`,
     footer:`<button class="btn btn--ghost" onclick="Modal.close('edit-${field}')">Cancelar</button><button class="btn btn--accent" id="save-edit-${field}">Guardar</button>`
   });
   setTimeout(()=>document.getElementById('edit-field-input')?.focus(),100);
-  document.getElementById('save-edit-'+field)?.addEventListener('click',()=>{
+  document.getElementById('save-edit-'+field)?.addEventListener('click',async ()=>{
     const newVal=document.getElementById('edit-field-input').value.trim();
     if(!newVal){Toast.info('Campo vacío','Escribe un valor antes de guardar');return;}
-    wrap.querySelector('.perfil-field__val').textContent=newVal;
+
+    // Guardar SIEMPRE en localStorage (todos los campos)
     const all=JSON.parse(localStorage.getItem('imdiil_profile')||'{}');
     all[field]=newVal;localStorage.setItem('imdiil_profile',JSON.stringify(all));
+
+    if (field==='nombre') {
+      const saveBtn=document.getElementById('save-edit-nombre');
+      if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Guardando…';}
+      // 1) Firebase Auth (displayName vinculado a la cuenta)
+      try { if (window.__setDisplayName) await window.__setDisplayName(newVal); } catch(e){}
+      // 2) Firestore miembros/{uid}.nombre (fuente para certificados y dashboard)
+      try {
+        const fs=window.__fs;
+        if (fs && fs.updateDoc && window.UserState?.uid) {
+          await fs.updateDoc(fs.doc(fs.db,'miembros',window.UserState.uid), { nombre:newVal });
+        }
+      } catch(e){}
+      // 3) Estado en memoria + refrescar TODO el panel
+      window.UserState.nombre=newVal;
+      window.UserState.displayName=newVal;
+      window.UserState.iniciales=calcIniciales(newVal);
+      if (window.memberData) window.memberData.nombre=newVal;
+      if (typeof window.__applyUserState==='function') window.__applyUserState();
+      // Refresco visual directo de lo que está en pantalla del perfil
+      try {
+        wrap.querySelector('.perfil-field__val').textContent=newVal;
+        document.querySelectorAll('.perfil-hero__name').forEach(el=>el.textContent=newVal);
+        const av=document.querySelector('.perfil-hero__avatar'); if(av) av.textContent=window.UserState.iniciales;
+      } catch(e){}
+      Modal.close('edit-nombre');
+      Toast.success('Nombre actualizado','Se aplicará también en tus certificados');
+      return;
+    }
+
+    // Resto de campos: solo perfil
+    wrap.querySelector('.perfil-field__val').textContent=newVal;
     Modal.close('edit-'+field);
     Toast.success('Guardado',(labels[field]||field)+' actualizado');
   });
@@ -7028,6 +7093,7 @@ function openEditField(field){
 function loadProfileFromLS(){
   const all=JSON.parse(localStorage.getItem('imdiil_profile')||'{}');
   Object.entries(all).forEach(([field,val])=>{
+    if(field==='nombre'||field==='email')return; // estos vienen de Auth/Firestore, no se pisan
     const wrap=document.querySelector(`[data-field="${field}"] .perfil-field__val`);
     if(wrap) wrap.textContent=val;
   });
