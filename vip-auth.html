@@ -319,6 +319,15 @@ body{display:block}
 .auth-stat__num{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--primary)}
 .auth-stat__lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-3)}
 
+/* Hero en modo DÍA · panel cálido claro para que ambas mitades combinen */
+:root[data-theme="day"] .auth-hero{background:linear-gradient(157deg,#FBF6EB 0%,#F4EFE3 55%,#E8DCC8 100%)}
+:root[data-theme="day"] .auth-hero::after{background-image:linear-gradient(to right,rgba(26,20,16,.05) 1px,transparent 1px),linear-gradient(to bottom,rgba(26,20,16,.05) 1px,transparent 1px)}
+
+/* Encabezado del formulario (Hola de nuevo / Crea tu cuenta) */
+.pane-head{margin-bottom:18px}
+.pane-head h2{font-family:'Plus Jakarta Sans','Inter',sans-serif;font-size:23px;font-weight:800;letter-spacing:-.6px;color:var(--text);line-height:1.15}
+.pane-head p{font-size:13.5px;color:var(--text-2);margin-top:5px;line-height:1.5}
+
 /* Mobile: ocultar hero, formulario a pantalla completa, mostrar brand del form */
 .wrap .brand{display:none}
 @media (max-width:920px){
@@ -379,6 +388,10 @@ body{display:block}
 
     <!-- LOGIN -->
     <div class="pane is-active" id="pane-login">
+      <div class="pane-head">
+        <h2 id="login-title">Hola de nuevo</h2>
+        <p id="login-sub">Ingresa tus datos para entrar al club.</p>
+      </div>
       <div class="field">
         <label class="label" for="li-email">Correo electrónico</label>
         <div class="input-wrap">
@@ -410,6 +423,10 @@ body{display:block}
 
     <!-- REGISTER -->
     <div class="pane" id="pane-register">
+      <div class="pane-head">
+        <h2>Crea tu cuenta</h2>
+        <p>Únete al club VIP de IMDIIL en 30 segundos.</p>
+      </div>
       <div class="field">
         <label class="label" for="re-name">Nombre completo</label>
         <div class="input-wrap">
@@ -526,6 +543,25 @@ window.setLoading = function(btn, isLoading, originalLabel) {
     btn.querySelector('.spinner')?.remove();
   }
 };
+
+/* ===== "Hola de nuevo" · reconocer a quien ya entró antes (cerró sesión) ===== */
+(function(){
+  try {
+    const last = JSON.parse(localStorage.getItem('imdiil_last_user') || 'null');
+    if (last && last.email) {
+      const em = document.getElementById('li-email');
+      if (em && !em.value) em.value = last.email;
+      const first = (last.nombre || '').trim().split(' ')[0];
+      const t = document.getElementById('login-title');
+      const s = document.getElementById('login-sub');
+      if (first && t) t.textContent = 'Hola de nuevo, ' + first;
+      if (s) s.textContent = 'Tu acceso al club te está esperando.';
+      // Ya sabemos el correo → enfocar la contraseña directo
+      const pass = document.getElementById('li-pass');
+      if (em && em.value && pass) setTimeout(() => pass.focus(), 200);
+    }
+  } catch(e){}
+})();
 </script>
 
 <!-- Firebase Auth (módulo) -->
@@ -637,6 +673,8 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     // Asegurar que existe el doc (si entró por login y no tenía uno, lo creamos)
     await ensureMiembroDoc(user, user.displayName, 'login-web');
+    // Recordar quién entró (para el "Hola de nuevo" si cierra sesión)
+    try { localStorage.setItem('imdiil_last_user', JSON.stringify({ email:user.email||'', nombre:user.displayName||'' })); } catch(e){}
     const isAdmin = ADMINS.includes((user.email || "").toLowerCase());
     window.location.href = isAdmin ? "vip-admin.html" : "vip-panel.html";
   }
