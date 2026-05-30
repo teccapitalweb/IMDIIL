@@ -2715,6 +2715,7 @@ function calcIniciales(nameOrEmail){
   const parts = s.split(/[\s@.]+/).filter(Boolean);
   return ((parts[0]?.[0]||'I' ) + (parts[1]?.[0]||parts[0]?.[1]||'N')).toUpperCase();
 }
+window.calcIniciales = calcIniciales;
 
 const isCheckoutSuccess = new URLSearchParams(window.location.search).get('checkout') === 'success';
 
@@ -7069,7 +7070,7 @@ function openEditField(field){
       // 3) Estado en memoria + refrescar TODO el panel
       window.UserState.nombre=newVal;
       window.UserState.displayName=newVal;
-      window.UserState.iniciales=calcIniciales(newVal);
+      window.UserState.iniciales=(window.calcIniciales?window.calcIniciales(newVal):newVal.trim().slice(0,2).toUpperCase());
       if (window.memberData) window.memberData.nombre=newVal;
       if (typeof window.__applyUserState==='function') window.__applyUserState();
       // Refresco visual directo de lo que está en pantalla del perfil
