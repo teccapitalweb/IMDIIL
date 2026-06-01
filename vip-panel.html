@@ -1684,7 +1684,28 @@ textarea.dir-form__in{resize:vertical;min-height:54px}
 .dir-form__sep{margin:20px 0 6px;font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--primary);border-top:1px solid var(--border);padding-top:16px}
 .dir-form__check{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--text-2);cursor:pointer}
 .dir-form__check input{width:17px;height:17px;accent-color:var(--primary)}
-@media(max-width:560px){.dir-grid{grid-template-columns:1fr 1fr;gap:12px}.dir-card{padding:20px 12px 16px}.dir-card__foto{width:68px;height:68px}}
+.dir-card__body-m{display:contents}
+@media(max-width:600px){.dir-card__body-m{display:flex;flex-direction:column;align-items:flex-start}}
+.dir-det__row{cursor:pointer;font-family:inherit;width:100%}
+button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)}
+@media(max-width:600px){
+  .dir-grid{grid-template-columns:1fr;gap:12px}
+  /* Tarjeta horizontal: foto a la izquierda, datos a la derecha */
+  .dir-card{flex-direction:row;align-items:flex-start;text-align:left;padding:16px;gap:14px}
+  .dir-card::before{height:100%;width:5px;top:0;bottom:0;right:auto;background:linear-gradient(180deg,color-mix(in srgb,var(--primary) 55%,transparent),color-mix(in srgb,var(--highlight) 40%,transparent))}
+  .dir-card__badge-mia{top:14px;right:14px}
+  .dir-card__top{margin-bottom:0;flex-shrink:0}
+  .dir-card__foto{width:62px;height:62px;border-width:2px}
+  .dir-card__foto--ini{font-size:22px}
+  .dir-card__body-m{flex:1;min-width:0}
+  .dir-card__name{font-size:15.5px;margin-bottom:2px}
+  .dir-card__puesto{font-size:12.5px;margin-bottom:3px}
+  .dir-card__empresa{margin-bottom:7px;font-size:11.5px}
+  .dir-card__sector{margin-bottom:7px;font-size:9.5px;padding:3px 9px}
+  .dir-card__bio{-webkit-line-clamp:2;font-size:11.5px;margin-bottom:9px;text-align:left}
+  .dir-card__ctas{justify-content:flex-start;flex-wrap:wrap}
+  .dir-cta{width:34px;height:34px}
+}
 /* Modal detalle de tarjeta */
 .dir-det{display:flex;flex-direction:column;align-items:center;text-align:center}
 .dir-det__head{display:flex;flex-direction:column;align-items:center}
@@ -6662,7 +6683,7 @@ const Sections = (function(){
         : `<div class="dir-card__foto dir-card__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${escapeHtml(inicial)}</div>`;
       const contactos = [];
       if (c.whatsapp) contactos.push(`<a class="dir-cta dir-cta--wa" href="https://wa.me/${(c.whatsapp||'').replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" title="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>`);
-      if (c.email) contactos.push(`<a class="dir-cta" href="mailto:${c.email}" title="Correo"><svg class="ic"><use href="#i-mail"/></svg></a>`);
+      if (c.email) contactos.push(`<button class="dir-cta dir-cta--mail" data-email="${escapeHtml(c.email)}" title="Copiar correo: ${escapeHtml(c.email)}"><svg class="ic"><use href="#i-mail"/></svg></button>`);
       if (c.linkedin) contactos.push(`<a class="dir-cta dir-cta--li" href="${c.linkedin.startsWith('http')?c.linkedin:'https://'+c.linkedin}" target="_blank" rel="noopener" title="LinkedIn"><svg class="ic"><use href="#i-linkedin"/></svg></a>`);
       if (c.web) contactos.push(`<a class="dir-cta" href="${c.web.startsWith('http')?c.web:'https://'+c.web}" target="_blank" rel="noopener" title="Sitio web"><svg class="ic"><use href="#i-link"/></svg></a>`);
       const esMia = c.id===uid;
@@ -6672,12 +6693,14 @@ const Sections = (function(){
         <div class="dir-card__top">
           ${foto}
         </div>
-        <div class="dir-card__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
-        ${c.puesto?`<div class="dir-card__puesto">${escapeHtml(c.puesto)}</div>`:''}
-        ${c.empresa?`<div class="dir-card__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
-        ${c.sector?`<span class="dir-card__sector">${escapeHtml(c.sector)}</span>`:''}
-        ${c.bio?`<div class="dir-card__bio">${escapeHtml(c.bio)}</div>`:''}
-        ${contactos.length?`<div class="dir-card__ctas">${contactos.join('')}</div>`:'<div class="dir-card__sincontacto">Sin datos de contacto</div>'}
+        <div class="dir-card__body-m">
+          <div class="dir-card__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
+          ${c.puesto?`<div class="dir-card__puesto">${escapeHtml(c.puesto)}</div>`:''}
+          ${c.empresa?`<div class="dir-card__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
+          ${c.sector?`<span class="dir-card__sector">${escapeHtml(c.sector)}</span>`:''}
+          ${c.bio?`<div class="dir-card__bio">${escapeHtml(c.bio)}</div>`:''}
+          ${contactos.length?`<div class="dir-card__ctas">${contactos.join('')}</div>`:'<div class="dir-card__sincontacto">Sin datos de contacto</div>'}
+        </div>
       </article>`;
     }).join('');
 
@@ -6686,6 +6709,16 @@ const Sections = (function(){
       card.addEventListener('click', (e)=>{
         if (e.target.closest('.dir-cta')) return; // dejó pasar los enlaces de contacto
         dirVerDetalle(card.dataset.dircard);
+      });
+    });
+    // Botón de correo: copiar al portapapeles + intentar abrir cliente
+    grid.querySelectorAll('.dir-cta--mail').forEach(b=>{
+      b.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const mail = b.dataset.email;
+        if (navigator.clipboard) navigator.clipboard.writeText(mail).catch(()=>{});
+        Toast.success('Correo copiado', mail);
+        try { window.location.href = 'mailto:'+mail; } catch(err){}
       });
     });
   }
@@ -6716,7 +6749,10 @@ const Sections = (function(){
         ${c.bio?`<div class="dir-det__bio">${escapeHtml(c.bio)}</div>`:''}
         <div class="dir-det__rows">
           ${row('i-whatsapp','WhatsApp',c.whatsapp, waNum?`https://wa.me/${waNum}`:'', 'dir-det__row--wa')}
-          ${row('i-mail','Correo',c.email, c.email?`mailto:${c.email}`:'')}
+          ${c.email?`<button class="dir-det__row dir-det__row--mail" data-detmail="${escapeHtml(c.email)}">
+             <span class="dir-det__row-ic"><svg class="ic"><use href="#i-mail"/></svg></span>
+             <span class="dir-det__row-tx"><span class="dir-det__row-lbl">Correo · toca para copiar</span><span class="dir-det__row-val">${escapeHtml(c.email)}</span></span>
+           </button>`:''}
           ${row('i-linkedin','LinkedIn',c.linkedin, c.linkedin?(c.linkedin.startsWith('http')?c.linkedin:'https://'+c.linkedin):'', 'dir-det__row--li')}
           ${row('i-link','Sitio web',c.web, c.web?(c.web.startsWith('http')?c.web:'https://'+c.web):'')}
         </div>
@@ -6730,6 +6766,14 @@ const Sections = (function(){
     const m = Modal.open({id:'dir-det', title:'Tarjeta profesional', subtitle: esMia?'Tu tarjeta en el directorio':'Directorio VIP', icon:'i-user', size:'sm', body, footer});
     footer.querySelector('#dirdet-cerrar').addEventListener('click', ()=> m.close());
     if (esMia) footer.querySelector('#dirdet-editar').addEventListener('click', ()=>{ m.close(); setTimeout(dirEditarMiTarjeta, 150); });
+    // Copiar correo desde el detalle
+    const mailRow = document.querySelector('.dir-det__row--mail');
+    if (mailRow) mailRow.addEventListener('click', ()=>{
+      const mail = mailRow.dataset.detmail;
+      if (navigator.clipboard) navigator.clipboard.writeText(mail).catch(()=>{});
+      Toast.success('Correo copiado', mail);
+      try { window.location.href = 'mailto:'+mail; } catch(e){}
+    });
   }
 
   async function dirEditarMiTarjeta(){
