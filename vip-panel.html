@@ -5383,16 +5383,15 @@ const Sections = (function(){
 .cp-title{font-family:'Cinzel',serif;font-weight:700;font-size:35px;letter-spacing:6px;color:#13294A;line-height:1;margin-top:8px;padding-left:6px;padding-bottom:16px;white-space:nowrap}
 .cp-titleu{width:90px;height:1.5px;background:#C99A3E;margin:0 auto}
 .cp-lead{font-size:14px;color:#6B7688;margin-top:30px}
-.cp-name{display:flex;flex-direction:column;align-items:center;margin-top:14px;padding-bottom:18px}
-.cp-name .nm{font-family:'Cinzel',serif;font-weight:700;font-size:46px;color:#13294A;line-height:1.04;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;padding-bottom:8px}
+.cp-name{display:flex;flex-direction:column;align-items:center;margin-top:14px;padding-bottom:18px;gap:14px}
+.cp-name .nm{font-family:'Cinzel',serif;font-weight:700;font-size:46px;color:#13294A;line-height:1;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;padding-top:6px}
 .cp-name .u{height:1px;background:#13294A;width:440px;opacity:.55}
 .cp-desc{font-size:13px;color:#6B7688;padding-top:16px}
 .cp-course{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:30px;color:#13294A;padding-top:10px;line-height:1.2}
 .cp-meta{display:flex;align-items:center;gap:16px;padding-top:18px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#6B7688}
 .cp-meta .bar{width:1px;height:11px;background:#D8DEE7}
 .cp-date{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#6B7688;margin-top:24px}
-.cp-emit{position:absolute;left:48px;right:48px;bottom:72px;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13.5px;color:#6B7688;z-index:2}
-.cp-foot{position:absolute;left:96px;right:96px;bottom:104px;display:flex;align-items:flex-end;justify-content:space-between;z-index:2}
+.cp-foot{position:absolute;left:96px;right:96px;bottom:96px;display:flex;align-items:flex-end;justify-content:space-between;z-index:2}
 .cp-qrwrap{display:flex;flex-direction:column;align-items:center;gap:8px;width:150px}
 .cp-qrwrap img{width:96px;height:96px;display:block;image-rendering:pixelated}
 .cp-qrwrap .cap{font-size:8px;font-weight:700;letter-spacing:1.6px;color:#6B7688;text-transform:uppercase;text-align:center;line-height:1.5}
@@ -5441,8 +5440,7 @@ const Sections = (function(){
             <div class="cp-sig"><div class="im"><img src="${assetUrl('firma-ipci.png')}" crossorigin="anonymous" alt=""></div><div class="ln"></div><div class="nm">Coordinación de Certificación</div><div class="ro">IPCI Latinoamericano</div></div>
             <div class="cp-sealw">${CP_SEAL}</div>
           </div>
-          <div class="cp-emit">Emitido el ${fechaTxt}</div>
-          <div class="cp-bar"><span>Folio: <b>${c.folio}</b></span><span class="s"></span><span>imdiil.com</span><span class="s"></span><span>Certificado emitido digitalmente por IMDIIL / IPCI Latinoamericano</span></div>
+          <div class="cp-bar"><span>Folio: <b>${c.folio}</b></span><span class="s"></span><span>imdiil.com</span><span class="s"></span><span>Emitido el ${fechaTxt}</span><span class="s"></span><span>Certificado emitido digitalmente por IMDIIL / IPCI Latinoamericano</span></div>
         </div>
       </div></div>`;
   }
@@ -5496,8 +5494,13 @@ const Sections = (function(){
         if (cert) {
           cert.style.boxShadow = 'none';
           // word-spacing normal evita que se peguen las palabras
-          cert.querySelectorAll('.cp-title,.cp-lead,.cp-desc,.cp-course,.cp-meta,.cp-date,.cp-emit,.cp-name .nm,.cp-sig .nm,.cp-sig .ro,.cp-bar,.cp-qrwrap .cap')
+          cert.querySelectorAll('.cp-title,.cp-lead,.cp-desc,.cp-course,.cp-meta,.cp-date,.cp-name .nm,.cp-sig .nm,.cp-sig .ro,.cp-bar,.cp-qrwrap .cap')
             .forEach(el => { el.style.wordSpacing = 'normal'; el.style.whiteSpace = el.classList.contains('cp-title')||el.classList.contains('nm') ? 'nowrap' : ''; });
+          // Separación fiable nombre↔línea (gap del flex) y caja de texto exacta
+          const nameWrap = cert.querySelector('.cp-name');
+          if (nameWrap) { nameWrap.style.gap = '14px'; nameWrap.style.display = 'flex'; nameWrap.style.flexDirection = 'column'; nameWrap.style.alignItems = 'center'; }
+          const nameTxt = cert.querySelector('.cp-name .nm');
+          if (nameTxt) { nameTxt.style.lineHeight = '1'; nameTxt.style.paddingTop = '6px'; }
         }
       }
     });
