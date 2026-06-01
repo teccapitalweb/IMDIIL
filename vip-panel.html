@@ -4422,8 +4422,21 @@ const Sections = (function(){
     if (typeof window.cerrarVisor === 'function') window.cerrarVisor();
     // Cerrar modal del curso si está abierto
     if (typeof Modal !== 'undefined' && Modal.closeAll) Modal.closeAll();
+    ensureCertCSS();
 
-    const folio = folioCert(curso.id, new Date());
+    const fecha = (getProgresoCurso(curso.id).fechaCompletado) || new Date().toISOString();
+    const folio = folioCert(curso.id, fecha);
+    const nombre = window.UserState?.nombre || window.UserState?.displayName || (window.UserState?.email||'').split('@')[0] || 'Usuario VIP';
+    // Objeto certificado real (mismos campos que en la sección Certificados)
+    const certObj = {
+      id: curso.id, titulo: curso.titulo, area: curso.area || 'Ingeniería Industrial',
+      horas: curso.horas || 0, sesiones: (curso.sesiones && curso.sesiones.length) || 0,
+      folio, emitido: fecha, instructor: curso.instructor || 'Equipo IMDIIL'
+    };
+    // Registrar para que los botones del modal lo encuentren
+    window.__certsReales = window.__certsReales || [];
+    if (!window.__certsReales.some(x => x.id === certObj.id)) window.__certsReales.push(certObj);
+
     let splash = document.getElementById('splash-completado');
     if (splash) splash.remove();
 
@@ -4441,25 +4454,11 @@ const Sections = (function(){
         <div class="splash-cmp__icon">🎓</div>
         <div class="splash-cmp__kicker">CURSO COMPLETADO</div>
         <h1 class="splash-cmp__title">¡Felicidades${window.UserState?.nombre ? ', '+window.UserState.nombre : ''}!</h1>
-        <p class="splash-cmp__desc">Terminaste <strong>${escapeHtml(curso.titulo)}</strong>. Tu certificado IMDIIL ya está disponible.</p>
-        <div class="splash-cmp__cert">
-          <div class="splash-cmp__cert-header">
-            <div class="splash-cmp__cert-logo">⚙️ IMDIIL</div>
-            <div class="splash-cmp__cert-folio">${folio}</div>
-          </div>
-          <div class="splash-cmp__cert-body">
-            <div class="splash-cmp__cert-pre">SE OTORGA EL PRESENTE CERTIFICADO A</div>
-            <div class="splash-cmp__cert-name">${escapeHtml(window.UserState?.nombre || window.UserState?.email || 'Usuario VIP')}</div>
-            <div class="splash-cmp__cert-pre">POR HABER COMPLETADO EL CURSO</div>
-            <div class="splash-cmp__cert-curso">${escapeHtml(curso.titulo)}</div>
-            <div class="splash-cmp__cert-meta">
-              <span>${curso.horas || 0} hrs</span> · <span>${new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}</span>
-            </div>
-          </div>
-        </div>
+        <p class="splash-cmp__desc">Terminaste <strong>${escapeHtml(curso.titulo)}</strong>. Este es tu certificado oficial IMDIIL.</p>
+        <div class="splash-cmp__certreal">${buildCertPremium(certObj, nombre)}</div>
         <div class="splash-cmp__actions">
-          <button class="splash-cmp__btn splash-cmp__btn--primary" onclick="window.navigateToSection('certificados'); document.getElementById('splash-completado').remove();">
-            Ver mis certificados →
+          <button class="splash-cmp__btn splash-cmp__btn--primary" id="splash-ver-cert">
+            Ver y descargar mi certificado →
           </button>
           <button class="splash-cmp__btn splash-cmp__btn--ghost" onclick="document.getElementById('splash-completado').remove()">
             Seguir explorando
@@ -4468,8 +4467,23 @@ const Sections = (function(){
       </div>
     `;
     document.body.appendChild(splash);
+    // Escalar el certificado real al ancho de la caja del splash
+    const fitSplashCert = () => {
+      const stage = splash.querySelector('.splash-cmp__certreal .cp-stage');
+      const scaler = splash.querySelector('.splash-cmp__certreal #cp-scaler');
+      if (!stage || !scaler) return;
+      const s = Math.min(1, stage.clientWidth / 1040);
+      scaler.style.transform = 'scale(' + s + ')';
+      scaler.style.height = (735 * s) + 'px';
+    };
+    requestAnimationFrame(()=>{ fitSplashCert(); setTimeout(fitSplashCert, 300); });
     splash.querySelector('.splash-cmp__close').addEventListener('click', () => splash.remove());
     splash.querySelector('.splash-cmp__overlay').addEventListener('click', () => splash.remove());
+    splash.querySelector('#splash-ver-cert').addEventListener('click', () => {
+      splash.remove();
+      window.navigateToSection('certificados');
+      setTimeout(() => { try { openCertDetalleReal(certObj.id); } catch(e){} }, 350);
+    });
   }
 
   // escapeHtml helper (por si no existe)
@@ -8329,7 +8343,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* ═══ Splash de curso completado ═══ */
 #splash-completado{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;animation:splashFadeIn .35s ease}
 .splash-cmp__overlay{position:absolute;inset:0;background:rgba(7,5,3,.92);backdrop-filter:blur(10px)}
-.splash-cmp__box{position:relative;width:100%;max-width:560px;background:linear-gradient(160deg,#1A130D,#0E0A06);border:1px solid rgba(255,179,71,.22);border-radius:24px;padding:36px 32px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 60px color-mix(in srgb,var(--primary) 20%,transparent);animation:splashPopIn .55s cubic-bezier(.22,1.4,.36,1)}
+.splash-cmp__box{position:relative;width:100%;max-width:760px;background:linear-gradient(160deg,#1A130D,#0E0A06);border:1px solid rgba(255,179,71,.22);border-radius:24px;padding:36px 32px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 60px color-mix(in srgb,var(--primary) 20%,transparent);animation:splashPopIn .55s cubic-bezier(.22,1.4,.36,1);max-height:92vh;overflow-y:auto}
+.splash-cmp__certreal{margin:6px 0 22px;border-radius:12px;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.splash-cmp__certreal .cp-stage{width:100%}
 .splash-cmp__close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text-2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease}
 .splash-cmp__close:hover{background:rgba(255,255,255,.06);color:var(--text)}
 .splash-cmp__confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:24px}
