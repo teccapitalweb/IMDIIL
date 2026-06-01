@@ -2608,6 +2608,8 @@ body::after{
 
 <!-- Stripe.js para Embedded Checkout (sección Suscripción) -->
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Banner sticky FOMO · solo visible para invitado y sin-membresia -->
 <div class="fomo-banner" id="fomo-banner" style="display:none">
@@ -2684,7 +2686,7 @@ window.UserState = {
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, setDoc, updateDoc, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -2700,7 +2702,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 window.__db = db;
 // Exponer funciones de Firestore para que el script no-module pueda usarlas
-window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, updateDoc, serverTimestamp, Timestamp, db };
+window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, setDoc, updateDoc, serverTimestamp, Timestamp, db };
 setPersistence(auth, browserLocalPersistence);
 
 // ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
@@ -4325,6 +4327,8 @@ const Sections = (function(){
       p[cursoId].completado = true;
       p[cursoId].fechaCompletado = new Date().toISOString();
       setProgreso(p);
+      // Emitir el certificado a Firestore (para que se acumule y sea verificable)
+      emitirCertificadoFirestore(curso);
       // Mostrar splash de felicitación
       setTimeout(() => mostrarSplashCompletado(curso), 400);
     }
@@ -4349,13 +4353,56 @@ const Sections = (function(){
   // ═══════════════════════════════════════════════════════════════
   // 🎓 SPLASH DE CURSO COMPLETADO
   // ═══════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+  // 🎓 FOLIO ÚNICO + EMISIÓN DEL CERTIFICADO A FIRESTORE
+  // Folio determinista y único por (usuario, curso). El año se toma
+  // de la fecha de emisión para que sea estable en el tiempo.
+  // ═══════════════════════════════════════════════════════════════
+  function folioCert(cursoId, dateLike) {
+    const uid = window.UserState?.uid || 'demo';
+    const yr = (dateLike ? new Date(dateLike) : new Date()).getFullYear();
+    let h = 0; const s = uid + '|' + cursoId;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    const code = Math.abs(h).toString(36).toUpperCase().padStart(6, '0').slice(-6);
+    return `IMDIIL-${yr}-${code}`;
+  }
+  window.folioCert = folioCert;
+
+  async function emitirCertificadoFirestore(curso) {
+    try {
+      const fs = window.__fs;
+      const uid = window.UserState?.uid;
+      if (!fs || !fs.setDoc || !uid) return;
+      const prog = getProgresoCurso(curso.id);
+      const fecha = prog.fechaCompletado || new Date().toISOString();
+      const folio = folioCert(curso.id, fecha);
+      const nombre = window.UserState?.nombre || window.UserState?.displayName
+                   || (window.UserState?.email || '').split('@')[0] || 'Usuario VIP';
+      const sesiones = (curso.sesiones && curso.sesiones.length) || curso.totalClases || 0;
+      await fs.setDoc(fs.doc(fs.db, 'certificados', folio), {
+        folio, uid, nombre,
+        cursoId: curso.id,
+        curso: curso.titulo || '',
+        area: curso.area || 'Ingeniería Industrial',
+        horas: curso.horas || 0,
+        sesiones,
+        instructor: curso.instructor || 'Equipo IMDIIL',
+        emitido: fecha,
+        year: new Date(fecha).getFullYear(),
+        createdAt: fs.serverTimestamp()
+      }, { merge: true });
+      console.log('[cert] emitido a Firestore:', folio);
+    } catch (e) { console.warn('[cert] no se pudo emitir a Firestore:', e); }
+  }
+  window.emitirCertificadoFirestore = emitirCertificadoFirestore;
+
   function mostrarSplashCompletado(curso) {
     // Cerrar visor si está abierto
     if (typeof window.cerrarVisor === 'function') window.cerrarVisor();
     // Cerrar modal del curso si está abierto
     if (typeof Modal !== 'undefined' && Modal.closeAll) Modal.closeAll();
 
-    const folio = `IMDIIL-${new Date().getFullYear()}-${(curso.id || '').slice(0, 6).toUpperCase()}`;
+    const folio = folioCert(curso.id, new Date());
     let splash = document.getElementById('splash-completado');
     if (splash) splash.remove();
 
@@ -5160,32 +5207,52 @@ const Sections = (function(){
   /* ============================ CERTIFICADOS ============================ */
   // Genera lista REAL de certificados leyendo el progreso del usuario (localStorage)
   // + los cursos publicados en Firestore. NO usa el array hardcoded `certificados`.
-  function getCertificadosReales() {
-    const progreso = getProgreso ? getProgreso() : {};
+  async function getCertificadosReales() {
+    const fs = window.__fs;
+    const uid = window.UserState?.uid;
     const lista = [];
-    if (!cursos || cursos.length === 0) return lista;
-
-    for (const c of cursos) {
-      const prog = progreso[c.id];
-      if (prog && prog.completado) {
-        const fecha = prog.fechaCompletado ? new Date(prog.fechaCompletado) : new Date();
-        lista.push({
-          id: c.id,
-          titulo: c.titulo,
-          area: c.area || 'General',
-          horas: c.horas || 8,
-          calificacion: 100, // todas las clases vistas = 100
-          folio: `IMDIIL-${fecha.getFullYear()}-${(c.id || '').slice(0,6).toUpperCase()}`,
-          emitido: fecha.toISOString(),
-          instructor: c.instructor || 'Equipo IMDIIL'
+    // 1) Fuente real: Firestore (persistente, cross-device, verificable)
+    if (fs && fs.getDocs && fs.query && uid) {
+      try {
+        const qs = await fs.getDocs(fs.query(fs.collection(fs.db, 'certificados'), fs.where('uid', '==', uid)));
+        qs.forEach(d => {
+          const x = d.data();
+          lista.push({
+            id: x.cursoId || x.folio,
+            titulo: x.curso || 'Curso',
+            area: x.area || 'General',
+            horas: x.horas || 0,
+            sesiones: x.sesiones || 0,
+            calificacion: 100,
+            folio: x.folio || d.id,
+            emitido: x.emitido || (x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().toISOString() : new Date().toISOString()),
+            instructor: x.instructor || 'Equipo IMDIIL'
+          });
         });
+      } catch (e) { console.warn('[cert] lectura Firestore falló, uso local:', e); }
+    }
+    // 2) Fallback local (por si Firestore aún no tiene el cert recién emitido)
+    if (lista.length === 0) {
+      const progreso = getProgreso ? getProgreso() : {};
+      if (cursos && cursos.length) for (const c of cursos) {
+        const prog = progreso[c.id];
+        if (prog && prog.completado) {
+          const fecha = prog.fechaCompletado || new Date().toISOString();
+          lista.push({
+            id: c.id, titulo: c.titulo, area: c.area || 'General',
+            horas: c.horas || 8, sesiones: (c.sesiones && c.sesiones.length) || 0,
+            calificacion: 100, folio: folioCert(c.id, fecha),
+            emitido: fecha, instructor: c.instructor || 'Equipo IMDIIL'
+          });
+        }
       }
     }
     return lista.sort((a, b) => new Date(b.emitido) - new Date(a.emitido));
   }
 
-  function renderCertificados(container){
-    const certs = getCertificadosReales();
+  async function renderCertificados(container){
+    container.innerHTML = '<div class="fade-up" style="padding:64px 24px;text-align:center;color:var(--text-2);font-size:14px;">Cargando tus certificados…</div>';
+    const certs = await getCertificadosReales();
     const totalHoras = certs.reduce((s,c)=>s + (c.horas || 0), 0);
     const areas = [...new Set(certs.map(c=>c.area))].length;
     const nombreUsuario = (window.UserState?.displayName || 'Ingeniero').split(' ').slice(0,2).join(' ');
@@ -5285,70 +5352,184 @@ const Sections = (function(){
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // 🎓 CERTIFICADO PREMIUM (azul marino + dorado) · diseño aprobado
+  // ═══════════════════════════════════════════════════════════════
+  const CP_FRAME = `<svg class="cp-frame" viewBox="0 0 1040 735" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A5F22"/><stop offset=".35" stop-color="#F0D89A"/><stop offset=".5" stop-color="#C9A24B"/><stop offset=".65" stop-color="#F0D89A"/><stop offset="1" stop-color="#8A5F22"/></linearGradient></defs><rect x="28" y="28" width="984" height="679" fill="none" stroke="url(#gf)" stroke-width="1.6"/><rect x="36" y="36" width="968" height="663" fill="none" stroke="url(#gf)" stroke-width="0.9" opacity="0.9"/><rect x="41" y="41" width="958" height="653" fill="none" stroke="url(#gf)" stroke-width="0.5" opacity="0.65"/><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(30 30) scale(1 1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(1010 30) scale(-1 1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(30 705) scale(1 -1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(1010 705) scale(-1 -1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g></svg>`;
+  const CP_SEAL  = `<svg viewBox="0 0 140 140" class="cp-seal-svg" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A5F22"/><stop offset=".35" stop-color="#F0D89A"/><stop offset=".5" stop-color="#C9A24B"/><stop offset=".65" stop-color="#F0D89A"/><stop offset="1" stop-color="#8A5F22"/></linearGradient><path id="cparc" d="M30 70 A40 40 0 0 1 110 70" fill="none"/></defs><circle cx="70" cy="70" r="63" fill="none" stroke="url(#gs)" stroke-width="1.6"/><circle cx="70" cy="70" r="55" fill="none" stroke="url(#gs)" stroke-width="0.8"/><circle cx="70" cy="70" r="59" fill="none" stroke="url(#gs)" stroke-width="1" stroke-dasharray="0.5 4" stroke-linecap="round"/><text font-family="Cinzel,serif" font-size="7.6" font-weight="700" letter-spacing="2.2" fill="url(#gs)"><textPath href="#cparc" startOffset="50%" text-anchor="middle">CERTIFICACIÓN OFICIAL</textPath></text><ellipse cx="30.2" cy="49.0" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-60 30.2 49.0)"/><ellipse cx="26.0" cy="58.6" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-73 26.0 58.6)"/><ellipse cx="24.1" cy="68.8" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-86 24.1 68.8)"/><ellipse cx="24.6" cy="79.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-99 24.6 79.2)"/><ellipse cx="27.3" cy="89.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-112 27.3 89.2)"/><ellipse cx="32.3" cy="98.4" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-125 32.3 98.4)"/><ellipse cx="39.2" cy="106.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-138 39.2 106.2)"/><ellipse cx="47.7" cy="112.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-151 47.7 112.2)"/><ellipse cx="57.3" cy="116.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-164 57.3 116.2)"/><ellipse cx="109.8" cy="49.0" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(60 109.8 49.0)"/><ellipse cx="114.0" cy="58.6" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(73 114.0 58.6)"/><ellipse cx="115.9" cy="68.8" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(86 115.9 68.8)"/><ellipse cx="115.4" cy="79.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(99 115.4 79.2)"/><ellipse cx="112.7" cy="89.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(112 112.7 89.2)"/><ellipse cx="107.7" cy="98.4" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(125 107.7 98.4)"/><ellipse cx="100.8" cy="106.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(138 100.8 106.2)"/><ellipse cx="92.3" cy="112.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(151 92.3 112.2)"/><ellipse cx="82.7" cy="116.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(164 82.7 116.2)"/><path d="M70 41 l3.4 6.9 7.6 1.1 -5.5 5.3 1.3 7.6 -6.8-3.6 -6.8 3.6 1.3 -7.6 -5.5 -5.3 7.6 -1.1z" fill="url(#gs)"/><text x="70" y="88" text-anchor="middle" font-family="Cinzel,serif" font-size="11" font-weight="800" letter-spacing="1.4" fill="url(#gs)">IMDIIL</text><text x="70" y="98" text-anchor="middle" font-family="Cinzel,serif" font-size="5.4" font-weight="600" letter-spacing="1.8" fill="url(#gs)">ACREDITACIÓN · MMXXVI</text></svg>`;
+  function ensureCertCSS(){
+    if (document.getElementById('cp-css')) return;
+    const st = document.createElement('style'); st.id = 'cp-css';
+    st.textContent = `
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+.cp-stage{width:100%;display:flex;justify-content:center;overflow:hidden}
+.cp-scaler{transform-origin:top center}
+.cp-cert{width:1040px;height:735px;position:relative;overflow:hidden;color:#1B2C46;font-family:'Plus Jakarta Sans',sans-serif;background:radial-gradient(ellipse at 50% 30%,#FFFFFF 0%,#FBF6EA 52%,#F1E8D4 88%,#EADFC6 100%);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.cp-cert *{box-sizing:border-box}
+.cp-wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;pointer-events:none}
+.cp-wm img{width:470px;opacity:.05;filter:grayscale(1);margin-top:18px}
+.cp-frame{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.cp-body{position:absolute;left:80px;right:80px;top:40px;display:flex;flex-direction:column;align-items:center;z-index:2;text-align:center}
+.cp-logo{height:96px;margin-bottom:2px}.cp-logo img{height:100%;width:auto}
+.cp-logobase{display:flex;align-items:center;gap:9px;margin-top:5px}
+.cp-logobase .l{width:50px;height:1px;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22)}
+.cp-logobase .d{width:5px;height:5px;background:#BC8A3C;transform:rotate(45deg)}
+.cp-orn{display:flex;align-items:center;gap:18px;margin-top:20px}
+.cp-orn .l{width:54px;height:1px;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22)}
+.cp-title{font-family:'Cinzel',serif;font-weight:700;font-size:30px;letter-spacing:5px;color:#13294A;line-height:1;padding-left:5px;white-space:nowrap}
+.cp-titleu{width:120px;height:2px;margin:13px auto 0;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22);border-radius:2px}
+.cp-lead{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#5C6A80;margin-top:22px}
+.cp-name{display:flex;flex-direction:column;align-items:center;margin-top:11px}
+.cp-name .nm{font-family:'Cinzel',serif;font-weight:800;font-size:42px;color:#13294A;line-height:1.04;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap}
+.cp-name .u{height:2px;margin-top:14px;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22);width:320px}
+.cp-desc{font-size:12px;color:#5C6A80;margin-top:20px;letter-spacing:.4px}
+.cp-plate{margin-top:12px;position:relative;border:1px solid #BC8A3C;border-radius:8px;padding:11px 42px;background:linear-gradient(180deg,#FBF3DF,#F5EAD2);box-shadow:0 6px 18px rgba(19,41,74,.07)}
+.cp-plate::before{content:"";position:absolute;inset:4px;border:.5px solid rgba(188,138,60,.45);border-radius:5px;pointer-events:none}
+.cp-course{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:25px;color:#1E416E;line-height:1.2}
+.cp-meta{display:flex;align-items:center;gap:14px;margin-top:15px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#5C6A80}
+.cp-meta .d{width:3px;height:3px;background:#BC8A3C;transform:rotate(45deg)}
+.cp-date{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14.5px;color:#5C6A80;margin-top:11px}
+.cp-sealw{position:absolute;right:92px;bottom:84px;width:112px;height:112px;z-index:2}
+.cp-sealw::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,rgba(235,207,134,.16),transparent 70%);z-index:-1}
+.cp-seal-svg{width:100%;height:100%}
+.cp-qr{position:absolute;left:86px;bottom:84px;display:flex;flex-direction:column;align-items:center;z-index:2}
+.cp-qr .pl{border:1px solid #BC8A3C;border-radius:9px;padding:9px;background:#fff;box-shadow:0 5px 16px rgba(19,41,74,.1);display:flex;flex-direction:column;align-items:center}
+.cp-qr .h{font-size:7px;font-weight:700;letter-spacing:2.2px;color:#8A5F22;text-transform:uppercase;margin-bottom:6px;text-align:center}
+.cp-qr img{width:88px;height:88px;display:block;image-rendering:pixelated;border-radius:2px}
+.cp-qr .cap{font-size:7px;font-weight:700;letter-spacing:1.8px;color:#5C6A80;text-transform:uppercase;margin-top:7px}
+.cp-sigs{position:absolute;left:50%;transform:translateX(-50%);bottom:86px;display:flex;gap:78px;z-index:2}
+.cp-sig{width:226px;text-align:center}
+.cp-sig .im{height:50px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:7px}
+.cp-sig .im img{max-height:50px;max-width:168px;object-fit:contain}
+.cp-sig .ln{height:0.8px;background:linear-gradient(90deg,transparent,#13294A 18%,#13294A 82%,transparent);margin:0 0 10px}
+.cp-sig .nm{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:16.5px;color:#13294A}
+.cp-sig .ro{font-size:8px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#5C6A80;margin-top:5px}
+.cp-bar{position:absolute;left:41px;right:41px;bottom:41px;height:22px;background:#13294A;display:flex;align-items:center;justify-content:center;gap:18px;font-size:8.5px;letter-spacing:1px;color:#D2DEEE;z-index:2}
+.cp-bar b{color:#EBCF86;font-weight:700;letter-spacing:1.4px}
+.cp-bar .s{width:4px;height:4px;background:#EBCF86;transform:rotate(45deg);opacity:.6}
+#cp-sharemenu{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#11233C;border:1px solid rgba(200,220,245,.18);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:3px;min-width:210px;box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:99999}
+#cp-sharemenu button{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:9px;font-size:13.5px;font-weight:600;color:#E8EEF6;background:none;border:0;cursor:pointer;text-align:left;width:100%;font-family:'Plus Jakarta Sans',sans-serif}
+#cp-sharemenu button:hover{background:rgba(255,255,255,.08)}
+@media print{body.cp-printing>*:not(#cp-print){display:none!important}#cp-print{position:fixed;inset:0;z-index:999999;background:#fff}}
+`;
+    document.head.appendChild(st);
+  }
+  function assetUrl(f){ try { return new URL(f, location.href).href; } catch(e){ return f; } }
+  function verifyUrlCert(folio){ return 'https://www.imdiil.com/verificar.html?folio=' + encodeURIComponent(folio); }
+  function qrUrlCert(folio){ return 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data=' + encodeURIComponent(verifyUrlCert(folio)); }
+
+  function buildCertPremium(c, nombre){
+    const fechaTxt = (function(){ try { return new Date(c.emitido).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}); } catch(e){ return formatDate(c.emitido); } })();
+    const sesionesTxt = c.sesiones ? (c.sesiones + ' sesiones · ') : '';
+    return `
+      <div class="cp-stage"><div class="cp-scaler" id="cp-scaler">
+        <div class="cp-cert" id="cp-cert">
+          <div class="cp-wm"><img src="${assetUrl('logo-imdiil.png')}" crossorigin="anonymous" alt=""></div>
+          ${CP_FRAME}
+          <div class="cp-body">
+            <div class="cp-logo"><img src="${assetUrl('logo-imdiil.png')}" crossorigin="anonymous" alt="IMDIIL"></div>
+            <div class="cp-logobase"><span class="l"></span><span class="d"></span><span class="l"></span></div>
+            <div class="cp-orn"><span class="l"></span><div class="cp-title">Certificado de Acreditación</div><span class="l"></span></div>
+            <div class="cp-titleu"></div>
+            <div class="cp-lead">Se otorga la presente constancia a</div>
+            <div class="cp-name"><span class="nm" id="cp-nm">${escapeHtml(nombre)}</span><span class="u"></span></div>
+            <div class="cp-desc">Por haber acreditado satisfactoriamente el programa académico denominado</div>
+            <div class="cp-plate"><div class="cp-course">${escapeHtml(c.titulo)}</div></div>
+            <div class="cp-meta"><span>Carga académica · ${sesionesTxt}${c.horas} horas</span><span class="d"></span><span>Área · ${escapeHtml(c.area)}</span></div>
+            <div class="cp-date">Emitido el ${fechaTxt}</div>
+          </div>
+          <div class="cp-qr"><div class="pl"><div class="h">Validación digital</div><img id="cp-qr-img" crossorigin="anonymous" src="${qrUrlCert(c.folio)}" alt="QR"></div><div class="cap">Escanea para validar</div></div>
+          <div class="cp-sealw">${CP_SEAL}</div>
+          <div class="cp-sigs">
+            <div class="cp-sig"><div class="im"><img src="${assetUrl('firma-jairo.png')}" crossorigin="anonymous" alt=""></div><div class="ln"></div><div class="nm">Ing. Jairo Guzmán Felipe</div><div class="ro">Coordinación General · IMDIIL</div></div>
+            <div class="cp-sig"><div class="im"><img src="${assetUrl('firma-ipci.png')}" crossorigin="anonymous" alt=""></div><div class="ln"></div><div class="nm">Coordinación de Certificación</div><div class="ro">IPCI Latinoamericano</div></div>
+          </div>
+          <div class="cp-bar"><span>Folio · <b>${c.folio}</b></span><span class="s"></span><span>imdiil.com</span><span class="s"></span><span>Emitido digitalmente por IMDIIL / IPCI Latinoamericano</span></div>
+        </div>
+      </div></div>`;
+  }
+
+  function fitCertModal(){
+    const stage = document.querySelector('#cert-' + (window.__cpActive||'') + ' .cp-stage') || document.querySelector('.modal__body .cp-stage');
+    const scaler = document.getElementById('cp-scaler');
+    if (!stage || !scaler) return;
+    const s = Math.min(1, stage.clientWidth / 1040);
+    scaler.style.transform = 'scale(' + s + ')';
+    scaler.style.height = (735 * s) + 'px';
+    const nm = document.getElementById('cp-nm');
+    if (nm){ let fs=42, g=0; nm.style.fontSize='42px'; while(nm.scrollWidth>880 && fs>24 && g<60){ fs--; nm.style.fontSize=fs+'px'; g++; } const u=nm.parentElement.querySelector('.u'); if(u) u.style.width=Math.min(nm.offsetWidth*1.08,800)+'px'; }
+  }
+
+  async function cpQrToBase64(node){
+    const img = node.querySelector('#cp-qr-img'); if(!img) return;
+    try { const r=await fetch(img.src,{mode:'cors'}); const b=await r.blob(); const d=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(b);}); img.src=d; await new Promise(r=>setTimeout(r,150)); } catch(e){ console.warn('QR base64',e); }
+  }
+  async function cpRenderCanvas(node){
+    await cpQrToBase64(node);
+    return await html2canvas(node, {scale:2, backgroundColor:'#FFFFFF', useCORS:true, logging:false, imageTimeout:15000});
+  }
+  async function descargarPDFCertReal(node, c){
+    if (!window.jspdf || !window.html2canvas){ Toast.error('Generador no disponible','Revisa tu conexión e intenta de nuevo'); return; }
+    try {
+      const cv = await cpRenderCanvas(node);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+      const pw=297, ph=210, iw=cv.width, ih=cv.height; const r=Math.min(pw/iw,ph/ih);
+      const rw=iw*r, rh=ih*r, ox=(pw-rw)/2, oy=(ph-rh)/2;
+      if(![rw,rh,ox,oy].every(Number.isFinite)) throw new Error('dim');
+      pdf.addImage(cv.toDataURL('image/jpeg',0.95),'JPEG',ox,oy,rw,rh);
+      pdf.save('Certificado-IMDIIL-' + c.folio + '.pdf');
+      Toast.success('PDF descargado', c.folio);
+    } catch(e){ console.error(e); Toast.error('No se pudo generar el PDF','Usa Imprimir y guarda como PDF'); }
+  }
+  async function imprimirCertReal(node, c){
+    if (!window.html2canvas){ window.print(); return; }
+    try {
+      const cv = await cpRenderCanvas(node);
+      const w = window.open('', '_blank');
+      w.document.write('<html><head><title>Certificado IMDIIL</title><style>@page{size:A4 landscape;margin:0}body{margin:0}img{width:100%;height:auto;display:block}</style></head><body><img src="'+cv.toDataURL('image/png')+'" onload="setTimeout(function(){window.print()},150)"></body></html>');
+      w.document.close();
+    } catch(e){ console.error(e); Toast.error('No se pudo imprimir','Intenta de nuevo'); }
+  }
+  function compartirCertReal(c){
+    const url = verifyUrlCert(c.folio);
+    const txt = 'Obtuve mi certificado de IMDIIL. Verifícalo aquí:';
+    if (navigator.share){ navigator.share({title:'Certificado IMDIIL', text:txt, url}).catch(()=>{}); return; }
+    let menu = document.getElementById('cp-sharemenu'); if(menu) menu.remove();
+    menu = document.createElement('div'); menu.id='cp-sharemenu';
+    const items=[['WhatsApp','https://wa.me/?text='+encodeURIComponent(txt+' '+url)],['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)],['LinkedIn','https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(url)],['Copiar enlace','copy']];
+    menu.innerHTML = items.map(([n,u])=>`<button data-u="${u}">${n}</button>`).join('');
+    document.body.appendChild(menu);
+    menu.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      const u=b.dataset.u;
+      if(u==='copy'){ navigator.clipboard?.writeText(url); Toast.success('Enlace copiado', c.folio); }
+      else window.open(u,'_blank','noopener,width=640,height=640');
+      menu.remove();
+    }));
+    setTimeout(()=>{ const close=(e)=>{ if(!menu.contains(e.target)){ menu.remove(); document.removeEventListener('click',close);} }; document.addEventListener('click',close); }, 30);
+  }
+
   function openCertDetalleReal(id){
     const c = (window.__certsReales || []).find(x => x.id === id);
     if (!c) return;
-    // Reusar openCertDetalle existente pero con datos reales
-    const nombreUsuario = (window.UserState?.displayName || 'Ingeniero').split(' ').slice(0,2).join(' ');
-    const body = `
-      <div class="cert-preview">
-        <div class="cert-preview__paper">
-          <div class="cert-preview__border"></div>
-          <div class="cert-preview__brand">
-            <div style="width:38px;height:38px;border-radius:10px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;"></div>
-            <div><div class="cert-preview__brand-name">IMDIIL</div><div class="cert-preview__brand-sub">Instituto Mexicano de Ingeniería Industrial y Logística</div></div>
-          </div>
-          <div class="cert-preview__eyebrow">Certificado de aprovechamiento</div>
-          <div class="cert-preview__otorga">Se otorga el presente certificado a</div>
-          <div class="cert-preview__name">${nombreUsuario}</div>
-          <div class="cert-preview__por">por haber completado satisfactoriamente el curso</div>
-          <div class="cert-preview__curso">${c.titulo}</div>
-          <div class="cert-preview__stats">
-            <div class="cert-preview__stat"><div class="l1">Horas</div><div class="l2">${c.horas}</div></div>
-            <div class="cert-preview__stat"><div class="l1">Calificación</div><div class="l2">${c.calificacion}</div></div>
-            <div class="cert-preview__stat"><div class="l1">Área</div><div class="l2">${c.area}</div></div>
-            <div class="cert-preview__stat"><div class="l1">Emitido</div><div class="l2">${formatDate(c.emitido)}</div></div>
-          </div>
-          <div class="cert-preview__bottom">
-            <div><div class="cert-preview__sign-line"></div><div class="cert-preview__sign-lbl">${c.instructor}</div><div class="cert-preview__sign-sub">Instructor</div></div>
-            <div class="cert-preview__qr-wrap"><div class="cert-preview__qr">${qrSvg(c.folio,80)}</div><div class="cert-preview__folio">${c.folio}</div></div>
-          </div>
-        </div>
-      </div>
-    `;
+    ensureCertCSS();
+    window.__cpActive = id;
+    const nombre = window.UserState?.nombre || window.UserState?.displayName || (window.UserState?.email||'').split('@')[0] || 'Usuario VIP';
+    const body = buildCertPremium(c, nombre);
     const footer = document.createElement('div');
-    footer.innerHTML = `<button class="btn btn--ghost" id="ct-close">Cerrar</button><button class="btn btn--ghost" id="ct-share">Compartir LinkedIn<svg class="ic"><use href="#i-arrow-right"/></svg></button><button class="btn btn--accent" id="ct-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>`;
+    footer.innerHTML = `<button class="btn btn--ghost" id="ct-close">Cerrar</button>
+      <button class="btn btn--ghost" id="ct-verify">Verificar<svg class="ic"><use href="#i-arrow-right"/></svg></button>
+      <button class="btn btn--ghost" id="ct-share">Compartir</button>
+      <button class="btn btn--ghost" id="ct-print">Imprimir</button>
+      <button class="btn btn--accent" id="ct-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>`;
     const m = Modal.open({id:'cert-'+id, title:'Certificado IMDIIL', subtitle:c.folio, icon:'i-certificate', size:'lg', body, footer});
+    const getNode = () => document.querySelector('#cert-'+id+' #cp-cert') || document.getElementById('cp-cert');
+    requestAnimationFrame(()=>{ fitCertModal(); setTimeout(fitCertModal, 350); });
     footer.querySelector('#ct-close').addEventListener('click', () => m.close());
-    footer.querySelector('#ct-share').addEventListener('click', () => {
-      window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://www.imdiil.com/verificar/' + c.folio), '_blank');
-      Toast.success('Compartiendo', 'Abriendo LinkedIn…');
-    });
-    footer.querySelector('#ct-pdf').addEventListener('click', () => generarPDFCertReal(c, nombreUsuario));
-  }
-
-  function generarPDFCertReal(c, nombreUsuario) {
-    if (!window.jspdf) { Toast.error('Generador no disponible','Verifica conexión'); return; }
-    try {
-      const {jsPDF} = window.jspdf;
-      const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-      pdf.setFillColor(255,122,45); pdf.rect(0,0,297,8,'F');
-      pdf.setFillColor(26,20,16); pdf.rect(0,8,297,4,'F');
-      pdf.setFontSize(11); pdf.setTextColor(120,108,90); pdf.text('IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística', 148, 28, {align:'center'});
-      pdf.setFontSize(9); pdf.text('CERTIFICADO DE APROVECHAMIENTO', 148, 37, {align:'center'});
-      pdf.setFontSize(13); pdf.setTextColor(60,52,42); pdf.text('Se otorga el presente certificado a', 148, 60, {align:'center'});
-      pdf.setFontSize(32); pdf.setTextColor(26,20,16); pdf.setFont(undefined,'bold'); pdf.text(nombreUsuario, 148, 76, {align:'center'}); pdf.setFont(undefined,'normal');
-      pdf.setFontSize(13); pdf.setTextColor(60,52,42); pdf.text('por haber completado satisfactoriamente el curso', 148, 92, {align:'center'});
-      pdf.setFontSize(18); pdf.setTextColor(26,20,16); pdf.text(c.titulo, 148, 106, {align:'center', maxWidth:240});
-      pdf.setDrawColor(200,180,160); pdf.line(40, 128, 257, 128);
-      pdf.setFontSize(10); pdf.setTextColor(120,108,90); pdf.text('HORAS', 60, 138); pdf.text('CALIFICACIÓN', 105, 138); pdf.text('ÁREA', 160, 138); pdf.text('EMITIDO', 220, 138);
-      pdf.setFontSize(14); pdf.setTextColor(26,20,16); pdf.text(String(c.horas), 60, 148); pdf.text(String(c.calificacion), 105, 148); pdf.text(c.area, 160, 148); pdf.text(formatDate(c.emitido), 220, 148);
-      pdf.line(40, 154, 257, 154);
-      pdf.setFontSize(10); pdf.setTextColor(120,108,90); pdf.text(c.instructor, 55, 175); pdf.text('Instructor', 55, 181);
-      pdf.text('Folio: ' + c.folio, 242, 175, {align:'right'}); pdf.text('Verifica en imdiil.com/verificar', 242, 181, {align:'right'});
-      pdf.save('certificado-' + c.folio + '.pdf');
-      Toast.success('PDF descargado', c.folio);
-    } catch(e) { console.error(e); Toast.error('Error generando PDF', e.message||'Intenta de nuevo'); }
+    footer.querySelector('#ct-verify').addEventListener('click', () => window.open(verifyUrlCert(c.folio), '_blank','noopener'));
+    footer.querySelector('#ct-share').addEventListener('click', (e) => { e.stopPropagation(); compartirCertReal(c); });
+    footer.querySelector('#ct-print').addEventListener('click', () => imprimirCertReal(getNode(), c));
+    footer.querySelector('#ct-pdf').addEventListener('click', () => descargarPDFCertReal(getNode(), c));
   }
 
   function renderCertificadosOLD(container){
