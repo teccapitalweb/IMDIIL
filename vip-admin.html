@@ -226,6 +226,18 @@ body{
 /* Comentarios del foro admin */
 .foro-admin-card__vercom{margin-top:8px;background:none;border:0;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer;padding:2px 0;font-family:inherit}
 .foro-admin-card__vercom:hover{text-decoration:underline}
+/* Composer admin del foro */
+.adm-composer{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
+.adm-composer__head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.adm-composer__hint{font-size:12px;color:var(--text-3)}
+.adm-composer__input{width:100%;background:var(--surface-2);border:1px solid var(--border-2);border-radius:11px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;resize:vertical;min-height:48px}
+.adm-composer__input:focus{border-color:var(--primary)}
+.adm-composer__actions{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.adm-composer__char{font-size:11px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.adm-reply{display:flex;gap:8px;margin-top:10px}
+.adm-reply__in{flex:1;background:var(--surface-2);border:1px solid var(--border-2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.adm-reply__in:focus{border-color:var(--primary)}
+.adm-comlist{display:flex;flex-direction:column;gap:8px}
 .foro-admin-coms{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
 .adm-com{display:flex;gap:9px;align-items:flex-start}
 .adm-com__av{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700}
@@ -4888,8 +4900,21 @@ const Pages={
         <div class="kpi-card"><div class="kpi-card__label">Reacciones totales</div><div class="kpi-card__value" id="fs-likes">—</div></div>
         <div class="kpi-card"><div class="kpi-card__label">Últimas 24 h</div><div class="kpi-card__value" id="fs-24">—</div></div>
       </div>
+      <div class="adm-composer" style="margin-top:18px;">
+        <div class="adm-composer__head"><span class="tag-mini tag-mini--admin">IMDIIL</span><span class="adm-composer__hint">Publica como cuenta oficial — ideal para anuncios o resolver dudas de membresía</span></div>
+        <textarea class="adm-composer__input" id="adm-post-text" rows="2" maxlength="1500" placeholder="Escribe un anuncio o mensaje para la comunidad…"></textarea>
+        <div class="adm-composer__actions">
+          <span class="adm-composer__char" id="adm-post-char">0 / 1500</span>
+          <button class="btn btn--primary" id="adm-post-publicar">Publicar como IMDIIL</button>
+        </div>
+      </div>
       <div id="foro-admin-list" class="foro-admin-list" style="margin-top:18px;"><div class="empty-state">Cargando publicaciones…</div></div>
     `;
+    // Composer del admin
+    const txt = p.querySelector('#adm-post-text');
+    const charEl = p.querySelector('#adm-post-char');
+    txt.addEventListener('input', ()=>{ charEl.textContent = txt.value.length+' / 1500'; });
+    p.querySelector('#adm-post-publicar').addEventListener('click', ()=> foroAdminPublicar(txt));
     foroAdminCargar();
   },
 
@@ -4951,6 +4976,53 @@ function adminConfirm(titulo, desc){
   });
 }
 
+// Datos del admin para publicar/responder
+function _admAutor(){
+  const a = window.__currentAdmin || {};
+  return {
+    uid: a.uid || 'admin',
+    nombre: 'IMDIIL',
+    iniciales: 'IM',
+    color: '#FF7A2D',
+    esAdmin: true
+  };
+}
+// Publicar como cuenta oficial IMDIIL
+async function foroAdminPublicar(txtEl){
+  const t = (txtEl.value||'').trim();
+  if (!t){ Toast.error('Escribe algo',''); return; }
+  const btn = document.getElementById('adm-post-publicar');
+  const orig = btn.textContent; btn.disabled=true; btn.textContent='Publicando…';
+  try {
+    const { db, collection, addDoc, serverTimestamp } = window._fb;
+    const a = _admAutor();
+    await addDoc(collection(db,'posts'), {
+      uid: a.uid, nombre: a.nombre, iniciales: a.iniciales, color: a.color, esAdmin: true,
+      texto: t, imagen: null, likes: 0, likedBy: {}, comentariosCount: 0,
+      createdAt: serverTimestamp()
+    });
+    txtEl.value=''; const ch=document.getElementById('adm-post-char'); if(ch) ch.textContent='0 / 1500';
+    Toast.success('Publicado como IMDIIL','Ya aparece en el foro');
+  } catch(e){ console.error(e); Toast.error('No se pudo publicar', e.message||''); }
+  finally { btn.disabled=false; btn.textContent=orig; }
+}
+// Responder a un post como IMDIIL
+async function foroAdminResponder(postId, inputEl){
+  const t = (inputEl.value||'').trim();
+  if (!t) return;
+  inputEl.value='';
+  try {
+    const { db, collection, addDoc, doc, updateDoc, increment, serverTimestamp } = window._fb;
+    const a = _admAutor();
+    await addDoc(collection(db,'posts',postId,'comentarios'), {
+      uid: a.uid, nombre: a.nombre, iniciales: a.iniciales, color: a.color, esAdmin: true,
+      texto: t, createdAt: serverTimestamp()
+    });
+    try { await updateDoc(doc(db,'posts',postId), { comentariosCount: increment(1) }); } catch(e){}
+    Toast.success('Respuesta enviada','');
+  } catch(e){ console.error(e); Toast.error('No se pudo responder',''); }
+}
+
 function foroAdminCargar(){
   const fb = window._fb || {};
   const { db, collection, query, orderBy, onSnapshot, limit } = fb;
@@ -4985,7 +5057,7 @@ function foroAdminCargar(){
           ${x.texto?`<div class="foro-admin-card__text">${(x.texto||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`:''}
           ${x.imagen?`<img class="foro-admin-card__img" src="${x.imagen}" alt="adjunto">`:''}
           <div class="foro-admin-card__meta">❤ ${x.likes||0} · 💬 ${x.comentariosCount||0} respuestas</div>
-          ${(x.comentariosCount||0)>0?`<button class="foro-admin-card__vercom" data-vercom="${x.id}">Ver y moderar respuestas</button>`:''}
+          <button class="foro-admin-card__vercom" data-vercom="${x.id}">${(x.comentariosCount||0)>0?'Ver respuestas y responder':'Responder como IMDIIL'}</button>
           <div class="foro-admin-coms" id="adm-coms-${x.id}" style="display:none;"></div>
         </div>
         <button class="foro-admin-card__del" data-fdel="${x.id}" title="Eliminar publicación"><svg class="ic"><use href="#i-trash"/></svg></button>
@@ -5010,24 +5082,36 @@ function foroAdminVerComentarios(postId){
   const cont = document.getElementById('adm-coms-'+postId); if(!cont) return;
   if (cont.style.display!=='none'){ cont.style.display='none'; if(_admComUnsub[postId]){_admComUnsub[postId]();delete _admComUnsub[postId];} return; }
   cont.style.display='block';
-  cont.innerHTML='<div class="empty-state" style="padding:14px;">Cargando respuestas…</div>';
+  cont.innerHTML = `
+    <div class="adm-comlist" id="adm-comlist-${postId}"><div class="empty-state" style="padding:12px;">Cargando…</div></div>
+    <div class="adm-reply">
+      <input type="text" class="adm-reply__in" id="adm-reply-${postId}" placeholder="Responder como IMDIIL…" maxlength="600">
+      <button class="btn btn--primary btn--sm" data-reply="${postId}">Responder</button>
+    </div>
+  `;
+  const replyInput = document.getElementById('adm-reply-'+postId);
+  const send = ()=> foroAdminResponder(postId, replyInput);
+  cont.querySelector('[data-reply]').addEventListener('click', send);
+  replyInput.addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
+
   const { db, collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, increment } = window._fb;
   if (_admComUnsub[postId]) _admComUnsub[postId]();
   const q = query(collection(db,'posts',postId,'comentarios'), orderBy('createdAt','asc'));
   _admComUnsub[postId] = onSnapshot(q, (snap)=>{
-    if (snap.empty){ cont.innerHTML='<div class="empty-state" style="padding:14px;">Sin respuestas.</div>'; return; }
+    const list = document.getElementById('adm-comlist-'+postId); if(!list) return;
+    if (snap.empty){ list.innerHTML='<div class="empty-state" style="padding:12px;">Sin respuestas aún. Sé el primero en responder.</div>'; return; }
     const arr=[]; snap.forEach(d=>{ const c=d.data(); c.id=d.id; arr.push(c); });
-    cont.innerHTML = arr.map(c=>`
+    list.innerHTML = arr.map(c=>`
       <div class="adm-com">
         <div class="adm-com__av" style="background:linear-gradient(135deg,${c.color||'#888'},${(c.color||'#888')}aa);">${(c.iniciales||'?')}</div>
         <div class="adm-com__body">
-          <div class="adm-com__head"><span class="adm-com__name">${(c.nombre||'Miembro')}</span><span class="adm-com__time">${foroAdminTiempo(c.createdAt)}</span></div>
+          <div class="adm-com__head"><span class="adm-com__name">${(c.nombre||'Miembro')}</span>${c.esAdmin?'<span class="tag-mini tag-mini--admin" style="font-size:8px;padding:1px 6px;">IMDIIL</span>':''}<span class="adm-com__time">${foroAdminTiempo(c.createdAt)}</span></div>
           <div class="adm-com__text">${(c.texto||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
         </div>
         <button class="adm-com__del" data-comdel="${postId}|${c.id}" title="Eliminar respuesta"><svg class="ic"><use href="#i-trash"/></svg></button>
       </div>
     `).join('');
-    cont.querySelectorAll('[data-comdel]').forEach(b=>b.addEventListener('click', async ()=>{
+    list.querySelectorAll('[data-comdel]').forEach(b=>b.addEventListener('click', async ()=>{
       const ok = await adminConfirm('¿Eliminar esta respuesta?','No se puede deshacer.');
       if(!ok) return;
       const [pid,cid] = b.dataset.comdel.split('|');
@@ -5039,7 +5123,6 @@ function foroAdminVerComentarios(postId){
     }));
   });
 }
-
 /* =========================================================
    DIRECTORIO · carga y moderación (admin)
    ========================================================= */
