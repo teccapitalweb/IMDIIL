@@ -5477,9 +5477,8 @@ const Sections = (function(){
     try { const r=await fetch(img.src,{mode:'cors'}); const b=await r.blob(); const d=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(b);}); img.src=d; await new Promise(r=>setTimeout(r,150)); } catch(e){ console.warn('QR base64',e); }
   }
   async function cpRenderCanvas(node){
+    if (!node) throw new Error('certificado no encontrado en el DOM');
     await cpQrToBase64(node);
-    // Esperar a que las fuentes (Cinzel/Cormorant) estén 100% listas:
-    // sin esto, html2canvas colapsa los espacios y el texto se encima.
     try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
     try {
       if (document.fonts && document.fonts.load) {
@@ -5503,16 +5502,13 @@ const Sections = (function(){
       windowWidth: 1040,
       windowHeight: 735,
       onclone: (doc) => {
-        // Forzar render sin escala y con espaciado correcto en el clon
         const sc = doc.getElementById('cp-scaler');
         if (sc) { sc.style.transform = 'none'; sc.style.height = '735px'; }
         const cert = doc.getElementById('cp-cert');
         if (cert) {
           cert.style.boxShadow = 'none';
-          // word-spacing normal evita que se peguen las palabras
           cert.querySelectorAll('.cp-title,.cp-lead,.cp-desc,.cp-course,.cp-meta,.cp-date,.cp-name .nm,.cp-sig .nm,.cp-sig .ro,.cp-bar,.cp-qrwrap .cap')
             .forEach(el => { el.style.wordSpacing = 'normal'; el.style.whiteSpace = el.classList.contains('cp-title')||el.classList.contains('nm') ? 'nowrap' : ''; });
-          // Separación fiable nombre↔línea (gap del flex) y caja de texto exacta
           const nameWrap = cert.querySelector('.cp-name');
           if (nameWrap) { nameWrap.style.gap = '14px'; nameWrap.style.display = 'flex'; nameWrap.style.flexDirection = 'column'; nameWrap.style.alignItems = 'center'; }
           const nameTxt = cert.querySelector('.cp-name .nm');
@@ -5594,8 +5590,18 @@ const Sections = (function(){
     footer.querySelector('#ct-close').addEventListener('click', () => m.close());
     footer.querySelector('#ct-verify').addEventListener('click', () => window.open(verifyUrlCert(c.folio), '_blank','noopener'));
     footer.querySelector('#ct-share').addEventListener('click', (e) => { e.stopPropagation(); compartirCertReal(c); });
-    footer.querySelector('#ct-print').addEventListener('click', () => imprimirCertReal(getNode(), c));
-    footer.querySelector('#ct-pdf').addEventListener('click', () => descargarPDFCertReal(getNode(), c));
+    const btnPrint = footer.querySelector('#ct-print');
+    const btnPdf = footer.querySelector('#ct-pdf');
+    btnPrint.addEventListener('click', async () => {
+      if (btnPrint.disabled) return;
+      const orig = btnPrint.textContent; btnPrint.disabled = true; btnPrint.textContent = 'Generando…';
+      try { await imprimirCertReal(getNode(), c); } finally { btnPrint.disabled = false; btnPrint.textContent = orig; }
+    });
+    btnPdf.addEventListener('click', async () => {
+      if (btnPdf.disabled) return;
+      const orig = btnPdf.innerHTML; btnPdf.disabled = true; btnPdf.textContent = 'Generando…';
+      try { await descargarPDFCertReal(getNode(), c); } finally { btnPdf.disabled = false; btnPdf.innerHTML = orig; }
+    });
   }
 
   function renderCertificadosOLD(container){
@@ -8375,17 +8381,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .splash-cmp__title{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:10px;color:#FBF6EE}
 .splash-cmp__desc{font-size:14px;color:#D8CCBC;line-height:1.7;margin-bottom:22px}
 .splash-cmp__desc strong{color:#FFB877;display:inline-block;margin:5px 0;font-size:15px}
-.splash-cmp__desc strong{color:var(--text);font-weight:700}
-.splash-cmp__cert{background:linear-gradient(180deg,#F4EFE3,#E8DFCB);border-radius:14px;padding:22px 24px;margin-bottom:22px;color:#0E0A06;text-align:left;box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 3px #FF7A2D,inset 0 0 0 4px rgba(0,0,0,.05);position:relative;overflow:hidden}
-.splash-cmp__cert::before{content:"";position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,122,45,.18),transparent 70%);pointer-events:none}
-.splash-cmp__cert-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,.1);margin-bottom:14px}
-.splash-cmp__cert-logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.3px;color:#0E0A06}
-.splash-cmp__cert-folio{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.2px;color:rgba(14,10,6,.55);font-weight:600;background:rgba(255,122,45,.12);padding:3px 8px;border-radius:5px}
-.splash-cmp__cert-body{text-align:center}
-.splash-cmp__cert-pre{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:rgba(14,10,6,.5);font-weight:600;margin-bottom:6px}
-.splash-cmp__cert-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;letter-spacing:-.3px;color:#0E0A06;margin-bottom:12px;padding-bottom:8px;border-bottom:1px dashed rgba(14,10,6,.2)}
-.splash-cmp__cert-curso{font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;font-weight:700;color:#0E0A06;line-height:1.3;margin-bottom:10px}
-.splash-cmp__cert-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(14,10,6,.5);letter-spacing:.5px}
 .splash-cmp__actions{display:flex;flex-direction:column;gap:8px}
 .splash-cmp__btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:12px;font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;border:1px solid transparent;cursor:pointer;transition:all .15s ease;letter-spacing:-.1px}
 .splash-cmp__btn--primary{background:linear-gradient(135deg,var(--primary),var(--highlight));color:#0E0A06;box-shadow:0 8px 24px color-mix(in srgb,var(--primary) 28%,transparent)}
