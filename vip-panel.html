@@ -6604,6 +6604,24 @@ const Sections = (function(){
     });
   }
 
+  function dirAbrirCorreo(mail){
+    if (!mail) return;
+    const esMovil = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (esMovil) {
+      // En móvil mailto sí abre la app de correo
+      try { window.location.href = 'mailto:'+mail; } catch(e){}
+      return;
+    }
+    // En PC: abrir Gmail web (redactar con el destinatario ya puesto) en pestaña nueva
+    const gmail = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(mail);
+    const w = window.open(gmail, '_blank', 'noopener');
+    // Respaldo: si el navegador bloqueó la ventana, copiamos el correo
+    if (!w) {
+      if (navigator.clipboard) navigator.clipboard.writeText(mail).catch(()=>{});
+      Toast.success('Correo copiado', mail);
+    }
+  }
+
   function renderDirectorio(container){
     const esVip = window.UserState?.modo==='vip' || esAdminReal();
     container.innerHTML = `
@@ -6715,10 +6733,7 @@ const Sections = (function(){
     grid.querySelectorAll('.dir-cta--mail').forEach(b=>{
       b.addEventListener('click', (e)=>{
         e.stopPropagation();
-        const mail = b.dataset.email;
-        if (navigator.clipboard) navigator.clipboard.writeText(mail).catch(()=>{});
-        Toast.success('Correo copiado', mail);
-        try { window.location.href = 'mailto:'+mail; } catch(err){}
+        dirAbrirCorreo(b.dataset.email);
       });
     });
   }
@@ -6769,10 +6784,7 @@ const Sections = (function(){
     // Copiar correo desde el detalle
     const mailRow = document.querySelector('.dir-det__row--mail');
     if (mailRow) mailRow.addEventListener('click', ()=>{
-      const mail = mailRow.dataset.detmail;
-      if (navigator.clipboard) navigator.clipboard.writeText(mail).catch(()=>{});
-      Toast.success('Correo copiado', mail);
-      try { window.location.href = 'mailto:'+mail; } catch(e){}
+      dirAbrirCorreo(mailRow.dataset.detmail);
     });
   }
 
