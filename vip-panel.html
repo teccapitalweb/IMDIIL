@@ -1648,7 +1648,7 @@ body::after{
 .dir-chip:hover{border-color:color-mix(in srgb,var(--primary) 40%,transparent)}
 .dir-chip.is-active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:16px}
-.dir-card{position:relative;background:linear-gradient(165deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:20px;padding:26px 20px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .25s cubic-bezier(.2,.8,.25,1),border-color .25s,box-shadow .3s;overflow:hidden}
+.dir-card{position:relative;background:linear-gradient(165deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:20px;padding:26px 20px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .25s cubic-bezier(.2,.8,.25,1),border-color .25s,box-shadow .3s;overflow:hidden;cursor:pointer}
 .dir-card::before{content:"";position:absolute;top:0;left:0;right:0;height:64px;background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 22%,transparent),color-mix(in srgb,var(--highlight) 14%,transparent));z-index:0}
 .dir-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--primary) 45%,transparent);box-shadow:0 20px 45px color-mix(in srgb,var(--primary) 15%,rgba(0,0,0,.12))}
 .dir-card--mia{border-color:color-mix(in srgb,var(--primary) 50%,transparent)}
@@ -1685,6 +1685,28 @@ textarea.dir-form__in{resize:vertical;min-height:54px}
 .dir-form__check{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--text-2);cursor:pointer}
 .dir-form__check input{width:17px;height:17px;accent-color:var(--primary)}
 @media(max-width:560px){.dir-grid{grid-template-columns:1fr 1fr;gap:12px}.dir-card{padding:20px 12px 16px}.dir-card__foto{width:68px;height:68px}}
+/* Modal detalle de tarjeta */
+.dir-det{display:flex;flex-direction:column;align-items:center;text-align:center}
+.dir-det__head{display:flex;flex-direction:column;align-items:center}
+.dir-det__foto{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:0 8px 22px rgba(0,0,0,.2);margin-bottom:14px}
+.dir-det__foto--ini{display:flex;align-items:center;justify-content:center;color:#fff;font-size:34px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif}
+.dir-det__name{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+.dir-det__puesto{font-size:14px;color:var(--text);font-weight:600;margin-bottom:6px}
+.dir-det__empresa{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);margin-bottom:12px}
+.dir-det__empresa .ic{width:13px;height:13px;color:var(--text-3)}
+.dir-det__sector{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent);padding:5px 13px;border-radius:999px;margin-bottom:6px}
+.dir-det__bio{font-size:13.5px;color:var(--text-2);line-height:1.6;margin:14px 0 4px;text-align:center}
+.dir-det__rows{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.dir-det__row{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border-2);text-decoration:none;transition:.15s;text-align:left}
+.dir-det__row:hover{border-color:var(--primary);transform:translateX(2px)}
+.dir-det__row-ic{width:38px;height:38px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--text-2);flex-shrink:0}
+.dir-det__row-ic .ic{width:18px;height:18px}
+.dir-det__row--wa:hover .dir-det__row-ic{color:#25D366}
+.dir-det__row--li:hover .dir-det__row-ic{color:#0A66C2}
+.dir-det__row-tx{display:flex;flex-direction:column;min-width:0;flex:1}
+.dir-det__row-lbl{font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.dir-det__row-val{font-size:13.5px;color:var(--text);font-weight:600;word-break:break-word}
+.dir-det__sincontacto{font-size:12.5px;color:var(--text-3);font-style:italic;margin-top:16px}
 /* ===== FORO funcional ===== */
 .foro-aviso{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--primary) 8%,transparent);border:1px solid color-mix(in srgb,var(--primary) 22%,transparent);border-radius:12px;padding:11px 15px;margin-bottom:16px;font-size:13px;color:var(--text-2)}
 .foro-aviso .ic{width:16px;height:16px;color:var(--primary);flex-shrink:0}
@@ -6645,7 +6667,7 @@ const Sections = (function(){
       if (c.web) contactos.push(`<a class="dir-cta" href="${c.web.startsWith('http')?c.web:'https://'+c.web}" target="_blank" rel="noopener" title="Sitio web"><svg class="ic"><use href="#i-link"/></svg></a>`);
       const esMia = c.id===uid;
       return `
-      <article class="dir-card${esMia?' dir-card--mia':''}">
+      <article class="dir-card${esMia?' dir-card--mia':''}" data-dircard="${c.id}">
         ${esMia?'<span class="dir-card__badge-mia">Tú</span>':''}
         <div class="dir-card__top">
           ${foto}
@@ -6658,6 +6680,56 @@ const Sections = (function(){
         ${contactos.length?`<div class="dir-card__ctas">${contactos.join('')}</div>`:'<div class="dir-card__sincontacto">Sin datos de contacto</div>'}
       </article>`;
     }).join('');
+
+    // Clic en la tarjeta → abre el detalle (sin disparar al tocar un botón de contacto)
+    grid.querySelectorAll('[data-dircard]').forEach(card=>{
+      card.addEventListener('click', (e)=>{
+        if (e.target.closest('.dir-cta')) return; // dejó pasar los enlaces de contacto
+        dirVerDetalle(card.dataset.dircard);
+      });
+    });
+  }
+
+  function dirVerDetalle(id){
+    const c = _dirCards.find(x=>x.id===id); if(!c) return;
+    const uid = window.UserState?.uid;
+    const esMia = c.id===uid;
+    const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
+    const foto = c.foto
+      ? `<img src="${c.foto}" alt="" class="dir-det__foto">`
+      : `<div class="dir-det__foto dir-det__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${escapeHtml(inicial)}</div>`;
+    const row = (icon,label,val,href,extraClass='') => val
+      ? `<a class="dir-det__row ${extraClass}" ${href?`href="${href}" target="_blank" rel="noopener"`:''}>
+           <span class="dir-det__row-ic"><svg class="ic"><use href="#${icon}"/></svg></span>
+           <span class="dir-det__row-tx"><span class="dir-det__row-lbl">${label}</span><span class="dir-det__row-val">${escapeHtml(val)}</span></span>
+         </a>` : '';
+    const waNum = (c.whatsapp||'').replace(/[^0-9]/g,'');
+    const body = `
+      <div class="dir-det">
+        <div class="dir-det__head">
+          ${foto}
+          <div class="dir-det__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
+          ${c.puesto?`<div class="dir-det__puesto">${escapeHtml(c.puesto)}</div>`:''}
+          ${c.empresa?`<div class="dir-det__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
+          ${c.sector?`<span class="dir-det__sector">${escapeHtml(c.sector)}</span>`:''}
+        </div>
+        ${c.bio?`<div class="dir-det__bio">${escapeHtml(c.bio)}</div>`:''}
+        <div class="dir-det__rows">
+          ${row('i-whatsapp','WhatsApp',c.whatsapp, waNum?`https://wa.me/${waNum}`:'', 'dir-det__row--wa')}
+          ${row('i-mail','Correo',c.email, c.email?`mailto:${c.email}`:'')}
+          ${row('i-linkedin','LinkedIn',c.linkedin, c.linkedin?(c.linkedin.startsWith('http')?c.linkedin:'https://'+c.linkedin):'', 'dir-det__row--li')}
+          ${row('i-link','Sitio web',c.web, c.web?(c.web.startsWith('http')?c.web:'https://'+c.web):'')}
+        </div>
+        ${(!c.whatsapp&&!c.email&&!c.linkedin&&!c.web)?'<div class="dir-det__sincontacto">Este miembro no agregó datos de contacto.</div>':''}
+      </div>
+    `;
+    const footer = document.createElement('div');
+    footer.innerHTML = esMia
+      ? `<button class="btn btn--ghost" id="dirdet-cerrar">Cerrar</button><button class="btn btn--accent" id="dirdet-editar"><svg class="ic"><use href="#i-edit"/></svg>Editar mi tarjeta</button>`
+      : `<button class="btn btn--ghost" id="dirdet-cerrar">Cerrar</button>`;
+    const m = Modal.open({id:'dir-det', title:'Tarjeta profesional', subtitle: esMia?'Tu tarjeta en el directorio':'Directorio VIP', icon:'i-user', size:'sm', body, footer});
+    footer.querySelector('#dirdet-cerrar').addEventListener('click', ()=> m.close());
+    if (esMia) footer.querySelector('#dirdet-editar').addEventListener('click', ()=>{ m.close(); setTimeout(dirEditarMiTarjeta, 150); });
   }
 
   async function dirEditarMiTarjeta(){
