@@ -233,6 +233,13 @@ body{
 .adm-composer__input{width:100%;background:var(--surface-2);border:1px solid var(--border-2);border-radius:11px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;resize:vertical;min-height:48px}
 .adm-composer__input:focus{border-color:var(--primary)}
 .adm-composer__actions{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.adm-composer__left{display:flex;align-items:center;gap:12px}
+.adm-composer__imgbtn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;border:1px solid var(--border-2);background:var(--surface-2);color:var(--text-2);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.adm-composer__imgbtn:hover{color:var(--primary);border-color:color-mix(in srgb,var(--primary) 40%,transparent)}
+.adm-composer__imgbtn .ic{width:15px;height:15px}
+.adm-img-prev{position:relative;margin:10px 0;max-width:220px}
+.adm-img-prev img{width:100%;border-radius:10px;display:block}
+.adm-img-quitar{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .adm-composer__char{font-size:11px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 .adm-reply{display:flex;gap:8px;margin-top:10px}
 .adm-reply__in{flex:1;background:var(--surface-2);border:1px solid var(--border-2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
@@ -1094,6 +1101,7 @@ window.__signOut = async () => {
 <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
 <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1l1-4l9.5-9.5z"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
 <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
 <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
 <symbol id="i-broadcast-alt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/></symbol>
@@ -4903,8 +4911,16 @@ const Pages={
       <div class="adm-composer" style="margin-top:18px;">
         <div class="adm-composer__head"><span class="tag-mini tag-mini--admin">IMDIIL</span><span class="adm-composer__hint">Publica como cuenta oficial — ideal para anuncios o resolver dudas de membresía</span></div>
         <textarea class="adm-composer__input" id="adm-post-text" rows="2" maxlength="1500" placeholder="Escribe un anuncio o mensaje para la comunidad…"></textarea>
+        <div id="adm-post-img-prev" class="adm-img-prev" style="display:none;">
+          <img id="adm-post-img-el" alt="adjunto">
+          <button id="adm-post-img-quitar" class="adm-img-quitar" title="Quitar">&times;</button>
+        </div>
         <div class="adm-composer__actions">
-          <span class="adm-composer__char" id="adm-post-char">0 / 1500</span>
+          <div class="adm-composer__left">
+            <button class="adm-composer__imgbtn" id="adm-post-img-btn"><svg class="ic"><use href="#i-image"/></svg> Imagen</button>
+            <input type="file" id="adm-post-file" accept="image/*" style="display:none;">
+            <span class="adm-composer__char" id="adm-post-char">0 / 1500</span>
+          </div>
           <button class="btn btn--primary" id="adm-post-publicar">Publicar como IMDIIL</button>
         </div>
       </div>
@@ -4914,6 +4930,22 @@ const Pages={
     const txt = p.querySelector('#adm-post-text');
     const charEl = p.querySelector('#adm-post-char');
     txt.addEventListener('input', ()=>{ charEl.textContent = txt.value.length+' / 1500'; });
+    const fileInput = p.querySelector('#adm-post-file');
+    p.querySelector('#adm-post-img-btn').addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      if(!f.type.startsWith('image/')){ Toast.error('Solo imágenes',''); return; }
+      try {
+        _admPostImg = await admComprimirImagen(f);
+        p.querySelector('#adm-post-img-el').src = _admPostImg;
+        p.querySelector('#adm-post-img-prev').style.display='block';
+      } catch(err){ console.error(err); Toast.error('No se pudo cargar la imagen',''); }
+      fileInput.value='';
+    });
+    p.querySelector('#adm-post-img-quitar').addEventListener('click', ()=>{
+      _admPostImg = null;
+      p.querySelector('#adm-post-img-prev').style.display='none';
+    });
     p.querySelector('#adm-post-publicar').addEventListener('click', ()=> foroAdminPublicar(txt));
     foroAdminCargar();
   },
@@ -4976,6 +5008,23 @@ function adminConfirm(titulo, desc){
   });
 }
 
+// Imagen pendiente del composer admin + compresor (igual que el panel)
+let _admPostImg = null;
+function admComprimirImagen(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=e=>{ const img=new Image(); img.onload=()=>{
+      const MAX=900; let {width:w,height:h}=img;
+      if(w>MAX||h>MAX){ const k=Math.min(MAX/w,MAX/h); w=Math.round(w*k); h=Math.round(h*k); }
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      let q=0.72,out=cv.toDataURL('image/jpeg',q);
+      while(out.length>240000 && q>0.4){ q-=0.08; out=cv.toDataURL('image/jpeg',q); }
+      resolve(out);
+    }; img.onerror=reject; img.src=e.target.result; };
+    r.onerror=reject; r.readAsDataURL(file);
+  });
+}
 // Datos del admin para publicar/responder
 function _admAutor(){
   const a = window.__currentAdmin || {};
@@ -4990,7 +5039,7 @@ function _admAutor(){
 // Publicar como cuenta oficial IMDIIL
 async function foroAdminPublicar(txtEl){
   const t = (txtEl.value||'').trim();
-  if (!t){ Toast.error('Escribe algo',''); return; }
+  if (!t && !_admPostImg){ Toast.error('Escribe algo','o adjunta una imagen'); return; }
   const btn = document.getElementById('adm-post-publicar');
   const orig = btn.textContent; btn.disabled=true; btn.textContent='Publicando…';
   try {
@@ -4998,10 +5047,12 @@ async function foroAdminPublicar(txtEl){
     const a = _admAutor();
     await addDoc(collection(db,'posts'), {
       uid: a.uid, nombre: a.nombre, iniciales: a.iniciales, color: a.color, esAdmin: true,
-      texto: t, imagen: null, likes: 0, likedBy: {}, comentariosCount: 0,
+      texto: t, imagen: _admPostImg || null, likes: 0, likedBy: {}, comentariosCount: 0,
       createdAt: serverTimestamp()
     });
     txtEl.value=''; const ch=document.getElementById('adm-post-char'); if(ch) ch.textContent='0 / 1500';
+    _admPostImg = null;
+    const pv=document.getElementById('adm-post-img-prev'); if(pv) pv.style.display='none';
     Toast.success('Publicado como IMDIIL','Ya aparece en el foro');
   } catch(e){ console.error(e); Toast.error('No se pudo publicar', e.message||''); }
   finally { btn.disabled=false; btn.textContent=orig; }
