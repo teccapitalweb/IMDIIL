@@ -5372,8 +5372,8 @@ const Sections = (function(){
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap');
 .cp-stage{width:100%;display:flex;justify-content:center;overflow:hidden}
 .cp-scaler{transform-origin:top center}
-.cp-cert{width:1040px;height:735px;position:relative;overflow:hidden;color:#2A3548;font-family:'Plus Jakarta Sans',sans-serif;background:#FFFFFF;box-shadow:0 16px 40px rgba(0,0,0,.22)}
-.cp-cert *{box-sizing:border-box}
+.cp-cert{width:1040px;height:735px;position:relative;overflow:hidden;color:#2A3548;font-family:'Plus Jakarta Sans',sans-serif;background:#FFFFFF;box-shadow:0 16px 40px rgba(0,0,0,.22);word-spacing:normal}
+.cp-cert *{box-sizing:border-box;word-spacing:normal}
 .cp-frame{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
 .cp-body{position:absolute;left:96px;right:96px;top:54px;display:flex;flex-direction:column;align-items:center;z-index:2;text-align:center}
 .cp-logo{height:80px;margin-bottom:4px}.cp-logo img{height:100%;width:auto}
@@ -5463,7 +5463,43 @@ const Sections = (function(){
   }
   async function cpRenderCanvas(node){
     await cpQrToBase64(node);
-    return await html2canvas(node, {scale:2, backgroundColor:'#FFFFFF', useCORS:true, logging:false, imageTimeout:15000});
+    // Esperar a que las fuentes (Cinzel/Cormorant) estén 100% listas:
+    // sin esto, html2canvas colapsa los espacios y el texto se encima.
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
+    try {
+      if (document.fonts && document.fonts.load) {
+        await Promise.all([
+          document.fonts.load("700 36px 'Cinzel'"),
+          document.fonts.load("800 46px 'Cinzel'"),
+          document.fonts.load("italic 600 30px 'Cormorant Garamond'"),
+          document.fonts.load("600 14px 'Plus Jakarta Sans'")
+        ]);
+      }
+    } catch(e){}
+    await new Promise(r=>setTimeout(r,120));
+    return await html2canvas(node, {
+      scale: 2,
+      backgroundColor: '#FFFFFF',
+      useCORS: true,
+      logging: false,
+      imageTimeout: 15000,
+      width: 1040,
+      height: 735,
+      windowWidth: 1040,
+      windowHeight: 735,
+      onclone: (doc) => {
+        // Forzar render sin escala y con espaciado correcto en el clon
+        const sc = doc.getElementById('cp-scaler');
+        if (sc) { sc.style.transform = 'none'; sc.style.height = '735px'; }
+        const cert = doc.getElementById('cp-cert');
+        if (cert) {
+          cert.style.boxShadow = 'none';
+          // word-spacing normal evita que se peguen las palabras
+          cert.querySelectorAll('.cp-title,.cp-lead,.cp-desc,.cp-course,.cp-meta,.cp-date,.cp-name .nm,.cp-sig .nm,.cp-sig .ro,.cp-bar,.cp-qrwrap .cap')
+            .forEach(el => { el.style.wordSpacing = 'normal'; el.style.whiteSpace = el.classList.contains('cp-title')||el.classList.contains('nm') ? 'nowrap' : ''; });
+        }
+      }
+    });
   }
   async function descargarPDFCertReal(node, c){
     if (!window.jspdf || !window.html2canvas){ Toast.error('Generador no disponible','Revisa tu conexión e intenta de nuevo'); return; }
@@ -7229,7 +7265,7 @@ window.__maybeAskName = function(){
         <div class="nm-ic">🎓</div>
         <h2 class="nm-title">¿Cómo quieres que aparezca tu nombre?</h2>
         <p class="nm-desc">Este es el nombre que aparecerá en <strong>tus certificados oficiales IMDIIL</strong>. Escríbelo completo y bien escrito (nombre y apellidos).</p>
-        <input id="nm-input" class="nm-input" type="text" value="${(sugerido||'').replace(/"/g,'&quot;')}" placeholder="Ej. Britney Barahona Méndez" autocomplete="name" maxlength="60">
+        <input id="nm-input" class="nm-input" type="text" value="${(sugerido||'').replace(/"/g,'&quot;')}" placeholder="Ej. Felipe Estrada Ramírez" autocomplete="name" maxlength="38">
         <div class="nm-hint" id="nm-hint"></div>
         <button class="nm-save" id="nm-save">Guardar y continuar</button>
         <button class="nm-skip" id="nm-skip">Lo dejo así por ahora</button>
@@ -7259,9 +7295,19 @@ window.__maybeAskName = function(){
     const hint = document.getElementById('nm-hint');
     setTimeout(()=>input.focus(), 100);
 
+    // Aviso en vivo: si el nombre se acerca al límite estético del certificado
+    const LIMITE_OK = 32;  // hasta aquí se ve bien centrado en el certificado
+    input.addEventListener('input', ()=>{
+      const v = (input.value||'').trim();
+      if (v.length >= 34) hint.textContent = 'Es el máximo que se ve bien en el certificado. Usa nombre + 1 o 2 apellidos.';
+      else if (v.length >= LIMITE_OK) hint.textContent = 'Procura que no sea más largo para que luzca bien.';
+      else hint.textContent = '';
+    });
+
     async function guardar(){
-      const val = (input.value||'').trim().replace(/\s+/g,' ');
+      let val = (input.value||'').trim().replace(/\s+/g,' ');
       if (val.length < 3 || !val.includes(' ')) { hint.textContent = 'Escribe tu nombre y al menos un apellido.'; input.focus(); return; }
+      if (val.length > 38) { val = val.slice(0,38).trim(); }  // tope duro estético
       // Guardar igual que openEditField: Auth + Firestore + UserState
       try { if (window.__setDisplayName) await window.__setDisplayName(val); } catch(e){}
       try {
