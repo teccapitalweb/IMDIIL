@@ -5541,18 +5541,43 @@ const Sections = (function(){
     try {
       const pdf = await _buildCertPDF(node);
       const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+      const blobUrl = pdf.output('bloburl');
+
       if (isMobile) {
-        // En móvil, el diálogo de impresión ignora la orientación HTML.
-        // Entregamos el PDF (que YA es horizontal): el usuario lo abre/imprime sin ajustar nada.
-        pdf.save('Certificado-IMDIIL-' + c.folio + '.pdf');
-        Toast.success('Certificado listo', 'Se descargó en horizontal · ábrelo para imprimir');
+        // Móvil: cargar el PDF (ya horizontal) en un iframe oculto y abrir el
+        // diálogo de impresión del SISTEMA (selector de impresora). Así no se
+        // limita a descargar; el usuario elige impresora y manda a imprimir.
+        let fr = document.getElementById('cp-print-frame');
+        if (fr) fr.remove();
+        fr = document.createElement('iframe');
+        fr.id = 'cp-print-frame';
+        fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;';
+        fr.src = blobUrl;
+        document.body.appendChild(fr);
+        fr.onload = () => {
+          setTimeout(() => {
+            try {
+              if (fr.contentWindow && fr.contentWindow.print) { fr.contentWindow.focus(); fr.contentWindow.print(); }
+              else { window.open(blobUrl, '_blank'); }
+            } catch(e) {
+              // Si el navegador bloquea print() en iframe, abrimos el PDF para imprimir manual
+              window.open(blobUrl, '_blank');
+            }
+          }, 600);
+        };
+        // Respaldo: si el iframe no dispara onload (algunos navegadores), abrir el PDF
+        setTimeout(() => {
+          if (!fr.dataset.loaded) { try { fr.contentWindow && fr.contentWindow.print && fr.contentWindow.print(); } catch(e){ window.open(blobUrl, '_blank'); } }
+        }, 1800);
+        fr.addEventListener('load', () => { fr.dataset.loaded = '1'; });
+        Toast.info('Preparando impresión', 'Elige tu impresora en el menú del sistema');
         return;
       }
-      // En PC: abrir el PDF en pestaña y lanzar impresión (ya viene landscape)
-      const url = pdf.output('bloburl');
-      const w = window.open(url, '_blank');
+
+      // PC: abrir el PDF en pestaña y lanzar impresión (ya viene landscape)
+      const w = window.open(blobUrl, '_blank');
       if (!w) { pdf.save('Certificado-IMDIIL-' + c.folio + '.pdf'); Toast.info('Permite ventanas emergentes','Mientras, lo descargamos'); return; }
-      const t = setTimeout(() => { try { w.focus(); w.print(); } catch(e){} }, 800);
+      setTimeout(() => { try { w.focus(); w.print(); } catch(e){} }, 800);
     } catch(e){ console.error(e); Toast.error('No se pudo imprimir','Intenta de nuevo'); }
   }
   function compartirCertReal(c){
