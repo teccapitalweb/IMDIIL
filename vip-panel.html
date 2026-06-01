@@ -751,6 +751,24 @@ body::after{
 
 /* CERTIFICADOS — cards estilo Sinergia */
 .certs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+/* Banners compactos de certificado (lista) */
+.certs-list{display:flex;flex-direction:column;gap:12px}
+.certb{display:flex;align-items:center;gap:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .25s}
+.certb:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--primary) 45%,transparent);box-shadow:0 14px 34px color-mix(in srgb,var(--primary) 14%,rgba(0,0,0,.1))}
+.certb__seal{width:52px;height:52px;flex-shrink:0;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff;display:flex;align-items:center;justify-content:center}
+.certb__seal svg{width:30px;height:34px}
+.certb__main{flex:1;min-width:0}
+.certb__eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--text-3);margin-bottom:4px}
+.certb__title{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.3px;line-height:1.3;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.certb__meta{display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);font-weight:600;flex-wrap:wrap}
+.certb__sep{width:3px;height:3px;border-radius:50%;background:var(--text-3);opacity:.5}
+.certb__folio{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-2);font-weight:600;margin-top:5px}
+.certb__action{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.certb__verify{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--success);font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.certb__verify::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success)}
+.certb__view{font-size:12.5px;font-weight:700;color:var(--primary);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.certb__view .ic{width:13px;height:13px}
+@media(max-width:560px){.certb{flex-wrap:wrap;gap:12px}.certb__action{flex-direction:row;width:100%;justify-content:space-between;align-items:center;margin-top:4px}.certb__title{white-space:normal}}
 .cert-card{
   background:var(--surface);
   border:1px solid var(--border);
@@ -2819,6 +2837,9 @@ if (window.__isDemoMode) {
     }
 
     setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 50);
+
+    // ─── Popup: confirmar/editar nombre (1ª vez) · evita certificados con el email ───
+    setTimeout(() => { try { window.__maybeAskName && window.__maybeAskName(); } catch(e){} }, 900);
 
     // Arrancar listener de notificaciones de Firestore (tiempo real)
     setTimeout(() => { if (typeof setupNotificacionesListener === 'function') setupNotificacionesListener(); }, 100);
@@ -5311,34 +5332,20 @@ const Sections = (function(){
           <div class="kpi-card"><div class="kpi-card__label">Verificables</div><div class="kpi-card__value">100<span class="kpi-card__value-sub">%</span></div></div>
         </div>
         <div class="section-header"><h2 class="section-header__title">Tus ${certs.length} certificado${certs.length!==1?'s':''}<span class="section-header__badge">${certs.length} activo${certs.length!==1?'s':''}</span></h2></div>
-        <div class="certs-grid">${certs.map(c=>`
-          <article class="cert-card" data-certid="${c.id}" tabindex="0">
-            <div class="cert-card__top">
-              <div class="cert-preview-mini">
-                <div class="cert-preview-mini__head">
-                  <div class="cert-preview-mini__logo"><img src="assets/imdiil-isotipo.png" alt="IMDIIL"></div>
-                  <div>
-                    <div class="cert-preview-mini__brand">IMDIIL</div>
-                    <div class="cert-preview-mini__brand-sub">Instituto Mexicano de Ingeniería Industrial</div>
-                  </div>
-                  <div class="cert-preview-mini__qr">${qrSvg(c.folio,32)}</div>
-                </div>
-                <div class="cert-preview-mini__body">
-                  <div class="cert-preview-mini__eyebrow">Certificado de aprovechamiento</div>
-                  <div class="cert-preview-mini__name">${nombreUsuario}</div>
-                  <div class="cert-preview-mini__por">por completar el curso · ${c.horas}h</div>
-                </div>
-                <div class="cert-preview-mini__sign">
-                  <span>${c.instructor}</span>
-                  <span class="cert-preview-mini__folio">${c.folio}</span>
-                </div>
-              </div>
+        <div class="certs-list">${certs.map(c=>`
+          <article class="certb" data-certid="${c.id}" tabindex="0">
+            <div class="certb__seal">
+              <svg viewBox="0 0 40 48" fill="none"><circle cx="20" cy="17" r="14" stroke="currentColor" stroke-width="1.6"/><circle cx="20" cy="17" r="9" stroke="currentColor" stroke-width="1" opacity=".5"/><path d="M13 28 L10 46 L20 39 L30 46 L27 28" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
             </div>
-            <div class="cert-card__body">
-              <div class="cert-card__eyebrow">Certificado de aprovechamiento</div>
-              <h3 class="cert-card__title">${c.titulo}</h3>
-              <div class="cert-card__meta"><span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h</span><span><svg class="ic"><use href="#i-bolt"/></svg>${c.calificacion}</span><span><svg class="ic"><use href="#i-calendar"/></svg>${formatDate(c.emitido)}</span></div>
-              <div class="cert-card__foot"><span class="cert-card__folio">${c.folio}</span><span class="cert-card__verify">Verificable</span></div>
+            <div class="certb__main">
+              <div class="certb__eyebrow">Certificado de acreditación</div>
+              <h3 class="certb__title">${c.titulo}</h3>
+              <div class="certb__meta"><span>${c.horas}h</span><span class="certb__sep"></span><span>${c.area}</span><span class="certb__sep"></span><span>${formatDate(c.emitido)}</span></div>
+              <div class="certb__folio">${c.folio}</div>
+            </div>
+            <div class="certb__action">
+              <span class="certb__verify">Verificable</span>
+              <span class="certb__view">Ver certificado <svg class="ic"><use href="#i-arrow-right"/></svg></span>
             </div>
           </article>
         `).join('')}</div>
@@ -5346,7 +5353,7 @@ const Sections = (function(){
     `;
     // Guardar la lista para que openCertDetalle pueda encontrar el cert
     window.__certsReales = certs;
-    container.querySelectorAll('.cert-card').forEach(c=>{
+    container.querySelectorAll('.certb').forEach(c=>{
       c.addEventListener('click',()=>openCertDetalleReal(c.dataset.certid));
       c.addEventListener('keydown',e=>{if(e.key==='Enter')openCertDetalleReal(c.dataset.certid);});
     });
@@ -5355,8 +5362,9 @@ const Sections = (function(){
   // ═══════════════════════════════════════════════════════════════
   // 🎓 CERTIFICADO PREMIUM (azul marino + dorado) · diseño aprobado
   // ═══════════════════════════════════════════════════════════════
-  const CP_FRAME = `<svg class="cp-frame" viewBox="0 0 1040 735" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A5F22"/><stop offset=".35" stop-color="#F0D89A"/><stop offset=".5" stop-color="#C9A24B"/><stop offset=".65" stop-color="#F0D89A"/><stop offset="1" stop-color="#8A5F22"/></linearGradient></defs><rect x="28" y="28" width="984" height="679" fill="none" stroke="url(#gf)" stroke-width="1.6"/><rect x="36" y="36" width="968" height="663" fill="none" stroke="url(#gf)" stroke-width="0.9" opacity="0.9"/><rect x="41" y="41" width="958" height="653" fill="none" stroke="url(#gf)" stroke-width="0.5" opacity="0.65"/><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(30 30) scale(1 1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(1010 30) scale(-1 1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(30 705) scale(1 -1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g><g fill="none" stroke="url(#gf)" stroke-width="1.1" stroke-linecap="round" transform="translate(1010 705) scale(-1 -1)"><path d="M2 34 C2 16 16 2 34 2"/><path d="M2 26 C2 13 13 2 26 2"/><path d="M2 20 C9 28 16 31 26 31 M26 31 C19 25 16 18 16 2"/><circle cx="9" cy="9" r="1.6" fill="#C9A24B" stroke="none"/><path d="M30 2 q6 5 5 12 M2 30 q5 6 12 5" stroke-width="0.9"/></g></svg>`;
-  const CP_SEAL  = `<svg viewBox="0 0 140 140" class="cp-seal-svg" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A5F22"/><stop offset=".35" stop-color="#F0D89A"/><stop offset=".5" stop-color="#C9A24B"/><stop offset=".65" stop-color="#F0D89A"/><stop offset="1" stop-color="#8A5F22"/></linearGradient><path id="cparc" d="M30 70 A40 40 0 0 1 110 70" fill="none"/></defs><circle cx="70" cy="70" r="63" fill="none" stroke="url(#gs)" stroke-width="1.6"/><circle cx="70" cy="70" r="55" fill="none" stroke="url(#gs)" stroke-width="0.8"/><circle cx="70" cy="70" r="59" fill="none" stroke="url(#gs)" stroke-width="1" stroke-dasharray="0.5 4" stroke-linecap="round"/><text font-family="Cinzel,serif" font-size="7.6" font-weight="700" letter-spacing="2.2" fill="url(#gs)"><textPath href="#cparc" startOffset="50%" text-anchor="middle">CERTIFICACIÓN OFICIAL</textPath></text><ellipse cx="30.2" cy="49.0" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-60 30.2 49.0)"/><ellipse cx="26.0" cy="58.6" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-73 26.0 58.6)"/><ellipse cx="24.1" cy="68.8" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-86 24.1 68.8)"/><ellipse cx="24.6" cy="79.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-99 24.6 79.2)"/><ellipse cx="27.3" cy="89.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-112 27.3 89.2)"/><ellipse cx="32.3" cy="98.4" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-125 32.3 98.4)"/><ellipse cx="39.2" cy="106.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-138 39.2 106.2)"/><ellipse cx="47.7" cy="112.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-151 47.7 112.2)"/><ellipse cx="57.3" cy="116.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(-164 57.3 116.2)"/><ellipse cx="109.8" cy="49.0" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(60 109.8 49.0)"/><ellipse cx="114.0" cy="58.6" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(73 114.0 58.6)"/><ellipse cx="115.9" cy="68.8" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(86 115.9 68.8)"/><ellipse cx="115.4" cy="79.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(99 115.4 79.2)"/><ellipse cx="112.7" cy="89.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(112 112.7 89.2)"/><ellipse cx="107.7" cy="98.4" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(125 107.7 98.4)"/><ellipse cx="100.8" cy="106.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(138 100.8 106.2)"/><ellipse cx="92.3" cy="112.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(151 92.3 112.2)"/><ellipse cx="82.7" cy="116.2" rx="4.4" ry="1.9" fill="url(#gs)" opacity="0.9" transform="rotate(164 82.7 116.2)"/><path d="M70 41 l3.4 6.9 7.6 1.1 -5.5 5.3 1.3 7.6 -6.8-3.6 -6.8 3.6 1.3 -7.6 -5.5 -5.3 7.6 -1.1z" fill="url(#gs)"/><text x="70" y="88" text-anchor="middle" font-family="Cinzel,serif" font-size="11" font-weight="800" letter-spacing="1.4" fill="url(#gs)">IMDIIL</text><text x="70" y="98" text-anchor="middle" font-family="Cinzel,serif" font-size="5.4" font-weight="600" letter-spacing="1.8" fill="url(#gs)">ACREDITACIÓN · MMXXVI</text></svg>`;
+  const CP_FRAME = `<svg class="cp-frame" viewBox="0 0 1040 735" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><rect x="26" y="26" width="988" height="683" fill="none" stroke="#13294A" stroke-width="2.5"/><rect x="33" y="33" width="974" height="669" fill="none" stroke="#13294A" stroke-width="1"/></svg>`;
+  const CP_SEAL  = `<svg viewBox="0 0 90 110" xmlns="http://www.w3.org/2000/svg"><circle cx="45" cy="40" r="34" fill="none" stroke="#13294A" stroke-width="1.4"/><circle cx="45" cy="40" r="27" fill="none" stroke="#C99A3E" stroke-width="0.8"/><text x="45" y="50" text-anchor="middle" font-family="Cinzel,serif" font-size="26" font-weight="700" fill="#13294A">I</text><path d="M30 66 L24 104 L45 90 L66 104 L60 66 Z" fill="#13294A"/><path d="M33 68 L29 96 L45 85 L61 96 L57 68 Z" fill="#1E416E"/><circle cx="45" cy="40" r="34" fill="none" stroke="#C99A3E" stroke-width="0.5" stroke-dasharray="0.5 3"/></svg>`;
+  const CP_MEDAL = `<svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg"><circle cx="13" cy="10" r="7" fill="none" stroke="#13294A" stroke-width="1.3"/><circle cx="13" cy="10" r="4" fill="none" stroke="#C99A3E" stroke-width="0.8"/><path d="M9 16 L7 25 L13 21 L19 25 L17 16" fill="none" stroke="#13294A" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
   function ensureCertCSS(){
     if (document.getElementById('cp-css')) return;
     const st = document.createElement('style'); st.id = 'cp-css';
@@ -5364,53 +5372,43 @@ const Sections = (function(){
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap');
 .cp-stage{width:100%;display:flex;justify-content:center;overflow:hidden}
 .cp-scaler{transform-origin:top center}
-.cp-cert{width:1040px;height:735px;position:relative;overflow:hidden;color:#1B2C46;font-family:'Plus Jakarta Sans',sans-serif;background:radial-gradient(ellipse at 50% 30%,#FFFFFF 0%,#FBF6EA 52%,#F1E8D4 88%,#EADFC6 100%);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.cp-cert{width:1040px;height:735px;position:relative;overflow:hidden;color:#2A3548;font-family:'Plus Jakarta Sans',sans-serif;background:#FFFFFF;box-shadow:0 16px 40px rgba(0,0,0,.22)}
 .cp-cert *{box-sizing:border-box}
-.cp-wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;pointer-events:none}
-.cp-wm img{width:470px;opacity:.05;filter:grayscale(1);margin-top:18px}
 .cp-frame{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
-.cp-body{position:absolute;left:80px;right:80px;top:40px;display:flex;flex-direction:column;align-items:center;z-index:2;text-align:center}
-.cp-logo{height:96px;margin-bottom:2px}.cp-logo img{height:100%;width:auto}
-.cp-logobase{display:flex;align-items:center;gap:9px;margin-top:5px}
-.cp-logobase .l{width:50px;height:1px;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22)}
-.cp-logobase .d{width:5px;height:5px;background:#BC8A3C;transform:rotate(45deg)}
-.cp-orn{display:flex;align-items:center;gap:18px;margin-top:20px}
-.cp-orn .l{width:54px;height:1px;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22)}
-.cp-title{font-family:'Cinzel',serif;font-weight:700;font-size:30px;letter-spacing:5px;color:#13294A;line-height:1;padding-left:5px;white-space:nowrap}
-.cp-titleu{width:120px;height:2px;margin:13px auto 0;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22);border-radius:2px}
-.cp-lead{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#5C6A80;margin-top:22px}
-.cp-name{display:flex;flex-direction:column;align-items:center;margin-top:11px}
-.cp-name .nm{font-family:'Cinzel',serif;font-weight:800;font-size:42px;color:#13294A;line-height:1.04;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap}
-.cp-name .u{height:2px;margin-top:14px;background:linear-gradient(100deg,#8A5F22,#F0D89A,#C9A24B,#F0D89A,#8A5F22);width:320px}
-.cp-desc{font-size:12px;color:#5C6A80;margin-top:20px;letter-spacing:.4px}
-.cp-plate{margin-top:12px;position:relative;border:1px solid #BC8A3C;border-radius:8px;padding:11px 42px;background:linear-gradient(180deg,#FBF3DF,#F5EAD2);box-shadow:0 6px 18px rgba(19,41,74,.07)}
-.cp-plate::before{content:"";position:absolute;inset:4px;border:.5px solid rgba(188,138,60,.45);border-radius:5px;pointer-events:none}
-.cp-course{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:25px;color:#1E416E;line-height:1.2}
-.cp-meta{display:flex;align-items:center;gap:14px;margin-top:15px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#5C6A80}
-.cp-meta .d{width:3px;height:3px;background:#BC8A3C;transform:rotate(45deg)}
-.cp-date{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14.5px;color:#5C6A80;margin-top:11px}
-.cp-sealw{position:absolute;right:92px;bottom:84px;width:112px;height:112px;z-index:2}
-.cp-sealw::before{content:"";position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,rgba(235,207,134,.16),transparent 70%);z-index:-1}
-.cp-seal-svg{width:100%;height:100%}
-.cp-qr{position:absolute;left:86px;bottom:84px;display:flex;flex-direction:column;align-items:center;z-index:2}
-.cp-qr .pl{border:1px solid #BC8A3C;border-radius:9px;padding:9px;background:#fff;box-shadow:0 5px 16px rgba(19,41,74,.1);display:flex;flex-direction:column;align-items:center}
-.cp-qr .h{font-size:7px;font-weight:700;letter-spacing:2.2px;color:#8A5F22;text-transform:uppercase;margin-bottom:6px;text-align:center}
-.cp-qr img{width:88px;height:88px;display:block;image-rendering:pixelated;border-radius:2px}
-.cp-qr .cap{font-size:7px;font-weight:700;letter-spacing:1.8px;color:#5C6A80;text-transform:uppercase;margin-top:7px}
-.cp-sigs{position:absolute;left:50%;transform:translateX(-50%);bottom:86px;display:flex;gap:78px;z-index:2}
-.cp-sig{width:226px;text-align:center}
-.cp-sig .im{height:50px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:7px}
-.cp-sig .im img{max-height:50px;max-width:168px;object-fit:contain}
-.cp-sig .ln{height:0.8px;background:linear-gradient(90deg,transparent,#13294A 18%,#13294A 82%,transparent);margin:0 0 10px}
-.cp-sig .nm{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:16.5px;color:#13294A}
-.cp-sig .ro{font-size:8px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#5C6A80;margin-top:5px}
-.cp-bar{position:absolute;left:41px;right:41px;bottom:41px;height:22px;background:#13294A;display:flex;align-items:center;justify-content:center;gap:18px;font-size:8.5px;letter-spacing:1px;color:#D2DEEE;z-index:2}
-.cp-bar b{color:#EBCF86;font-weight:700;letter-spacing:1.4px}
-.cp-bar .s{width:4px;height:4px;background:#EBCF86;transform:rotate(45deg);opacity:.6}
+.cp-body{position:absolute;left:96px;right:96px;top:54px;display:flex;flex-direction:column;align-items:center;z-index:2;text-align:center}
+.cp-logo{height:80px;margin-bottom:4px}.cp-logo img{height:100%;width:auto}
+.cp-medalline{display:flex;align-items:center;gap:14px;margin-top:16px}
+.cp-medalline .l{width:70px;height:1px;background:#D8DEE7}
+.cp-medalline .ic{width:26px;height:26px}
+.cp-title{font-family:'Cinzel',serif;font-weight:700;font-size:35px;letter-spacing:6px;color:#13294A;line-height:1;margin-top:8px;padding-left:6px;white-space:nowrap}
+.cp-titleu{width:90px;height:1.5px;background:#C99A3E;margin:14px auto 0}
+.cp-lead{font-size:14px;color:#6B7688;margin-top:30px}
+.cp-name{display:flex;flex-direction:column;align-items:center;margin-top:14px}
+.cp-name .nm{font-family:'Cinzel',serif;font-weight:700;font-size:46px;color:#13294A;line-height:1.04;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+.cp-name .u{height:1px;margin-top:18px;background:#13294A;width:440px;opacity:.55}
+.cp-desc{font-size:13px;color:#6B7688;margin-top:30px}
+.cp-course{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:30px;color:#13294A;margin-top:10px;line-height:1.2}
+.cp-meta{display:flex;align-items:center;gap:16px;margin-top:18px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#6B7688}
+.cp-meta .bar{width:1px;height:11px;background:#D8DEE7}
+.cp-date{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#6B7688;margin-top:24px}
+.cp-foot{position:absolute;left:96px;right:96px;bottom:92px;display:flex;align-items:flex-end;justify-content:space-between;z-index:2}
+.cp-qrwrap{display:flex;flex-direction:column;align-items:center;gap:8px;width:150px}
+.cp-qrwrap img{width:96px;height:96px;display:block;image-rendering:pixelated}
+.cp-qrwrap .cap{font-size:8px;font-weight:700;letter-spacing:1.6px;color:#6B7688;text-transform:uppercase;text-align:center;line-height:1.5}
+.cp-sig{width:240px;text-align:center}
+.cp-sig .im{height:46px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:5px}
+.cp-sig .im img{max-height:46px;max-width:160px;object-fit:contain}
+.cp-sig .ln{height:1px;background:#13294A;margin:0 0 9px}
+.cp-sig .nm{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:16px;color:#13294A}
+.cp-sig .ro{font-size:8.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#6B7688;margin-top:4px}
+.cp-sealw{width:96px;height:118px;display:flex;align-items:flex-end;justify-content:center}
+.cp-sealw svg{width:80px;height:100px}
+.cp-bar{position:absolute;left:48px;right:48px;bottom:44px;padding:9px 0;border-top:1px solid #D8DEE7;display:flex;align-items:center;justify-content:center;gap:18px;font-size:9px;letter-spacing:.5px;color:#6B7688;z-index:2}
+.cp-bar b{color:#13294A;font-weight:700}
+.cp-bar .s{width:3px;height:3px;border-radius:50%;background:#D8DEE7}
 #cp-sharemenu{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#11233C;border:1px solid rgba(200,220,245,.18);border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:3px;min-width:210px;box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:99999}
 #cp-sharemenu button{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:9px;font-size:13.5px;font-weight:600;color:#E8EEF6;background:none;border:0;cursor:pointer;text-align:left;width:100%;font-family:'Plus Jakarta Sans',sans-serif}
 #cp-sharemenu button:hover{background:rgba(255,255,255,.08)}
-@media print{body.cp-printing>*:not(#cp-print){display:none!important}#cp-print{position:fixed;inset:0;z-index:999999;background:#fff}}
 `;
     document.head.appendChild(st);
   }
@@ -5420,44 +5418,43 @@ const Sections = (function(){
 
   function buildCertPremium(c, nombre){
     const fechaTxt = (function(){ try { return new Date(c.emitido).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}); } catch(e){ return formatDate(c.emitido); } })();
-    const sesionesTxt = c.sesiones ? (c.sesiones + ' sesiones · ') : '';
+    const cargaTxt = (c.sesiones ? (c.sesiones + ' sesiones · ') : '') + (c.horas || 0) + ' horas';
     return `
       <div class="cp-stage"><div class="cp-scaler" id="cp-scaler">
         <div class="cp-cert" id="cp-cert">
-          <div class="cp-wm"><img src="${assetUrl('logo-imdiil.png')}" crossorigin="anonymous" alt=""></div>
           ${CP_FRAME}
           <div class="cp-body">
             <div class="cp-logo"><img src="${assetUrl('logo-imdiil.png')}" crossorigin="anonymous" alt="IMDIIL"></div>
-            <div class="cp-logobase"><span class="l"></span><span class="d"></span><span class="l"></span></div>
-            <div class="cp-orn"><span class="l"></span><div class="cp-title">Certificado de Acreditación</div><span class="l"></span></div>
+            <div class="cp-medalline"><span class="l"></span><span class="ic">${CP_MEDAL}</span><span class="l"></span></div>
+            <div class="cp-title">Certificado de Acreditación</div>
             <div class="cp-titleu"></div>
             <div class="cp-lead">Se otorga la presente constancia a</div>
             <div class="cp-name"><span class="nm" id="cp-nm">${escapeHtml(nombre)}</span><span class="u"></span></div>
-            <div class="cp-desc">Por haber acreditado satisfactoriamente el programa académico denominado</div>
-            <div class="cp-plate"><div class="cp-course">${escapeHtml(c.titulo)}</div></div>
-            <div class="cp-meta"><span>Carga académica · ${sesionesTxt}${c.horas} horas</span><span class="d"></span><span>Área · ${escapeHtml(c.area)}</span></div>
+            <div class="cp-desc">Por haber acreditado satisfactoriamente el programa académico denominado:</div>
+            <div class="cp-course">${escapeHtml(c.titulo)}</div>
+            <div class="cp-meta"><span>Carga académica: ${cargaTxt}</span><span class="bar"></span><span>Área: ${escapeHtml(c.area)}</span></div>
             <div class="cp-date">Emitido el ${fechaTxt}</div>
           </div>
-          <div class="cp-qr"><div class="pl"><div class="h">Validación digital</div><img id="cp-qr-img" crossorigin="anonymous" src="${qrUrlCert(c.folio)}" alt="QR"></div><div class="cap">Escanea para validar</div></div>
-          <div class="cp-sealw">${CP_SEAL}</div>
-          <div class="cp-sigs">
+          <div class="cp-foot">
+            <div class="cp-qrwrap"><img id="cp-qr-img" crossorigin="anonymous" src="${qrUrlCert(c.folio)}" alt="QR"><span class="cap">Escanea<br>para validar</span></div>
             <div class="cp-sig"><div class="im"><img src="${assetUrl('firma-jairo.png')}" crossorigin="anonymous" alt=""></div><div class="ln"></div><div class="nm">Ing. Jairo Guzmán Felipe</div><div class="ro">Coordinación General · IMDIIL</div></div>
             <div class="cp-sig"><div class="im"><img src="${assetUrl('firma-ipci.png')}" crossorigin="anonymous" alt=""></div><div class="ln"></div><div class="nm">Coordinación de Certificación</div><div class="ro">IPCI Latinoamericano</div></div>
+            <div class="cp-sealw">${CP_SEAL}</div>
           </div>
-          <div class="cp-bar"><span>Folio · <b>${c.folio}</b></span><span class="s"></span><span>imdiil.com</span><span class="s"></span><span>Emitido digitalmente por IMDIIL / IPCI Latinoamericano</span></div>
+          <div class="cp-bar"><span>Folio: <b>${c.folio}</b></span><span class="s"></span><span>imdiil.com</span><span class="s"></span><span>Certificado emitido digitalmente por IMDIIL / IPCI Latinoamericano</span></div>
         </div>
       </div></div>`;
   }
 
   function fitCertModal(){
-    const stage = document.querySelector('#cert-' + (window.__cpActive||'') + ' .cp-stage') || document.querySelector('.modal__body .cp-stage');
+    const stage = document.querySelector('.modal__body .cp-stage');
     const scaler = document.getElementById('cp-scaler');
     if (!stage || !scaler) return;
     const s = Math.min(1, stage.clientWidth / 1040);
     scaler.style.transform = 'scale(' + s + ')';
     scaler.style.height = (735 * s) + 'px';
     const nm = document.getElementById('cp-nm');
-    if (nm){ let fs=42, g=0; nm.style.fontSize='42px'; while(nm.scrollWidth>880 && fs>24 && g<60){ fs--; nm.style.fontSize=fs+'px'; g++; } const u=nm.parentElement.querySelector('.u'); if(u) u.style.width=Math.min(nm.offsetWidth*1.08,800)+'px'; }
+    if (nm){ let fs=46, g=0; nm.style.fontSize='46px'; while(nm.scrollWidth>820 && fs>22 && g<70){ fs--; nm.style.fontSize=fs+'px'; g++; } const u=nm.parentElement.querySelector('.u'); if(u) u.style.width=Math.min(nm.offsetWidth*1.05,820)+'px'; }
   }
 
   async function cpQrToBase64(node){
@@ -5487,14 +5484,14 @@ const Sections = (function(){
     try {
       const cv = await cpRenderCanvas(node);
       const w = window.open('', '_blank');
-      w.document.write('<html><head><title>Certificado IMDIIL</title><style>@page{size:A4 landscape;margin:0}body{margin:0}img{width:100%;height:auto;display:block}</style></head><body><img src="'+cv.toDataURL('image/png')+'" onload="setTimeout(function(){window.print()},150)"></body></html>');
+      if(!w){ Toast.error('Bloqueado','Permite las ventanas emergentes para imprimir'); return; }
+      w.document.write('<html><head><title>Certificado IMDIIL</title><style>@page{size:A4 landscape;margin:0}body{margin:0}img{width:100%;height:auto;display:block}</style></head><body><img src="'+cv.toDataURL('image/png')+'" onload="setTimeout(function(){window.print()},200)"></body></html>');
       w.document.close();
     } catch(e){ console.error(e); Toast.error('No se pudo imprimir','Intenta de nuevo'); }
   }
   function compartirCertReal(c){
     const url = verifyUrlCert(c.folio);
     const txt = 'Obtuve mi certificado de IMDIIL. Verifícalo aquí:';
-    if (navigator.share){ navigator.share({title:'Certificado IMDIIL', text:txt, url}).catch(()=>{}); return; }
     let menu = document.getElementById('cp-sharemenu'); if(menu) menu.remove();
     menu = document.createElement('div'); menu.id='cp-sharemenu';
     const items=[['WhatsApp','https://wa.me/?text='+encodeURIComponent(txt+' '+url)],['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)],['LinkedIn','https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(url)],['Copiar enlace','copy']];
@@ -5502,7 +5499,7 @@ const Sections = (function(){
     document.body.appendChild(menu);
     menu.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
       const u=b.dataset.u;
-      if(u==='copy'){ navigator.clipboard?.writeText(url); Toast.success('Enlace copiado', c.folio); }
+      if(u==='copy'){ if(navigator.clipboard){navigator.clipboard.writeText(url);} Toast.success('Enlace copiado', c.folio); }
       else window.open(u,'_blank','noopener,width=640,height=640');
       menu.remove();
     }));
@@ -5513,7 +5510,6 @@ const Sections = (function(){
     const c = (window.__certsReales || []).find(x => x.id === id);
     if (!c) return;
     ensureCertCSS();
-    window.__cpActive = id;
     const nombre = window.UserState?.nombre || window.UserState?.displayName || (window.UserState?.email||'').split('@')[0] || 'Usuario VIP';
     const body = buildCertPremium(c, nombre);
     const footer = document.createElement('div');
@@ -5523,7 +5519,7 @@ const Sections = (function(){
       <button class="btn btn--ghost" id="ct-print">Imprimir</button>
       <button class="btn btn--accent" id="ct-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>`;
     const m = Modal.open({id:'cert-'+id, title:'Certificado IMDIIL', subtitle:c.folio, icon:'i-certificate', size:'lg', body, footer});
-    const getNode = () => document.querySelector('#cert-'+id+' #cp-cert') || document.getElementById('cp-cert');
+    const getNode = () => document.querySelector('.modal__body #cp-cert') || document.getElementById('cp-cert');
     requestAnimationFrame(()=>{ fitCertModal(); setTimeout(fitCertModal, 350); });
     footer.querySelector('#ct-close').addEventListener('click', () => m.close());
     footer.querySelector('#ct-verify').addEventListener('click', () => window.open(verifyUrlCert(c.folio), '_blank','noopener'));
@@ -7203,6 +7199,98 @@ function openPasswordResetModal(){
     else Toast.info('No pudimos enviar el enlace',r.error||'Intenta más tarde');
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Popup: confirmar/editar nombre la 1ª vez (para que el certificado
+// no salga con el email). Si el nombre parece venir del correo o es
+// genérico, ofrecemos editarlo; si no, igual avisamos con qué nombre
+// se emitirán los certificados.
+// ═══════════════════════════════════════════════════════════════════
+window.__maybeAskName = function(){
+  try {
+    if (localStorage.getItem('imdiil_name_confirmed') === '1') return;
+    if (document.getElementById('name-modal')) return;
+    const S = window.UserState || {};
+    const email = S.email || '';
+    const emailPart = email.split('@')[0] || '';
+    const actual = (S.nombre || S.displayName || '').trim();
+    // ¿el nombre parece "feo"? = igual al inicio del correo, sin espacio, o con dígitos
+    const pareceEmail = actual && (actual.toLowerCase() === emailPart.toLowerCase());
+    const sinApellido = actual && !actual.includes(' ');
+    const tieneNumeros = /\d/.test(actual);
+    const esGenerico = !actual || ['ingeniero','usuario vip','usuario'].includes(actual.toLowerCase());
+    const sugerido = (pareceEmail || esGenerico) ? '' : actual;
+
+    const ov = document.createElement('div');
+    ov.id = 'name-modal';
+    ov.innerHTML = `
+      <div class="nm-ov"></div>
+      <div class="nm-box">
+        <div class="nm-ic">🎓</div>
+        <h2 class="nm-title">¿Cómo quieres que aparezca tu nombre?</h2>
+        <p class="nm-desc">Este es el nombre que aparecerá en <strong>tus certificados oficiales IMDIIL</strong>. Escríbelo completo y bien escrito (nombre y apellidos).</p>
+        <input id="nm-input" class="nm-input" type="text" value="${(sugerido||'').replace(/"/g,'&quot;')}" placeholder="Ej. Britney Barahona Méndez" autocomplete="name" maxlength="60">
+        <div class="nm-hint" id="nm-hint"></div>
+        <button class="nm-save" id="nm-save">Guardar y continuar</button>
+        <button class="nm-skip" id="nm-skip">Lo dejo así por ahora</button>
+        <p class="nm-foot">Podrás cambiarlo cuando quieras en <strong>Mi perfil → Nombre completo</strong>.</p>
+      </div>`;
+    document.body.appendChild(ov);
+    if (!document.getElementById('nm-css')) {
+      const st=document.createElement('style'); st.id='nm-css';
+      st.textContent = `
+        #name-modal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px}
+        #name-modal .nm-ov{position:absolute;inset:0;background:rgba(10,12,20,.72);backdrop-filter:blur(4px)}
+        #name-modal .nm-box{position:relative;width:100%;max-width:440px;background:var(--surface,#15110C);border:1px solid var(--border-2,rgba(255,230,200,.14));border-radius:20px;padding:30px 26px 24px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.55);animation:nmIn .25s ease}
+        @keyframes nmIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+        #name-modal .nm-ic{font-size:34px;margin-bottom:10px}
+        #name-modal .nm-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:var(--text,#F5EFE6);line-height:1.25;margin-bottom:8px}
+        #name-modal .nm-desc{font-size:13.5px;color:var(--text-2,#B8AC9C);line-height:1.6;margin-bottom:18px}
+        #name-modal .nm-input{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid var(--border-2,rgba(255,230,200,.18));background:var(--surface-2,#1E1812);color:var(--text,#F5EFE6);font-size:16px;font-family:inherit;outline:none;transition:border .15s;text-align:center}
+        #name-modal .nm-input:focus{border-color:var(--primary,#FF7A2D)}
+        #name-modal .nm-hint{font-size:12px;color:#E0894A;min-height:16px;margin:8px 0 4px}
+        #name-modal .nm-save{width:100%;margin-top:12px;padding:14px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--primary,#FF7A2D),var(--highlight,#FFB347));color:#1A1410;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+        #name-modal .nm-save:active{transform:translateY(1px)}
+        #name-modal .nm-skip{width:100%;margin-top:9px;padding:11px;border:1px solid var(--border-2,rgba(255,230,200,.16));border-radius:12px;background:none;color:var(--text-2,#B8AC9C);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+        #name-modal .nm-foot{font-size:11.5px;color:var(--text-3,#8A7E6E);margin-top:14px;line-height:1.5}`;
+      document.head.appendChild(st);
+    }
+    const input = document.getElementById('nm-input');
+    const hint = document.getElementById('nm-hint');
+    setTimeout(()=>input.focus(), 100);
+
+    async function guardar(){
+      const val = (input.value||'').trim().replace(/\s+/g,' ');
+      if (val.length < 3 || !val.includes(' ')) { hint.textContent = 'Escribe tu nombre y al menos un apellido.'; input.focus(); return; }
+      // Guardar igual que openEditField: Auth + Firestore + UserState
+      try { if (window.__setDisplayName) await window.__setDisplayName(val); } catch(e){}
+      try {
+        const fs = window.__fs;
+        if (fs && fs.updateDoc && window.UserState?.uid) {
+          await fs.updateDoc(fs.doc(fs.db,'miembros',window.UserState.uid), { nombre: val });
+        }
+      } catch(e){}
+      window.UserState.nombre = val;
+      window.UserState.displayName = val;
+      window.UserState.iniciales = (window.calcIniciales ? window.calcIniciales(val) : val.slice(0,2).toUpperCase());
+      if (window.memberData) window.memberData.nombre = val;
+      try { const ls=JSON.parse(localStorage.getItem('imdiil_profile')||'{}'); ls.nombre=val; localStorage.setItem('imdiil_profile',JSON.stringify(ls)); } catch(e){}
+      localStorage.setItem('imdiil_name_confirmed','1');
+      if (typeof window.__applyUserState==='function') window.__applyUserState();
+      if (window.Toast) Toast.success('Nombre guardado', val);
+      ov.remove();
+    }
+    document.getElementById('nm-save').addEventListener('click', guardar);
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') guardar(); });
+    document.getElementById('nm-skip').addEventListener('click', ()=>{
+      // No volver a molestar, pero NO marcamos como "confirmado" para que el
+      // perfil siga sugiriendo completarlo. Marcamos solo "preguntado".
+      localStorage.setItem('imdiil_name_confirmed','1');
+      ov.remove();
+      if (window.Toast) Toast.info('Puedes cambiarlo luego', 'Mi perfil → Nombre completo');
+    });
+  } catch(e){ console.warn('maybeAskName:', e); }
+};
 
 function openEditField(field){
   const wrap=document.querySelector(`[data-field="${field}"]`);
