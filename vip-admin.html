@@ -195,6 +195,59 @@ body{
   border-radius:20px 20px 0 0;
 }
 @keyframes shimmerBar{0%,100%{background-position:0 0}50%{background-position:200% 0}}
+/* ===== Foro admin (moderación) ===== */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-2);font-size:14px}
+.tag-mini{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:color-mix(in srgb,var(--primary) 16%,transparent);color:var(--primary)}
+.tag-mini--admin{background:color-mix(in srgb,#10B981 18%,transparent);color:#10B981}
+.foro-admin-list{display:flex;flex-direction:column;gap:10px}
+.foro-admin-card{display:flex;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 16px}
+.foro-admin-card__av{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.foro-admin-card__main{flex:1;min-width:0}
+.foro-admin-card__head{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.foro-admin-card__name{font-weight:700;font-size:14px}
+.foro-admin-card__time{font-size:11px;color:var(--text-3);margin-left:auto}
+.foro-admin-card__text{font-size:13.5px;color:var(--text);line-height:1.5;word-break:break-word;margin-bottom:8px}
+.foro-admin-card__img{max-width:200px;max-height:200px;border-radius:10px;display:block;margin-bottom:8px;object-fit:cover}
+.foro-admin-card__meta{font-size:11.5px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
+.foro-admin-card__del{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.15s;align-self:flex-start}
+.foro-admin-card__del:hover{background:color-mix(in srgb,#F87171 16%,transparent);color:#F87171;border-color:#F87171}
+.foro-admin-card__del .ic{width:16px;height:16px}
+/* Modal de confirmación */
+#adm-confirm{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px}
+.admc-ov{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}
+.admc-box{position:relative;width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px 24px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.admc-ic{width:50px;height:50px;border-radius:14px;background:color-mix(in srgb,#F87171 16%,transparent);color:#F87171;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.admc-ic svg{width:24px;height:24px}
+.admc-title{font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text)}
+.admc-desc{font-size:13.5px;color:var(--text-2);line-height:1.55;margin-bottom:20px}
+.admc-actions{display:flex;gap:10px;justify-content:center}
+.admc-del{background:#EF4444;color:#fff;border:0}
+.admc-del:hover{background:#DC2626}
+/* Comentarios del foro admin */
+.foro-admin-card__vercom{margin-top:8px;background:none;border:0;color:var(--primary);font-size:12.5px;font-weight:600;cursor:pointer;padding:2px 0;font-family:inherit}
+.foro-admin-card__vercom:hover{text-decoration:underline}
+.foro-admin-coms{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.adm-com{display:flex;gap:9px;align-items:flex-start}
+.adm-com__av{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700}
+.adm-com__body{flex:1;min-width:0;background:var(--surface-2);border-radius:9px;padding:8px 11px}
+.adm-com__head{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.adm-com__name{font-weight:700;font-size:12px}
+.adm-com__time{font-size:10px;color:var(--text-3)}
+.adm-com__text{font-size:12.5px;color:var(--text);line-height:1.45}
+.adm-com__del{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-3);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.adm-com__del:hover{background:color-mix(in srgb,#F87171 16%,transparent);color:#F87171;border-color:#F87171}
+.adm-com__del .ic{width:13px;height:13px}
+/* Tarjetas del directorio admin */
+.dir-adm-card{display:flex;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 16px;align-items:flex-start}
+.dir-adm-card__av{width:52px;height:52px;border-radius:12px;flex-shrink:0;object-fit:cover}
+.dir-adm-card__av--ini{display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800}
+.dir-adm-card__main{flex:1;min-width:0}
+.dir-adm-card__head{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.dir-adm-card__name{font-weight:800;font-size:15px}
+.dir-adm-card__sub{font-size:13px;color:var(--text);margin-bottom:3px}
+.dir-adm-card__sector{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent);padding:3px 9px;border-radius:999px;margin-bottom:6px}
+.dir-adm-card__bio{font-size:12.5px;color:var(--text-2);line-height:1.5;margin-bottom:6px}
+.dir-adm-card__meta{font-size:11.5px;color:var(--text-3);font-family:'JetBrains Mono',monospace}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .spin{animation:spin 0.9s linear infinite}
 @keyframes shimmerSkeleton{0%{background-position:-200% 0}100%{background-position:200% 0}}
@@ -1096,6 +1149,8 @@ window.__signOut = async () => {
       <div class="nav-label">Comunidad</div>
       <a class="nav-item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros VIP<span class="nav-item__badge">486</span></a>
       <a class="nav-item" data-section="noticias"><svg class="ic"><use href="#i-news"/></svg>Noticias</a>
+      <a class="nav-item" data-section="foro"><svg class="ic"><use href="#i-users"/></svg>Foro<span class="nav-item__badge" id="badge-foro">0</span></a>
+      <a class="nav-item" data-section="directorio"><svg class="ic"><use href="#i-user"/></svg>Directorio<span class="nav-item__badge" id="badge-dir">0</span></a>
     </div>
 
     <div class="nav-section">
@@ -4816,13 +4871,235 @@ const Pages={
       const i=+b.dataset.rmAdmin;
       if(confirm('¿Eliminar este administrador?')){c.admins.splice(i,1);Toast.success('Admin eliminado');Pages.config(p);}
     }));
+  },
+
+  // ═══════════ FORO · moderación ═══════════
+  foro(p){
+    p.innerHTML = `
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Foro · Moderación</h1>
+          <p class="page-sub">Publicaciones de la comunidad. Se autoeliminan a los 15 días. Puedes borrar cualquiera.</p>
+        </div>
+      </div>
+      <div class="kpi-grid" id="foro-stats">
+        <div class="kpi-card"><div class="kpi-card__label">Publicaciones</div><div class="kpi-card__value" id="fs-posts">—</div></div>
+        <div class="kpi-card"><div class="kpi-card__label">Con imagen</div><div class="kpi-card__value" id="fs-img">—</div></div>
+        <div class="kpi-card"><div class="kpi-card__label">Reacciones totales</div><div class="kpi-card__value" id="fs-likes">—</div></div>
+        <div class="kpi-card"><div class="kpi-card__label">Últimas 24 h</div><div class="kpi-card__value" id="fs-24">—</div></div>
+      </div>
+      <div id="foro-admin-list" class="foro-admin-list" style="margin-top:18px;"><div class="empty-state">Cargando publicaciones…</div></div>
+    `;
+    foroAdminCargar();
+  },
+
+  // ═══════════ DIRECTORIO · moderación ═══════════
+  directorio(p){
+    p.innerHTML = `
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Directorio · Moderación</h1>
+          <p class="page-sub">Tarjetas profesionales de los miembros. Puedes eliminar cualquiera que sea inapropiada.</p>
+        </div>
+      </div>
+      <div class="kpi-grid" id="dir-stats">
+        <div class="kpi-card"><div class="kpi-card__label">Tarjetas</div><div class="kpi-card__value" id="ds-total">—</div></div>
+        <div class="kpi-card"><div class="kpi-card__label">Con foto</div><div class="kpi-card__value" id="ds-foto">—</div></div>
+        <div class="kpi-card"><div class="kpi-card__label">Visibles</div><div class="kpi-card__value" id="ds-vis">—</div></div>
+        <div class="kpi-card"><div class="kpi-card__label">Con contacto</div><div class="kpi-card__value" id="ds-cont">—</div></div>
+      </div>
+      <div id="dir-admin-list" class="foro-admin-list" style="margin-top:18px;"><div class="empty-state">Cargando directorio…</div></div>
+    `;
+    dirAdminCargar();
   }
 };
 
 /* =========================================================
-   ROUTER
+   FORO · carga y moderación (admin)
    ========================================================= */
+let _foroAdminUnsub = null;
+function foroAdminTiempo(ts){
+  if(!ts) return 'ahora';
+  let d; try{ d=ts.toDate?ts.toDate():new Date(ts); }catch(e){ return 'ahora'; }
+  const seg=Math.floor((Date.now()-d.getTime())/1000);
+  if(seg<60) return 'ahora';
+  if(seg<3600) return 'hace '+Math.floor(seg/60)+' min';
+  if(seg<86400) return 'hace '+Math.floor(seg/3600)+' h';
+  return d.toLocaleDateString('es-MX',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+// Modal de confirmación reutilizable (botón rojo de eliminar)
+function adminConfirm(titulo, desc){
+  return new Promise(resolve=>{
+    let ov=document.getElementById('adm-confirm'); if(ov) ov.remove();
+    ov=document.createElement('div'); ov.id='adm-confirm';
+    ov.innerHTML=`
+      <div class="admc-ov"></div>
+      <div class="admc-box">
+        <div class="admc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1 -2 2H7a2 2 0 0 1 -2 -2V6m3 0V4a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/></svg></div>
+        <h3 class="admc-title">${titulo}</h3>
+        <p class="admc-desc">${desc||''}</p>
+        <div class="admc-actions">
+          <button class="btn btn--ghost" id="admc-no">Cancelar</button>
+          <button class="btn admc-del" id="admc-si">Eliminar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+    const close=(v)=>{ ov.remove(); resolve(v); };
+    ov.querySelector('.admc-ov').addEventListener('click',()=>close(false));
+    ov.querySelector('#admc-no').addEventListener('click',()=>close(false));
+    ov.querySelector('#admc-si').addEventListener('click',()=>close(true));
+  });
+}
+
+function foroAdminCargar(){
+  const fb = window._fb || {};
+  const { db, collection, query, orderBy, onSnapshot, limit } = fb;
+  if (!db || !onSnapshot) {
+    const cont=document.getElementById('foro-admin-list');
+    if(cont) cont.innerHTML='<div class="empty-state">No se pudo conectar al foro.</div>';
+    return;
+  }
+  if (_foroAdminUnsub) { _foroAdminUnsub(); _foroAdminUnsub=null; }
+  const q = query(collection(db,'posts'), orderBy('createdAt','desc'), limit(200));
+  _foroAdminUnsub = onSnapshot(q, (snap)=>{
+    const posts=[]; snap.forEach(d=>{ const x=d.data(); x.id=d.id; posts.push(x); });
+    // stats
+    const conImg = posts.filter(x=>x.imagen).length;
+    const likes = posts.reduce((s,x)=>s+(x.likes||0),0);
+    const h24 = posts.filter(x=>{ const cd=x.createdAt&&x.createdAt.toDate?x.createdAt.toDate().getTime():0; return cd && (Date.now()-cd)<86400000; }).length;
+    const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    set('fs-posts',posts.length); set('fs-img',conImg); set('fs-likes',likes); set('fs-24',h24);
+    const badge=document.getElementById('badge-foro'); if(badge) badge.textContent=posts.length;
+    // lista
+    const cont=document.getElementById('foro-admin-list'); if(!cont) return;
+    if(!posts.length){ cont.innerHTML='<div class="empty-state">Aún no hay publicaciones en el foro.</div>'; return; }
+    cont.innerHTML = posts.map(x=>`
+      <div class="foro-admin-card" data-fpost="${x.id}">
+        <div class="foro-admin-card__av" style="background:linear-gradient(135deg,${x.color||'#FF7A2D'},${(x.color||'#FF7A2D')}aa);">${(x.iniciales||'?')}</div>
+        <div class="foro-admin-card__main">
+          <div class="foro-admin-card__head">
+            <span class="foro-admin-card__name">${(x.nombre||'Miembro')}</span>
+            ${x.esAdmin?'<span class="tag-mini tag-mini--admin">IMDIIL</span>':'<span class="tag-mini">VIP</span>'}
+            <span class="foro-admin-card__time">${foroAdminTiempo(x.createdAt)}</span>
+          </div>
+          ${x.texto?`<div class="foro-admin-card__text">${(x.texto||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`:''}
+          ${x.imagen?`<img class="foro-admin-card__img" src="${x.imagen}" alt="adjunto">`:''}
+          <div class="foro-admin-card__meta">❤ ${x.likes||0} · 💬 ${x.comentariosCount||0} respuestas</div>
+          ${(x.comentariosCount||0)>0?`<button class="foro-admin-card__vercom" data-vercom="${x.id}">Ver y moderar respuestas</button>`:''}
+          <div class="foro-admin-coms" id="adm-coms-${x.id}" style="display:none;"></div>
+        </div>
+        <button class="foro-admin-card__del" data-fdel="${x.id}" title="Eliminar publicación"><svg class="ic"><use href="#i-trash"/></svg></button>
+      </div>
+    `).join('');
+    cont.querySelectorAll('[data-fdel]').forEach(b=>b.addEventListener('click', async ()=>{
+      const ok = await adminConfirm('¿Eliminar esta publicación?','Se borrará del foro junto con sus respuestas. No se puede deshacer.');
+      if(!ok) return;
+      try {
+        const { db, doc, deleteDoc } = window._fb;
+        await deleteDoc(doc(db,'posts',b.dataset.fdel));
+        Toast.success('Publicación eliminada','');
+      } catch(e){ console.error(e); Toast.error('No se pudo eliminar', e.message||''); }
+    }));
+    cont.querySelectorAll('[data-vercom]').forEach(b=>b.addEventListener('click', ()=> foroAdminVerComentarios(b.dataset.vercom)));
+  }, (err)=>{ console.error('foro admin',err); const c=document.getElementById('foro-admin-list'); if(c) c.innerHTML='<div class="empty-state">Error al cargar el foro.</div>'; });
+}
+
+// Ver y moderar comentarios de un post (admin)
+const _admComUnsub = {};
+function foroAdminVerComentarios(postId){
+  const cont = document.getElementById('adm-coms-'+postId); if(!cont) return;
+  if (cont.style.display!=='none'){ cont.style.display='none'; if(_admComUnsub[postId]){_admComUnsub[postId]();delete _admComUnsub[postId];} return; }
+  cont.style.display='block';
+  cont.innerHTML='<div class="empty-state" style="padding:14px;">Cargando respuestas…</div>';
+  const { db, collection, query, orderBy, onSnapshot, doc, deleteDoc, updateDoc, increment } = window._fb;
+  if (_admComUnsub[postId]) _admComUnsub[postId]();
+  const q = query(collection(db,'posts',postId,'comentarios'), orderBy('createdAt','asc'));
+  _admComUnsub[postId] = onSnapshot(q, (snap)=>{
+    if (snap.empty){ cont.innerHTML='<div class="empty-state" style="padding:14px;">Sin respuestas.</div>'; return; }
+    const arr=[]; snap.forEach(d=>{ const c=d.data(); c.id=d.id; arr.push(c); });
+    cont.innerHTML = arr.map(c=>`
+      <div class="adm-com">
+        <div class="adm-com__av" style="background:linear-gradient(135deg,${c.color||'#888'},${(c.color||'#888')}aa);">${(c.iniciales||'?')}</div>
+        <div class="adm-com__body">
+          <div class="adm-com__head"><span class="adm-com__name">${(c.nombre||'Miembro')}</span><span class="adm-com__time">${foroAdminTiempo(c.createdAt)}</span></div>
+          <div class="adm-com__text">${(c.texto||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+        </div>
+        <button class="adm-com__del" data-comdel="${postId}|${c.id}" title="Eliminar respuesta"><svg class="ic"><use href="#i-trash"/></svg></button>
+      </div>
+    `).join('');
+    cont.querySelectorAll('[data-comdel]').forEach(b=>b.addEventListener('click', async ()=>{
+      const ok = await adminConfirm('¿Eliminar esta respuesta?','No se puede deshacer.');
+      if(!ok) return;
+      const [pid,cid] = b.dataset.comdel.split('|');
+      try {
+        await deleteDoc(doc(db,'posts',pid,'comentarios',cid));
+        try { await updateDoc(doc(db,'posts',pid), { comentariosCount: increment(-1) }); } catch(e){}
+        Toast.success('Respuesta eliminada','');
+      } catch(e){ console.error(e); Toast.error('No se pudo eliminar',''); }
+    }));
+  });
+}
+
+/* =========================================================
+   DIRECTORIO · carga y moderación (admin)
+   ========================================================= */
+let _dirAdminUnsub = null;
+function dirAdminCargar(){
+  const fb = window._fb || {};
+  const { db, collection, query, orderBy, onSnapshot, limit } = fb;
+  if (!db || !onSnapshot){ const c=document.getElementById('dir-admin-list'); if(c) c.innerHTML='<div class="empty-state">No se pudo conectar al directorio.</div>'; return; }
+  if (_dirAdminUnsub){ _dirAdminUnsub(); _dirAdminUnsub=null; }
+  const q = query(collection(db,'directorio'), orderBy('updatedAt','desc'), limit(300));
+  _dirAdminUnsub = onSnapshot(q, (snap)=>{
+    const cards=[]; snap.forEach(d=>{ const x=d.data(); x.id=d.id; cards.push(x); });
+    const conFoto = cards.filter(x=>x.foto).length;
+    const vis = cards.filter(x=>x.visible!==false).length;
+    const conCont = cards.filter(x=>x.whatsapp||x.email||x.linkedin||x.web).length;
+    const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    set('ds-total',cards.length); set('ds-foto',conFoto); set('ds-vis',vis); set('ds-cont',conCont);
+    const badge=document.getElementById('badge-dir'); if(badge) badge.textContent=cards.length;
+    const cont=document.getElementById('dir-admin-list'); if(!cont) return;
+    if(!cards.length){ cont.innerHTML='<div class="empty-state">Aún no hay tarjetas en el directorio.</div>'; return; }
+    cont.innerHTML = cards.map(x=>{
+      const ini=(x.nombre||'?').trim().slice(0,2).toUpperCase();
+      const foto = x.foto ? `<img class="dir-adm-card__av" src="${x.foto}" alt="">`
+        : `<div class="dir-adm-card__av dir-adm-card__av--ini" style="background:linear-gradient(135deg,${x.color||'#FF7A2D'},${(x.color||'#FF7A2D')}aa);">${ini}</div>`;
+      const contactos=[];
+      if(x.whatsapp) contactos.push('WhatsApp');
+      if(x.email) contactos.push('Correo');
+      if(x.linkedin) contactos.push('LinkedIn');
+      if(x.web) contactos.push('Web');
+      return `
+      <div class="dir-adm-card">
+        ${foto}
+        <div class="dir-adm-card__main">
+          <div class="dir-adm-card__head">
+            <span class="dir-adm-card__name">${(x.nombre||'Miembro')}</span>
+            ${x.visible===false?'<span class="tag-mini" style="background:rgba(150,150,150,.18);color:#999;">Oculta</span>':'<span class="tag-mini tag-mini--admin">Visible</span>'}
+          </div>
+          ${x.puesto?`<div class="dir-adm-card__sub">${(x.puesto||'')}${x.empresa?' · '+x.empresa:''}</div>`:''}
+          ${x.sector?`<div class="dir-adm-card__sector">${x.sector}</div>`:''}
+          ${x.bio?`<div class="dir-adm-card__bio">${(x.bio||'').replace(/</g,'&lt;')}</div>`:''}
+          <div class="dir-adm-card__meta">${contactos.length?'Contacto: '+contactos.join(' · '):'Sin contacto'}</div>
+        </div>
+        <button class="foro-admin-card__del" data-dirdel="${x.id}" data-dirname="${(x.nombre||'Miembro').replace(/"/g,'&quot;')}" title="Eliminar tarjeta"><svg class="ic"><use href="#i-trash"/></svg></button>
+      </div>`;
+    }).join('');
+    cont.querySelectorAll('[data-dirdel]').forEach(b=>b.addEventListener('click', async ()=>{
+      const ok = await adminConfirm('¿Eliminar la tarjeta de '+b.dataset.dirname+'?','Se quitará del directorio. El miembro podrá volver a crearla. No se puede deshacer.');
+      if(!ok) return;
+      try {
+        const { db, doc, deleteDoc } = window._fb;
+        await deleteDoc(doc(db,'directorio',b.dataset.dirdel));
+        Toast.success('Tarjeta eliminada','');
+      } catch(e){ console.error(e); Toast.error('No se pudo eliminar', e.message||''); }
+    }));
+  }, (err)=>{ console.error('dir admin',err); const c=document.getElementById('dir-admin-list'); if(c) c.innerHTML='<div class="empty-state">Error al cargar el directorio.</div>'; });
+}
+
 function navigate(section){
+  if(section!=='foro' && typeof _foroAdminUnsub==='function'){ _foroAdminUnsub(); _foroAdminUnsub=null; }
+  if(section!=='directorio' && typeof _dirAdminUnsub==='function'){ _dirAdminUnsub(); _dirAdminUnsub=null; }
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(n=>n.classList.remove('is-active'));
   document.querySelectorAll(`[data-section="${section}"]`).forEach(n=>n.classList.add('is-active'));
   const p=document.getElementById('page');
