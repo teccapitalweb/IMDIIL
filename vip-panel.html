@@ -4454,7 +4454,7 @@ const Sections = (function(){
         <div class="splash-cmp__icon">🎓</div>
         <div class="splash-cmp__kicker">CURSO COMPLETADO</div>
         <h1 class="splash-cmp__title">¡Felicidades${window.UserState?.nombre ? ', '+window.UserState.nombre : ''}!</h1>
-        <p class="splash-cmp__desc">Terminaste <strong>${escapeHtml(curso.titulo)}</strong>. Este es tu certificado oficial IMDIIL.</p>
+        <p class="splash-cmp__desc">Completaste el curso<br><strong>${escapeHtml(curso.titulo)}</strong><br>Este es tu certificado oficial IMDIIL.</p>
         <div class="splash-cmp__certreal">${buildCertPremium(certObj, nombre)}</div>
         <div class="splash-cmp__actions">
           <button class="splash-cmp__btn splash-cmp__btn--primary" id="splash-ver-cert">
@@ -5541,7 +5541,18 @@ const Sections = (function(){
       const cv = await cpRenderCanvas(node);
       const w = window.open('', '_blank');
       if(!w){ Toast.error('Bloqueado','Permite las ventanas emergentes para imprimir'); return; }
-      w.document.write('<html><head><title>Certificado IMDIIL</title><style>@page{size:A4 landscape;margin:0}body{margin:0}img{width:100%;height:auto;display:block}</style></head><body><img src="'+cv.toDataURL('image/png')+'" onload="setTimeout(function(){window.print()},200)"></body></html>');
+      w.document.write(
+        '<!DOCTYPE html><html><head><title>Certificado IMDIIL</title>'
+        + '<style>'
+        + '@page{size:A4 landscape;margin:0}'
+        + 'html,body{margin:0;padding:0;width:297mm;height:210mm}'
+        + '.sheet{width:297mm;height:210mm;display:flex;align-items:center;justify-content:center;overflow:hidden}'
+        + '.sheet img{width:100%;height:100%;object-fit:contain;display:block}'
+        + '@media print{html,body{width:297mm;height:210mm}}'
+        + '</style></head><body><div class="sheet">'
+        + '<img src="'+cv.toDataURL('image/png')+'" onload="setTimeout(function(){window.focus();window.print();},250)">'
+        + '</div></body></html>'
+      );
       w.document.close();
     } catch(e){ console.error(e); Toast.error('No se pudo imprimir','Intenta de nuevo'); }
   }
@@ -8359,8 +8370,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .splash-cmp__kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;color:#FF9D4D;margin-bottom:10px}
 .splash-cmp__title{font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:10px;color:#FBF6EE}
-.splash-cmp__desc{font-size:14px;color:#D8CCBC;line-height:1.6;margin-bottom:22px}
-.splash-cmp__desc strong{color:#FFB877}
+.splash-cmp__desc{font-size:14px;color:#D8CCBC;line-height:1.7;margin-bottom:22px}
+.splash-cmp__desc strong{color:#FFB877;display:inline-block;margin:5px 0;font-size:15px}
 .splash-cmp__desc strong{color:var(--text);font-weight:700}
 .splash-cmp__cert{background:linear-gradient(180deg,#F4EFE3,#E8DFCB);border-radius:14px;padding:22px 24px;margin-bottom:22px;color:#0E0A06;text-align:left;box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 3px #FF7A2D,inset 0 0 0 4px rgba(0,0,0,.05);position:relative;overflow:hidden}
 .splash-cmp__cert::before{content:"";position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,122,45,.18),transparent 70%);pointer-events:none}
