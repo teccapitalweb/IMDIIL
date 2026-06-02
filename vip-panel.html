@@ -1329,6 +1329,82 @@ body::after{
 }
 
 /* =========================================================
+   HERRAMIENTA INDICADORES LOGÍSTICOS
+   ========================================================= */
+.logi{display:flex;flex-direction:column;gap:18px}
+.logi-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.logi-folio{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary);padding:6px 13px;border-radius:100px;background:color-mix(in srgb,var(--primary) 9%,transparent);border:1px solid color-mix(in srgb,var(--primary) 22%,transparent)}
+.logi-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);font-weight:500;letter-spacing:.3px}
+.logi-setup{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow-card)}
+@media(max-width:680px){.logi-setup{grid-template-columns:1fr}}
+.logi-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.logi-field label{font-size:13px;font-weight:600;color:var(--text-2);letter-spacing:-.1px}
+.logi .input{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--border-2);background:var(--surface);color:var(--text);padding:12px 15px;font-size:14.5px;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+.logi .input::placeholder{color:var(--text-3)}
+.logi .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+.logi-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.logi-grid{grid-template-columns:1fr}}
+.logi-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:var(--shadow-card);display:flex;flex-direction:column;gap:16px}
+.logi-card__head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.logi-card__title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.2px}
+.logi-card__sub{font-size:12px;color:var(--text-3);margin-top:2px;line-height:1.45}
+.logi-card__inputs{display:flex;flex-direction:column;gap:12px}
+.logi-card__result{display:flex;align-items:center;gap:16px;padding-top:16px;border-top:1px solid var(--border);min-height:96px}
+.logi-gauge{position:relative;flex-shrink:0;width:80px;height:80px;display:flex;align-items:center;justify-content:center}
+.logi-gauge__svg{width:80px;height:80px;transform:rotate(-90deg)}
+.logi-gauge__track{fill:none;stroke:var(--surface-3);stroke-width:8}
+.logi-gauge__fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.22,1,.36,1);filter:drop-shadow(0 0 3px currentColor)}
+.logi-gauge--empty .logi-gauge__fill{filter:none}
+.logi-gauge__center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.logi-gauge__val{font-size:16px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-.5px}
+.logi-gauge__val--muted{color:var(--text-3)}
+.logi-card__verdict{flex:1;min-width:0}
+.logi-card__verdict p{font-size:12px;color:var(--text-2);line-height:1.5;margin:8px 0 0}
+.logi-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:100px;border:1px solid}
+.logi-card__pending{display:flex;align-items:center;gap:14px}
+.logi-card__pending p{font-size:12px;color:var(--text-3);line-height:1.5;margin:0}
+
+/* =========================================================
+   HERRAMIENTA TABLA NOM-STPS · buscador de normas
+   ========================================================= */
+.nom{display:flex;flex-direction:column;gap:18px}
+.nom-count{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text-3);letter-spacing:.3px;padding:8px 14px;border-radius:100px;background:var(--surface-2);border:1px solid var(--border)}
+.nom-controls{display:flex;flex-direction:column;gap:14px}
+.nom-search{position:relative;display:flex;align-items:center}
+.nom-search__icon{position:absolute;left:16px;width:18px;height:18px;color:var(--text-3);pointer-events:none}
+.nom-search__input{width:100%;min-height:52px;border-radius:14px;border:1px solid var(--border-2);background:var(--surface);color:var(--text);padding:12px 46px;font-size:15px;font-family:inherit;transition:border-color .2s,box-shadow .2s;box-shadow:var(--shadow-card)}
+.nom-search__input::placeholder{color:var(--text-3)}
+.nom-search__input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+.nom-search__clear{position:absolute;right:12px;width:28px;height:28px;border-radius:8px;border:none;background:var(--surface-3);color:var(--text-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.nom-search__clear:hover{background:var(--primary);color:#fff}
+.nom-search__clear .ic{width:14px;height:14px}
+.nom-cats{display:flex;flex-wrap:wrap;gap:8px}
+.nom-cat{padding:8px 14px;border-radius:100px;border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s}
+.nom-cat:hover{border-color:var(--cat,var(--primary));color:var(--text)}
+.nom-cat.is-active{background:var(--cat,var(--primary));border-color:var(--cat,var(--primary));color:#fff}
+.nom-cat[data-cat="Todas"].is-active{background:var(--primary);border-color:var(--primary)}
+.nom-list{display:flex;flex-direction:column;gap:10px}
+.nom-row{display:flex;align-items:stretch;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow-card);transition:border-color .2s,transform .2s}
+.nom-row:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+.nom-row__main{flex:1;min-width:0}
+.nom-row__top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.nom-row__code{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.4px}
+.nom-row__cat{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:100px;color:var(--cat,var(--primary));background:color-mix(in srgb,var(--cat,var(--primary)) 13%,transparent);border:1px solid color-mix(in srgb,var(--cat,var(--primary)) 30%,transparent)}
+.nom-row__title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.2px;line-height:1.35;margin-bottom:5px}
+.nom-row__desc{font-size:13px;color:var(--text-2);line-height:1.5}
+.nom-row__link{flex-shrink:0;align-self:center;width:38px;height:38px;border-radius:10px;border:1px solid var(--border-2);background:var(--surface-2);color:var(--text-3);display:flex;align-items:center;justify-content:center;transition:all .18s;text-decoration:none}
+.nom-row__link:hover{border-color:var(--primary);color:var(--primary);background:color-mix(in srgb,var(--primary) 8%,transparent)}
+.nom-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:48px 20px;background:var(--surface);border:1px dashed var(--border-strong);border-radius:16px}
+.nom-empty__icon{color:var(--text-3);opacity:.5}
+.nom-empty h4{font-size:16px;font-weight:600;color:var(--text-2);margin:0}
+.nom-empty p{font-size:13px;color:var(--text-3);max-width:340px;line-height:1.55;margin:0}
+.nom-empty p strong{color:var(--text-2)}
+@media(max-width:600px){
+  .nom-row{padding:15px}
+  .nom-search__input{font-size:14px}
+}
+
+/* =========================================================
    HERRAMIENTA IPER · matriz, peligros, controles
    ========================================================= */
 .iper{display:flex;flex-direction:column;gap:18px}
@@ -3656,7 +3732,7 @@ window.__setDisplayName = async (nombre) => {
         <a class="mobile-drawer__item" data-tool="iper"><svg class="ic"><use href="#i-shield-check"/></svg>Matriz IPER</a>
         <a class="mobile-drawer__item" data-tool="oee"><svg class="ic"><use href="#i-gauge"/></svg>Calculadora OEE</a>
         <a class="mobile-drawer__item" data-tool="ats"><svg class="ic"><use href="#i-tools"/></svg>Generador ATS</a>
-        <a class="mobile-drawer__item" data-tool="nom"><svg class="ic"><use href="#i-news"/></svg>Tabla NOM-STPS</a>
+        <a class="mobile-drawer__item" data-tool="noms"><svg class="ic"><use href="#i-news"/></svg>Tabla NOM-STPS</a>
       </div>
 
       <div class="mobile-drawer__section">
@@ -3840,8 +3916,8 @@ const Tools={
   iper:{open(){IPERTool.open();}},
   oee:{open(){OEETool.open();}},
   ats:{open(){navigateToSection('tool-ats');}},
-  noms:{open(){openToolPlaceholder('noms','Tabla NOM-STPS','Buscador de normas oficiales mexicanas','i-book-2','Base de datos de 30+ NOMs (NOM-001 a NOM-036), búsqueda en tiempo real, filtros por sector y ficha detallada.');}},
-  logistica:{open(){openToolPlaceholder('logistica','Indicadores Logísticos','OTIF, Fill Rate, rotación, stockout','i-chart-bar','4 calculadoras integradas con benchmarks por sector, dashboard visual y reporte mensual PDF.');}}
+  noms:{open(){navigateToSection('tool-noms');}},
+  logistica:{open(){navigateToSection('tool-logistica');}}
 };
 
 /* =========================================================
@@ -5117,6 +5193,420 @@ const ATSTool = (function(){
   }
 
   return {open(){navigateToSection('tool-ats');}, mount};
+})();
+
+/* =========================================================
+   HERRAMIENTA INDICADORES LOGÍSTICOS
+   4 KPIs: OTIF · Fill Rate · Rotación inventario · Costo logístico
+   Gauges/medidores · benchmarks · sección (no popup) · PDF
+   ========================================================= */
+const LogiTool = (function(){
+  const STORAGE_KEY = 'imdiil:logi:current';
+  let state = {
+    folio:null,
+    setup:{empresa:'', periodo:'', responsable:'', fecha:new Date().toISOString().slice(0,10)},
+    // OTIF
+    entregasTotales:'', entregasOk:'',
+    // Fill Rate
+    lineasPedidas:'', lineasSurtidas:'',
+    // Rotación
+    costoVentas:'', inventarioPromedio:'',
+    // Costo logístico
+    costoLogistico:'', ventas:''
+  };
+
+  function load(){ try{const r=localStorage.getItem(STORAGE_KEY);if(r)state={...state,...JSON.parse(r)};}catch(e){} }
+  function save(){ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){} }
+  function folioNuevo(){ return 'IMDIIL-LOG-'+Math.floor(10000+Math.random()*89999); }
+
+  function num(v){ const n=parseFloat(v); return isNaN(n)?0:n; }
+
+  function calc(){
+    const et=num(state.entregasTotales), eok=num(state.entregasOk);
+    const lp=num(state.lineasPedidas), ls=num(state.lineasSurtidas);
+    const cv=num(state.costoVentas), inv=num(state.inventarioPromedio);
+    const cl=num(state.costoLogistico), vt=num(state.ventas);
+    return {
+      otif: et>0 ? Math.min(1, eok/et) : null,
+      fill: lp>0 ? Math.min(1, ls/lp) : null,
+      rotacion: inv>0 ? cv/inv : null,
+      costoPct: vt>0 ? cl/vt : null
+    };
+  }
+
+  // Cada KPI con su benchmark y clasificación
+  function evalOTIF(v){
+    if(v===null) return null;
+    const p=v*100;
+    if(p>=95) return {label:'Excelente',hex:'#10B981',desc:'Nivel de servicio de clase mundial.'};
+    if(p>=90) return {label:'Bueno',hex:'#84CC16',desc:'Por encima del estándar logístico.'};
+    if(p>=80) return {label:'Regular',hex:'#FBBF24',desc:'Margen de mejora en cumplimiento.'};
+    return {label:'Bajo',hex:'#EF4444',desc:'Nivel de servicio crítico.'};
+  }
+  function evalFill(v){
+    if(v===null) return null;
+    const p=v*100;
+    if(p>=98) return {label:'Excelente',hex:'#10B981',desc:'Inventario bien dimensionado.'};
+    if(p>=95) return {label:'Bueno',hex:'#84CC16',desc:'Buen nivel de disponibilidad.'};
+    if(p>=90) return {label:'Regular',hex:'#FBBF24',desc:'Riesgo de quiebres de stock.'};
+    return {label:'Bajo',hex:'#EF4444',desc:'Faltantes frecuentes.'};
+  }
+  function evalRot(v){
+    if(v===null) return null;
+    if(v>=12) return {label:'Alta',hex:'#10B981',desc:'Inventario muy dinámico (≥12x/año).'};
+    if(v>=6) return {label:'Saludable',hex:'#84CC16',desc:'Rotación sana para la mayoría de sectores.'};
+    if(v>=3) return {label:'Moderada',hex:'#FBBF24',desc:'Inventario algo lento.'};
+    return {label:'Lenta',hex:'#EF4444',desc:'Capital inmovilizado en inventario.'};
+  }
+  function evalCosto(v){
+    if(v===null) return null;
+    const p=v*100;
+    if(p<=8) return {label:'Eficiente',hex:'#10B981',desc:'Costo logístico bajo control.'};
+    if(p<=12) return {label:'Aceptable',hex:'#84CC16',desc:'Dentro del promedio del sector.'};
+    if(p<=18) return {label:'Alto',hex:'#FBBF24',desc:'Oportunidad de optimización.'};
+    return {label:'Excesivo',hex:'#EF4444',desc:'Costo logístico erosiona margen.'};
+  }
+
+  function mount(container){
+    load();
+    if(!state.folio) state.folio=folioNuevo();
+    save();
+    container.innerHTML = `
+      <div class="tool-section">
+        <div class="tool-section__head">
+          <div class="tool-section__title">
+            <div class="tool-section__icon"><svg class="ic"><use href="#i-chart-bar"/></svg></div>
+            <div>
+              <h1>Indicadores Logísticos</h1>
+              <p>KPIs de cadena de suministro · OTIF, Fill Rate, rotación y costo</p>
+            </div>
+          </div>
+          <div class="tool-section__actions">
+            <button class="btn btn--ghost btn--sm" id="logi-reset">Nuevo reporte</button>
+            <button class="btn btn--accent btn--sm" id="logi-pdf">Descargar PDF<svg class="ic"><use href="#i-download"/></svg></button>
+          </div>
+        </div>
+        <div class="logi" id="logi-root"></div>
+      </div>
+    `;
+    container.querySelector('#logi-reset').addEventListener('click',()=>{
+      if(!confirm('¿Iniciar un nuevo reporte? Se perderán los datos actuales.')) return;
+      state={folio:folioNuevo(),setup:{empresa:'',periodo:'',responsable:'',fecha:new Date().toISOString().slice(0,10)},entregasTotales:'',entregasOk:'',lineasPedidas:'',lineasSurtidas:'',costoVentas:'',inventarioPromedio:'',costoLogistico:'',ventas:''};
+      save(); render(); if(typeof Toast!=='undefined')Toast.info('Nuevo reporte','Folio: '+state.folio);
+    });
+    container.querySelector('#logi-pdf').addEventListener('click',()=>generarPDF());
+    render();
+  }
+
+  function gaugeSVG(value, color, big){
+    // value 0..1 (para rotación se normaliza aparte)
+    const R=big?52:46, C=2*Math.PI*R, off=C*(1-Math.max(0,Math.min(1,value)));
+    return `<svg viewBox="0 0 ${big?130:116} ${big?130:116}" class="logi-gauge__svg">
+      <circle cx="${big?65:58}" cy="${big?65:58}" r="${R}" class="logi-gauge__track"/>
+      <circle cx="${big?65:58}" cy="${big?65:58}" r="${R}" class="logi-gauge__fill" stroke="${color}" stroke-dasharray="${C}" stroke-dashoffset="${C}" style="--to:${off};"/>
+    </svg>`;
+  }
+
+  function kpiCard(opts){
+    // opts: titulo, sub, valorTxt, value(0..1 para gauge), cls, inputs[]
+    const {titulo, sub, valorTxt, value, cls, inputsHTML} = opts;
+    return `
+      <div class="logi-card">
+        <div class="logi-card__head">
+          <div><div class="logi-card__title">${titulo}</div><div class="logi-card__sub">${sub}</div></div>
+        </div>
+        <div class="logi-card__inputs">${inputsHTML}</div>
+        <div class="logi-card__result">
+          ${cls ? `
+            <div class="logi-gauge">
+              ${gaugeSVG(value, cls.hex, false)}
+              <div class="logi-gauge__center"><div class="logi-gauge__val" style="color:${cls.hex};">${valorTxt}</div></div>
+            </div>
+            <div class="logi-card__verdict">
+              <span class="logi-badge" style="background:${cls.hex}1f;color:${cls.hex};border-color:${cls.hex}55;">${cls.label}</span>
+              <p>${cls.desc}</p>
+            </div>
+          ` : `
+            <div class="logi-card__pending">
+              <div class="logi-gauge logi-gauge--empty">${gaugeSVG(0,'var(--text-3)',false)}<div class="logi-gauge__center"><div class="logi-gauge__val logi-gauge__val--muted">—</div></div></div>
+              <p>Captura los datos para calcular este indicador.</p>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+  function fld(label, id, ph){
+    return `<div class="logi-field"><label>${label}</label><input type="number" inputmode="decimal" class="input" id="${id}" value="${state[id]}" placeholder="${ph}"></div>`;
+  }
+
+  function render(){
+    const root=document.getElementById('logi-root');
+    if(!root) return;
+    const r=calc();
+    const clsOtif=evalOTIF(r.otif), clsFill=evalFill(r.fill), clsRot=evalRot(r.rotacion), clsCosto=evalCosto(r.costoPct);
+
+    root.innerHTML = `
+      <div class="logi-head">
+        <span class="logi-folio">${state.folio}</span>
+        <span class="logi-meta">4 indicadores clave de logística</span>
+      </div>
+      <div class="logi-setup">
+        <div class="logi-field"><label>Empresa</label><input type="text" class="input" id="logi-empresa" value="${state.setup.empresa.replace(/"/g,'&quot;')}" placeholder="Industrias del Centro"></div>
+        <div class="logi-field"><label>Periodo</label><input type="text" class="input" id="logi-periodo" value="${state.setup.periodo.replace(/"/g,'&quot;')}" placeholder="Ej: Mayo 2026"></div>
+        <div class="logi-field"><label>Responsable</label><input type="text" class="input" id="logi-responsable" value="${state.setup.responsable.replace(/"/g,'&quot;')}" placeholder="Nombre"></div>
+      </div>
+      <div class="logi-grid">
+        ${kpiCard({titulo:'OTIF', sub:'On Time In Full · entregas a tiempo y completas', valorTxt:r.otif!==null?(r.otif*100).toFixed(1)+'%':'—', value:r.otif||0, cls:clsOtif,
+          inputsHTML: fld('Entregas a tiempo y completas','entregasOk','190')+fld('Entregas totales','entregasTotales','200')})}
+        ${kpiCard({titulo:'Fill Rate', sub:'Líneas surtidas vs. líneas pedidas', valorTxt:r.fill!==null?(r.fill*100).toFixed(1)+'%':'—', value:r.fill||0, cls:clsFill,
+          inputsHTML: fld('Líneas surtidas completas','lineasSurtidas','970')+fld('Líneas pedidas','lineasPedidas','1000')})}
+        ${kpiCard({titulo:'Rotación de inventario', sub:'Veces que se renueva el stock', valorTxt:r.rotacion!==null?r.rotacion.toFixed(1)+'x':'—', value:r.rotacion!==null?r.rotacion/15:0, cls:clsRot,
+          inputsHTML: fld('Costo de ventas (COGS)','costoVentas','2400000')+fld('Inventario promedio','inventarioPromedio','300000')})}
+        ${kpiCard({titulo:'Costo logístico', sub:'Costo logístico como % de ventas', valorTxt:r.costoPct!==null?(r.costoPct*100).toFixed(1)+'%':'—', value:r.costoPct!==null?Math.min(1,r.costoPct/0.25):0, cls:clsCosto,
+          inputsHTML: fld('Costo logístico total','costoLogistico','480000')+fld('Ventas totales','ventas','5000000')})}
+      </div>
+    `;
+
+    // binds setup
+    ['empresa','periodo','responsable'].forEach(k=>{
+      root.querySelector('#logi-'+k).addEventListener('input',e=>{state.setup[k]=e.target.value;save();});
+    });
+    // binds KPIs (recalcular sin perder foco → re-render diferido por input)
+    ['entregasOk','entregasTotales','lineasSurtidas','lineasPedidas','costoVentas','inventarioPromedio','costoLogistico','ventas'].forEach(id=>{
+      const el=root.querySelector('#'+id);
+      if(el) el.addEventListener('input',()=>{ state[id]=el.value; save(); refreshResults(); });
+    });
+    animateGauges();
+  }
+
+  // Recalcula solo los resultados sin re-renderizar los inputs (no pierde foco)
+  function refreshResults(){
+    const r=calc();
+    const map=[
+      ['otif', r.otif, evalOTIF(r.otif), r.otif!==null?(r.otif*100).toFixed(1)+'%':'—', r.otif||0],
+      ['fill', r.fill, evalFill(r.fill), r.fill!==null?(r.fill*100).toFixed(1)+'%':'—', r.fill||0],
+      ['rot', r.rotacion, evalRot(r.rotacion), r.rotacion!==null?r.rotacion.toFixed(1)+'x':'—', r.rotacion!==null?r.rotacion/15:0],
+      ['costo', r.costoPct, evalCosto(r.costoPct), r.costoPct!==null?(r.costoPct*100).toFixed(1)+'%':'—', r.costoPct!==null?Math.min(1,r.costoPct/0.25):0]
+    ];
+    const cards=document.querySelectorAll('#logi-root .logi-card');
+    map.forEach((m,i)=>{
+      const card=cards[i]; if(!card) return;
+      const resultBox=card.querySelector('.logi-card__result');
+      const [,val,cls,txt,gv]=m;
+      if(cls){
+        resultBox.innerHTML = `
+          <div class="logi-gauge">${gaugeSVG(gv, cls.hex, false)}<div class="logi-gauge__center"><div class="logi-gauge__val" style="color:${cls.hex};">${txt}</div></div></div>
+          <div class="logi-card__verdict"><span class="logi-badge" style="background:${cls.hex}1f;color:${cls.hex};border-color:${cls.hex}55;">${cls.label}</span><p>${cls.desc}</p></div>`;
+      } else {
+        resultBox.innerHTML = `<div class="logi-card__pending"><div class="logi-gauge logi-gauge--empty">${gaugeSVG(0,'var(--text-3)',false)}<div class="logi-gauge__center"><div class="logi-gauge__val logi-gauge__val--muted">—</div></div></div><p>Captura los datos para calcular este indicador.</p></div>`;
+      }
+    });
+    animateGauges();
+  }
+
+  function animateGauges(){
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('#logi-root .logi-gauge__fill').forEach(c=>{
+        const to=c.style.getPropertyValue('--to'); c.style.strokeDashoffset=to;
+      });
+    });
+  }
+
+  function generarPDF(){
+    const r=calc();
+    if(r.otif===null && r.fill===null && r.rotacion===null && r.costoPct===null){
+      if(typeof Toast!=='undefined')Toast.error('Sin datos','Captura al menos un indicador antes de generar el PDF.');
+      return;
+    }
+    if(!window.jspdf){ if(typeof Toast!=='undefined')Toast.error('Generador no disponible','Verifica conexión.'); return; }
+    try{
+      const {jsPDF}=window.jspdf;
+      const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+      const W=210,M=16; let y=M;
+      pdf.setFillColor(255,122,45); pdf.rect(0,0,W,6,'F');
+      pdf.setFillColor(26,20,16); pdf.rect(0,6,W,3,'F');
+      y=20;
+      pdf.setFontSize(14); pdf.setTextColor(26,20,16); pdf.setFont(undefined,'bold');
+      pdf.text('REPORTE DE INDICADORES LOGÍSTICOS', M, y);
+      pdf.setFont(undefined,'normal'); y+=6;
+      pdf.setFontSize(9); pdf.setTextColor(120,108,90);
+      pdf.text('IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística', M, y); y+=4;
+      pdf.text('Folio: '+state.folio+' · '+new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'}), M, y);
+      y+=10;
+      pdf.setFontSize(10); pdf.setTextColor(26,20,16); pdf.setFont(undefined,'bold');
+      pdf.text('DATOS GENERALES', M, y); pdf.setFont(undefined,'normal'); pdf.setFontSize(9); y+=6;
+      [['Empresa',state.setup.empresa],['Periodo',state.setup.periodo],['Responsable',state.setup.responsable],['Fecha',state.setup.fecha]].forEach(([l,v])=>{
+        pdf.setTextColor(120,108,90); pdf.text(l+':',M,y); pdf.setTextColor(26,20,16); pdf.text(String(v||'—'),M+34,y); y+=5;
+      });
+      y+=6;
+      const rows=[
+        ['OTIF', r.otif!==null?(r.otif*100).toFixed(1)+'%':'—', r.otif!==null?evalOTIF(r.otif).label:'—', '≥95% excelente'],
+        ['Fill Rate', r.fill!==null?(r.fill*100).toFixed(1)+'%':'—', r.fill!==null?evalFill(r.fill).label:'—', '≥98% excelente'],
+        ['Rotación inventario', r.rotacion!==null?r.rotacion.toFixed(1)+'x':'—', r.rotacion!==null?evalRot(r.rotacion).label:'—', '≥6x saludable'],
+        ['Costo logístico', r.costoPct!==null?(r.costoPct*100).toFixed(1)+'%':'—', r.costoPct!==null?evalCosto(r.costoPct).label:'—', '≤8% eficiente']
+      ];
+      if(pdf.autoTable){
+        pdf.autoTable({
+          startY:y, margin:{left:M,right:M},
+          head:[['Indicador','Valor','Evaluación','Benchmark']],
+          body:rows,
+          styles:{fontSize:9,cellPadding:3},
+          headStyles:{fillColor:[255,122,45],textColor:255,fontStyle:'bold'},
+          columnStyles:{0:{cellWidth:55,fontStyle:'bold'},1:{cellWidth:32},2:{cellWidth:42},3:{cellWidth:49}},
+          alternateRowStyles:{fillColor:[250,245,238]}
+        });
+        y=pdf.lastAutoTable.finalY+10;
+      }
+      pdf.setFontSize(7.5); pdf.setTextColor(150,140,125);
+      pdf.text('Documento generado por Indicadores Logísticos de IMDIIL · Herramienta Pro VIP', M, 287);
+      pdf.save(state.folio+'.pdf');
+      if(typeof Toast!=='undefined')Toast.success('PDF generado',state.folio);
+    }catch(e){
+      console.error('[LOGI] PDF error:',e);
+      if(typeof Toast!=='undefined')Toast.error('Error al generar PDF',e.message||'Intenta de nuevo');
+    }
+  }
+
+  return {open(){navigateToSection('tool-logistica');}, mount};
+})();
+
+/* =========================================================
+   HERRAMIENTA TABLA NOM-STPS
+   Buscador de Normas Oficiales Mexicanas de seguridad e higiene
+   Búsqueda en tiempo real · filtros por categoría · ficha detallada
+   ========================================================= */
+const NOMTool = (function(){
+  // Base de NOMs de seguridad y salud en el trabajo (STPS)
+  const NOMS = [
+    {n:'NOM-001-STPS-2008', cat:'Seguridad', titulo:'Edificios, locales e instalaciones', desc:'Condiciones de seguridad de los edificios, locales, instalaciones y áreas en los centros de trabajo.'},
+    {n:'NOM-002-STPS-2010', cat:'Seguridad', titulo:'Prevención y protección contra incendios', desc:'Condiciones de seguridad para la prevención y protección contra incendios en los centros de trabajo.'},
+    {n:'NOM-004-STPS-1999', cat:'Maquinaria', titulo:'Sistemas de protección de maquinaria', desc:'Sistemas y dispositivos de seguridad en la maquinaria y equipo que se utilice en los centros de trabajo.'},
+    {n:'NOM-005-STPS-1998', cat:'Químico', titulo:'Manejo de sustancias químicas peligrosas', desc:'Condiciones de seguridad e higiene para el manejo, transporte y almacenamiento de sustancias químicas peligrosas.'},
+    {n:'NOM-006-STPS-2014', cat:'Manejo de materiales', titulo:'Manejo y almacenamiento de materiales', desc:'Condiciones de seguridad y salud en el manejo y almacenamiento de materiales mediante el uso de maquinaria.'},
+    {n:'NOM-009-STPS-2011', cat:'Trabajos en altura', titulo:'Trabajos en altura', desc:'Condiciones de seguridad para realizar trabajos en altura.'},
+    {n:'NOM-010-STPS-2014', cat:'Químico', titulo:'Agentes químicos contaminantes', desc:'Agentes químicos contaminantes del ambiente laboral · reconocimiento, evaluación y control.'},
+    {n:'NOM-011-STPS-2001', cat:'Físico', titulo:'Ruido', desc:'Condiciones de seguridad e higiene donde se genere ruido.'},
+    {n:'NOM-012-STPS-2012', cat:'Físico', titulo:'Radiaciones ionizantes', desc:'Condiciones de seguridad y salud donde se manejen fuentes de radiación ionizante.'},
+    {n:'NOM-013-STPS-1993', cat:'Físico', titulo:'Radiaciones no ionizantes', desc:'Condiciones de seguridad e higiene donde se generen radiaciones electromagnéticas no ionizantes.'},
+    {n:'NOM-015-STPS-2001', cat:'Físico', titulo:'Condiciones térmicas elevadas o abatidas', desc:'Condiciones térmicas elevadas o abatidas · condiciones de seguridad e higiene.'},
+    {n:'NOM-017-STPS-2008', cat:'EPP', titulo:'Equipo de protección personal', desc:'Selección, uso y manejo del equipo de protección personal en los centros de trabajo.'},
+    {n:'NOM-018-STPS-2015', cat:'Químico', titulo:'Sistema GHS de sustancias peligrosas', desc:'Sistema armonizado para identificación y comunicación de peligros de sustancias químicas (GHS).'},
+    {n:'NOM-019-STPS-2011', cat:'Organización', titulo:'Comisiones de seguridad e higiene', desc:'Constitución, integración, organización y funcionamiento de las comisiones de seguridad e higiene.'},
+    {n:'NOM-020-STPS-2011', cat:'Maquinaria', titulo:'Recipientes sujetos a presión', desc:'Recipientes sujetos a presión, recipientes criogénicos y generadores de vapor o calderas.'},
+    {n:'NOM-022-STPS-2015', cat:'Eléctrico', titulo:'Electricidad estática', desc:'Electricidad estática en los centros de trabajo · condiciones de seguridad.'},
+    {n:'NOM-025-STPS-2008', cat:'Físico', titulo:'Iluminación', desc:'Condiciones de iluminación en los centros de trabajo.'},
+    {n:'NOM-026-STPS-2008', cat:'Señalización', titulo:'Colores y señales de seguridad', desc:'Colores y señales de seguridad e higiene, e identificación de riesgos por fluidos en tuberías.'},
+    {n:'NOM-027-STPS-2008', cat:'Trabajos especiales', titulo:'Soldadura y corte', desc:'Actividades de soldadura y corte · condiciones de seguridad e higiene.'},
+    {n:'NOM-029-STPS-2011', cat:'Eléctrico', titulo:'Mantenimiento de instalaciones eléctricas', desc:'Mantenimiento de las instalaciones eléctricas en los centros de trabajo · condiciones de seguridad.'},
+    {n:'NOM-030-STPS-2009', cat:'Organización', titulo:'Servicios preventivos de seguridad', desc:'Servicios preventivos de seguridad y salud en el trabajo · funciones y actividades.'},
+    {n:'NOM-033-STPS-2015', cat:'Trabajos especiales', titulo:'Espacios confinados', desc:'Condiciones de seguridad para realizar trabajos en espacios confinados.'},
+    {n:'NOM-034-STPS-2016', cat:'Manejo de materiales', titulo:'Acceso de personas con discapacidad', desc:'Condiciones de seguridad para el acceso y desarrollo de actividades de trabajadores con discapacidad.'},
+    {n:'NOM-035-STPS-2018', cat:'Psicosocial', titulo:'Factores de riesgo psicosocial', desc:'Identificación, análisis y prevención de factores de riesgo psicosocial en el trabajo.'},
+    {n:'NOM-036-1-STPS-2018', cat:'Ergonomía', titulo:'Factores de riesgo ergonómico (manejo de cargas)', desc:'Factores de riesgo ergonómico · manejo manual de cargas.'}
+  ];
+  const CATEGORIAS = ['Todas', ...Array.from(new Set(NOMS.map(x=>x.cat))).sort()];
+  const CAT_COLOR = {
+    'Seguridad':'#FF7A2D','Maquinaria':'#8B5CF6','Químico':'#10B981','Físico':'#3B82F6',
+    'EPP':'#F59E0B','Eléctrico':'#EAB308','Organización':'#EC4899','Señalización':'#06B6D4',
+    'Trabajos en altura':'#EF4444','Trabajos especiales':'#F97316','Psicosocial':'#A855F7',
+    'Ergonomía':'#14B8A6','Manejo de materiales':'#6366F1'
+  };
+  let q='', catActiva='Todas';
+
+  function mount(container){
+    container.innerHTML = `
+      <div class="tool-section">
+        <div class="tool-section__head">
+          <div class="tool-section__title">
+            <div class="tool-section__icon"><svg class="ic"><use href="#i-shield-check"/></svg></div>
+            <div>
+              <h1>Tabla NOM-STPS</h1>
+              <p>Normas Oficiales Mexicanas de seguridad y salud en el trabajo</p>
+            </div>
+          </div>
+          <div class="tool-section__actions">
+            <span class="nom-count">${NOMS.length} normas</span>
+          </div>
+        </div>
+        <div class="nom" id="nom-root"></div>
+      </div>
+    `;
+    render();
+  }
+
+  function catColor(cat){ return CAT_COLOR[cat] || 'var(--primary)'; }
+
+  function render(){
+    const root=document.getElementById('nom-root');
+    if(!root) return;
+    root.innerHTML = `
+      <div class="nom-controls">
+        <div class="nom-search">
+          <svg class="ic nom-search__icon"><use href="#i-search"/></svg>
+          <input type="text" class="nom-search__input" id="nom-q" placeholder="Buscar por número, título o tema…" value="${q.replace(/"/g,'&quot;')}">
+          ${q ? '<button class="nom-search__clear" id="nom-clear"><svg class="ic"><use href="#i-x"/></svg></button>' : ''}
+        </div>
+        <div class="nom-cats" id="nom-cats">
+          ${CATEGORIAS.map(c=>`<button class="nom-cat ${catActiva===c?'is-active':''}" data-cat="${c}" ${c!=='Todas'?`style="--cat:${catColor(c)};"`:''}>${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="nom-list" id="nom-list"></div>
+    `;
+    const qi=root.querySelector('#nom-q');
+    qi.addEventListener('input',e=>{ q=e.target.value; renderList(); toggleClear(); });
+    const clr=root.querySelector('#nom-clear');
+    if(clr) clr.addEventListener('click',()=>{ q=''; render(); setTimeout(()=>root.querySelector('#nom-q')?.focus(),0); });
+    root.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{ catActiva=b.dataset.cat; render(); }));
+    renderList();
+  }
+
+  function toggleClear(){
+    const root=document.getElementById('nom-root'); if(!root) return;
+    const search=root.querySelector('.nom-search'); if(!search) return;
+    let clr=root.querySelector('#nom-clear');
+    if(q && !clr){
+      clr=document.createElement('button'); clr.className='nom-search__clear'; clr.id='nom-clear';
+      clr.innerHTML='<svg class="ic"><use href="#i-x"/></svg>';
+      clr.addEventListener('click',()=>{ q=''; render(); });
+      search.appendChild(clr);
+    } else if(!q && clr){ clr.remove(); }
+  }
+
+  function filtrar(){
+    const t=q.trim().toLowerCase();
+    return NOMS.filter(nom=>{
+      if(catActiva!=='Todas' && nom.cat!==catActiva) return false;
+      if(!t) return true;
+      return (nom.n+' '+nom.titulo+' '+nom.desc+' '+nom.cat).toLowerCase().includes(t);
+    });
+  }
+
+  function renderList(){
+    const list=document.getElementById('nom-list');
+    if(!list) return;
+    const res=filtrar();
+    if(res.length===0){
+      list.innerHTML = `<div class="nom-empty"><div class="nom-empty__icon"><svg class="ic ic--xl"><use href="#i-search"/></svg></div><h4>Sin resultados</h4><p>No encontramos normas para "<strong>${q.replace(/</g,'&lt;')}</strong>". Prueba con otro término o categoría.</p></div>`;
+      return;
+    }
+    list.innerHTML = res.map(nom=>`
+      <div class="nom-row" data-n="${nom.n}">
+        <div class="nom-row__main">
+          <div class="nom-row__top">
+            <span class="nom-row__code">${nom.n}</span>
+            <span class="nom-row__cat" style="--cat:${catColor(nom.cat)};">${nom.cat}</span>
+          </div>
+          <div class="nom-row__title">${nom.titulo}</div>
+          <div class="nom-row__desc">${nom.desc}</div>
+        </div>
+        <a class="nom-row__link" href="https://www.dof.gob.mx/index_113.php?year=2024&month=01&day=01" target="_blank" rel="noopener" title="Buscar en el DOF"><svg class="ic"><use href="#i-search"/></svg></a>
+      </div>
+    `).join('');
+  }
+
+  return {open(){navigateToSection('tool-noms');}, mount};
 })();
 
 function navigateToSection(section){
@@ -8877,7 +9367,9 @@ const Sections = (function(){
       suscripcion:renderSuscripcion,
       'tool-iper':(c)=>IPERTool.mount(c),
       'tool-oee':(c)=>OEETool.mount(c),
-      'tool-ats':(c)=>ATSTool.mount(c)
+      'tool-ats':(c)=>ATSTool.mount(c),
+      'tool-logistica':(c)=>LogiTool.mount(c),
+      'tool-noms':(c)=>NOMTool.mount(c)
     },
     countdownTimer:null
   };
@@ -9519,7 +10011,7 @@ function initNav(){
         cerrarDrawerMovil();
       }
       // Herramientas con sección propia (se abren dentro del panel, no como popup)
-      const toolSections = { iper:'tool-iper', oee:'tool-oee', ats:'tool-ats' };
+      const toolSections = { iper:'tool-iper', oee:'tool-oee', ats:'tool-ats', logistica:'tool-logistica', noms:'tool-noms' };
       if(it.dataset.tool){
         if(toolSections[it.dataset.tool]){ navigateToSection(toolSections[it.dataset.tool]); return; }
         if(Tools[it.dataset.tool]){ Tools[it.dataset.tool].open(); return; }
