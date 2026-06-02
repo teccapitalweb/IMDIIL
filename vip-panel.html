@@ -5601,7 +5601,7 @@ const NOMTool = (function(){
           <div class="nom-row__title">${nom.titulo}</div>
           <div class="nom-row__desc">${nom.desc}</div>
         </div>
-        <a class="nom-row__link" href="https://www.dof.gob.mx/index_113.php?year=2024&month=01&day=01" target="_blank" rel="noopener" title="Buscar en el DOF"><svg class="ic"><use href="#i-search"/></svg></a>
+        <a class="nom-row__link" href="https://www.google.com/search?q=${encodeURIComponent(nom.n+' STPS norma oficial')}" target="_blank" rel="noopener" title="Buscar ${nom.n} en Google"><svg class="ic"><use href="#i-search"/></svg></a>
       </div>
     `).join('');
   }
