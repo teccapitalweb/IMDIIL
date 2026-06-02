@@ -1168,42 +1168,60 @@ body::after{
 /* =========================================================
    HERRAMIENTA OEE · diseño futurista
    ========================================================= */
-.oee{display:flex;flex-direction:column;gap:16px}
+/* Input moderno global para herramientas (IPER, etc.) */
+.iper .input,.iper-form .input{
+  width:100%;min-height:50px;border-radius:12px;
+  border:1px solid var(--border-2);background:var(--surface);color:var(--text);
+  padding:12px 15px;font-size:14.5px;font-family:inherit;
+  transition:border-color .2s,box-shadow .2s;
+}
+.iper .input::placeholder,.iper-form .input::placeholder{color:var(--text-3)}
+.iper .input:focus,.iper-form .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+/* Card moderna del setup IPER */
+.iper-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;box-shadow:var(--shadow-card)}
+.iper-card__head{margin-bottom:22px}
+.iper-card__title{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.3px;margin:0}
+.iper-card__sub{font-size:13px;color:var(--text-3);margin:5px 0 0;line-height:1.5}
+.iper-card__foot{margin-top:22px;padding-top:0}
+.iper-card__foot .btn{min-height:48px}
+
+.oee{display:flex;flex-direction:column;gap:20px}
 .oee-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.oee-folio{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary);padding:5px 11px;border-radius:100px;background:color-mix(in srgb,var(--primary) 10%,transparent);border:0.5px solid color-mix(in srgb,var(--primary) 28%,transparent)}
+.oee-folio{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary);padding:6px 13px;border-radius:100px;background:color-mix(in srgb,var(--primary) 9%,transparent);border:1px solid color-mix(in srgb,var(--primary) 22%,transparent)}
 .oee-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);font-weight:500;letter-spacing:.3px}
-.oee-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.oee-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
 @media(max-width:860px){.oee-grid{grid-template-columns:1fr}}
 @media(max-width:420px){
   .oee-subgauges{gap:2px}
   .oee-subgauges .oee-gauge__svg{width:84px;height:84px}
   .oee-subgauges .oee-gauge__pct{font-size:14px}
-  .oee-results{padding:18px 14px}
+  .oee-results{padding:22px 18px}
 }
-.oee-inputs{display:flex;flex-direction:column;gap:12px}
-.oee-card{background:linear-gradient(160deg,var(--surface-2),var(--surface));border:0.5px solid var(--border-2);border-radius:16px;padding:15px 16px;position:relative;overflow:hidden}
-.oee-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--primary) 40%,transparent),transparent)}
-.oee-card__title{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px;letter-spacing:.2px}
-.oee-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);box-shadow:0 0 0 3px color-mix(in srgb,var(--text-3) 18%,transparent)}
-.oee-dot--a{background:#FF7A2D;box-shadow:0 0 0 3px #FF7A2D2e,0 0 10px #FF7A2D88}
-.oee-dot--r{background:#FFB347;box-shadow:0 0 0 3px #FFB3472e,0 0 10px #FFB34788}
-.oee-dot--c{background:#10B981;box-shadow:0 0 0 3px #10B9812e,0 0 10px #10B98188}
-.oee-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
-.oee-field-row{display:flex;gap:10px}
-.oee-field label{font-size:11px;font-weight:600;color:var(--text-2);letter-spacing:.2px}
-.oee-field label span{color:var(--text-3);font-weight:500;font-family:'JetBrains Mono',monospace;font-size:9.5px}
-.oee-field .input{width:100%}
-.oee-results{background:linear-gradient(165deg,var(--surface-2),var(--surface));border:0.5px solid var(--border-2);border-radius:18px;padding:20px 18px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden;min-height:340px}
-.oee-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;flex:1;padding:20px}
-.oee-empty__ring{position:relative;width:110px;height:110px;opacity:.5}
+.oee-inputs{display:flex;flex-direction:column;gap:16px}
+.oee-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;box-shadow:var(--shadow-card);transition:border-color .2s,box-shadow .2s}
+.oee-card__title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--text);margin-bottom:18px;letter-spacing:-.1px}
+.oee-dot{width:9px;height:9px;border-radius:50%;background:var(--text-3);box-shadow:0 0 0 4px color-mix(in srgb,var(--text-3) 14%,transparent)}
+.oee-dot--a{background:#FF7A2D;box-shadow:0 0 0 4px color-mix(in srgb,#FF7A2D 18%,transparent)}
+.oee-dot--r{background:#FFB347;box-shadow:0 0 0 4px color-mix(in srgb,#FFB347 18%,transparent)}
+.oee-dot--c{background:var(--success);box-shadow:0 0 0 4px color-mix(in srgb,var(--success) 18%,transparent)}
+.oee-field{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.oee-field-row{display:flex;gap:14px}
+.oee-field label{font-size:13px;font-weight:600;color:var(--text-2);letter-spacing:-.1px}
+.oee-field label span{color:var(--text-3);font-weight:500;font-family:'JetBrains Mono',monospace;font-size:11px}
+.oee-field .input{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--border-2);background:var(--surface);color:var(--text);padding:12px 15px;font-size:14.5px;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+.oee-field .input::placeholder{color:var(--text-3)}
+.oee-field .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
+.oee-results{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px 22px;display:flex;flex-direction:column;gap:20px;position:relative;overflow:hidden;min-height:340px;box-shadow:var(--shadow-card)}
+.oee-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;flex:1;padding:20px}
+.oee-empty__ring{position:relative;width:110px;height:110px;opacity:.45}
 .oee-empty__ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .oee-empty__icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-3)}
-.oee-empty h3{font-size:15px;font-weight:600;color:var(--text-2)}
-.oee-empty p{font-size:12px;color:var(--text-3);max-width:280px;line-height:1.55}
-.oee-hero{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;position:relative}
-.oee-hero::after{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--oee-color) 18%,transparent),transparent 65%);pointer-events:none;z-index:0}
-.oee-hero__badge{position:relative;z-index:1;display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;padding:5px 14px;border-radius:100px;border:0.5px solid}
-.oee-hero__desc{position:relative;z-index:1;font-size:12px;color:var(--text-2);max-width:320px;line-height:1.55}
+.oee-empty h3{font-size:16px;font-weight:600;color:var(--text-2)}
+.oee-empty p{font-size:13px;color:var(--text-3);max-width:300px;line-height:1.6}
+.oee-hero{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;position:relative}
+.oee-hero::after{content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--oee-color) 16%,transparent),transparent 65%);pointer-events:none;z-index:0}
+.oee-hero__badge{position:relative;z-index:1;display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;padding:6px 15px;border-radius:100px;border:1px solid}
+.oee-hero__desc{position:relative;z-index:1;font-size:13px;color:var(--text-2);max-width:330px;line-height:1.6}
 .oee-gauge{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
 .oee-gauge__svg{width:130px;height:130px;transform:rotate(-90deg)}
 .oee-hero .oee-gauge__svg{width:160px;height:160px}
@@ -1215,19 +1233,19 @@ body::after{
 .oee-hero .oee-gauge__pct{font-size:40px}
 .oee-gauge__pct span{font-size:.5em;font-weight:600;opacity:.7}
 .oee-gauge__lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);margin-top:2px}
-.oee-gauge__sub{font-size:10px;color:var(--text-3);font-weight:500}
-.oee-subgauges{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:relative;z-index:1;padding-top:6px;border-top:0.5px solid var(--border-2)}
+.oee-gauge__sub{font-size:11px;color:var(--text-3);font-weight:500}
+.oee-subgauges{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:relative;z-index:1;padding-top:18px;border-top:1px solid var(--border)}
 .oee-subgauges .oee-gauge__svg{width:92px;height:92px}
 .oee-subgauges .oee-gauge__pct{font-size:16px}
 .oee-subgauges .oee-gauge__lbl{font-size:7.5px;margin-top:1px}
-.oee-diag{background:var(--bg);border:0.5px solid var(--border-2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
-.oee-diag__title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--primary)}
-.oee-diag__item p{font-size:12.5px;color:var(--text);line-height:1.5;margin:0}
+.oee-diag{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.oee-diag__title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary)}
+.oee-diag__item p{font-size:13.5px;color:var(--text);line-height:1.55;margin:0}
 .oee-diag__item p strong{color:var(--primary)}
-.oee-diag__tip{display:block;font-size:11.5px;color:var(--text-2);line-height:1.5;margin-top:4px;padding-left:10px;border-left:2px solid var(--border-strong)}
-.oee-diag__stats{display:flex;gap:10px;margin-top:4px;padding-top:10px;border-top:0.5px solid var(--border-2)}
-.oee-diag__stats div{flex:1;font-size:10.5px;color:var(--text-3);display:flex;flex-direction:column;gap:1px}
-.oee-diag__stats span{font-size:18px;font-weight:800;color:var(--text);font-family:'JetBrains Mono',monospace;letter-spacing:-.5px}
+.oee-diag__tip{display:block;font-size:12.5px;color:var(--text-2);line-height:1.55;margin-top:5px;padding-left:12px;border-left:2px solid var(--border-strong)}
+.oee-diag__stats{display:flex;gap:12px;margin-top:4px;padding-top:14px;border-top:1px solid var(--border)}
+.oee-diag__stats div{flex:1;font-size:11px;color:var(--text-3);display:flex;flex-direction:column;gap:2px}
+.oee-diag__stats span{font-size:20px;font-weight:800;color:var(--text);font-family:'JetBrains Mono',monospace;letter-spacing:-.5px}
 
 /* =========================================================
    HERRAMIENTA IPER · matriz, peligros, controles
@@ -1270,13 +1288,13 @@ body::after{
 .iper-pane.is-active{display:block;animation:fadeUp .3s ease}
 
 /* Setup form */
-.iper-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.iper-form__field{display:flex;flex-direction:column;gap:6px}
+.iper-form{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.iper-form__field{display:flex;flex-direction:column;gap:7px}
 .iper-form__field--full{grid-column:1/-1}
 .iper-form__label{
-  font-family:'JetBrains Mono',monospace;
-  font-size:9.5px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;
-  color:var(--text-3);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:13px;font-weight:600;letter-spacing:-.1px;text-transform:none;
+  color:var(--text-2);
 }
 
 /* Add peligro form */
@@ -3917,28 +3935,34 @@ const IPERTool = (function(){
   function renderSetup(){
     const p = document.getElementById('pane-setup');
     p.innerHTML = `
-      <div class="iper-form">
-        <div class="iper-form__field iper-form__field--full">
-          <label class="iper-form__label">Empresa o centro de trabajo</label>
-          <input type="text" class="input" id="iper-empresa" value="${state.setup.empresa.replace(/"/g,'&quot;')}" placeholder="Ej: Industrias del Centro SA de CV">
+      <div class="iper-card">
+        <div class="iper-card__head">
+          <h2 class="iper-card__title">Datos generales de la evaluación</h2>
+          <p class="iper-card__sub">Completa la información base antes de registrar los peligros.</p>
         </div>
-        <div class="iper-form__field">
-          <label class="iper-form__label">Área evaluada</label>
-          <input type="text" class="input" id="iper-area" value="${state.setup.area.replace(/"/g,'&quot;')}" placeholder="Ej: Producción línea 3">
+        <div class="iper-form">
+          <div class="iper-form__field iper-form__field--full">
+            <label class="iper-form__label">Empresa o centro de trabajo</label>
+            <input type="text" class="input" id="iper-empresa" value="${state.setup.empresa.replace(/"/g,'&quot;')}" placeholder="Ej: Industrias del Centro SA de CV">
+          </div>
+          <div class="iper-form__field">
+            <label class="iper-form__label">Área evaluada</label>
+            <input type="text" class="input" id="iper-area" value="${state.setup.area.replace(/"/g,'&quot;')}" placeholder="Ej: Producción línea 3">
+          </div>
+          <div class="iper-form__field">
+            <label class="iper-form__label">Actividad / proceso</label>
+            <input type="text" class="input" id="iper-actividad" value="${state.setup.actividad.replace(/"/g,'&quot;')}" placeholder="Ej: Soldadura MIG en mesa">
+          </div>
+          <div class="iper-form__field">
+            <label class="iper-form__label">Evaluador</label>
+            <input type="text" class="input" id="iper-evaluador" value="${state.setup.evaluador.replace(/"/g,'&quot;')}" placeholder="Nombre del responsable">
+          </div>
+          <div class="iper-form__field">
+            <label class="iper-form__label">Fecha de evaluación</label>
+            <input type="date" class="input" id="iper-fecha" value="${state.setup.fecha}">
+          </div>
         </div>
-        <div class="iper-form__field">
-          <label class="iper-form__label">Actividad / proceso</label>
-          <input type="text" class="input" id="iper-actividad" value="${state.setup.actividad.replace(/"/g,'&quot;')}" placeholder="Ej: Soldadura MIG en mesa">
-        </div>
-        <div class="iper-form__field">
-          <label class="iper-form__label">Evaluador</label>
-          <input type="text" class="input" id="iper-evaluador" value="${state.setup.evaluador.replace(/"/g,'&quot;')}" placeholder="Nombre del responsable">
-        </div>
-        <div class="iper-form__field">
-          <label class="iper-form__label">Fecha de evaluación</label>
-          <input type="date" class="input" id="iper-fecha" value="${state.setup.fecha}">
-        </div>
-        <div class="iper-form__field iper-form__field--full" style="margin-top:6px;">
+        <div class="iper-card__foot">
           <button class="btn btn--accent" id="iper-next">Siguiente: agregar peligros<svg class="ic"><use href="#i-arrow-right"/></svg></button>
         </div>
       </div>
