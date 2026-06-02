@@ -2953,6 +2953,9 @@ if (window.__isDemoMode) {
 
     document.body.style.visibility = 'visible';
 
+    // Cargar noticias reales del home (Firestore noticias_auto)
+    setTimeout(()=>{ if(typeof window.__cargarNoticiasHome==='function') window.__cargarNoticiasHome(); }, 300);
+
     if (isCheckoutSuccess && window.UserState.modo === 'vip') {
       setTimeout(() => { window.__showWelcomeSplash && window.__showWelcomeSplash(); }, 600);
     }
@@ -3327,110 +3330,13 @@ window.__setDisplayName = async (nombre) => {
 
       <div style="height:22px"></div>
 
-      <!-- Noticias diarias -->
+      <!-- Noticias diarias (reales desde Firestore) -->
       <section>
         <div class="section-header">
           <h2 class="section-header__title">Noticias del sector<span class="section-header__badge">Hoy</span></h2>
-          <a class="section-header__link">Ver todas<svg class="ic"><use href="#i-arrow-right"/></svg></a>
         </div>
-        <div class="news-grid">
-
-          <article class="news-card" style="--cat-color:#FF7A2D;">
-            <div class="news-card__cover">
-              <svg class="ic"><use href="#i-shield-check"/></svg>
-              <span class="news-card__date">Hoy</span>
-              <span class="news-card__cat">Seguridad</span>
-            </div>
-            <div class="news-card__body">
-              <h3 class="news-card__title">STPS publica actualización de la NOM-019 sobre comisiones de seguridad e higiene</h3>
-              <p class="news-card__excerpt">La Secretaría del Trabajo reforzó los requisitos de integración, capacitación y operación de las comisiones mixtas en centros de trabajo con más de 15 trabajadores.</p>
-              <div class="news-card__footer">
-                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>El Economista</span>
-                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card" style="--cat-color:#3B82F6;">
-            <div class="news-card__cover">
-              <svg class="ic"><use href="#i-book-2"/></svg>
-              <span class="news-card__date">Hoy</span>
-              <span class="news-card__cat">NOM-STPS</span>
-            </div>
-            <div class="news-card__body">
-              <h3 class="news-card__title">NOM-035: 70% de las empresas mexicanas aún tienen pendiente el diagnóstico psicosocial</h3>
-              <p class="news-card__excerpt">Encuesta nacional revela que la mayoría de las pymes no ha aplicado el cuestionario obligatorio. Inspecciones aumentarán en el segundo semestre.</p>
-              <div class="news-card__footer">
-                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>Forbes México</span>
-                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card" style="--cat-color:#10B981;">
-            <div class="news-card__cover">
-              <svg class="ic"><use href="#i-tools"/></svg>
-              <span class="news-card__date">Ayer</span>
-              <span class="news-card__cat">Industria MX</span>
-            </div>
-            <div class="news-card__body">
-              <h3 class="news-card__title">Industria automotriz mexicana cierra abril con incremento de 8.3% en producción</h3>
-              <p class="news-card__excerpt">INEGI reporta crecimiento sostenido en plantas de Guanajuato, Puebla y Coahuila. Ensambladoras anuncian nuevas inversiones en líneas de producción.</p>
-              <div class="news-card__footer">
-                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>El Financiero</span>
-                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card" style="--cat-color:#A855F7;">
-            <div class="news-card__cover">
-              <svg class="ic"><use href="#i-chart-bar"/></svg>
-              <span class="news-card__date">Ayer</span>
-              <span class="news-card__cat">Logística</span>
-            </div>
-            <div class="news-card__body">
-              <h3 class="news-card__title">Nearshoring impulsa la inversión en parques industriales del Bajío y norte de México</h3>
-              <p class="news-card__excerpt">CANACINTRA reporta que la ocupación de naves industriales superó el 95% en Querétaro, Aguascalientes y Nuevo León. La logística domestica enfrenta nuevos retos.</p>
-              <div class="news-card__footer">
-                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>Expansión</span>
-                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card" style="--cat-color:#FF7A2D;">
-            <div class="news-card__cover">
-              <svg class="ic"><use href="#i-alert-circle"/></svg>
-              <span class="news-card__date">Hace 2 días</span>
-              <span class="news-card__cat">Seguridad</span>
-            </div>
-            <div class="news-card__body">
-              <h3 class="news-card__title">Accidentes laborales en México: STPS pone foco en sectores de construcción y manufactura</h3>
-              <p class="news-card__excerpt">Estadísticas del IMSS revelan que estos dos sectores concentran el 58% de los accidentes registrados en 2025. Programa de inspecciones se intensifica.</p>
-              <div class="news-card__footer">
-                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>El Sol de México</span>
-                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card" style="--cat-color:#FFB347;">
-            <div class="news-card__cover">
-              <svg class="ic"><use href="#i-bolt"/></svg>
-              <span class="news-card__date">Hace 3 días</span>
-              <span class="news-card__cat">Industria MX</span>
-            </div>
-            <div class="news-card__body">
-              <h3 class="news-card__title">CFE anuncia nueva tarifa industrial: ¿cómo impacta la operación de tu planta?</h3>
-              <p class="news-card__excerpt">El ajuste para usuarios de alta demanda entra en vigor el próximo mes. Especialistas recomiendan revisar los contratos de demanda y factor de carga.</p>
-              <div class="news-card__footer">
-                <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>Energía Hoy</span>
-                <span class="news-card__more">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></span>
-              </div>
-            </div>
-          </article>
-
+        <div class="news-grid" id="home-news-grid">
+          <div class="foro-empty" style="grid-column:1/-1;">Cargando noticias…</div>
         </div>
       </section>
     </div>
@@ -4305,7 +4211,7 @@ function navigateToSection(section){
   // Limpiar listeners del foro al salir de la sección
   if(section!=='foro' && typeof window.__foroCleanup==='function'){ window.__foroCleanup(); }
   if(section!=='directorio' && typeof window.__dirCleanup==='function'){ window.__dirCleanup(); }
-  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';return;}
+  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();return;}
   inicio.style.display='none';dyn.style.display='';
   const renderer=Sections.renderers[section];
   if(renderer){dyn.innerHTML='';renderer(dyn);}
@@ -6602,6 +6508,67 @@ const Sections = (function(){
       }; img.onerror=reject; img.src=e.target.result; };
       r.onerror=reject; r.readAsDataURL(file);
     });
+  }
+
+  // ═══════════ NOTICIAS reales en el Home (Firestore noticias_auto) ═══════════
+  let _noticiasCargadas = false;
+  window.__cargarNoticiasHome = async function(force){
+    const grid = document.getElementById('home-news-grid');
+    if (!grid) return;
+    if (_noticiasCargadas && !force) return; // ya están pintadas
+    const fs = window.__fs;
+    if (!fs || !fs.getDocs){ return; }
+    try {
+      const q = fs.query(fs.collection(fs.db,'noticias_auto'), fs.orderBy('createdAt','desc'), fs.limit(6));
+      const snap = await fs.getDocs(q);
+      const arts = [];
+      snap.forEach(d=>arts.push(d.data()));
+      if (!arts.length){
+        grid.innerHTML = '<div class="foro-empty" style="grid-column:1/-1;">Aún no hay noticias publicadas. Se actualizan cada mañana.</div>';
+        _noticiasCargadas = true;
+        return;
+      }
+      grid.innerHTML = arts.map(n=>{
+        const fecha = noticiaTiempoRel(n.createdAt || n.fechaPublicacion);
+        const cover = n.imagen
+          ? `<div class="news-card__cover" style="background-image:url('${n.imagen}');background-size:cover;background-position:center;">
+               <span class="news-card__date">${fecha}</span>
+               <span class="news-card__cat">${escapeHtml(n.categoriaNombre||n.categoria||'')}</span>
+             </div>`
+          : `<div class="news-card__cover">
+               <svg class="ic"><use href="#i-news"/></svg>
+               <span class="news-card__date">${fecha}</span>
+               <span class="news-card__cat">${escapeHtml(n.categoriaNombre||n.categoria||'')}</span>
+             </div>`;
+        return `
+        <article class="news-card" style="--cat-color:${n.color||'#FF7A2D'};">
+          ${cover}
+          <div class="news-card__body">
+            <h3 class="news-card__title">${escapeHtml(n.titulo||'')}</h3>
+            ${n.extracto?`<p class="news-card__excerpt">${escapeHtml(n.extracto).slice(0,140)}${(n.extracto||'').length>140?'…':''}</p>`:''}
+            <div class="news-card__footer">
+              <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>${escapeHtml(n.fuente||'Fuente')}</span>
+              <a class="news-card__more" href="${n.link||'#'}" target="_blank" rel="noopener">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+            </div>
+          </div>
+        </article>`;
+      }).join('');
+      _noticiasCargadas = true;
+    } catch(e){
+      console.error('noticias home', e);
+      grid.innerHTML = '<div class="foro-empty" style="grid-column:1/-1;">No se pudieron cargar las noticias.</div>';
+    }
+  };
+  function noticiaTiempoRel(ts){
+    if(!ts) return 'Hoy';
+    let d; try{ d=ts.toDate?ts.toDate():new Date(ts); }catch(e){ return 'Hoy'; }
+    const h=Math.floor((Date.now()-d.getTime())/3600000);
+    if(h<1) return 'Ahora';
+    if(h<24) return 'Hace '+h+' h';
+    const dias=Math.floor(h/24);
+    if(dias===1) return 'Ayer';
+    if(dias<8) return 'Hace '+dias+' días';
+    return d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
   }
 
   function dirAbrirCorreo(mail){
