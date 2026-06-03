@@ -3056,6 +3056,7 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 <!-- Stripe.js para Embedded Checkout (sección Suscripción) -->
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Banner sticky FOMO · solo visible para invitado y sin-membresia -->
@@ -4516,7 +4517,7 @@ const IPERTool = (function(){
         return [String(i+1),pe.desc.slice(0,55),pe.cat,String(pe.P),String(pe.S),String(pe.score),c.nombre];
       });
 
-      pdf.autoTable({
+      const tablaOpts = {
         startY: y,
         head: [['#','Peligro','Categoría','P','S','Score','Nivel']],
         body: rows,
@@ -4532,9 +4533,12 @@ const IPERTool = (function(){
             if (c) { d.cell.styles.textColor = c; }
           }
         }
-      });
+      };
+      if (typeof pdf.autoTable === 'function') { pdf.autoTable(tablaOpts); }
+      else if (window.jspdf && typeof window.jspdf.autoTable === 'function') { window.jspdf.autoTable(pdf, tablaOpts); }
+      else { Toast.error('Generador de tablas no disponible','Recarga la página e intenta de nuevo.'); return; }
 
-      y = pdf.lastAutoTable.finalY + 8;
+      y = (pdf.lastAutoTable ? pdf.lastAutoTable.finalY : y+20) + 8;
       if (y > H - 30) { pdf.addPage(); y = MARGIN; }
 
       // Controles
@@ -5243,8 +5247,7 @@ const ATSTool = (function(){
       pdf.text(eppLabels.length? eppLabels.join(' · ') : 'Ninguno especificado', M, y, {maxWidth:W-2*M}); y+=8;
 
       pdf.setFont(undefined,'bold'); pdf.setFontSize(10); pdf.text('SECUENCIA DE PASOS',M,y); y+=2;
-      if(pdf.autoTable){
-        pdf.autoTable({
+      const atsTabla={
           startY:y+3, margin:{left:M,right:M},
           head:[['#','Paso','Peligro','Control']],
           body:state.pasos.map((s,i)=>[i+1,s.paso,s.peligro||'—',s.control||'—']),
@@ -5252,8 +5255,13 @@ const ATSTool = (function(){
           headStyles:{fillColor:[255,122,45],textColor:255,fontStyle:'bold'},
           columnStyles:{0:{cellWidth:8},1:{cellWidth:58},2:{cellWidth:58},3:{cellWidth:58}},
           alternateRowStyles:{fillColor:[250,245,238]}
-        });
+      };
+      if(typeof pdf.autoTable==='function'){
+        pdf.autoTable(atsTabla);
         y=pdf.lastAutoTable.finalY+10;
+      } else if(window.jspdf && typeof window.jspdf.autoTable==='function'){
+        window.jspdf.autoTable(pdf, atsTabla);
+        y=(pdf.lastAutoTable?pdf.lastAutoTable.finalY:y+20)+10;
       } else {
         y+=8;
         state.pasos.forEach((s,i)=>{
@@ -5546,8 +5554,7 @@ const LogiTool = (function(){
         ['Rotación inventario', r.rotacion!==null?r.rotacion.toFixed(1)+'x':'—', r.rotacion!==null?evalRot(r.rotacion).label:'—', '≥6x saludable'],
         ['Costo logístico', r.costoPct!==null?(r.costoPct*100).toFixed(1)+'%':'—', r.costoPct!==null?evalCosto(r.costoPct).label:'—', '≤8% eficiente']
       ];
-      if(pdf.autoTable){
-        pdf.autoTable({
+      const logiTabla={
           startY:y, margin:{left:M,right:M},
           head:[['Indicador','Valor','Evaluación','Benchmark']],
           body:rows,
@@ -5555,8 +5562,13 @@ const LogiTool = (function(){
           headStyles:{fillColor:[255,122,45],textColor:255,fontStyle:'bold'},
           columnStyles:{0:{cellWidth:55,fontStyle:'bold'},1:{cellWidth:32},2:{cellWidth:42},3:{cellWidth:49}},
           alternateRowStyles:{fillColor:[250,245,238]}
-        });
+      };
+      if(typeof pdf.autoTable==='function'){
+        pdf.autoTable(logiTabla);
         y=pdf.lastAutoTable.finalY+10;
+      } else if(window.jspdf && typeof window.jspdf.autoTable==='function'){
+        window.jspdf.autoTable(pdf, logiTabla);
+        y=(pdf.lastAutoTable?pdf.lastAutoTable.finalY:y+20)+10;
       }
       pdf.setFontSize(7.5); pdf.setTextColor(150,140,125);
       pdf.text('Documento generado por Indicadores Logísticos de IMDIIL · Herramienta Pro VIP', M, 287);
