@@ -3244,6 +3244,8 @@ if (window.__isDemoMode) {
 
     // Cargar noticias reales del home (Firestore noticias_auto)
     setTimeout(()=>{ if(typeof window.__cargarNoticiasHome==='function') window.__cargarNoticiasHome(); }, 300);
+    // Llenar widgets de actividad con datos reales
+    setTimeout(()=>{ if(typeof window.__actualizarWidgetsActividad==='function') window.__actualizarWidgetsActividad(); }, 400);
 
     if (isCheckoutSuccess && window.UserState.modo === 'vip') {
       setTimeout(() => { window.__showWelcomeSplash && window.__showWelcomeSplash(); }, 600);
@@ -3659,38 +3661,38 @@ window.__setDisplayName = async (nombre) => {
     </div>
 
     <div class="widget">
-      <div class="widget__label">📊 Tu actividad este mes</div>
+      <div class="widget__label">📊 Tu actividad</div>
       <div class="activity-row">
         <span class="activity-row__lbl">Cursos</span>
-        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--orange" style="width:55%"></div></div>
-        <span class="activity-row__count">3/5</span>
+        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--orange" id="act-cursos-bar" style="width:0%"></div></div>
+        <span class="activity-row__count" id="act-cursos-count">0/0</span>
       </div>
       <div class="activity-row">
-        <span class="activity-row__lbl">PDFs</span>
-        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--gold" style="width:66%"></div></div>
-        <span class="activity-row__count">6/9</span>
-      </div>
-      <div class="activity-row">
-        <span class="activity-row__lbl">Clases</span>
-        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--green" style="width:25%"></div></div>
-        <span class="activity-row__count">1/4</span>
+        <span class="activity-row__lbl">Certificados</span>
+        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--gold" id="act-certs-bar" style="width:0%"></div></div>
+        <span class="activity-row__count" id="act-certs-count">0</span>
       </div>
       <div class="activity-row">
         <span class="activity-row__lbl">Pro</span>
-        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--orange" style="width:40%"></div></div>
-        <span class="activity-row__count">2/5</span>
+        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--orange" id="act-pro-bar" style="width:0%"></div></div>
+        <span class="activity-row__count" id="act-pro-count">0/5</span>
+      </div>
+      <div class="activity-row">
+        <span class="activity-row__lbl">Foro</span>
+        <div class="activity-row__bar"><div class="activity-row__bar-fill activity-row__bar-fill--green" id="act-foro-bar" style="width:0%"></div></div>
+        <span class="activity-row__count" id="act-foro-count">0</span>
       </div>
     </div>
 
     <div class="widget widget--cert">
-      <div class="widget__label"><svg class="ic"><use href="#i-certificate"/></svg>Certificado mayo</div>
-      <div class="widget__title">Cero accidentes · Mayo 2026</div>
-      <div class="widget__count-sub">Completa 3/4 clases en vivo + 1 herramienta pro</div>
+      <div class="widget__label"><svg class="ic"><use href="#i-users"/></svg>Tu presencia en la comunidad</div>
+      <div class="widget__title" id="com-title">Crea tu tarjeta profesional</div>
+      <div class="widget__count-sub" id="com-sub">Aparece en el Directorio VIP y haz networking con otros ingenieros.</div>
       <div class="activity-row" style="margin-top:4px;">
-        <div class="activity-row__bar" style="height:6px;"><div class="activity-row__bar-fill activity-row__bar-fill--orange" style="width:50%"></div></div>
-        <span class="activity-row__count">50%</span>
+        <div class="activity-row__bar" style="height:6px;"><div class="activity-row__bar-fill activity-row__bar-fill--orange" id="com-bar" style="width:0%"></div></div>
+        <span class="activity-row__count" id="com-pct">0%</span>
       </div>
-      <button class="btn btn--ghost btn--block btn--sm" data-section="logros">Ver mi progreso</button>
+      <button class="btn btn--ghost btn--block btn--sm" id="com-btn" data-section="directorio">Crear mi tarjeta</button>
     </div>
 
   </aside>
@@ -5747,7 +5749,7 @@ function navigateToSection(section){
     try { window.__imdiilCheckout.destroy(); } catch(e) {}
     window.__imdiilCheckout = null;
   }
-  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();return;}
+  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();if(typeof window.__actualizarWidgetsActividad==='function')window.__actualizarWidgetsActividad();return;}
   inicio.style.display='none';dyn.style.display='';
   const renderer=Sections.renderers[section];
   if(renderer){dyn.innerHTML='';renderer(dyn);}
@@ -6876,6 +6878,103 @@ const Sections = (function(){
     }
     return lista.sort((a, b) => new Date(b.emitido) - new Date(a.emitido));
   }
+
+  // ─── Widgets del dashboard con datos REALES ───
+  // Llena "Tu actividad" (Cursos, Certificados, Pro, Foro) y "Tu presencia en la comunidad"
+  async function actualizarWidgetsActividad() {
+    const fs = window.__fs;
+    const uid = window.UserState?.uid;
+    const esVipUser = window.UserState?.modo === 'vip' || (typeof esAdminReal === 'function' && esAdminReal()) || window.UserState?.isAdmin;
+    const setBar = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; };
+    const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+    // 1) CURSOS · completados / total (usa progreso local + cursos cargados)
+    try {
+      await cargarCursosFirestore?.();
+    } catch (e) {}
+    const totalCursos = (cursos && cursos.length) || 0;
+    let cursosCompletados = 0;
+    const prog = (typeof getProgreso === 'function') ? getProgreso() : {};
+    if (cursos && cursos.length) {
+      cursos.forEach(c => { if (prog[c.id] && prog[c.id].completado) cursosCompletados++; });
+    }
+    setTxt('act-cursos-count', `${cursosCompletados}/${totalCursos}`);
+    setBar('act-cursos-bar', totalCursos ? (cursosCompletados / totalCursos) * 100 : 0);
+
+    // 2) PRO · herramientas usadas / 5
+    //    Solo cuenta para VIP/admin: un no-VIP puede capturar datos pero el paywall
+    //    le bloquea el resultado, así que no se considera "uso real" de la herramienta.
+    let proUsadas = 0;
+    if (esVipUser) {
+      const proKeys = ['imdiil:iper:current','imdiil:oee:current','imdiil:ats:current','imdiil:logi:current'];
+      proKeys.forEach(k => { try { if (localStorage.getItem(k)) proUsadas++; } catch (e) {} });
+    }
+    setTxt('act-pro-count', `${proUsadas}/5`);
+    setBar('act-pro-bar', (proUsadas / 5) * 100);
+
+    // 3) CERTIFICADOS · cantidad obtenida (siempre real; un no-VIP tendrá 0)
+    let nCerts = 0;
+    try { const certs = await getCertificadosReales(); nCerts = certs.length; } catch (e) {}
+    setTxt('act-certs-count', String(nCerts));
+    setBar('act-certs-bar', totalCursos ? (nCerts / totalCursos) * 100 : (nCerts ? 100 : 0));
+
+    // 4) FORO · número de publicaciones del usuario (un no-VIP no puede postear → 0)
+    let nPosts = 0;
+    if (fs && fs.getDocs && fs.query && uid) {
+      try {
+        const qs = await fs.getDocs(fs.query(fs.collection(fs.db, 'posts'), fs.where('uid', '==', uid)));
+        nPosts = qs.size;
+      } catch (e) {}
+    }
+    setTxt('act-foro-count', String(nPosts));
+    setBar('act-foro-bar', Math.min(100, nPosts * 20));
+
+    // ─── Widget 2: presencia en la comunidad ───
+    const comTitle = document.getElementById('com-title');
+    const comSub = document.getElementById('com-sub');
+    const comBtn = document.getElementById('com-btn');
+
+    if (!esVipUser) {
+      // No-VIP: el directorio es exclusivo VIP. En vez de pedirle algo que no puede hacer,
+      // lo invitamos a hacerse miembro. El botón lleva a Suscripción.
+      setTxt('com-title', 'Únete a la comunidad VIP');
+      setTxt('com-sub', 'Al ser miembro, crea tu tarjeta en el Directorio VIP y participa en el foro con cientos de ingenieros.');
+      setTxt('com-pct', '');
+      setBar('com-bar', 0);
+      if (comBtn) { comBtn.textContent = 'Hazte VIP'; comBtn.setAttribute('data-section', 'suscripcion'); }
+      return;
+    }
+
+    // VIP/admin: estado real de su tarjeta de directorio
+    let tieneTarjeta = false, tarjetaVisible = false;
+    if (fs && fs.getDoc && uid) {
+      try {
+        const ds = await fs.getDoc(fs.doc(fs.db, 'directorio', uid));
+        if (ds.exists()) {
+          tieneTarjeta = true;
+          const d = ds.data();
+          tarjetaVisible = d.visible !== false;
+        }
+      } catch (e) {}
+    }
+    if (comBtn) comBtn.setAttribute('data-section', 'directorio');
+    if (tieneTarjeta) {
+      setTxt('com-title', tarjetaVisible ? 'Ya formas parte del directorio' : 'Tu tarjeta está oculta');
+      setTxt('com-sub', tarjetaVisible
+        ? 'Tu tarjeta profesional aparece en el Directorio VIP. Mantenla al día.'
+        : 'Tienes tu tarjeta creada pero está oculta. Actívala para aparecer en el directorio.');
+      setTxt('com-pct', '100%');
+      setBar('com-bar', 100);
+      if (comBtn) comBtn.textContent = 'Ver mi tarjeta';
+    } else {
+      setTxt('com-title', 'Crea tu tarjeta profesional');
+      setTxt('com-sub', 'Aparece en el Directorio VIP y haz networking con otros ingenieros.');
+      setTxt('com-pct', '0%');
+      setBar('com-bar', 0);
+      if (comBtn) comBtn.textContent = 'Crear mi tarjeta';
+    }
+  }
+  window.__actualizarWidgetsActividad = actualizarWidgetsActividad;
 
   async function renderCertificados(container){
     container.innerHTML = '<div class="fade-up" style="padding:64px 24px;text-align:center;color:var(--text-2);font-size:14px;">Cargando tus certificados…</div>';
