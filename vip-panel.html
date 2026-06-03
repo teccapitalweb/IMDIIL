@@ -113,7 +113,7 @@ body::after{
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
 
 /* MAIN */
-.main{padding:18px 24px 40px;display:flex;flex-direction:column;gap:20px;min-width:0;overflow-x:hidden}
+.main{padding:calc(18px + env(safe-area-inset-top)) 24px 40px;display:flex;flex-direction:column;gap:20px;min-width:0;overflow-x:hidden}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .topbar__left{display:flex;align-items:center;gap:10px}
 .topbar__right{display:flex;align-items:center;gap:8px}
@@ -2750,7 +2750,7 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 @media (max-width:880px){
   .app{grid-template-columns:1fr}
   .sidebar{display:none}
-  .main{padding:14px 14px 140px}
+  .main{padding:calc(14px + env(safe-area-inset-top)) 14px 140px}
   .topbar__right .avatar{display:none}
   .banner{flex-direction:column;align-items:flex-start;padding:20px 22px}
   .banner__stats{align-self:stretch;justify-content:space-between;flex-wrap:wrap}
@@ -11024,7 +11024,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   .mobile-drawer.is-open .mobile-drawer__panel{transform:translateX(0)}
   .mobile-drawer__header{
     display:flex;align-items:center;justify-content:space-between;
-    padding:18px 18px 14px;border-bottom:1px solid var(--border);
+    padding:calc(18px + env(safe-area-inset-top)) 18px 14px;border-bottom:1px solid var(--border);
     flex-shrink:0;
   }
   .mobile-drawer__brand{display:flex;align-items:center;gap:11px}
