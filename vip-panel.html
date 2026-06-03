@@ -8,6 +8,12 @@
 <title>IMDIIL · Panel VIP</title>
 <link rel="icon" type="image/png" href="assets/imdiil-favicon.png">
 <link rel="apple-touch-icon" href="assets/imdiil-apple-touch.png">
+<!-- ─── PWA · instalable como app ─── -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IMDIIL VIP">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -11083,5 +11089,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 }
 .pdf-card--soon .pdf-card__btn-soon:hover{opacity:.55 !important;transform:none !important}
 </style>
+<!-- ─── Service Worker · permite instalar IMDIIL como app y abrir más rápido ─── -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){ /* silencioso: la app funciona igual */ });
+    });
+  }
+</script>
 </body>
 </html>
