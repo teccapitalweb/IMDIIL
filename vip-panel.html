@@ -11097,5 +11097,119 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     });
   }
 </script>
+<!-- ═══ POPUP PROFESIONAL: Instalar IMDIIL como app ═══ -->
+<style>
+  #imdiil-install-pop{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;font-family:'Inter','Plus Jakarta Sans',system-ui,sans-serif}
+  #imdiil-install-pop.show{display:flex;animation:iipFade .25s ease}
+  #imdiil-install-pop .iip-overlay{position:absolute;inset:0;background:rgba(7,5,3,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  #imdiil-install-pop .iip-card{position:relative;width:100%;max-width:380px;background:#1A130D;border:1px solid #33271C;border-radius:24px;padding:28px 24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.55);animation:iipPop .35s cubic-bezier(.16,1,.3,1)}
+  #imdiil-install-pop .iip-glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:200px;height:120px;background:radial-gradient(ellipse,rgba(255,122,45,.35),transparent 70%);pointer-events:none}
+  #imdiil-install-pop .iip-icon{width:84px;height:84px;border-radius:20px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FF7A2D,#E85A14);box-shadow:0 10px 28px rgba(255,122,45,.4);position:relative}
+  #imdiil-install-pop .iip-icon img{width:54px;height:54px;object-fit:contain}
+  #imdiil-install-pop .iip-badge{position:absolute;top:-8px;right:-8px;background:#FFB347;color:#0E0A06;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:20px;text-transform:uppercase}
+  #imdiil-install-pop h3{margin:0 0 8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:21px;font-weight:800;color:#F5F0E6;letter-spacing:-.3px}
+  #imdiil-install-pop p{margin:0 0 18px;font-size:13.5px;line-height:1.55;color:#B0A492}
+  #imdiil-install-pop .iip-feats{display:flex;flex-direction:column;gap:9px;text-align:left;margin:0 0 22px;padding:0}
+  #imdiil-install-pop .iip-feat{display:flex;align-items:center;gap:10px;font-size:13px;color:#F5F0E6}
+  #imdiil-install-pop .iip-feat svg{width:18px;height:18px;flex-shrink:0;color:#FF7A2D}
+  #imdiil-install-pop .iip-btn{display:block;width:100%;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#FF7A2D,#E85A14);color:#fff;box-shadow:0 8px 20px rgba(255,122,45,.35);transition:transform .15s,box-shadow .15s}
+  #imdiil-install-pop .iip-btn:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(255,122,45,.45)}
+  #imdiil-install-pop .iip-later{display:block;width:100%;margin-top:10px;background:none;border:none;color:#6F6555;font-size:13px;font-family:inherit;cursor:pointer;padding:8px}
+  #imdiil-install-pop .iip-later:hover{color:#B0A492}
+  #imdiil-install-pop .iip-ios{display:none;margin:0 0 14px;padding:12px 14px;background:#251C13;border:1px solid #33271C;border-radius:12px;font-size:12.5px;line-height:1.6;color:#B0A492;text-align:left}
+  #imdiil-install-pop .iip-ios b{color:#FFB347}
+  @keyframes iipFade{from{opacity:0}to{opacity:1}}
+  @keyframes iipPop{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+  html[data-theme="day"] #imdiil-install-pop .iip-card{background:#FFFFFF;border-color:#E5DCC9}
+  html[data-theme="day"] #imdiil-install-pop h3{color:#1A1410}
+  html[data-theme="day"] #imdiil-install-pop p{color:#6B6152}
+  html[data-theme="day"] #imdiil-install-pop .iip-feat{color:#1A1410}
+  html[data-theme="day"] #imdiil-install-pop .iip-ios{background:#F4EFE3;border-color:#E5DCC9}
+</style>
+<div id="imdiil-install-pop" role="dialog" aria-modal="true" aria-labelledby="iip-title">
+  <div class="iip-overlay" id="iip-overlay"></div>
+  <div class="iip-card">
+    <div class="iip-glow"></div>
+    <div class="iip-icon">
+      <span class="iip-badge">App</span>
+      <img src="assets/imdiil-isotipo.png" alt="IMDIIL" onerror="this.style.display='none'">
+    </div>
+    <h3 id="iip-title">Instala IMDIIL como app</h3>
+    <p>Accede más rápido, sin la barra del navegador, y vive una mejor experiencia desde tu pantalla de inicio.</p>
+    <div class="iip-ios" id="iip-ios-help">
+      En iPhone/iPad: toca el botón <b>Compartir</b> en Safari y luego <b>“Agregar a inicio”</b>.
+    </div>
+    <div class="iip-feats">
+      <div class="iip-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>Acceso directo desde tu pantalla de inicio</div>
+      <div class="iip-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>Carga más rápida, como una app nativa</div>
+      <div class="iip-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>Pantalla completa, sin distracciones</div>
+    </div>
+    <button class="iip-btn" id="iip-install-btn">Instalar ahora</button>
+    <button class="iip-later" id="iip-later-btn">Ahora no</button>
+  </div>
+</div>
+<script>
+(function(){
+  var STORAGE_KEY = 'imdiil_install_dismissed';
+  var deferredPrompt = null;
+  var pop = document.getElementById('imdiil-install-pop');
+  var installBtn = document.getElementById('iip-install-btn');
+  var laterBtn = document.getElementById('iip-later-btn');
+  var overlay = document.getElementById('iip-overlay');
+  var iosHelp = document.getElementById('iip-ios-help');
+
+  if (!pop) return;
+
+  // ¿Ya está instalada (corriendo en modo app)? No mostrar nada.
+  function yaInstalada(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+  // ¿El usuario ya la cerró antes? Respetamos su decisión por 14 días.
+  function fueDescartada(){
+    try {
+      var v = localStorage.getItem(STORAGE_KEY);
+      if (!v) return false;
+      var dias = (Date.now() - parseInt(v,10)) / 86400000;
+      return dias < 14;
+    } catch(e){ return false; }
+  }
+  function esIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function mostrar(){
+    if (yaInstalada() || fueDescartada()) return;
+    pop.classList.add('show');
+  }
+  function ocultar(recordar){
+    pop.classList.remove('show');
+    if (recordar){ try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch(e){} }
+  }
+
+  // Android/Chrome/Edge: capturamos el evento y mostramos NUESTRO popup
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(mostrar, 1200); // pequeño delay para no ser intrusivo al cargar
+  });
+
+  // iOS (Safari) no dispara beforeinstallprompt: mostramos instrucciones manuales
+  if (esIOS() && !yaInstalada()){
+    if (iosHelp) iosHelp.style.display = 'block';
+    if (installBtn) installBtn.style.display = 'none'; // en iOS no hay botón automático
+    setTimeout(mostrar, 1500);
+  }
+
+  // Si ya se instaló, ocultar y recordar
+  window.addEventListener('appinstalled', function(){ ocultar(true); deferredPrompt = null; });
+
+  if (installBtn) installBtn.addEventListener('click', function(){
+    if (!deferredPrompt){ ocultar(true); return; }
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){ ocultar(true); deferredPrompt = null; });
+  });
+  if (laterBtn) laterBtn.addEventListener('click', function(){ ocultar(true); });
+  if (overlay) overlay.addEventListener('click', function(){ ocultar(false); });
+})();
+</script>
 </body>
 </html>
