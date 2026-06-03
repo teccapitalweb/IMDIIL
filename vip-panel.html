@@ -5741,6 +5741,12 @@ function navigateToSection(section){
   // Limpiar listeners del foro al salir de la sección
   if(section!=='foro' && typeof window.__foroCleanup==='function'){ window.__foroCleanup(); }
   if(section!=='directorio' && typeof window.__dirCleanup==='function'){ window.__dirCleanup(); }
+  // Destruir el Embedded Checkout de Stripe al salir de Suscripción
+  // (evita el error "multiple Embedded Checkout objects" al regresar)
+  if(section!=='suscripcion' && window.__imdiilCheckout){
+    try { window.__imdiilCheckout.destroy(); } catch(e) {}
+    window.__imdiilCheckout = null;
+  }
   if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();return;}
   inicio.style.display='none';dyn.style.display='';
   const renderer=Sections.renderers[section];
@@ -8994,8 +9000,15 @@ const Sections = (function(){
 
     // ─── Lógica del selector de plan + Stripe Embedded ───
     let selectedPlan = intentPlan;
-    let checkoutInstance = null;
     const mountEl = document.getElementById('sub-checkout-mount');
+
+    // Destruir cualquier checkout previo que haya quedado vivo de un render anterior
+    // (al salir y volver a la pestaña, esta función se re-ejecuta; la instancia
+    //  vive en window para poder limpiarla y evitar "multiple Embedded Checkout objects")
+    if (window.__imdiilCheckout) {
+      try { window.__imdiilCheckout.destroy(); } catch(e) {}
+      window.__imdiilCheckout = null;
+    }
 
     document.querySelectorAll('#plan-picker .plan-picker__card').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -9010,9 +9023,9 @@ const Sections = (function(){
     });
 
     async function mountStripeCheckout(){
-      if (checkoutInstance) {
-        try { checkoutInstance.destroy(); } catch(e) {}
-        checkoutInstance = null;
+      if (window.__imdiilCheckout) {
+        try { window.__imdiilCheckout.destroy(); } catch(e) {}
+        window.__imdiilCheckout = null;
       }
       mountEl.innerHTML = `<div class="sub-loading"><div class="sub-loading__spin"></div><div>Cargando plan ${selectedPlan}…</div></div>`;
       try {
@@ -9035,12 +9048,22 @@ const Sections = (function(){
           if (!window.Stripe) throw new Error('Stripe.js no cargó');
           window.__stripe = window.Stripe('pk_live_51TMAcSA7If2CqXs9NuKsM1cVT9n5agProkMR8HFiT6QTXzS0g9PtiokZ4cpT1Qo3rk9bbsrZHx9sOUbE9UEOjgGs00n1OM3Y9b');
         }
-        mountEl.innerHTML = '';
-        checkoutInstance = await window.__stripe.initEmbeddedCheckout({ clientSecret });
-        checkoutInstance.mount('#sub-checkout-mount');
+        // El elemento del DOM pudo haber cambiado al re-renderizar; re-obtenerlo
+        const liveMount = document.getElementById('sub-checkout-mount');
+        if (!liveMount) return; // el usuario ya salió de la sección
+        liveMount.innerHTML = '';
+        window.__imdiilCheckout = await window.__stripe.initEmbeddedCheckout({ clientSecret });
+        // Verificar que seguimos en la sección antes de montar
+        if (!document.getElementById('sub-checkout-mount')) {
+          try { window.__imdiilCheckout.destroy(); } catch(e) {}
+          window.__imdiilCheckout = null;
+          return;
+        }
+        window.__imdiilCheckout.mount('#sub-checkout-mount');
       } catch (err) {
         console.error('Checkout error:', err);
-        mountEl.innerHTML = `
+        const liveMount = document.getElementById('sub-checkout-mount');
+        if (liveMount) liveMount.innerHTML = `
           <div style="padding:24px 20px;text-align:center;color:var(--text-2);font-size:13px;line-height:1.6;">
             <div style="color:var(--danger);font-weight:700;margin-bottom:6px;">No pudimos cargar el checkout</div>
             <div>${err.message}</div>
