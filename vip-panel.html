@@ -3056,7 +3056,6 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 <!-- Stripe.js para Embedded Checkout (sección Suscripción) -->
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Banner sticky FOMO · solo visible para invitado y sin-membresia -->
@@ -3935,6 +3934,54 @@ const Tools={
    Persistencia en localStorage · PDF con folio
    ========================================================= */
 /* =========================================================
+   TABLA PDF SIN PLUGIN · dibuja tablas con jsPDF base
+   (no depende de autoTable, que puede no cargar desde CDN)
+   Devuelve la Y final tras la tabla.
+   ========================================================= */
+function pdfTablaSimple(pdf, opts){
+  const { startY, margin, head, body, colWidths, headFill=[255,122,45], headText=[255,255,255], fontSize=8, cellPad=2.5, rowFill=[250,245,238], lineColor=[220,212,200] } = opts;
+  const W = pdf.internal.pageSize.getWidth();
+  const H = pdf.internal.pageSize.getHeight();
+  const M = margin != null ? margin : 16;
+  const totalW = W - 2*M;
+  // anchos de columna: usar los dados o repartir equitativo
+  const ncol = head.length;
+  let widths = colWidths && colWidths.length===ncol ? colWidths.slice() : new Array(ncol).fill(totalW/ncol);
+  // escalar para que sumen totalW
+  const sum = widths.reduce((a,b)=>a+b,0);
+  if (Math.abs(sum-totalW) > 0.5) widths = widths.map(w => w*totalW/sum);
+  let y = startY;
+  const lineH = fontSize*0.5 + cellPad*2;
+
+  function drawRow(cells, isHead){
+    // calcular alto necesario (wrap de texto)
+    const wrapped = cells.map((c,i)=>{
+      pdf.setFontSize(fontSize);
+      return pdf.splitTextToSize(String(c==null?'':c), widths[i]-2*cellPad);
+    });
+    const maxLines = Math.max(1, ...wrapped.map(w=>w.length));
+    const rowH = maxLines*(fontSize*0.42) + cellPad*2;
+    // salto de página
+    if (y + rowH > H - 18){ pdf.addPage(); y = M; }
+    let x = M;
+    cells.forEach((c,i)=>{
+      if (isHead){ pdf.setFillColor(headFill[0],headFill[1],headFill[2]); pdf.rect(x,y,widths[i],rowH,'F'); }
+      else { pdf.setDrawColor(lineColor[0],lineColor[1],lineColor[2]); pdf.rect(x,y,widths[i],rowH,'S'); }
+      pdf.setFontSize(fontSize);
+      pdf.setTextColor(isHead?headText[0]:40, isHead?headText[1]:30, isHead?headText[2]:20);
+      pdf.setFont(undefined, isHead?'bold':'normal');
+      pdf.text(wrapped[i], x+cellPad, y+cellPad+fontSize*0.35);
+      x += widths[i];
+    });
+    pdf.setFont(undefined,'normal');
+    y += rowH;
+  }
+  drawRow(head, true);
+  body.forEach((row)=>drawRow(row, false));
+  return y;
+}
+
+/* =========================================================
    PAYWALL DE HERRAMIENTAS PRO
    Los registrados sin pagar pueden CAPTURAR datos, pero al pedir
    RESULTADO o PDF se les muestra el paywall. Solo VIP/admin obtienen salida.
@@ -4517,28 +4564,14 @@ const IPERTool = (function(){
         return [String(i+1),pe.desc.slice(0,55),pe.cat,String(pe.P),String(pe.S),String(pe.score),c.nombre];
       });
 
-      const tablaOpts = {
-        startY: y,
-        head: [['#','Peligro','Categoría','P','S','Score','Nivel']],
+      y = pdfTablaSimple(pdf, {
+        startY: y, margin: MARGIN,
+        head: ['#','Peligro','Categoría','P','S','Score','Nivel'],
         body: rows,
-        theme:'grid',
-        styles:{fontSize:8,cellPadding:2,textColor:[40,30,20]},
-        headStyles:{fillColor:[26,20,16],textColor:[255,255,255],fontSize:8,fontStyle:'bold'},
-        columnStyles:{0:{cellWidth:8,halign:'center'},3:{cellWidth:8,halign:'center'},4:{cellWidth:8,halign:'center'},5:{cellWidth:12,halign:'center',fontStyle:'bold'},6:{cellWidth:22,halign:'center',fontStyle:'bold'}},
-        didParseCell:(d) => {
-          if (d.section === 'body' && d.column.index === 6) {
-            const nivel = d.cell.raw;
-            const colors = {'Trivial':[16,185,129],'Tolerable':[132,204,22],'Moderado':[251,191,36],'Importante':[251,146,60],'Intolerable':[239,68,68]};
-            const c = colors[nivel];
-            if (c) { d.cell.styles.textColor = c; }
-          }
-        }
-      };
-      if (typeof pdf.autoTable === 'function') { pdf.autoTable(tablaOpts); }
-      else if (window.jspdf && typeof window.jspdf.autoTable === 'function') { window.jspdf.autoTable(pdf, tablaOpts); }
-      else { Toast.error('Generador de tablas no disponible','Recarga la página e intenta de nuevo.'); return; }
-
-      y = (pdf.lastAutoTable ? pdf.lastAutoTable.finalY : y+20) + 8;
+        colWidths: [8, 60, 32, 8, 8, 14, 28],
+        headFill:[26,20,16], fontSize:8
+      });
+      y += 8;
       if (y > H - 30) { pdf.addPage(); y = MARGIN; }
 
       // Controles
@@ -5247,30 +5280,13 @@ const ATSTool = (function(){
       pdf.text(eppLabels.length? eppLabels.join(' · ') : 'Ninguno especificado', M, y, {maxWidth:W-2*M}); y+=8;
 
       pdf.setFont(undefined,'bold'); pdf.setFontSize(10); pdf.text('SECUENCIA DE PASOS',M,y); y+=2;
-      const atsTabla={
-          startY:y+3, margin:{left:M,right:M},
-          head:[['#','Paso','Peligro','Control']],
-          body:state.pasos.map((s,i)=>[i+1,s.paso,s.peligro||'—',s.control||'—']),
-          styles:{fontSize:8,cellPadding:2.5,valign:'top'},
-          headStyles:{fillColor:[255,122,45],textColor:255,fontStyle:'bold'},
-          columnStyles:{0:{cellWidth:8},1:{cellWidth:58},2:{cellWidth:58},3:{cellWidth:58}},
-          alternateRowStyles:{fillColor:[250,245,238]}
-      };
-      if(typeof pdf.autoTable==='function'){
-        pdf.autoTable(atsTabla);
-        y=pdf.lastAutoTable.finalY+10;
-      } else if(window.jspdf && typeof window.jspdf.autoTable==='function'){
-        window.jspdf.autoTable(pdf, atsTabla);
-        y=(pdf.lastAutoTable?pdf.lastAutoTable.finalY:y+20)+10;
-      } else {
-        y+=8;
-        state.pasos.forEach((s,i)=>{
-          pdf.setFont(undefined,'bold'); pdf.setFontSize(9); pdf.text((i+1)+'. '+s.paso,M,y); y+=5;
-          pdf.setFont(undefined,'normal'); pdf.setFontSize(8); pdf.setTextColor(120,108,90);
-          pdf.text('Peligro: '+(s.peligro||'—'),M+4,y); y+=4;
-          pdf.text('Control: '+(s.control||'—'),M+4,y); y+=7; pdf.setTextColor(26,20,16);
-        });
-      }
+      y = pdfTablaSimple(pdf, {
+        startY:y+3, margin:M,
+        head:['#','Paso','Peligro','Control'],
+        body:state.pasos.map((s,i)=>[i+1,s.paso,s.peligro||'—',s.control||'—']),
+        colWidths:[10,57,57,58], fontSize:8
+      });
+      y += 10;
       // Firmas
       if(y>250) {pdf.addPage();y=20;}
       pdf.setFont(undefined,'normal'); pdf.setFontSize(8); pdf.setTextColor(26,20,16);
@@ -5554,22 +5570,13 @@ const LogiTool = (function(){
         ['Rotación inventario', r.rotacion!==null?r.rotacion.toFixed(1)+'x':'—', r.rotacion!==null?evalRot(r.rotacion).label:'—', '≥6x saludable'],
         ['Costo logístico', r.costoPct!==null?(r.costoPct*100).toFixed(1)+'%':'—', r.costoPct!==null?evalCosto(r.costoPct).label:'—', '≤8% eficiente']
       ];
-      const logiTabla={
-          startY:y, margin:{left:M,right:M},
-          head:[['Indicador','Valor','Evaluación','Benchmark']],
-          body:rows,
-          styles:{fontSize:9,cellPadding:3},
-          headStyles:{fillColor:[255,122,45],textColor:255,fontStyle:'bold'},
-          columnStyles:{0:{cellWidth:55,fontStyle:'bold'},1:{cellWidth:32},2:{cellWidth:42},3:{cellWidth:49}},
-          alternateRowStyles:{fillColor:[250,245,238]}
-      };
-      if(typeof pdf.autoTable==='function'){
-        pdf.autoTable(logiTabla);
-        y=pdf.lastAutoTable.finalY+10;
-      } else if(window.jspdf && typeof window.jspdf.autoTable==='function'){
-        window.jspdf.autoTable(pdf, logiTabla);
-        y=(pdf.lastAutoTable?pdf.lastAutoTable.finalY:y+20)+10;
-      }
+      y = pdfTablaSimple(pdf, {
+        startY:y, margin:M,
+        head:['Indicador','Valor','Evaluación','Benchmark'],
+        body:rows,
+        colWidths:[55,32,42,49], fontSize:9
+      });
+      y += 10;
       pdf.setFontSize(7.5); pdf.setTextColor(150,140,125);
       pdf.text('Documento generado por Indicadores Logísticos de IMDIIL · Herramienta Pro VIP', M, 287);
       pdf.save(state.folio+'.pdf');
