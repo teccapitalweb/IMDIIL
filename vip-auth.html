@@ -929,7 +929,7 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
     return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
   }
   function mostrar(){
-    if (yaInstalada() || fueDescartada()) return;
+    if (yaInstalada()) return; // login: aparece en cada visita mientras no este instalada
     pop.classList.add('show');
   }
   function ocultar(recordar){
@@ -959,7 +959,7 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function(){ ocultar(true); deferredPrompt = null; });
   });
-  if (laterBtn) laterBtn.addEventListener('click', function(){ ocultar(true); });
+  if (laterBtn) laterBtn.addEventListener('click', function(){ ocultar(false); });
   if (overlay) overlay.addEventListener('click', function(){ ocultar(false); });
 })();
 </script>
