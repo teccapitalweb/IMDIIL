@@ -1164,6 +1164,13 @@ body::after{
   .tool-section__actions{width:100%}
   .tool-section__actions .btn{flex:1}
 }
+/* Paywall dentro de herramientas (resultado bloqueado para no-VIP) */
+.tool-paywall{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:36px 24px;flex:1}
+.tool-paywall__ic{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 18%,transparent),color-mix(in srgb,var(--highlight) 14%,transparent));color:var(--primary);border:1px solid color-mix(in srgb,var(--primary) 28%,transparent)}
+.tool-paywall__ic .ic{width:30px;height:30px}
+.tool-paywall h3{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.2px;margin:0;max-width:360px}
+.tool-paywall p{font-size:13px;color:var(--text-2);line-height:1.55;max-width:380px;margin:0}
+.tool-paywall .btn{margin-top:6px;min-height:48px}
 
 /* =========================================================
    HERRAMIENTA OEE · diseño futurista
@@ -3926,6 +3933,34 @@ const Tools={
    Escalas 1-5 · Matriz 5×5 · Clasificación STPS
    Persistencia en localStorage · PDF con folio
    ========================================================= */
+/* =========================================================
+   PAYWALL DE HERRAMIENTAS PRO
+   Los registrados sin pagar pueden CAPTURAR datos, pero al pedir
+   RESULTADO o PDF se les muestra el paywall. Solo VIP/admin obtienen salida.
+   ========================================================= */
+function toolEsVIP(){
+  const S = window.UserState;
+  if (!S) return false;
+  if (S.modo === 'vip') return true;
+  // admin real
+  if (typeof esAdminReal === 'function' && esAdminReal()) return true;
+  if (S.isAdmin) return true;
+  return false;
+}
+// Devuelve true si puede continuar; si NO es VIP, muestra paywall y devuelve false
+function toolRequiereVIP(nombreHerramienta){
+  if (toolEsVIP()) return true;
+  if (typeof window.__showPaywallModal === 'function'){
+    window.__showPaywallModal({
+      title: 'Función exclusiva para miembros VIP',
+      sub: 'Captura tus datos cuando quieras, pero generar resultados y reportes de ' + (nombreHerramienta||'las Herramientas Pro') + ' requiere una membresía activa. Hazte VIP y desbloquea todas las herramientas.'
+    });
+  } else if (typeof Toast !== 'undefined') {
+    Toast.info('Solo VIP','Activa tu membresía para usar esta función.');
+  }
+  return false;
+}
+
 const IPERTool = (function(){
   const STORAGE_KEY = 'imdiil:iper:current';
   let state = {
@@ -4278,6 +4313,17 @@ const IPERTool = (function(){
 
   function renderMatriz(){
     const p = document.getElementById('pane-matriz');
+    if (!toolEsVIP()){
+      p.innerHTML = `
+        <div class="tool-paywall">
+          <div class="tool-paywall__ic"><svg class="ic ic--xl"><use href="#i-crown"/></svg></div>
+          <h3>Matriz de riesgos para miembros VIP</h3>
+          <p>Registra todos los peligros que quieras. Para ver la matriz 5×5 consolidada y descargar el reporte, activa tu membresía.</p>
+          <button class="btn btn--accent" id="iper-unlock-m">Hazte VIP y desbloquea</button>
+        </div>`;
+      p.querySelector('#iper-unlock-m')?.addEventListener('click', ()=>toolRequiereVIP('la Matriz IPER'));
+      return;
+    }
     // Conteo por celda (P, S)
     const grid = {};
     state.peligros.forEach(pe => {
@@ -4330,6 +4376,17 @@ const IPERTool = (function(){
 
   function renderControles(){
     const p = document.getElementById('pane-controles');
+    if (!toolEsVIP()){
+      p.innerHTML = `
+        <div class="tool-paywall">
+          <div class="tool-paywall__ic"><svg class="ic ic--xl"><use href="#i-crown"/></svg></div>
+          <h3>Controles recomendados para miembros VIP</h3>
+          <p>La jerarquía de controles STPS para cada peligro está disponible con tu membresía VIP.</p>
+          <button class="btn btn--accent" id="iper-unlock-c">Hazte VIP y desbloquea</button>
+        </div>`;
+      p.querySelector('#iper-unlock-c')?.addEventListener('click', ()=>toolRequiereVIP('la Matriz IPER'));
+      return;
+    }
     if (state.peligros.length === 0){
       p.innerHTML = `<div class="iper-empty"><div class="iper-empty__icon"><svg class="ic ic--xl"><use href="#i-shield-check"/></svg></div><h4>Sin peligros para evaluar</h4><p>Agrega peligros primero para ver los controles recomendados según la jerarquía STPS.</p></div>`;
       return;
@@ -4376,6 +4433,7 @@ const IPERTool = (function(){
       Toast.error('Sin datos','Agrega al menos un peligro antes de generar el PDF.');
       return;
     }
+    if (!toolRequiereVIP('la Matriz IPER')) return;
     if (!window.jspdf) { Toast.error('Generador no disponible','Verifica conexión.'); return; }
     try {
       const {jsPDF} = window.jspdf;
@@ -4433,7 +4491,9 @@ const IPERTool = (function(){
       let x = MARGIN;
       const boxW = (W - 2*MARGIN) / 5 - 2;
       nivLabels.forEach(([lbl,cnt,rgb]) => {
-        pdf.setFillColor(rgb[0],rgb[1],rgb[2],0.14*255);
+        // Fondo claro del color (mezcla con blanco ~14%) sin usar alpha (jsPDF trata 4 args como CMYK)
+        const tint = rgb.map(ch => Math.round(ch + (255-ch)*0.86));
+        pdf.setFillColor(tint[0],tint[1],tint[2]);
         pdf.setDrawColor(rgb[0],rgb[1],rgb[2]);
         pdf.roundedRect(x,y,boxW,16,2,2,'FD');
         pdf.setFontSize(8); pdf.setTextColor(rgb[0],rgb[1],rgb[2]);
@@ -4767,6 +4827,17 @@ const OEETool = (function(){
         </div>`;
       return;
     }
+    if (!toolEsVIP()){
+      wrap.innerHTML = `
+        <div class="tool-paywall">
+          <div class="tool-paywall__ic"><svg class="ic ic--xl"><use href="#i-crown"/></svg></div>
+          <h3>Resultado disponible para miembros VIP</h3>
+          <p>Ya capturaste tus datos. Activa tu membresía para ver el OEE calculado, el diagnóstico y descargar el reporte.</p>
+          <button class="btn btn--accent" id="oee-unlock">Hazte VIP y desbloquea</button>
+        </div>`;
+      wrap.querySelector('#oee-unlock')?.addEventListener('click', ()=>toolRequiereVIP('la Calculadora OEE'));
+      return;
+    }
     const cls = clasificar(r.oee);
     const diag = diagnostico(r);
     wrap.innerHTML = `
@@ -4808,6 +4879,7 @@ const OEETool = (function(){
       if (typeof Toast!=='undefined') Toast.error('Sin datos','Captura los datos del equipo antes de generar el PDF.');
       return;
     }
+    if (!toolRequiereVIP('la Calculadora OEE')) return;
     if (!window.jspdf){ if (typeof Toast!=='undefined') Toast.error('Generador no disponible','Verifica conexión.'); return; }
     try {
       const {jsPDF} = window.jspdf;
@@ -5089,6 +5161,19 @@ const ATSTool = (function(){
 
   function renderResumen(){
     const p=document.getElementById('ats-pane');
+    if(!toolEsVIP()){
+      p.innerHTML = `
+        <div class="ats-card">
+          <div class="tool-paywall">
+            <div class="tool-paywall__ic"><svg class="ic ic--xl"><use href="#i-crown"/></svg></div>
+            <h3>Resumen y PDF para miembros VIP</h3>
+            <p>Captura los pasos de tu análisis cuando quieras. Para ver el resumen completo y descargar el ATS en PDF formato STPS, activa tu membresía.</p>
+            <button class="btn btn--accent" id="ats-unlock">Hazte VIP y desbloquea</button>
+          </div>
+        </div>`;
+      p.querySelector('#ats-unlock')?.addEventListener('click', ()=>toolRequiereVIP('el Generador ATS'));
+      return;
+    }
     const eppLabels = state.epp.map(id=>EPP_LISTA.find(e=>e.id===id)?.label).filter(Boolean);
     p.innerHTML = `
       <div class="ats-card">
@@ -5128,6 +5213,7 @@ const ATSTool = (function(){
 
   function generarPDF(){
     if(!state.setup.tarea.trim()){ if(typeof Toast!=='undefined')Toast.error('Falta la tarea','Captura al menos la tarea a analizar.'); return; }
+    if(!toolRequiereVIP('el Generador ATS')) return;
     if(!window.jspdf){ if(typeof Toast!=='undefined')Toast.error('Generador no disponible','Verifica conexión.'); return; }
     try{
       const {jsPDF}=window.jspdf;
@@ -5310,29 +5396,38 @@ const LogiTool = (function(){
   function kpiCard(opts){
     // opts: titulo, sub, valorTxt, value(0..1 para gauge), cls, inputs[]
     const {titulo, sub, valorTxt, value, cls, inputsHTML} = opts;
+    let resultHTML;
+    if (cls && !toolEsVIP()){
+      // Hay datos válidos pero no es VIP → candado
+      resultHTML = `
+        <div class="logi-card__pending">
+          <div class="logi-gauge logi-gauge--empty"><svg viewBox="0 0 80 80" class="logi-gauge__svg"><circle cx="40" cy="40" r="34" class="logi-gauge__track"/></svg><div class="logi-gauge__center"><svg class="ic" style="width:20px;height:20px;color:var(--primary);"><use href="#i-crown"/></svg></div></div>
+          <p>Resultado disponible para miembros <strong>VIP</strong>.</p>
+        </div>`;
+    } else if (cls){
+      resultHTML = `
+        <div class="logi-gauge">
+          ${gaugeSVG(value, cls.hex, false)}
+          <div class="logi-gauge__center"><div class="logi-gauge__val" style="color:${cls.hex};">${valorTxt}</div></div>
+        </div>
+        <div class="logi-card__verdict">
+          <span class="logi-badge" style="background:${cls.hex}1f;color:${cls.hex};border-color:${cls.hex}55;">${cls.label}</span>
+          <p>${cls.desc}</p>
+        </div>`;
+    } else {
+      resultHTML = `
+        <div class="logi-card__pending">
+          <div class="logi-gauge logi-gauge--empty">${gaugeSVG(0,'var(--text-3)',false)}<div class="logi-gauge__center"><div class="logi-gauge__val logi-gauge__val--muted">—</div></div></div>
+          <p>Captura los datos para calcular este indicador.</p>
+        </div>`;
+    }
     return `
       <div class="logi-card">
         <div class="logi-card__head">
           <div><div class="logi-card__title">${titulo}</div><div class="logi-card__sub">${sub}</div></div>
         </div>
         <div class="logi-card__inputs">${inputsHTML}</div>
-        <div class="logi-card__result">
-          ${cls ? `
-            <div class="logi-gauge">
-              ${gaugeSVG(value, cls.hex, false)}
-              <div class="logi-gauge__center"><div class="logi-gauge__val" style="color:${cls.hex};">${valorTxt}</div></div>
-            </div>
-            <div class="logi-card__verdict">
-              <span class="logi-badge" style="background:${cls.hex}1f;color:${cls.hex};border-color:${cls.hex}55;">${cls.label}</span>
-              <p>${cls.desc}</p>
-            </div>
-          ` : `
-            <div class="logi-card__pending">
-              <div class="logi-gauge logi-gauge--empty">${gaugeSVG(0,'var(--text-3)',false)}<div class="logi-gauge__center"><div class="logi-gauge__val logi-gauge__val--muted">—</div></div></div>
-              <p>Captura los datos para calcular este indicador.</p>
-            </div>
-          `}
-        </div>
+        <div class="logi-card__result">${resultHTML}</div>
       </div>
     `;
   }
@@ -5391,11 +5486,14 @@ const LogiTool = (function(){
       ['costo', r.costoPct, evalCosto(r.costoPct), r.costoPct!==null?(r.costoPct*100).toFixed(1)+'%':'—', r.costoPct!==null?Math.min(1,r.costoPct/0.25):0]
     ];
     const cards=document.querySelectorAll('#logi-root .logi-card');
+    const vip=toolEsVIP();
     map.forEach((m,i)=>{
       const card=cards[i]; if(!card) return;
       const resultBox=card.querySelector('.logi-card__result');
       const [,val,cls,txt,gv]=m;
-      if(cls){
+      if(cls && !vip){
+        resultBox.innerHTML = `<div class="logi-card__pending"><div class="logi-gauge logi-gauge--empty"><svg viewBox="0 0 80 80" class="logi-gauge__svg"><circle cx="40" cy="40" r="34" class="logi-gauge__track"/></svg><div class="logi-gauge__center"><svg class="ic" style="width:20px;height:20px;color:var(--primary);"><use href="#i-crown"/></svg></div></div><p>Resultado disponible para miembros <strong>VIP</strong>.</p></div>`;
+      } else if(cls){
         resultBox.innerHTML = `
           <div class="logi-gauge">${gaugeSVG(gv, cls.hex, false)}<div class="logi-gauge__center"><div class="logi-gauge__val" style="color:${cls.hex};">${txt}</div></div></div>
           <div class="logi-card__verdict"><span class="logi-badge" style="background:${cls.hex}1f;color:${cls.hex};border-color:${cls.hex}55;">${cls.label}</span><p>${cls.desc}</p></div>`;
@@ -5420,6 +5518,7 @@ const LogiTool = (function(){
       if(typeof Toast!=='undefined')Toast.error('Sin datos','Captura al menos un indicador antes de generar el PDF.');
       return;
     }
+    if(!toolRequiereVIP('los Indicadores Logísticos')) return;
     if(!window.jspdf){ if(typeof Toast!=='undefined')Toast.error('Generador no disponible','Verifica conexión.'); return; }
     try{
       const {jsPDF}=window.jspdf;
