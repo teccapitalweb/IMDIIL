@@ -437,11 +437,16 @@ body{display:block}
 
 /* MÓVIL: el panel YA NO se oculta — versión compacta que vende antes del form */
 @media (max-width:920px){
+  .auth-shell{overflow-x:hidden}
+  .auth-shell > *{min-width:0;max-width:100%}
   .auth-hero{
     display:flex !important;flex-direction:column;align-items:center;text-align:center;
     justify-content:flex-start !important;gap:14px !important;
     padding:24px 18px 20px !important;min-height:0 !important;
+    min-width:0;max-width:100vw;
   }
+  .auth-hero > div{min-width:0;width:100%;max-width:100%}
+  .hero-marquee{width:100%}
   .auth-hero__title{font-size:1.3rem !important;line-height:1.22;max-width:100% !important}
   .auth-hero__desc{display:none}
   .auth-hero__stats{display:none}
@@ -454,8 +459,10 @@ body{display:block}
   .hero-price{margin:0 auto 12px;max-width:340px;text-align:left}
   .hero-price .opt{padding:8px 13px}
   .hero-price .opt b{font-size:1.15rem}
-  .hero-refs{display:none}
-  .hero-refs-title{display:none}
+  .hero-refs{margin:0 auto 12px;max-width:340px;text-align:left;gap:8px}
+  .hero-refs-title{text-align:center}
+  .hero-ref .bub p{font-size:.74rem}
+  .hero-ref .avi{width:28px;height:28px;font-size:.58rem}
   .hero-trust{text-align:center;letter-spacing:1px;font-size:8.5px;white-space:normal;padding:0 8px}
 }
 </style>
@@ -1102,7 +1109,8 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
     return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
   }
   function mostrar(){
-    if (yaInstalada()) return; // login: aparece en cada visita mientras no este instalada
+    if (yaInstalada()) return;
+    if (fueDescartada()) return; // MODIFICADO: respetar el "Ahora no" por 14 días
     pop.classList.add('show');
   }
   function ocultar(recordar){
@@ -1114,14 +1122,14 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
   window.addEventListener('beforeinstallprompt', function(e){
     e.preventDefault();
     deferredPrompt = e;
-    setTimeout(mostrar, 1200); // pequeño delay para no ser intrusivo al cargar
+    setTimeout(mostrar, 15000); // MODIFICADO: 15s para no interrumpir la llegada
   });
 
   // iOS (Safari) no dispara beforeinstallprompt: mostramos instrucciones manuales
   if (esIOS() && !yaInstalada()){
     if (iosHelp) iosHelp.style.display = 'block';
     if (installBtn) installBtn.style.display = 'none'; // en iOS no hay botón automático
-    setTimeout(mostrar, 1500);
+    setTimeout(mostrar, 15000); // MODIFICADO: 15s
   }
 
   // Si ya se instaló, ocultar y recordar
@@ -1132,7 +1140,7 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function(){ ocultar(true); deferredPrompt = null; });
   });
-  if (laterBtn) laterBtn.addEventListener('click', function(){ ocultar(false); });
+  if (laterBtn) laterBtn.addEventListener('click', function(){ ocultar(true); }); // MODIFICADO: recordar el descarte
   if (overlay) overlay.addEventListener('click', function(){ ocultar(false); });
 })();
 </script>
