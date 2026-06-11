@@ -343,6 +343,100 @@ body{display:block}
   .auth-main{padding:24px 18px}
   .wrap .brand{display:block}
 }
+
+/* ═══ MODIFICADO: panel que vende (Fase Ads) ═══ */
+.hero-marquee{
+  margin:22px 0 8px;max-width:100%;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  overflow:hidden;
+}
+.hero-marquee .track{display:flex;gap:12px;width:max-content;animation:imdiilSlide 50s linear infinite}
+.hero-marquee:hover .track{animation-play-state:paused}
+@keyframes imdiilSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.hero-marquee img{
+  width:112px;height:112px;object-fit:cover;border-radius:12px;flex:none;
+  border:1px solid var(--border-2);
+  box-shadow:0 10px 26px rgba(0,0,0,.4);
+}
+.hero-mcaption{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text-3);margin:0 0 18px}
+.hero-mcaption b{color:var(--primary)}
+
+.hero-price{display:grid;gap:9px;max-width:400px;margin-bottom:18px}
+.hero-price .opt{
+  display:flex;align-items:center;gap:13px;
+  background:var(--surface);border:1px solid var(--border-2);
+  border-radius:13px;padding:10px 16px;
+}
+.hero-price .opt b{font-size:1.35rem;font-weight:800;color:var(--text);letter-spacing:-.5px;white-space:nowrap}
+.hero-price .opt small{display:block;color:var(--text-2);font-size:.75rem;line-height:1.45}
+.hero-price .opt--star{background:linear-gradient(135deg,rgba(255,122,45,.14),var(--surface));border:1.5px solid var(--primary);position:relative}
+.hero-price .opt--star b{color:var(--primary)}
+.hero-price .opt--star .badge{
+  position:absolute;top:-10px;right:12px;
+  background:var(--primary);color:#1B0F05;
+  font-size:.58rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;
+}
+.hero-price .tachado{text-decoration:line-through;opacity:.5;margin-right:4px}
+
+.hero-refs-title{font-size:10.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--primary);margin:0 0 10px;font-weight:700}
+.hero-refs{display:grid;gap:10px;max-width:430px;margin-bottom:16px}
+.hero-ref{display:flex;gap:9px;align-items:flex-start}
+.hero-ref .avi{
+  width:32px;height:32px;border-radius:50%;flex:none;margin-top:2px;
+  display:grid;place-items:center;font-size:.64rem;font-weight:800;color:#1B0F05;
+  background:linear-gradient(135deg,var(--primary-soft),var(--primary));
+}
+.hero-ref:nth-child(3) .avi{background:linear-gradient(135deg,#8d7a64,#5a4a38);color:#fff}
+.hero-ref .bub{
+  position:relative;background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:4px 14px 14px 14px;padding:.5rem .85rem .55rem;
+}
+.hero-ref .bub b{display:block;font-size:.72rem;color:var(--text)}
+.hero-ref .bub b small{font-weight:400;color:var(--text-3);margin-left:4px;font-size:.66rem}
+.hero-ref .bub p{margin:2px 0 0;font-size:.78rem;line-height:1.45;color:var(--text-2)}
+.hero-ref .lk{
+  position:absolute;bottom:-9px;right:-5px;
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--surface-2);border:1px solid var(--border-strong);
+  border-radius:20px;padding:2px 7px 2px 3px;
+  font-size:.58rem;font-weight:700;color:var(--text-2);
+}
+.hero-ref .lk i{width:14px;height:14px;border-radius:50%;display:grid;place-items:center;background:var(--primary);font-style:normal}
+.hero-ref .lk svg{width:8px;height:8px;fill:#1B0F05}
+.hero-ref .meta{display:flex;gap:.8rem;margin:.25rem 0 0 .8rem;font-size:.6rem;color:var(--text-3)}
+.hero-ref .meta b{font-weight:700}
+
+.hero-trust{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--text-3)}
+
+.auth-free{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin:0 0 14px;font-size:.88rem;color:var(--text-2);
+}
+.auth-free b{color:var(--primary);font-weight:800}
+.auth-free svg{width:16px;height:16px;flex:none;stroke:#1B0F05;background:var(--primary);border-radius:50%;padding:3px}
+
+/* MÓVIL: el panel YA NO se oculta — versión compacta que vende antes del form */
+@media (max-width:920px){
+  .auth-hero{
+    display:flex !important;flex-direction:column;align-items:center;text-align:center;
+    padding:26px 20px 18px !important;min-height:0 !important;
+  }
+  .auth-hero__title{font-size:1.35rem !important;line-height:1.2}
+  .auth-hero__desc{display:none}
+  .auth-hero__stats{display:none}
+  .hero-marquee{margin:14px 0 6px}
+  .hero-marquee img{width:88px;height:88px}
+  .hero-mcaption{margin-bottom:12px}
+  .hero-price{margin:0 auto 12px;max-width:360px;text-align:left}
+  .hero-price .opt{padding:8px 13px}
+  .hero-price .opt b{font-size:1.15rem}
+  .hero-refs{display:none}
+  .hero-refs-title{display:none}
+  .hero-trust{text-align:center}
+}
 </style>
 </head>
 <body>
@@ -364,8 +458,52 @@ body{display:block}
     </div>
 
     <div>
-      <h1 class="auth-hero__title">Te damos la bienvenida al <em>club VIP de IMDIIL</em>.</h1>
-      <p class="auth-hero__desc">Acceso exclusivo a cursos de ingeniería industrial, clases en vivo con expertos, herramientas pro y certificados con folio oficial.</p>
+      <h1 class="auth-hero__title">Domina las certificaciones que la industria <em>te está pidiendo</em>.</h1>
+      <p class="auth-hero__desc">Lean, Six Sigma, NOM-STPS, logística y calidad: cursos con certificado de folio oficial, herramientas pro (IPER, OEE, ATS) y clases en vivo. Esto te espera adentro:</p>
+
+      <div class="hero-marquee" aria-hidden="true"><div class="track"><img src="assets/img/courses/mini/analista-de-compras-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/calidad-en-inspeccion-vis.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/capacitacion-ante-la-stps.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/enfermeria-industrial-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/ingenieria-de-procesos-le.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/kaizen-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/lean-manufacturing-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/logistica-y-control-de-inventa.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/manejor-seguro-de-sustancias-q.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/project-management-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/pruebas-no-destructivas-avanza.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/supervision-de-producci-u.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/analista-de-compras-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/calidad-en-inspeccion-vis.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/capacitacion-ante-la-stps.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/enfermeria-industrial-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/ingenieria-de-procesos-le.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/kaizen-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/lean-manufacturing-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/logistica-y-control-de-inventa.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/manejor-seguro-de-sustancias-q.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/project-management-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/pruebas-no-destructivas-avanza.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/supervision-de-producci-u.webp" alt="" loading="lazy"></div></div>
+      <p class="hero-mcaption"><b>12+ cursos</b> · 5 herramientas pro · certificados con folio oficial</p>
+
+      <div class="hero-price">
+        <div class="opt">
+          <b>$199</b>
+          <small>MXN al mes · menos de $7 al día<br>Cancela cuando quieras</small>
+        </div>
+        <div class="opt opt--star">
+          <span class="badge">Ahorras $489</span>
+          <b>$1,899</b>
+          <small>MXN al año · sale en <span class="tachado">$199</span><strong style="color:var(--primary-soft);">$158/mes</strong><br>Acceso completo los 365 días</small>
+        </div>
+      </div>
+
+      <!-- ⚠️ BORRADORES: reemplazar con testimonios REALES antes de pautar fuerte -->
+      <p class="hero-refs-title">Referencias</p>
+      <div class="hero-refs">
+        <div class="hero-ref">
+          <span class="avi">LH</span>
+          <div style="flex:1;">
+            <div class="bub">
+              <b>Luis Hernández <small>· Supervisor de producción</small></b>
+              <p>Con el curso de Lean y la herramienta de OEE armé el proyecto que me subió de puesto en la planta</p>
+              <span class="lk"><i><svg viewBox="0 0 24 24"><path d="M2 10h4v12H2zM22 11c0-1.1-.9-2-2-2h-5.2l.9-4.4v-.3c0-.4-.2-.8-.4-1.1L14.2 2 8.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h7c.8 0 1.5-.5 1.8-1.2l2.1-5c.1-.2.1-.5.1-.8v-2z"/></svg></i>13</span>
+            </div>
+            <div class="meta"><b>Me gusta</b><b>Responder</b><span>3 sem</span></div>
+          </div>
+        </div>
+        <div class="hero-ref">
+          <span class="avi">KP</span>
+          <div style="flex:1;">
+            <div class="bub">
+              <b>Karla Pérez <small>· Ing. en seguridad industrial</small></b>
+              <p>El generador de ATS y la tabla NOM-STPS me ahorran horas cada semana. El certificado con folio lo validó RH sin problema</p>
+              <span class="lk"><i><svg viewBox="0 0 24 24"><path d="M2 10h4v12H2zM22 11c0-1.1-.9-2-2-2h-5.2l.9-4.4v-.3c0-.4-.2-.8-.4-1.1L14.2 2 8.6 7.6c-.4.4-.6.9-.6 1.4v9c0 1.1.9 2 2 2h7c.8 0 1.5-.5 1.8-1.2l2.1-5c.1-.2.1-.5.1-.8v-2z"/></svg></i>9</span>
+            </div>
+            <div class="meta"><b>Me gusta</b><b>Responder</b><span>1 mes</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="hero-trust">Pago seguro con Stripe · Acceso inmediato · Sin permanencia</p>
     </div>
 
     <div class="auth-hero__stats">
@@ -386,15 +524,19 @@ body{display:block}
   </div>
 
   <div class="card">
+    <p class="auth-free">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      Regístrate <b>completamente gratis</b>
+    </p>
     <div class="tabs">
-      <button class="tab is-active" data-tab="login">Iniciar sesión</button>
-      <button class="tab" data-tab="register">Crear cuenta</button>
+      <button class="tab" data-tab="login">Iniciar sesión</button>
+      <button class="tab is-active" data-tab="register">Crear cuenta</button>
     </div>
 
     <div id="alert-zone"></div>
 
     <!-- LOGIN -->
-    <div class="pane is-active" id="pane-login">
+    <div class="pane" id="pane-login">
       <div class="pane-head">
         <h2 id="login-title">Hola de nuevo</h2>
         <p id="login-sub">Ingresa tus datos para entrar al club.</p>
@@ -429,7 +571,7 @@ body{display:block}
     </div>
 
     <!-- REGISTER -->
-    <div class="pane" id="pane-register">
+    <div class="pane is-active" id="pane-register">
       <div class="pane-head">
         <h2>Crea tu cuenta</h2>
         <p>Únete al club VIP de IMDIIL en 30 segundos.</p>
@@ -781,7 +923,7 @@ document.getElementById('btn-register').addEventListener('click', async () => {
       isAdmin
         ? 'Redirigiendo al panel admin…'
         : (docResult && docResult.action === 'created'
-            ? '✅ Perfil guardado · redirigiendo al checkout…'
+            ? 'Perfil guardado · redirigiendo al checkout…'
             : 'Redirigiendo al checkout…'));
     setTimeout(() => {
       window.location.href = isAdmin ? 'vip-admin.html' : 'vip-checkout.html';
