@@ -1038,7 +1038,7 @@ body{
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, where, limit, onSnapshot, serverTimestamp, Timestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc, query, orderBy, where, limit, onSnapshot, serverTimestamp, Timestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUOR5_ki-BeL_pSnoKIhVre9_CsMDKsZc",
@@ -1058,7 +1058,7 @@ setPersistence(auth, browserLocalPersistence);
 // Exponer Firebase y helpers globalmente para que el script no-module los use
 window._fb = {
   db, auth,
-  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
+  collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
   query, orderBy, where, limit, onSnapshot,
   serverTimestamp, Timestamp, writeBatch, increment
 };
@@ -1281,6 +1281,28 @@ const Modal={
 /* =========================================================
    DATOS SEED (después → Firestore)
    ========================================================= */
+/* ═══════════════════════════════════════════════════════════
+   MODIFICADO · CACHÉ DE PRECIOS (config/club)
+   Una sola lectura al arrancar el panel; los KPIs de ingresos
+   (MRR, plan mensual, plan anual) la usan en vez de tener 199 y
+   1899 escritos a mano. 0 = aún no sabemos → se pinta "$—".
+   Sin precios de respaldo: nunca se muestra un precio viejo.
+   ═══════════════════════════════════════════════════════════ */
+window.__PRECIOS = { mes: 0, ano: 0 };
+window.__cargarPrecios = async function(){
+  try {
+    const fb = window._fb;
+    if (!fb || !fb.getDoc) return;
+    const snap = await fb.getDoc(fb.doc(fb.db, 'config', 'club'));
+    const c = snap.exists() ? snap.data() : {};
+    if (Number(c.precioMes) > 0) window.__PRECIOS.mes = Number(c.precioMes);
+    if (Number(c.precioAno) > 0) window.__PRECIOS.ano = Number(c.precioAno);
+    // Repintar lo que ya se haya dibujado con "—"
+    if (window.AdminStore && typeof AdminStore._autoRerender === 'function') AdminStore._autoRerender();
+    if (window.Pages && typeof Pages._renderKpisMiembros === 'function') Pages._renderKpisMiembros();
+  } catch (e) { console.warn('[precios] no se pudieron leer:', e.message); }
+};
+
 const SEED={
   cursos:[
     {id:'c1',titulo:'NOM-019-STPS · Comisiones de seguridad e higiene',area:'Seguridad',nivel:'Intermedio',instructor:'Ing. Roberto Méndez',horas:12,modulos:8,activo:true,inscritos:184},
@@ -1332,8 +1354,8 @@ const SEED={
     {id:'n4',titulo:'Nearshoring impulsa la inversión en parques industriales del Bajío',cat:'Logística',fuente:'Expansión',fecha:'Ayer',color:'#A855F7'}
   ],
   config:{
-    precioMensual:199,
-    precioAnual:1899,
+    precioMensual:null,  // MODIFICADO: sin precio fijo · lo trae Firestore
+    precioAnual:null,    // MODIFICADO: sin precio fijo · lo trae Firestore
     monedaSimbolo:'$',
     moneda:'MXN',
     whatsapp:'+52 238 173 8143',
@@ -1364,11 +1386,15 @@ const Pages={
       noticiasHoy: 0, notifTotal: 0
     };
 
-    // Calcular ingresos del mes basado en miembros reales (199 mensual / 1899 anual)
-    const ingresoMes = ready ? store.miembros.reduce((sum, m) => {
+    // MODIFICADO: ingresos del mes con los precios REALES de config/club
+    // (antes 199 y 158 fijos). Sin precios cargados se muestra "—".
+    const __P = window.__PRECIOS || { mes: 0, ano: 0 };
+    const __hayPrecios = __P.mes > 0 && __P.ano > 0;
+    const __anualMensualizado = Math.round(__P.ano / 12);
+    const ingresoMes = (ready && __hayPrecios) ? store.miembros.reduce((sum, m) => {
       if (m.activo === false) return sum;
-      return sum + (m.plan === 'anual' || m.plan === 'Anual' ? 158 : 199); // anual ≈ 1899/12 = 158/mes
-    }, 0) : 0;
+      return sum + (m.plan === 'anual' || m.plan === 'Anual' ? __anualMensualizado : __P.mes);
+    }, 0) : null;
 
     // Próximo webinar real
     const proxWebinar = ready ? store.webinars
@@ -1405,7 +1431,7 @@ const Pages={
           </div>
           <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
             <div class="kpi-card__label">Ingresos estimados/mes</div>
-            <div class="kpi-card__value">$${ingresoMes.toLocaleString('es-MX')}</div>
+            <div class="kpi-card__value">${ingresoMes === null ? '$—' : '$' + ingresoMes.toLocaleString('es-MX')}</div>
             <div class="kpi-card__sub">MXN · basado en miembros activos</div>
           </div>
           <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
@@ -3967,9 +3993,13 @@ const Pages={
     const anuales = miembros.filter(m => m.plan === 'anual' && Pages._mbEstaActivo(m)).length;
     const regalos = miembros.filter(m => (m.esRegalo === true || m.plan === 'regalo') && Pages._mbEstaActivo(m)).length;
 
-    // Calcular MRR estimado
-    const ingresoMensual = mensuales * 199;
-    const ingresoAnualProrrateado = Math.round((anuales * 1899) / 12);
+    // MODIFICADO: MRR con los precios REALES de config/club (antes 199/1899
+    // fijos). Si aún no cargan, se muestra "—" en vez de una cifra inventada.
+    const P = window.__PRECIOS || { mes: 0, ano: 0 };
+    const hayP = P.mes > 0 && P.ano > 0;
+    const money = n => hayP ? '$' + n.toLocaleString('es-MX') : '$—';
+    const ingresoMensual = mensuales * P.mes;
+    const ingresoAnualProrrateado = Math.round((anuales * P.ano) / 12);
     const mrr = ingresoMensual + ingresoAnualProrrateado;
 
     // Tasa de conversión
@@ -3990,16 +4020,16 @@ const Pages={
       <div class="kpi-card" style="--c1:#3B82F6;--c2:#60A5FA;">
         <div class="kpi-card__label">Plan Mensual</div>
         <div class="kpi-card__value">${mensuales}</div>
-        <div class="kpi-card__sub">$${(mensuales * 199).toLocaleString('es-MX')} MXN/mes</div>
+        <div class="kpi-card__sub">${money(mensuales * P.mes)} MXN/mes</div>
       </div>
       <div class="kpi-card" style="--c1:#FF7A2D;--c2:#FFB347;">
         <div class="kpi-card__label">Plan Anual</div>
         <div class="kpi-card__value">${anuales}</div>
-        <div class="kpi-card__sub">${anuales > 0 ? '$' + (anuales * 1899).toLocaleString('es-MX') + ' MXN al año' : 'Sin anuales'}</div>
+        <div class="kpi-card__sub">${anuales > 0 ? money(anuales * P.ano) + ' MXN al año' : 'Sin anuales'}</div>
       </div>
       <div class="kpi-card" style="--c1:#A855F7;--c2:#C084FC;">
         <div class="kpi-card__label">MRR estimado</div>
-        <div class="kpi-card__value">$${mrr.toLocaleString('es-MX')}</div>
+        <div class="kpi-card__value">${money(mrr)}</div>
         <div class="kpi-card__sub">${regalos} con acceso de regalo</div>
       </div>
     `;
@@ -4333,7 +4363,8 @@ const Pages={
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <div class="mb-action-btn__body">
               <div class="mb-action-btn__title">Activar Plan Mensual</div>
-              <div class="mb-action-btn__sub">$199 MXN · 30 días de acceso</div>
+              <!-- MODIFICADO: sin precio fijo · lo llena el script desde config/club -->
+              <div class="mb-action-btn__sub"><span data-precio-vivo="mensual">$—</span> MXN · 30 días de acceso</div>
             </div>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
@@ -4342,7 +4373,8 @@ const Pages={
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             <div class="mb-action-btn__body">
               <div class="mb-action-btn__title">Activar Plan Anual</div>
-              <div class="mb-action-btn__sub">$1,899 MXN · 365 días · ahorra 21%</div>
+              <!-- MODIFICADO: sin precio fijo · lo llena el script desde config/club -->
+              <div class="mb-action-btn__sub"><span data-precio-vivo="anual">$—</span> MXN · 365 días</div>
             </div>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="color:var(--text-3);"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
@@ -4440,6 +4472,20 @@ const Pages={
     });
     footer.querySelector('#mb-acc-cancel').addEventListener('click', () => Modal.close());
 
+    // MODIFICADO: llenar los precios de los botones con el precio VIVO de
+    // config/club (no bloquea el modal; si falla, se queda el "$—")
+    (async () => {
+      try {
+        const fb = window._fb;
+        const snap = await fb.getDoc(fb.doc(fb.db, 'config', 'club'));
+        const cfg = snap.exists() ? snap.data() : {};
+        body.querySelectorAll('[data-precio-vivo]').forEach(el => {
+          const monto = el.dataset.precioVivo === 'mensual' ? Number(cfg.precioMes) : Number(cfg.precioAno);
+          if (monto > 0) el.textContent = '$' + monto.toLocaleString('es-MX');
+        });
+      } catch (e) { /* se queda "$—" */ }
+    })();
+
     // Bind acciones
     body.querySelectorAll('[data-act]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -4461,9 +4507,18 @@ const Pages={
   },
 
   // Modal confirmar activación mensual o anual
-  _modalActivar(m, plan, days) {
+  // MODIFICADO: precio referencia en vivo desde config/club · SIN precio fijo
+  // de respaldo (si no se puede leer, muestra "—" en vez de un precio viejo)
+  async _modalActivar(m, plan, days) {
     const planLabel = plan === 'mensual' ? 'Plan Mensual' : 'Plan Anual';
-    const precio = plan === 'mensual' ? '$199 MXN' : '$1,899 MXN';
+    let precio = '—';
+    try {
+      const fb = window._fb;
+      const snap = await fb.getDoc(fb.doc(fb.db, 'config', 'club'));
+      const cfg = snap.exists() ? snap.data() : {};
+      const monto = plan === 'mensual' ? Number(cfg.precioMes) : Number(cfg.precioAno);
+      if (monto > 0) precio = '$' + monto.toLocaleString('es-MX') + ' MXN';
+    } catch (e) { /* se queda en "—" */ }
     const color = plan === 'mensual' ? '#3B82F6' : '#FF7A2D';
     const nombre = (m.nombre || m.email || 'Este miembro').replace(/</g,'&lt;');
     const expiraDate = new Date(Date.now() + days * 86400 * 1000);
@@ -4818,6 +4873,10 @@ const Pages={
   },
 
   config(p){
+    // MODIFICADO: los PRECIOS de esta pestaña ahora se leen y guardan en
+    // Firestore config/club — el mismo doc que usa el webhook para armar el
+    // cobro dinámico en Stripe y que leen vip-panel/vip-auth/vip/index para
+    // pintar precios. El resto (contacto, admins) sigue en memoria como antes.
     const c=SEED.config;
     p.innerHTML=`
       <div class="fade-up">
@@ -4831,11 +4890,16 @@ const Pages={
           <div class="dash-card">
             <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-dollar"/></svg>Precios Stripe</div></div>
             <div class="form-grid">
-              <div class="form-field"><label class="label">Plan Mensual (MXN)</label><input type="number" class="input" id="cfg-mens" value="${c.precioMensual}" min="1"></div>
-              <div class="form-field"><label class="label">Plan Anual (MXN)</label><input type="number" class="input" id="cfg-anual" value="${c.precioAnual}" min="1"></div>
+              <!-- MODIFICADO: campos VACÍOS hasta leer Firestore. Antes traían
+                   el precio del SEED: si Firestore fallaba y le dabas Guardar,
+                   sobrescribías el precio bueno con el viejo. Ya no puede pasar. -->
+              <div class="form-field"><label class="label">Plan Mensual (MXN)</label><input type="number" class="input" id="cfg-mens" value="" placeholder="Cargando…" min="1" disabled></div>
+              <div class="form-field"><label class="label">Plan Anual (MXN)</label><input type="number" class="input" id="cfg-anual" value="" placeholder="Cargando…" min="1" disabled></div>
               <div class="form-field form-field--full"><label class="label">Stripe Public Key</label><input type="text" class="input" id="cfg-stripe" value="${c.stripePublicKey}" placeholder="pk_live_…"></div>
             </div>
-            <div class="form-actions"><button class="btn btn--accent" data-save="precios">Guardar precios<svg class="ic"><use href="#i-check"/></svg></button></div>
+            <!-- MODIFICADO: precios en vivo · el botón se habilita al leer Firestore -->
+            <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:color-mix(in srgb,var(--primary) 8%,var(--surface-2));border-left:3px solid var(--primary);border-radius:6px;line-height:1.55;margin:0 0 14px">Al guardar, este es el precio que se muestra en el panel VIP, la página de venta y el sitio, y con el que se arma el cobro dinámico en Stripe — sin crear productos nuevos en Stripe ni cambiar variables en Railway. Las suscripciones ya activas conservan su precio original.</div>
+            <div class="form-actions"><button class="btn btn--accent" data-save="precios" id="btn-save-precios" disabled>Guardar precios<svg class="ic"><use href="#i-check"/></svg></button></div>
           </div>
 
           <div class="dash-card">
@@ -4876,9 +4940,53 @@ const Pages={
         </div>
       </div>
     `;
-    p.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',()=>{
+    // MODIFICADO: cargar los precios REALES desde Firestore config/club.
+    // Los campos nacen VACÍOS y DESHABILITADOS; solo se habilitan cuando
+    // Firestore contesta — así nunca editas encima de un precio equivocado.
+    // Si config/club aún no existe (primer despliegue), se habilitan vacíos
+    // para sembrar el precio inicial.
+    (async()=>{
+      const inMes=document.getElementById('cfg-mens'), inAno=document.getElementById('cfg-anual');
+      const btn=document.getElementById('btn-save-precios');
+      try{
+        const fb=window._fb;
+        const snap=await fb.getDoc(fb.doc(fb.db,'config','club'));
+        const cfg=snap.exists()?snap.data():{};
+        if(inMes&&Number(cfg.precioMes)>0){inMes.value=Number(cfg.precioMes);c.precioMensual=Number(cfg.precioMes);}
+        if(inAno&&Number(cfg.precioAno)>0){inAno.value=Number(cfg.precioAno);c.precioAnual=Number(cfg.precioAno);}
+        if(inMes){inMes.disabled=false;inMes.placeholder='Ej. 199';}
+        if(inAno){inAno.disabled=false;inAno.placeholder='Ej. 1899';}
+        if(btn)btn.disabled=false;
+      }catch(e){
+        console.warn('[config] no se pudieron leer precios:',e.message);
+        if(inMes)inMes.placeholder='Sin conexión';
+        if(inAno)inAno.placeholder='Sin conexión';
+        // El botón sigue deshabilitado a propósito: no guardamos a ciegas.
+        if(window.Toast)Toast.error('No se pudieron leer los precios','Recarga la página antes de editarlos');
+      }
+    })();
+
+    p.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',async()=>{
       const type=b.dataset.save;
-      if(type==='precios'){c.precioMensual=+document.getElementById('cfg-mens').value;c.precioAnual=+document.getElementById('cfg-anual').value;c.stripePublicKey=document.getElementById('cfg-stripe').value;Toast.success('Precios actualizados');}
+      if(type==='precios'){
+        // MODIFICADO: guardado REAL en Firestore config/club (antes solo memoria).
+        const precioMes=parseInt(document.getElementById('cfg-mens').value,10);
+        const precioAno=parseInt(document.getElementById('cfg-anual').value,10);
+        if(!(precioMes>0)||!(precioAno>0)){Toast.error('Precio inválido','Ambos precios deben ser mayores a 0');return;}
+        b.disabled=true;
+        try{
+          const fb=window._fb;
+          await fb.setDoc(fb.doc(fb.db,'config','club'),{
+            precioMes, precioAno,
+            actualizadoPor:(window.__currentAdmin&&window.__currentAdmin.email)||null,
+            actualizadoEn:fb.serverTimestamp()
+          },{merge:true});
+          c.precioMensual=precioMes;c.precioAnual=precioAno;c.stripePublicKey=document.getElementById('cfg-stripe').value;
+          if(window.__PRECIOS){window.__PRECIOS.mes=precioMes;window.__PRECIOS.ano=precioAno;}
+          Toast.success('Precios guardados','Ya se reflejan en el panel VIP y en el cobro de Stripe');
+        }catch(e){Toast.error('Error al guardar',e.message||'Revisa las reglas de Firestore');}
+        b.disabled=false;
+      }
       else if(type==='contacto'){c.whatsapp=document.getElementById('cfg-wa').value;c.instagram=document.getElementById('cfg-ig').value;c.emailContacto=document.getElementById('cfg-em').value;Toast.success('Contacto actualizado');}
     }));
     document.getElementById('add-admin').addEventListener('click',()=>{
@@ -5231,7 +5339,39 @@ function dirAdminCargar(){
   }, (err)=>{ console.error('dir admin',err); const c=document.getElementById('dir-admin-list'); if(c) c.innerHTML='<div class="empty-state">Error al cargar el directorio.</div>'; });
 }
 
-function navigate(section){
+/* ═══════════════════════════════════════════════════════════════
+   MODIFICADO · RUTAS: recordar la pestaña abierta
+   La pestaña activa vive en la URL (ej. vip-admin.html#miembros):
+     · F5 o Ctrl+Shift+R te devuelve a la MISMA pestaña, no al inicio
+     · Atrás / Adelante del navegador se mueven entre pestañas
+     · Puedes copiar el link y abrirlo directo en esa pestaña
+   La lista de pestañas válidas se saca del propio menú, así que si
+   mañana agregan o quitan una sección, esto sigue funcionando solo.
+   ═══════════════════════════════════════════════════════════════ */
+const SECCION_DEFAULT = 'dashboard';
+let __seccionActual = null;
+
+function __seccionesValidas(){
+  return new Set(Array.from(
+    document.querySelectorAll('.nav-item[data-section], .mobile-nav__item[data-section]')
+  ).map(n => n.dataset.section));
+}
+function __leerSeccionURL(){
+  let s = '';
+  try { s = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim(); } catch(e) { s = ''; }
+  if (!s) s = (new URLSearchParams(location.search).get('seccion') || '').trim();
+  return __seccionesValidas().has(s) ? s : SECCION_DEFAULT;
+}
+function __sincronizarDesdeURL(){
+  const s = __leerSeccionURL();
+  if (s !== __seccionActual) navigate(s, { reemplazar: true });
+}
+window.addEventListener('popstate', __sincronizarDesdeURL);
+window.addEventListener('hashchange', __sincronizarDesdeURL);
+
+function navigate(section, opciones){
+  if(!__seccionesValidas().has(section)) section = SECCION_DEFAULT;
+
   if(section!=='foro' && typeof _foroAdminUnsub==='function'){ _foroAdminUnsub(); _foroAdminUnsub=null; }
   if(section!=='directorio' && typeof _dirAdminUnsub==='function'){ _dirAdminUnsub(); _dirAdminUnsub=null; }
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(n=>n.classList.remove('is-active'));
@@ -5241,6 +5381,14 @@ function navigate(section){
   fn(p);
   window.scrollTo({top:0,behavior:'instant'});
   document.querySelector('.main')?.scrollTo({top:0,behavior:'instant'});
+
+  // ── Dejar la pestaña escrita en la URL ──
+  __seccionActual = section;
+  const destino = '#' + section;
+  if(location.hash !== destino && window.history){
+    if(opciones && opciones.reemplazar) history.replaceState(null, '', destino);
+    else history.pushState(null, '', destino);
+  }
 }
 
 /* =========================================================
@@ -5502,15 +5650,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('modal-close').addEventListener('click',()=>Modal.close());
   document.getElementById('modal-backdrop').addEventListener('click',e=>{if(e.target.id==='modal-backdrop')Modal.close();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')Modal.close();});
-  navigate('dashboard');
+  // MODIFICADO: abrir la pestaña que diga la URL (antes siempre 'dashboard')
+  navigate(__leerSeccionURL(), { reemplazar: true });
 });
 
 // Cuando Firebase confirma admin, arrancar listeners de Firestore
 window.addEventListener('adminready', () => {
   AdminStore.init();
+  if (window.__cargarPrecios) window.__cargarPrecios(); // MODIFICADO: caché de precios
 });
 // Por si el evento ya pasó antes de que carguemos esto
-if (window.__currentAdmin) AdminStore.init();
+if (window.__currentAdmin) {
+  AdminStore.init();
+  if (window.__cargarPrecios) window.__cargarPrecios(); // MODIFICADO: caché de precios
+}
 </script>
 
 </body>

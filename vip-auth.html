@@ -484,7 +484,9 @@ body{display:block}
       <div class="hero-marquee" aria-hidden="true"><div class="track"><img src="assets/img/courses/mini/analista-de-compras-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/calidad-en-inspeccion-vis.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/capacitacion-ante-la-stps.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/enfermeria-industrial-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/ingenieria-de-procesos-le.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/kaizen-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/lean-manufacturing-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/logistica-y-control-de-inventa.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/manejor-seguro-de-sustancias-q.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/project-management-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/pruebas-no-destructivas-avanza.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/supervision-de-producci-u.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/analista-de-compras-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/calidad-en-inspeccion-vis.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/capacitacion-ante-la-stps.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/enfermeria-industrial-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/ingenieria-de-procesos-le.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/kaizen-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/lean-manufacturing-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/logistica-y-control-de-inventa.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/manejor-seguro-de-sustancias-q.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/project-management-1.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/pruebas-no-destructivas-avanza.webp" alt="" loading="lazy"><img src="assets/img/courses/mini/supervision-de-producci-u.webp" alt="" loading="lazy"></div></div>
       <p class="hero-mcaption"><b>12+ cursos</b> · 5 herramientas pro · certificados con folio oficial</p>
 
-      <p class="hero-hook">Todo esto por <b>menos de $7 al día</b>:</p>
+      <!-- MODIFICADO: SIN números fijos · el texto real lo escribe el script
+           con lo que diga config/club -->
+      <p class="hero-hook">Todo esto por <b id="hp-hook">menos de lo que crees al día</b>:</p>
 
       <ul class="hero-benefits">
         <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>Biblioteca completa</b> con 12+ cursos de ingeniería industrial</span></li>
@@ -494,15 +496,18 @@ body{display:block}
         <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>Comunidad de ingenieros</b> · sin permanencia</span></li>
       </ul>
 
+      <!-- MODIFICADO: BLINDADO · aquí NO hay ni un número de precio escrito.
+           Los placeholders son "—" y el script los llena desde config/club.
+           Si Firestore falla, se queda el "—" · JAMÁS se ve un precio viejo. -->
       <div class="hero-price">
         <div class="opt">
-          <b>$199</b>
-          <small>MXN al mes · menos de $7 al día<br>Cancela cuando quieras</small>
+          <b>$<span id="hp-mes">—</span></b>
+          <small>MXN al mes · <span id="hp-mes-detalle">sin permanencia</span><br>Cancela cuando quieras</small>
         </div>
         <div class="opt opt--star">
-          <span class="badge">Ahorras $489</span>
-          <b>$1,899</b>
-          <small>MXN al año · sale en <span class="tachado">$199</span><strong style="color:var(--primary-soft);">$158/mes</strong><br>Acceso completo los 365 días</small>
+          <span class="badge" id="hp-badge" style="display:none"></span>
+          <b>$<span id="hp-ano">—</span></b>
+          <small>MXN al año · <span id="hp-ano-detalle">acceso completo los 365 días</span></small>
         </div>
       </div>
 
@@ -795,6 +800,56 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 setPersistence(auth, browserLocalPersistence);
+
+/* ═══════════════════════════════════════════════════════════
+   MODIFICADO · PRECIOS EN VIVO (patrón SYNOVA/ICADEM)
+   Lee config/club y pinta el bloque de precios del hero. Las
+   reglas permiten lectura pública de ese doc, así que funciona
+   aunque el visitante NO haya iniciado sesión. Todo lo derivado
+   (por día, ahorro, equivalente mensual) se calcula solo.
+   Si Firestore falla, se queda el "—" del HTML — jamás un
+   precio viejo.
+   ═══════════════════════════════════════════════════════════ */
+(async function pintarPreciosHero(){
+  try {
+    const snap = await getDoc(doc(db, 'config', 'club'));
+    const c = snap.exists() ? snap.data() : {};
+    const pm = Number(c.precioMes);
+    const pa = Number(c.precioAno);
+    if (!(pm > 0) || !(pa > 0)) {
+      console.warn('[precios hero] config/club sin precios válidos · se deja "—"');
+      return;
+    }
+
+    const fmt = n => Number(n).toLocaleString('es-MX');
+    const porDia   = Math.ceil(pm / 30);
+    const ahorro   = Math.max(0, (pm * 12) - pa);
+    const equivMes = Math.round(pa / 12);
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('hp-mes', fmt(pm));
+    set('hp-ano', fmt(pa));
+
+    const hook = document.getElementById('hp-hook');
+    if (hook) hook.textContent = `menos de $${fmt(porDia)} al día`;
+    const mesDet = document.getElementById('hp-mes-detalle');
+    if (mesDet) mesDet.textContent = `menos de $${fmt(porDia)} al día`;
+    const anoDet = document.getElementById('hp-ano-detalle');
+    if (anoDet) {
+      anoDet.innerHTML = ahorro > 0
+        ? `sale en <span class="tachado">$${fmt(pm)}</span><strong style="color:var(--primary-soft);">$${fmt(equivMes)}/mes</strong><br>Acceso completo los 365 días`
+        : `$${fmt(equivMes)}/mes · acceso completo los 365 días`;
+    }
+    // El badge nace oculto: solo aparece si de verdad hay ahorro
+    const badge = document.getElementById('hp-badge');
+    if (badge && ahorro > 0) {
+      badge.textContent = `Ahorras $${fmt(ahorro)}`;
+      badge.style.display = '';
+    }
+  } catch (e) {
+    console.warn('[precios hero] Firestore no respondió · se deja "—":', e.message);
+  }
+})();
 
 /* =========================================================
    Crear o actualizar documento del miembro en Firestore
