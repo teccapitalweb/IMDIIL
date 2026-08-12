@@ -408,17 +408,14 @@
       .floating-socials .vip-floating svg{width:22px !important; height:22px !important}
     }
   </style>
+  <link rel="stylesheet" href="css/redesign.css" />
 </head>
 <body>
   <div class="page-bg"></div>
 
   <header class="topbar">
     <a href="#inicio" class="brand">
-      <img src="assets/img/logo.jpg" alt="Logo IMDIIL" class="brand__logo" />
-      <div>
-        <span class="brand__name">IMDIIL</span>
-        <span class="brand__sub">Instituto Mexicano de Ingeniería Industrial y Logística</span>
-      </div>
+      <img src="logo-imdiil.png" alt="IMDIIL — Instituto Mexicano de Ingeniería Industrial y Logística" class="brand__logo" />
     </a>
 
     <button class="nav-toggle" aria-label="Abrir menú">
@@ -448,10 +445,9 @@
       <div class="hero__content container">
         <div class="hero__text reveal">
           <span class="eyebrow">Capacitación profesional para la industria</span>
-          <h1>Especialistas en capacitación industrial y logística</h1>
+          <h1>Industria, logística y talento <span>trabajan mejor juntos.</span></h1>
           <p>
-            Formamos profesionales preparados para los retos reales de la industria mediante programas de
-            capacitación técnica enfocados en seguridad, operación responsable y excelencia operativa.
+            Formación técnica para convertir conocimiento en seguridad, eficiencia y mejores decisiones dentro de la operación industrial.
           </p>
           <div class="hero__actions">
             <a href="#cursos" class="btn btn--primary">Ver cursos</a>
@@ -480,6 +476,7 @@
         <div class="hero__media reveal reveal-delay">
           <div class="hero__media-card">
             <img src="assets/img/banner.jpg" alt="Banner IMDIIL" />
+            <div class="hero__media-label"><strong>IMDIIL</strong><span>Formación aplicada a la industria</span></div>
           </div>
           <div class="hero__floating">
             <span>Seguridad industrial</span>
@@ -594,13 +591,8 @@
         <div class="vip-plans">
           <div class="vip-plan">
             <div class="vip-plan__name">Plan Mensual</div>
-            <!-- MODIFICADO: precio en vivo desde config/club -->
-            <div class="vip-plan__price">
-              <span class="vip-plan__price-num">$<span data-precio="mes">—</span></span>
-              <span class="vip-plan__price-cur">MXN</span>
-              <span class="vip-plan__price-per">/ mes</span>
-            </div>
-            <div class="vip-plan__equiv">Facturación mensual · Cancela cuando quieras</div>
+            <h3 class="vip-plan__headline">Acceso flexible para mantenerte actualizado</h3>
+            <div class="vip-plan__equiv">Consulta los detalles de contratación al ingresar al panel.</div>
             <ul>
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Acceso ilimitado al catálogo</li>
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Clases en vivo mensuales</li>
@@ -610,38 +602,30 @@
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Foro VIP + canal WhatsApp</li>
             </ul>
             <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--ghost">
-              Empezar mensual
+              Ver detalles en el panel
             </a>
           </div>
 
           <div class="vip-plan vip-plan--featured">
-            <!-- MODIFICADO: texto de ahorro en vivo -->
-            <div class="vip-plan__ribbon" data-precio-ribbon>Mejor valor</div>
+            <div class="vip-plan__ribbon">Continuidad anual</div>
             <div class="vip-plan__name">Plan Anual</div>
-            <!-- MODIFICADO: precio en vivo desde config/club -->
-            <div class="vip-plan__price">
-              <span class="vip-plan__price-num">$<span data-precio="ano">—</span></span>
-              <span class="vip-plan__price-cur">MXN</span>
-              <span class="vip-plan__price-per">/ año</span>
-            </div>
-            <div class="vip-plan__equiv" data-precio-equiv>Un solo pago al año</div>
+            <h3 class="vip-plan__headline">Una ruta completa de desarrollo profesional</h3>
+            <div class="vip-plan__equiv">Consulta los detalles de contratación al ingresar al panel.</div>
             <ul>
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Todo lo del plan mensual</li>
-              <!-- MODIFICADO: meses gratis y ahorro en vivo -->
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg><strong><span data-precio-meses>Meses gratis</span></strong> <span data-precio-ahorro-paren></span></li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Sin cobros mensuales sorpresa</li>
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Acceso garantizado 365 días</li>
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Prioridad en clases con cupo limitado</li>
               <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Certificado anual premium</li>
+              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Continuidad en herramientas y comunidad</li>
             </ul>
             <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--primary">
-              Empezar anual →
+              Ver detalles en el panel →
             </a>
           </div>
         </div>
 
         <p class="vip-foot">
-          <strong>Sin permanencia · Cancela cuando quieras · Facturación automática</strong>
+          <strong>Los detalles de membresía y contratación están disponibles dentro del panel.</strong>
         </p>
       </div>
     </section>
@@ -792,7 +776,7 @@
   <footer class="footer">
     <div class="container footer__content">
       <div class="footer__brand">
-        <img src="assets/img/logo.jpg" alt="Logo IMDIIL" />
+        <img src="assets/imdiil-square.png" alt="Logo IMDIIL" />
         <div>
           <strong>IMDIIL</strong>
           <p>Instituto Mexicano de Ingeniería Industrial y Logística</p>
@@ -852,47 +836,5 @@
   </div>
 
   <script src="js/script.js"></script>
-
-  <!-- ═══════════════════════════════════════════════════════════
-       MODIFICADO · PRECIOS EN VIVO desde Firestore config/club
-       API REST, sin SDK (esta página estática solo LEE un doc con
-       lectura pública). Derivados calculados solos. Si falla, se
-       queda "—" — jamás un precio viejo.
-       ═══════════════════════════════════════════════════════════ -->
-  <script>
-  (async function pintarPrecios(){
-    try {
-      const r = await fetch('https://firestore.googleapis.com/v1/projects/imdiil-vip/databases/(default)/documents/config/club');
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
-      const f = j.fields || {};
-      const num = v => v ? Number(v.integerValue ?? v.doubleValue ?? 0) : 0;
-      const pm = num(f.precioMes), pa = num(f.precioAno);
-      if (!(pm > 0) || !(pa > 0)) { console.warn('[precios] config/club sin precios válidos'); return; }
-
-      const fmt = n => Number(n).toLocaleString('es-MX');
-      const ahorro = Math.max(0, (pm * 12) - pa);
-      const equivMes = Math.round(pa / 12);
-      const mesesGratis = Math.round((ahorro / pm) * 10) / 10;
-
-      document.querySelectorAll('[data-precio="mes"]').forEach(el => el.textContent = fmt(pm));
-      document.querySelectorAll('[data-precio="ano"]').forEach(el => el.textContent = fmt(pa));
-      document.querySelectorAll('[data-precio-equiv]').forEach(el => {
-        el.innerHTML = ahorro > 0
-          ? `Equivale a <strong>$${fmt(equivMes)}/mes</strong> · Ahorras $${fmt(ahorro)}`
-          : `Equivale a <strong>$${fmt(equivMes)}/mes</strong> · Un solo pago al año`;
-      });
-      document.querySelectorAll('[data-precio-ribbon]').forEach(el => {
-        el.textContent = mesesGratis >= 1 ? `Ahorra ${mesesGratis} ${mesesGratis === 1 ? 'mes' : 'meses'}` : 'Mejor valor';
-      });
-      document.querySelectorAll('[data-precio-meses]').forEach(el =>
-        el.textContent = mesesGratis > 0 ? `${mesesGratis} ${mesesGratis === 1 ? 'mes' : 'meses'} gratis` : 'Pago único anual');
-      document.querySelectorAll('[data-precio-ahorro-paren]').forEach(el =>
-        el.textContent = ahorro > 0 ? `(ahorras $${fmt(ahorro)})` : '');
-    } catch (e) {
-      console.warn('[precios] no se pudieron leer · se queda "—":', e.message);
-    }
-  })();
-  </script>
 </body>
 </html>
