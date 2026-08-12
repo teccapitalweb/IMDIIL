@@ -152,6 +152,7 @@ const galleryImages = Array.from({ length: 12 }, (_, i) => `assets/img/gallery/g
 const opinionImages = Array.from({ length: 10 }, (_, i) => `assets/img/opinions/opinion-${i + 1}.png`);
 
 const coursesGrid = document.getElementById('coursesGrid');
+const courseCount = document.getElementById('courseCount');
 const opinionsTrack = document.getElementById('opinionsTrack');
 const galleryGrid = document.getElementById('galleryGrid');
 const modal = document.getElementById('courseModal');
@@ -159,10 +160,24 @@ const modalBody = document.getElementById('modalBody');
 const lightbox = document.getElementById('lightbox');
 const lightboxImage = document.getElementById('lightboxImage');
 const lightboxCaption = document.getElementById('lightboxCaption');
+let activeCourseFilter = 'all';
+
+function getCourseCategory(course) {
+  const title = course.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  if (/logistica|embarques|mercancias|compras|inventarios|fronterizos/.test(title)) return 'logistica';
+  if (/segur|enfermeria|stps|semarnat|cofepris|sustancias|ambiental/.test(title)) return 'seguridad';
+  if (/project|controller|costos|kaizen/.test(title)) return 'gestion';
+  return 'operaciones';
+}
 
 function renderCourses() {
-  coursesGrid.innerHTML = courseData.map((course, index) => `
-    <article class="course-card reveal" style="transition-delay:${(index % 3) * 0.06}s">
+  const visibleCourses = courseData
+    .map((course, index) => ({ course, index }))
+    .filter(({ course }) => activeCourseFilter === 'all' || getCourseCategory(course) === activeCourseFilter);
+
+  coursesGrid.innerHTML = visibleCourses.map(({ course, index }, visibleIndex) => `
+    <article class="course-card reveal is-visible" style="transition-delay:${(visibleIndex % 3) * 0.06}s">
       <img src="${course.image}" alt="${course.title}">
       <div class="course-card__body">
         <h3>${course.title}</h3>
@@ -171,6 +186,8 @@ function renderCourses() {
       </div>
     </article>
   `).join('');
+
+  if (courseCount) courseCount.textContent = `${visibleCourses.length} ${visibleCourses.length === 1 ? 'programa' : 'programas'}`;
 }
 
 function openCourseModal(index) {
@@ -294,6 +311,15 @@ function startAutoSlide() {
 
 function setupEvents() {
   document.addEventListener('click', (event) => {
+    const filterBtn = event.target.closest('[data-course-filter]');
+    if (filterBtn) {
+      activeCourseFilter = filterBtn.dataset.courseFilter;
+      document.querySelectorAll('[data-course-filter]').forEach(button => {
+        button.classList.toggle('is-active', button === filterBtn);
+      });
+      renderCourses();
+    }
+
     const courseBtn = event.target.closest('[data-course]');
     if (courseBtn) openCourseModal(Number(courseBtn.dataset.course));
 
@@ -329,6 +355,47 @@ function setupEvents() {
   const nav = document.querySelector('.nav');
   navToggle.addEventListener('click', () => nav.classList.toggle('is-open'));
   nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => nav.classList.remove('is-open')));
+}
+
+function setupNavBehavior() {
+  const topbar = document.querySelector('.topbar');
+  const navLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'));
+  const sections = navLinks
+    .map(link => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+
+  const updateHeader = () => topbar.classList.toggle('is-scrolled', window.scrollY > 28);
+  updateHeader();
+  window.addEventListener('scroll', updateHeader, { passive: true });
+
+  const observer = new IntersectionObserver((entries) => {
+    const current = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!current) return;
+
+    navLinks.forEach(link => {
+      link.classList.toggle('is-active', link.getAttribute('href') === `#${current.target.id}`);
+    });
+  }, { rootMargin: '-28% 0px -58% 0px', threshold: [0.02, 0.25, 0.5] });
+
+  sections.forEach(section => observer.observe(section));
+}
+
+function setupHeroMotion() {
+  const hero = document.querySelector('.hero');
+  const media = document.querySelector('.hero__media-card');
+  if (!hero || !media || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  hero.addEventListener('pointermove', (event) => {
+    const rect = hero.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - .5) * 12;
+    const y = ((event.clientY - rect.top) / rect.height - .5) * 10;
+    media.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  });
+  hero.addEventListener('pointerleave', () => {
+    media.style.transform = 'translate3d(0, 0, 0)';
+  });
 }
 
 function animateCounter(el, target) {
@@ -392,6 +459,8 @@ renderOpinions();
 setupEvents();
 setupCounter();
 setupReveal();
+setupNavBehavior();
+setupHeroMotion();
 updateCarousel();
 startAutoSlide();
 setupEmpresasCarousel();

@@ -423,12 +423,11 @@
     </button>
 
     <nav class="nav">
-      <a href="#inicio">Inicio</a>
       <a href="#nosotros">Nosotros</a>
+      <a href="#esencia">Esencia</a>
       <a href="#cursos">Cursos</a>
       <a href="#vip">Club VIP</a>
       <a href="#galeria">Galería</a>
-      <a href="#opiniones">Opiniones</a>
       <a href="#empresas">Empresas</a>
       <a href="#contacto">Contacto</a>
       <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="nav__cta">WhatsApp</a>
@@ -588,45 +587,17 @@
           </div>
         </div>
 
-        <div class="vip-plans">
-          <div class="vip-plan">
-            <div class="vip-plan__name">Plan Mensual</div>
-            <h3 class="vip-plan__headline">Acceso flexible para mantenerte actualizado</h3>
-            <div class="vip-plan__equiv">Consulta los detalles de contratación al ingresar al panel.</div>
-            <ul>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Acceso ilimitado al catálogo</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Clases en vivo mensuales</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>5 herramientas pro + PDFs</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Certificado con folio QR</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>20% OFF en cursos nuevos</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Foro VIP + canal WhatsApp</li>
-            </ul>
-            <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--ghost">
-              Ver detalles en el panel
-            </a>
+        <div class="vip-portal reveal">
+          <div class="vip-portal__content">
+            <span class="vip-portal__label">Acceso reservado</span>
+            <h3>Todo tu desarrollo profesional, dentro de un solo panel.</h3>
+            <p>Consulta modalidades de membresía, beneficios y contratación directamente al ingresar.</p>
           </div>
-
-          <div class="vip-plan vip-plan--featured">
-            <div class="vip-plan__ribbon">Continuidad anual</div>
-            <div class="vip-plan__name">Plan Anual</div>
-            <h3 class="vip-plan__headline">Una ruta completa de desarrollo profesional</h3>
-            <div class="vip-plan__equiv">Consulta los detalles de contratación al ingresar al panel.</div>
-            <ul>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Todo lo del plan mensual</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Acceso garantizado 365 días</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Prioridad en clases con cupo limitado</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Certificado anual premium</li>
-              <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10"/></svg>Continuidad en herramientas y comunidad</li>
-            </ul>
-            <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--primary">
-              Ver detalles en el panel →
-            </a>
+          <div class="vip-portal__actions">
+            <a href="vip-panel.html" class="vip-plan__cta vip-plan__cta--primary">Entrar al panel VIP →</a>
+            <a href="https://wa.me/522211832603?text=Hola%2C%20quiero%20conocer%20m%C3%A1s%20sobre%20el%20Club%20IMDIIL%20VIP." target="_blank" rel="noopener" class="vip-portal__link">Resolver una duda</a>
           </div>
         </div>
-
-        <p class="vip-foot">
-          <strong>Los detalles de membresía y contratación están disponibles dentro del panel.</strong>
-        </p>
       </div>
     </section>
 
@@ -648,16 +619,48 @@
             la calidad operativa dentro de las empresas.
           </p>
         </div>
-        <div class="feature-panel reveal reveal-delay">
-          <h3>Áreas de formación destacadas</h3>
-          <ul class="check-list">
-            <li>Seguridad industrial</li>
-            <li>Supervisión industrial</li>
-            <li>Operación responsable</li>
-            <li>Atención empresarial</li>
-            <li>Cumplimiento normativo</li>
-            <li>Competencias técnicas industriales</li>
-          </ul>
+        <figure class="about-visual reveal reveal-delay">
+          <img src="assets/img/banner.jpg" alt="Profesionales de ingeniería dentro de una planta industrial" />
+          <span class="about-visual__slash" aria-hidden="true"></span>
+          <span class="about-visual__corner about-visual__corner--top" aria-hidden="true"></span>
+          <span class="about-visual__corner about-visual__corner--bottom" aria-hidden="true"></span>
+          <figcaption>Industria · Logística · Desarrollo profesional</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section essence-section" id="esencia">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Esencia IMDIIL</span>
+          <h2>Lo que sostiene cada aprendizaje</h2>
+          <p>Cuatro principios guían la forma en que diseñamos formación útil, aplicable y conectada con la realidad de la industria.</p>
+        </div>
+        <div class="values-grid">
+          <article class="value-card reveal">
+            <div class="value-card__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M9 12l2 2l4 -4"/></svg></div>
+            <span class="value-card__number">01</span>
+            <h3>Seguridad aplicada</h3>
+            <p>Conocimiento que protege personas, procesos y continuidad operativa.</p>
+          </article>
+          <article class="value-card reveal reveal-delay">
+            <div class="value-card__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M9 12l2 2l4 -4"/></svg></div>
+            <span class="value-card__number">02</span>
+            <h3>Rigor técnico</h3>
+            <p>Criterio profesional, procesos claros y decisiones respaldadas por método.</p>
+          </article>
+          <article class="value-card reveal">
+            <div class="value-card__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15a8 8 0 1 0 2 -7"/><path d="M4 4v5h5M9 12l2 2l4 -4"/></svg></div>
+            <span class="value-card__number">03</span>
+            <h3>Mejora continua</h3>
+            <p>Herramientas actuales para optimizar el trabajo todos los días.</p>
+          </article>
+          <article class="value-card reveal reveal-delay">
+            <div class="value-card__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/><path d="M3 20h18"/></svg></div>
+            <span class="value-card__number">04</span>
+            <h3>Impacto operativo</h3>
+            <p>Aprendizaje que se convierte en resultados medibles dentro de la empresa.</p>
+          </article>
         </div>
       </div>
     </section>
@@ -667,7 +670,17 @@
         <div class="section-heading reveal">
           <span class="eyebrow">Oferta académica</span>
           <h2>Cursos online diseñados para la industria</h2>
-          <p>Explora nuestros programas especializados.</p>
+          <p>Encuentra el programa adecuado por área y explora su contenido antes de inscribirte.</p>
+        </div>
+        <div class="course-toolbar reveal" aria-label="Filtrar cursos por especialidad">
+          <div class="course-filters">
+            <button type="button" class="course-filter is-active" data-course-filter="all">Todos</button>
+            <button type="button" class="course-filter" data-course-filter="operaciones">Operaciones</button>
+            <button type="button" class="course-filter" data-course-filter="logistica">Logística</button>
+            <button type="button" class="course-filter" data-course-filter="seguridad">Seguridad y normativa</button>
+            <button type="button" class="course-filter" data-course-filter="gestion">Gestión</button>
+          </div>
+          <span class="course-count" id="courseCount" aria-live="polite"></span>
         </div>
         <div class="courses-grid" id="coursesGrid"></div>
       </div>
@@ -801,16 +814,7 @@
     </div>
   </footer>
 
-  <div class="floating-socials" aria-label="Redes sociales flotantes">
-    <a href="https://www.instagram.com/imdiil_mexico/" target="_blank" rel="noopener" class="floating-social floating-social--instagram" aria-label="Abrir Instagram">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2.2A2.8 2.8 0 0 0 4.2 7v10A2.8 2.8 0 0 0 7 19.8h10a2.8 2.8 0 0 0 2.8-2.8V7A2.8 2.8 0 0 0 17 4.2H7Zm10.25 1.45a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2.2A2.8 2.8 0 1 0 12 14.8 2.8 2.8 0 0 0 12 9.2Z"/></svg>
-    </a>
-    <a href="https://www.facebook.com/ImdiilMX" target="_blank" rel="noopener" class="floating-social floating-social--facebook" aria-label="Abrir Facebook">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7h2.35l.35-2.75H13.5V9.5c0-.8.22-1.35 1.38-1.35H16.3V5.7c-.7-.08-1.4-.12-2.1-.1-2.08 0-3.5 1.28-3.5 3.62v2.03H8.4V14h2.3v7h2.8Z"/></svg>
-    </a>
-    <a href="vip-panel.html" class="vip-floating" aria-label="Acceso Club VIP">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </a>
+  <div class="floating-socials" aria-label="Contacto rápido">
     <a href="https://wa.me/522211832603" target="_blank" rel="noopener" class="floating-social floating-social--whatsapp" aria-label="Abrir WhatsApp">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.05 4.94A10 10 0 0 0 3.6 17.06L2 22l5.06-1.57A10 10 0 1 0 19.05 4.94ZM12 20a8 8 0 0 1-4.08-1.12l-.3-.18-3 .93.97-2.92-.2-.31A8 8 0 1 1 12 20Zm4.4-5.63c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.23-.62.77-.76.93-.14.16-.28.18-.52.06a6.48 6.48 0 0 1-1.9-1.17 7.16 7.16 0 0 1-1.32-1.64c-.14-.24-.02-.36.1-.48.1-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.79-.2-.47-.4-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.7 2.6 4.12 3.65.58.25 1.04.4 1.4.5.58.18 1.1.16 1.51.1.46-.07 1.43-.58 1.63-1.15.2-.57.2-1.05.14-1.15-.06-.1-.22-.16-.46-.28Z"/></svg>
     </a>
