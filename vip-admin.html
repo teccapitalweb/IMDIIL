@@ -1034,6 +1034,7 @@ body{
 </head>
 <body style="visibility:hidden">
 
+<script src="assets/imdiil-bunny-catalog.js"></script>
 <!-- ===== AUTH GUARD + FIRESTORE (Firebase) ===== -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -2041,6 +2042,10 @@ const Pages={
           <h1 class="sec-hero__title">Cursos</h1>
           <p class="sec-hero__sub">Gestiona tu catálogo · activa o desactiva cursos al toque · busca y filtra. <strong style="color:var(--text-2);">Lectura conectada a Firestore en tiempo real.</strong></p>
           <div class="sec-hero__actions">
+            <button class="btn btn--ghost" id="sync-bunny-btn" title="Vincula los 57 videos ya cargados en Bunny con sus cursos">
+              <svg class="ic"><use href="#i-broadcast"/></svg>
+              Sincronizar 57 videos Bunny
+            </button>
             <button class="btn btn--accent" id="new-curso-btn">
               <svg class="ic"><use href="#i-plus"/></svg>
               Nuevo curso
@@ -2159,6 +2164,123 @@ const Pages={
     p.querySelector('#new-curso-btn')?.addEventListener('click', () => {
       Pages._abrirModalCurso(null);
     });
+    p.querySelector('#sync-bunny-btn')?.addEventListener('click', () => {
+      Pages._migrarCatalogoBunny();
+    });
+  },
+
+  _normalizarTituloCurso(valor) {
+    return String(valor || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  },
+
+  _similitudTituloCurso(a, b) {
+    const stop = new Set(['de','del','la','las','los','el','en','para','por','y','con']);
+    const tokens = valor => new Set(this._normalizarTituloCurso(valor).split(' ').filter(x => x && !stop.has(x)));
+    const aa = tokens(a), bb = tokens(b);
+    if (!aa.size || !bb.size) return 0;
+    let iguales = 0;
+    aa.forEach(x => { if (bb.has(x)) iguales++; });
+    return iguales / Math.max(aa.size, bb.size);
+  },
+
+  _slugCursoBunny(valor) {
+    return this._normalizarTituloCurso(valor).replace(/\s+/g, '-').slice(0, 90) || `curso-${Date.now()}`;
+  },
+
+  // Importación idempotente: puede ejecutarse nuevamente sin duplicar cursos.
+  // Solo sustituye las clases; conserva portadas, textos, materiales y orden.
+  async _migrarCatalogoBunny() {
+    const catalogo = window.IMDIIL_BUNNY_CATALOG;
+    const fb = window._fb;
+    const btn = document.getElementById('sync-bunny-btn');
+    if (!Array.isArray(catalogo) || catalogo.length !== 12) {
+      Toast.error('Catálogo Bunny no disponible', 'No se encontró el mapa de los 57 videos');
+      return;
+    }
+    if (!fb?.setDoc || !fb?.getDocs || !fb?.collection || !fb?.doc || !fb?.db) {
+      Toast.info('Firestore está cargando', 'Espera unos segundos e intenta de nuevo');
+      return;
+    }
+    const totalVideos = catalogo.reduce((n, c) => n + c.sesiones.length, 0);
+    if (totalVideos !== 57) {
+      Toast.error('Catálogo incompleto', `Se esperaban 57 videos y se encontraron ${totalVideos}`);
+      return;
+    }
+    const ok = confirm(`Se vincularán ${totalVideos} videos de Bunny con ${catalogo.length} cursos.\n\nLas clases de Drive serán reemplazadas, pero se conservarán portadas, descripciones, materiales, orden y disponibilidad.\n\n¿Continuar?`);
+    if (!ok) return;
+
+    if (btn) { btn.disabled = true; btn.style.opacity = '.65'; btn.textContent = 'Sincronizando…'; }
+    try {
+      const snapCursos = await fb.getDocs(fb.collection(fb.db, 'cursos'));
+      const existentes = snapCursos.docs.map(d => ({ id: d.id, ...d.data() }));
+      const usados = new Set();
+      const ordenes = existentes.map(c => Number.isFinite(c.orden) ? c.orden : 0);
+      let siguienteOrden = (ordenes.length ? Math.max(...ordenes) : -1) + 1;
+      let actualizados = 0;
+      let creados = 0;
+
+      for (const item of catalogo) {
+        const exacto = existentes.find(c => !usados.has(c.id) && this._normalizarTituloCurso(c.titulo) === this._normalizarTituloCurso(item.titulo));
+        const aproximado = exacto || existentes
+          .filter(c => !usados.has(c.id))
+          .map(c => ({ curso: c, score: this._similitudTituloCurso(c.titulo, item.titulo) }))
+          .filter(x => x.score >= 0.75)
+          .sort((a, b) => b.score - a.score)[0]?.curso;
+        const previo = aproximado || null;
+        const docId = previo?.id || `bunny-${this._slugCursoBunny(item.titulo)}`;
+        if (previo) usados.add(previo.id);
+
+        const data = {
+          sesiones: item.sesiones.map((s, i) => ({
+            numero: i + 1,
+            titulo: s.titulo || `Clase ${i + 1}`,
+            provider: 'bunny',
+            videoId: s.videoId
+          })),
+          videoProvider: 'bunny',
+          bunnyLibraryId: 727791,
+          bunnyCollectionId: item.collectionId,
+          migradoDesdeDrive: true,
+          actualizadoEn: fb.serverTimestamp()
+        };
+
+        if (!previo) {
+          Object.assign(data, {
+            titulo: item.titulo,
+            descripcion: '',
+            area: 'Ingeniería Industrial',
+            nivel: 'Intermedio',
+            instructor: 'Equipo IMDIIL',
+            horas: Math.max(1, item.sesiones.length),
+            materiales: [],
+            disponibleSiempre: false,
+            activo: true,
+            disponible: true,
+            orden: siguienteOrden++,
+            createdAt: fb.serverTimestamp(),
+            creadoPor: window.__currentAdmin?.email || 'admin'
+          });
+          creados++;
+        } else {
+          actualizados++;
+        }
+
+        await fb.setDoc(fb.doc(fb.db, 'cursos', docId), data, { merge: true });
+      }
+
+      Toast.success('Catálogo Bunny sincronizado', `${totalVideos} videos · ${actualizados} cursos actualizados · ${creados} creados`);
+    } catch (error) {
+      console.error('[migración Bunny]', error);
+      Toast.error('No se pudo sincronizar', error.message || 'Revisa permisos y conexión');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '';
+        btn.innerHTML = '<svg class="ic"><use href="#i-broadcast"/></svg> Sincronizar 57 videos Bunny';
+      }
+    }
   },
 
   // ─── KPIs ───

@@ -3064,6 +3064,7 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="assets/imdiil-bunny-catalog.js"></script>
 
 <!-- Banner sticky FOMO · solo visible para invitado y sin-membresia -->
 <div class="fomo-banner" id="fomo-banner" style="display:none">
@@ -6004,7 +6005,13 @@ const Sections = (function(){
   };
 
   function primerCursoGratisId() {
-    const primero = cursos.find(c => c.activo !== false && c.publicado !== false && c.marcarProximamente !== true && Array.isArray(c.sesiones) && c.sesiones.length);
+    const primero = cursos.find(c =>
+      c.activo !== false &&
+      c.publicado !== false &&
+      c.marcarProximamente !== true &&
+      Array.isArray(c.sesiones) &&
+      c.sesiones.some(s => s?.videoId)
+    );
     return primero ? String(primero.id) : '';
   }
 
@@ -6385,7 +6392,47 @@ const Sections = (function(){
     return PORTADA_DEFAULT;
   }
 
-  // ─── Cargar cursos desde Firestore ───
+  function normalizarTituloBunny(valor) {
+    return String(valor || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+
+  function similitudTituloBunny(a, b) {
+    const stop = new Set(['de','del','la','las','los','el','en','para','por','y','con']);
+    const tokens = valor => new Set(normalizarTituloBunny(valor).split(' ').filter(x => x && !stop.has(x)));
+    const aa = tokens(a), bb = tokens(b);
+    if (!aa.size || !bb.size) return 0;
+    let iguales = 0;
+    aa.forEach(x => { if (bb.has(x)) iguales++; });
+    return iguales / Math.max(aa.size, bb.size);
+  }
+
+  function encontrarCursoBunny(titulo) {
+    const catalogo = Array.isArray(window.IMDIIL_BUNNY_CATALOG) ? window.IMDIIL_BUNNY_CATALOG : [];
+    const normalizado = normalizarTituloBunny(titulo);
+    const exacto = catalogo.find(c => normalizarTituloBunny(c.titulo) === normalizado);
+    if (exacto) return exacto;
+    return catalogo
+      .map(c => ({ curso: c, score: similitudTituloBunny(titulo, c.titulo) }))
+      .filter(x => x.score >= 0.75)
+      .sort((a, b) => b.score - a.score)[0]?.curso || null;
+  }
+
+  function sesionesConBunny(tituloCurso, sesionesDrive) {
+    const cursoBunny = encontrarCursoBunny(tituloCurso);
+    const anteriores = Array.isArray(sesionesDrive) ? sesionesDrive : [];
+    if (!cursoBunny || !Array.isArray(cursoBunny.sesiones)) return anteriores;
+    return cursoBunny.sesiones.map((sesionBunny, i) => ({
+      ...(anteriores[i] || {}),
+      numero: anteriores[i]?.numero || sesionBunny.numero || (i + 1),
+      titulo: anteriores[i]?.titulo || sesionBunny.titulo || `Clase ${i + 1}`,
+      provider: 'bunny',
+      videoId: sesionBunny.videoId
+    }));
+  }
+
+  // ─── Cargar cursos desde Firestore y vincular sus clases con Bunny ───
   async function cargarCursosFirestore(){
     if (_cursosLoading) return;
     _cursosLoading = true;
@@ -6410,7 +6457,7 @@ const Sections = (function(){
           horas: data.horas || (data.sesiones?.length) || 0,
           modulos: data.sesiones?.length || data.modulos || 0,
           // Sesiones (clases) y materiales (PDFs)
-          sesiones: Array.isArray(data.sesiones) ? data.sesiones : [],
+          sesiones: sesionesConBunny(data.titulo, data.sesiones),
           materiales: Array.isArray(data.materiales) ? data.materiales : [],
           // Flags de desbloqueo
           disponibleSiempre: data.disponibleSiempre === true,
