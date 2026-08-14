@@ -2923,13 +2923,14 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 
 /* ─── Popup paywall ─── */
 .paywall-modal{
-  position:fixed;inset:0;z-index:200;
+  position:fixed!important;inset:0!important;z-index:2147483000!important;
   background:rgba(0,0,0,.65);
   backdrop-filter:blur(4px);
   display:none;align-items:center;justify-content:center;padding:20px;
+  overflow-y:auto;overscroll-behavior:contain;isolation:isolate;
   animation:fadeIn .2s ease;
 }
-.paywall-modal.is-open{display:flex}
+.paywall-modal.is-open{display:flex!important}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .paywall-modal__box{
   background:var(--surface);
@@ -3076,7 +3077,7 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 </div>
 
 <!-- Popup paywall (se abre al hacer click en contenido bloqueado) -->
-<div class="paywall-modal" id="paywall-modal" role="dialog" aria-modal="true" aria-labelledby="paywall-title">
+<div class="paywall-modal" id="paywall-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="paywall-title">
   <div class="paywall-modal__box">
     <button class="paywall-modal__close" id="paywall-close" aria-label="Cerrar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -5932,15 +5933,14 @@ const Sections = (function(){
 
   function cursoDesbloqueado(indexCurso, curso){
     if (esAdminReal()) return true;
-    if (curso && curso.disponibleSiempre === true) return true;
     if (curso && curso.marcarProximamente === true) return false;
-    return calcularDiasMembresia() >= cursoUnlockDay(curso);  // ← turno cada 8 días por orden
+    // Todos pueden abrir el detalle. El acceso se decide por clase: para
+    // quienes aún no pagan solo existe una vista previa gratuita global.
+    return true;
   }
 
   function diasParaDesbloquear(indexCurso, curso){
-    if (esAdminReal()) return 0;
-    if (curso && curso.disponibleSiempre === true) return 0;
-    return Math.max(0, cursoUnlockDay(curso) - calcularDiasMembresia());
+    return 0;
   }
 
   // Mostrar banner si está en modo preview (solo admins lo ven)
@@ -6003,13 +6003,19 @@ const Sections = (function(){
     return p[cursoId];
   };
 
+  function primerCursoGratisId() {
+    const primero = cursos.find(c => c.activo !== false && c.publicado !== false && c.marcarProximamente !== true && Array.isArray(c.sesiones) && c.sesiones.length);
+    return primero ? String(primero.id) : '';
+  }
+
+  function esClaseGratisGlobal(cursoId, indexClase) {
+    return indexClase === 0 && String(cursoId) === primerCursoGratisId();
+  }
+
   function claseDesbloqueada(cursoId, indexClase, sesiones) {
     if (esAdminReal()) return true;
-    if (indexClase === 0) return true; // primera siempre desbloqueada
-    const prog = getProgresoCurso(cursoId);
-    const anterior = sesiones[indexClase - 1];
-    const anteriorNum = anterior.numero || indexClase;
-    return prog.clasesVistas.includes(anteriorNum);
+    if (window.UserState?.modo === 'vip') return true;
+    return esClaseGratisGlobal(cursoId, indexClase);
   }
 
   function progresoCursoPct(cursoId, totalClases) {
@@ -6198,11 +6204,72 @@ const Sections = (function(){
     document.body.style.overflow = 'hidden';
   };
 
+  // Única vista previa gratuita global: primera sesión del primer curso.
+  // Para Bunny se solicita una URL firmada al webhook; las URLs antiguas se
+  // conservan temporalmente como respaldo durante la migración.
+  window.abrirClaseIMDIIL = async function(cursoId, sesionIdx) {
+    const curso = cursos.find(x => String(x.id) === String(cursoId));
+    const sesion = curso?.sesiones?.[sesionIdx];
+    if (!sesion) {
+      Toast.error('Clase no encontrada', 'Actualiza la página e intenta de nuevo');
+      return;
+    }
+
+    if (!claseDesbloqueada(cursoId, sesionIdx, curso.sesiones)) {
+      const totalMateriales = Array.isArray(curso.materiales) ? curso.materiales.length : 0;
+      window.__showPaywallModal?.({
+        title: 'Desbloquea el curso completo',
+        sub: `Disfruta gratis la primera clase. Activa tu membresía para abrir las demás clases${totalMateriales ? ` y ${totalMateriales} material${totalMateriales !== 1 ? 'es' : ''} del curso` : ''}.`
+      });
+      return;
+    }
+
+    const numClase = sesion.numero || (sesionIdx + 1);
+    if (!sesion.videoId) {
+      if (sesion.url) window.abrirVisor(sesion.url, sesion.titulo, cursoId, numClase);
+      else Toast.info('Video pendiente', 'Esta clase todavía no tiene un video asignado');
+      return;
+    }
+
+    window.abrirVisor('about:blank', sesion.titulo || `Clase ${numClase}`, cursoId, numClase);
+    const frame = document.getElementById('visorFrame');
+    const titleEl = document.getElementById('visorTitle');
+    const dlEl = document.getElementById('visorDownload');
+    const requestId = `${Date.now()}-${Math.random()}`;
+    if (frame) frame.dataset.bunnyRequest = requestId;
+    if (titleEl) titleEl.textContent = `Cargando · ${sesion.titulo || `Clase ${numClase}`}`;
+    if (dlEl) dlEl.style.display = 'none';
+
+    try {
+      const user = window.__auth?.currentUser;
+      const idToken = user ? await user.getIdToken() : '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (idToken) headers.Authorization = `Bearer ${idToken}`;
+      const response = await fetch(`${window.WEBHOOK_URL}/api/bunny/embed-token`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ videoId: sesion.videoId, courseId: cursoId, sessionIndex: sesionIdx })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.embedUrl) throw new Error(data.error || 'No se pudo autorizar la reproducción');
+      if (frame?.dataset.bunnyRequest !== requestId) return;
+      frame.src = data.embedUrl;
+      if (titleEl) titleEl.textContent = sesion.titulo || `Clase ${numClase}`;
+    } catch (error) {
+      console.error('[Bunny player]', error);
+      if (frame?.dataset.bunnyRequest === requestId) window.cerrarVisor();
+      Toast.error('No se pudo abrir la clase', error.message || 'Intenta nuevamente');
+    }
+  };
+
   window.cerrarVisor = function() {
     const overlay = document.getElementById('visorOverlay');
     const frame = document.getElementById('visorFrame');
     if (overlay) overlay.style.display = 'none';
-    if (frame) frame.src = ''; // detener video
+    if (frame) {
+      frame.src = ''; // detener video
+      delete frame.dataset.bunnyRequest;
+    }
     document.body.style.overflow = '';
   };
 
@@ -6632,6 +6699,7 @@ const Sections = (function(){
         <div class="curso-card__cover" style="background-image:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.55)),url('${portada}');background-size:cover;background-position:center;">
           <svg class="ic" style="opacity:.85;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));"><use href="#${ICON_AREA[c.area]||'i-book'}"/></svg>
           ${c.disponibleSiempre ? '<span class="curso-card__cover-badge" style="background:var(--success);color:#0E0A06;">DISPONIBLE</span>' : ''}
+          ${!toolEsVIP() && String(c.id) === primerCursoGratisId() ? '<span class="curso-card__cover-badge" style="background:var(--success);color:#0E0A06;left:12px;right:auto;">1 CLASE GRATIS</span>' : ''}
           ${!desbloqueado && diasFalta > 0 ? `<span class="curso-card__cover-badge" style="background:rgba(14,10,6,.85);color:var(--primary);border:1px solid var(--primary);">🔒 Se desbloquea en ${diasFalta} día${diasFalta!==1?'s':''}</span>` : ''}
         </div>
         <div class="curso-card__body">
@@ -6722,9 +6790,9 @@ const Sections = (function(){
               const vista = progCurso.clasesVistas.includes(numSes);
               const desblok = claseDesbloqueada(cursoId, i, c.sesiones);
 
-              if (vista) {
+              if (vista && desblok) {
                 return `
-                <div class="modulo" onclick="window.abrirVisor('${urlEsc}', '${titEsc}', '${cursoId}', ${numSes})" style="cursor:pointer;background:color-mix(in srgb,var(--success) 8%,var(--surface-2));border-color:color-mix(in srgb,var(--success) 30%,transparent);" data-bypass-paywall="true">
+                <div class="modulo" onclick="window.abrirClaseIMDIIL('${String(cursoId).replace(/'/g, "\\'")}', ${i})" style="cursor:pointer;background:color-mix(in srgb,var(--success) 8%,var(--surface-2));border-color:color-mix(in srgb,var(--success) 30%,transparent);" data-bypass-paywall="true">
                   <div class="modulo__num" style="background:var(--success);color:#0E0A06;">✓</div>
                   <div style="flex:1;min-width:0;">
                     <div class="modulo__title">${s.titulo}</div>
@@ -6735,7 +6803,7 @@ const Sections = (function(){
               }
               if (desblok) {
                 return `
-                <div class="modulo" onclick="window.abrirVisor('${urlEsc}', '${titEsc}', '${cursoId}', ${numSes})" style="cursor:pointer;" data-bypass-paywall="true">
+                <div class="modulo" onclick="window.abrirClaseIMDIIL('${String(cursoId).replace(/'/g, "\\'")}', ${i})" style="cursor:pointer;" data-bypass-paywall="true">
                   <div class="modulo__num">${numSes}</div>
                   <div style="flex:1;min-width:0;">
                     <div class="modulo__title">${s.titulo}</div>
@@ -6746,11 +6814,11 @@ const Sections = (function(){
               }
               // Bloqueada
               return `
-                <div class="modulo" style="cursor:not-allowed;opacity:.55;">
+                <div class="modulo" onclick="window.abrirClaseIMDIIL('${String(cursoId).replace(/'/g, "\\'")}', ${i})" style="cursor:pointer;opacity:.65;" data-bypass-paywall="true">
                   <div class="modulo__num" style="background:var(--surface-3);color:var(--text-3);">🔒</div>
                   <div style="flex:1;min-width:0;">
                     <div class="modulo__title" style="color:var(--text-2);">${s.titulo}</div>
-                    <div class="modulo__meta">Marca como vista la clase anterior para desbloquear</div>
+                    <div class="modulo__meta">Activa tu membresía para desbloquear esta clase</div>
                   </div>
                 </div>`;
             }).join('')}
@@ -6765,7 +6833,7 @@ const Sections = (function(){
       }
 
       // Materiales (PDFs) del curso — con detección de tipo + expansión fancy
-      if (c.materiales && c.materiales.length > 0) {
+      if (toolEsVIP() && c.materiales && c.materiales.length > 0) {
         // Detector de tipo según la URL
         const tipoMat = (url) => {
           const u = (url || '').toLowerCase();
@@ -6828,6 +6896,13 @@ const Sections = (function(){
             <style>@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}</style>
           `;
         }
+      } else if (!toolEsVIP() && c.materiales && c.materiales.length > 0) {
+        bodyContent += `
+          <div style="margin-top:22px;padding:18px;border:1px solid var(--border-2);border-radius:14px;background:var(--surface-2);text-align:center;">
+            <div style="font-weight:800;color:var(--text);margin-bottom:6px;">🔒 Material exclusivo para miembros</div>
+            <div style="font-size:12px;color:var(--text-2);line-height:1.55;margin-bottom:12px;">Disfruta gratis la primera clase. Activa tu membresía para abrir las demás clases y ${c.materiales.length} material${c.materiales.length!==1?'es':''} del curso.</div>
+            <button class="btn btn--accent" onclick="window.__showPaywallModal?.({title:'Desbloquea el curso completo',sub:'Disfruta gratis la primera clase. Activa tu membresía para abrir las demás clases y materiales del curso.'})">Desbloquear curso completo</button>
+          </div>`;
       }
     }
 
@@ -10763,7 +10838,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     document.getElementById('paywall-dismiss').onclick = () => {
       window.location.href = 'vip-auth.html';
     };
-    modal.classList.add('is-open');
+    showPaywallModal();
   }
 
   // ─── Aplicar candados a la vista actual ───
@@ -10775,7 +10850,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
     // Selectores de cards susceptibles de bloqueo
     const lockableSelectors = [
-      '.curso-card', '.webinar-card', '.webinar-hero', '.pdf-card', '.cert-card',
+      '.webinar-card', '.webinar-hero', '.pdf-card', '.cert-card',
       '[data-lockable="true"]', '.foro-thread', '.canal-card'
     ];
     document.querySelectorAll(lockableSelectors.join(',')).forEach(card => {
@@ -10818,32 +10893,55 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   // ─── Popup paywall genérico ───
   function showPaywallModal(opts){
     const modal = document.getElementById('paywall-modal');
+    if (!modal) return;
     if (opts && opts.title) document.getElementById('paywall-title').textContent = opts.title;
     if (opts && opts.sub) document.getElementById('paywall-sub').textContent = opts.sub;
+    // Portal directo a <body>: evita que quede dentro del scroll o del
+    // contexto de apilamiento del modal "Detalle del curso".
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
+    modal.setAttribute('aria-hidden', 'false');
     modal.classList.add('is-open');
+    requestAnimationFrame(() => modal.querySelector('.paywall-modal__close')?.focus());
   }
   window.__showPaywallModal = showPaywallModal;
 
+  function closePaywallModal(){
+    const modal = document.getElementById('paywall-modal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
   // Cerrar modal
   document.getElementById('paywall-close')?.addEventListener('click', () => {
-    document.getElementById('paywall-modal').classList.remove('is-open');
+    closePaywallModal();
   });
   document.getElementById('paywall-dismiss')?.addEventListener('click', () => {
-    document.getElementById('paywall-modal').classList.remove('is-open');
+    closePaywallModal();
   });
   document.getElementById('paywall-cta')?.addEventListener('click', () => {
-    document.getElementById('paywall-modal').classList.remove('is-open');
+    const paywall = document.getElementById('paywall-modal');
     const S = window.UserState;
     if (S.modo === 'invitado') {
+      closePaywallModal();
       window.location.href = 'vip-auth.html?plan=' + (localStorage.getItem('imdiil_intent_plan') || 'anual');
     } else {
-      window.navigateToSection?.('suscripcion');
+      // Al pulsar "Suscribirme ahora", cerrar el detalle y mostrar solamente
+      // la sección de planes, igual que en ICADEM y OdonTeck.
+      const detalles = Array.from(document.querySelectorAll('.modal-backdrop.is-open[data-modal-id^="curso-"]'));
+      detalles.forEach(backdrop => Modal.close(backdrop.dataset.modalId));
+      const mostrarPlanes = () => {
+        window.navigateToSection?.('suscripcion');
+        closePaywallModal();
+      };
+      if (detalles.length) setTimeout(mostrarPlanes, 270);
+      else mostrarPlanes();
     }
   });
   // Cerrar al click fuera del box
   document.getElementById('paywall-modal')?.addEventListener('click', (e) => {
     if (e.target.id === 'paywall-modal') {
-      e.currentTarget.classList.remove('is-open');
+      closePaywallModal();
     }
   });
 
