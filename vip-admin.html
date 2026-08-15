@@ -1034,7 +1034,7 @@ body{
 </head>
 <body style="visibility:hidden">
 
-<script src="assets/imdiil-bunny-catalog.js"></script>
+<script src="assets/imdiil-bunny-catalog.js?v=20260815-2"></script>
 <!-- ===== AUTH GUARD + FIRESTORE (Firebase) ===== -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -2042,9 +2042,9 @@ const Pages={
           <h1 class="sec-hero__title">Cursos</h1>
           <p class="sec-hero__sub">Gestiona tu catálogo · activa o desactiva cursos al toque · busca y filtra. <strong style="color:var(--text-2);">Lectura conectada a Firestore en tiempo real.</strong></p>
           <div class="sec-hero__actions">
-            <button class="btn btn--ghost" id="sync-bunny-btn" title="Vincula los 57 videos ya cargados en Bunny con sus cursos">
+            <button class="btn btn--ghost" id="sync-bunny-btn" title="Vincula los 56 videos auditados de Bunny con sus cursos">
               <svg class="ic"><use href="#i-broadcast"/></svg>
-              Sincronizar 57 videos Bunny
+              Sincronizar 56 videos Bunny
             </button>
             <button class="btn btn--accent" id="new-curso-btn">
               <svg class="ic"><use href="#i-plus"/></svg>
@@ -2196,7 +2196,7 @@ const Pages={
     const fb = window._fb;
     const btn = document.getElementById('sync-bunny-btn');
     if (!Array.isArray(catalogo) || catalogo.length !== 12) {
-      Toast.error('Catálogo Bunny no disponible', 'No se encontró el mapa de los 57 videos');
+      Toast.error('Catálogo Bunny no disponible', 'No se encontró el mapa auditado de los 56 videos');
       return;
     }
     if (!fb?.setDoc || !fb?.getDocs || !fb?.collection || !fb?.doc || !fb?.db) {
@@ -2204,11 +2204,11 @@ const Pages={
       return;
     }
     const totalVideos = catalogo.reduce((n, c) => n + c.sesiones.length, 0);
-    if (totalVideos !== 57) {
-      Toast.error('Catálogo incompleto', `Se esperaban 57 videos y se encontraron ${totalVideos}`);
+    if (totalVideos !== 56) {
+      Toast.error('Catálogo incompleto', `Se esperaban 56 videos reproducibles y se encontraron ${totalVideos}`);
       return;
     }
-    const ok = confirm(`Se vincularán ${totalVideos} videos de Bunny con ${catalogo.length} cursos.\n\nLas clases de Drive serán reemplazadas, pero se conservarán portadas, descripciones, materiales, orden y disponibilidad.\n\n¿Continuar?`);
+    const ok = confirm(`Se vincularán ${totalVideos} videos auditados de Bunny con ${catalogo.length} cursos.\n\nLos cursos que coincidan conservarán sus materiales. Los cursos antiguos sin correspondencia serán sustituidos en el mismo orden para evitar duplicados. El video dañado de Lean/Six Sigma quedará excluido.\n\n¿Continuar?`);
     if (!ok) return;
 
     if (btn) { btn.disabled = true; btn.style.opacity = '.65'; btn.textContent = 'Sincronizando…'; }
@@ -2216,61 +2216,78 @@ const Pages={
       const snapCursos = await fb.getDocs(fb.collection(fb.db, 'cursos'));
       const existentes = snapCursos.docs.map(d => ({ id: d.id, ...d.data() }));
       const usados = new Set();
+      const ordenados = [...existentes].sort((a, b) => (a.orden ?? 9999) - (b.orden ?? 9999));
       const ordenes = existentes.map(c => Number.isFinite(c.orden) ? c.orden : 0);
       let siguienteOrden = (ordenes.length ? Math.max(...ordenes) : -1) + 1;
       let actualizados = 0;
+      let reemplazados = 0;
       let creados = 0;
 
       for (const item of catalogo) {
-        const exacto = existentes.find(c => !usados.has(c.id) && this._normalizarTituloCurso(c.titulo) === this._normalizarTituloCurso(item.titulo));
+        const porColeccion = existentes.find(c => !usados.has(c.id) && c.bunnyCollectionId === item.collectionId);
+        const exacto = porColeccion || existentes.find(c => !usados.has(c.id) && this._normalizarTituloCurso(c.titulo) === this._normalizarTituloCurso(item.titulo));
         const aproximado = exacto || existentes
           .filter(c => !usados.has(c.id))
           .map(c => ({ curso: c, score: this._similitudTituloCurso(c.titulo, item.titulo) }))
-          .filter(x => x.score >= 0.75)
+          .filter(x => x.score >= 0.65)
           .sort((a, b) => b.score - a.score)[0]?.curso;
-        const previo = aproximado || null;
+        const relacionado = aproximado || null;
+        const previo = relacionado || ordenados.find(c => !usados.has(c.id)) || null;
         const docId = previo?.id || `bunny-${this._slugCursoBunny(item.titulo)}`;
         if (previo) usados.add(previo.id);
 
         const data = {
+          titulo: item.titulo,
+          descripcion: item.descripcion,
+          area: item.area,
+          nivel: item.nivel,
+          instructor: item.instructor || 'Equipo IMDIIL',
+          horas: item.horas,
+          portada: relacionado ? (previo?.portada || '') : '',
           sesiones: item.sesiones.map((s, i) => ({
             numero: i + 1,
             titulo: s.titulo || `Clase ${i + 1}`,
             provider: 'bunny',
-            videoId: s.videoId
+            videoId: s.videoId,
+            duracionSegundos: s.duracionSegundos || 0
           })),
+          materiales: relacionado && Array.isArray(previo?.materiales) ? previo.materiales : [],
           videoProvider: 'bunny',
           bunnyLibraryId: 727791,
           bunnyCollectionId: item.collectionId,
           migradoDesdeDrive: true,
+          activo: true,
+          disponible: true,
           actualizadoEn: fb.serverTimestamp()
         };
 
         if (!previo) {
           Object.assign(data, {
-            titulo: item.titulo,
-            descripcion: '',
-            area: 'Ingeniería Industrial',
-            nivel: 'Intermedio',
-            instructor: 'Equipo IMDIIL',
-            horas: Math.max(1, item.sesiones.length),
-            materiales: [],
             disponibleSiempre: false,
-            activo: true,
-            disponible: true,
             orden: siguienteOrden++,
             createdAt: fb.serverTimestamp(),
             creadoPor: window.__currentAdmin?.email || 'admin'
           });
           creados++;
         } else {
-          actualizados++;
+          if (relacionado) actualizados++;
+          else reemplazados++;
         }
 
         await fb.setDoc(fb.doc(fb.db, 'cursos', docId), data, { merge: true });
       }
 
-      Toast.success('Catálogo Bunny sincronizado', `${totalVideos} videos · ${actualizados} cursos actualizados · ${creados} creados`);
+      let desactivados = 0;
+      for (const curso of existentes.filter(c => !usados.has(c.id))) {
+        await fb.updateDoc(fb.doc(fb.db, 'cursos', curso.id), {
+          activo: false,
+          disponible: false,
+          actualizadoEn: fb.serverTimestamp()
+        });
+        desactivados++;
+      }
+
+      Toast.success('Catálogo Bunny sincronizado', `${totalVideos} videos · ${actualizados} actualizados · ${reemplazados} sustituidos · ${creados} creados · ${desactivados} anteriores desactivados`);
     } catch (error) {
       console.error('[migración Bunny]', error);
       Toast.error('No se pudo sincronizar', error.message || 'Revisa permisos y conexión');
@@ -2278,7 +2295,7 @@ const Pages={
       if (btn) {
         btn.disabled = false;
         btn.style.opacity = '';
-        btn.innerHTML = '<svg class="ic"><use href="#i-broadcast"/></svg> Sincronizar 57 videos Bunny';
+        btn.innerHTML = '<svg class="ic"><use href="#i-broadcast"/></svg> Sincronizar 56 videos Bunny';
       }
     }
   },
