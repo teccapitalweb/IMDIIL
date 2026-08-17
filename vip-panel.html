@@ -3067,7 +3067,7 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="assets/imdiil-bunny-catalog.js?v=20260815-2"></script>
+<script src="assets/imdiil-bunny-catalog.js?v=20260817-covers"></script>
 
 <!-- Banner sticky FOMO · solo visible para invitado y sin-membresia -->
 <div class="fomo-banner" id="fomo-banner" style="display:none">
@@ -6524,7 +6524,7 @@ const Sections = (function(){
           marcarProximamente: data.marcarProximamente === true,
           orden: data.orden || (i + 1),
           // Portada automática
-          portada: (fuente.relacionado && data.portada) || getPortadaCurso({ titulo }),
+          portada: bunny?.portada || (fuente.relacionado && data.portada) || getPortadaCurso({ titulo }),
           // Compatibilidad con UI vieja
           status: 'catalogo',
           progreso: 0
@@ -6563,7 +6563,7 @@ const Sections = (function(){
           disponibleSiempre: i === 0,
           marcarProximamente: false,
           orden: i + 1,
-          portada: getPortadaCurso({ titulo: bunny.titulo }),
+          portada: bunny.portada || getPortadaCurso({ titulo: bunny.titulo }),
           status: 'catalogo',
           progreso: 0
         };

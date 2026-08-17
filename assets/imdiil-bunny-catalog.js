@@ -3,6 +3,7 @@
 window.IMDIIL_BUNNY_CATALOG = [
   {
     "titulo": "Controller Jr.: finanzas, control y reporting estratégico",
+    "portada": "assets/course-covers/controller-jr.webp",
     "collectionId": "299238b8-bb2f-4f05-9a77-c5e306e4479d",
     "area": "Gestión y Finanzas",
     "nivel": "Avanzado",
@@ -49,6 +50,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Forecasting: pronóstico avanzado de la demanda",
+    "portada": "assets/course-covers/forecasting-demanda.webp",
     "collectionId": "dc0a4bfa-98fe-484f-8046-1e0d8f6896ac",
     "area": "Gestión y Finanzas",
     "nivel": "Avanzado",
@@ -95,6 +97,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Gestión de inventarios y buenas prácticas de almacén",
+    "portada": "assets/course-covers/inventarios-almacen.webp",
     "collectionId": "ef1ccdd1-5bc0-4621-aeb2-e86362f2b692",
     "area": "Logística",
     "nivel": "Intermedio",
@@ -141,6 +144,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Ingeniería de procesos: Lean Six Sigma e Industria 4.0",
+    "portada": "assets/course-covers/procesos-six-sigma.webp",
     "collectionId": "68e742ef-9a67-4022-92a5-949927eebb24",
     "area": "Calidad y Mejora Continua",
     "nivel": "Avanzado",
@@ -180,6 +184,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Kaizen: innovación y mejora continua",
+    "portada": "assets/course-covers/kaizen-mejora.webp",
     "collectionId": "d2a8f17e-aa80-49d9-864d-f537fdd9d1a9",
     "area": "Calidad y Mejora Continua",
     "nivel": "Intermedio",
@@ -226,6 +231,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Lean Manufacturing 4.0 y mejora continua",
+    "portada": "assets/course-covers/lean-manufacturing-4.webp",
     "collectionId": "9df26dba-95da-44f9-849d-ad092fc49289",
     "area": "Calidad y Mejora Continua",
     "nivel": "Avanzado",
@@ -272,6 +278,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Normatividad y regulación de energías renovables",
+    "portada": "assets/course-covers/energias-renovables.webp",
     "collectionId": "b467784e-7b76-4a2f-ab47-752abb631fa8",
     "area": "Energía y Sustentabilidad",
     "nivel": "Avanzado",
@@ -304,6 +311,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Planificación y control estratégico de costos",
+    "portada": "assets/course-covers/control-costos.webp",
     "collectionId": "0c163dc3-a7a5-4475-8232-56714523ba15",
     "area": "Gestión y Finanzas",
     "nivel": "Avanzado",
@@ -350,6 +358,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Project Management: gestión profesional de proyectos",
+    "portada": "assets/course-covers/project-management.webp",
     "collectionId": "b3375194-7f38-4a8b-be5f-c2b2330812c4",
     "area": "Gestión y Finanzas",
     "nivel": "Intermedio",
@@ -396,6 +405,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Secretariado administrativo 4.0: IA y Business Partner",
+    "portada": "assets/course-covers/secretariado-4.webp",
     "collectionId": "4fe811c7-8fe8-424e-bdbf-7d0fa5d89f21",
     "area": "Gestión y Finanzas",
     "nivel": "Intermedio",
@@ -435,6 +445,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Supervisión de producción: nivel avanzado",
+    "portada": "assets/course-covers/supervision-produccion.webp",
     "collectionId": "e214aa5e-380a-4530-83df-96c9534b7692",
     "area": "Producción",
     "nivel": "Avanzado",
@@ -481,6 +492,7 @@ window.IMDIIL_BUNNY_CATALOG = [
   },
   {
     "titulo": "Tratamiento biológico de aguas residuales",
+    "portada": "assets/course-covers/aguas-residuales.webp",
     "collectionId": "c3976aa2-81a9-4c10-b7a9-950212e52418",
     "area": "Energía y Sustentabilidad",
     "nivel": "Avanzado",
