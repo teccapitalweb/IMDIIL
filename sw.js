@@ -8,7 +8,7 @@
    Sube este archivo a la raíz del repositorio, junto a index.html.
    ============================================================ */
 
-var CACHE = 'imdiil-vip-v9';
+var CACHE = 'imdiil-vip-v10';
 
 // Al instalar, activarse de inmediato (sin esperar a que se cierren pestañas viejas)
 self.addEventListener('install', function (e) {
@@ -49,8 +49,9 @@ self.addEventListener('fetch', function (e) {
       return res;
     }).catch(function () {
       return caches.match(req).then(function (cached) {
-        // Si es una navegación y no hay nada cacheado, intenta servir el index
-        return cached || caches.match('index.html') || caches.match('./');
+        // La app instalada siempre vuelve al acceso; desde ahí Firebase decide
+        // si muestra el login o devuelve al usuario a su panel activo.
+        return cached || caches.match('vip-auth.html') || caches.match('./vip-auth.html');
       });
     })
   );

@@ -2,9 +2,13 @@
   "name": "IMDIIL · Panel VIP",
   "short_name": "IMDIIL VIP",
   "description": "Capacitación industrial, herramientas pro y certificación con folio oficial IMDIIL.",
-  "start_url": ".",
+  "id": "./",
+  "start_url": "./vip-auth.html?source=pwa",
   "scope": ".",
   "display": "standalone",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "orientation": "portrait-primary",
   "background_color": "#0D1014",
   "theme_color": "#0D1014",
