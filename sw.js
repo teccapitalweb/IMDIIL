@@ -8,7 +8,7 @@
    Sube este archivo a la raíz del repositorio, junto a index.html.
    ============================================================ */
 
-var CACHE = 'imdiil-vip-v3';
+var CACHE = 'imdiil-vip-v4';
 
 // Al instalar, activarse de inmediato (sin esperar a que se cierren pestañas viejas)
 self.addEventListener('install', function (e) {

@@ -117,6 +117,9 @@ body::after{
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .topbar__left{display:flex;align-items:center;gap:10px}
 .topbar__right{display:flex;align-items:center;gap:8px}
+.install-app-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:7px 12px;border-radius:100px;background:color-mix(in srgb,var(--primary) 12%,var(--surface));border:0.5px solid color-mix(in srgb,var(--primary) 38%,var(--border-2));color:var(--primary);font-size:11px;font-weight:700;letter-spacing:.2px;transition:background .15s,border-color .15s,transform .15s}
+.install-app-btn:hover{background:color-mix(in srgb,var(--primary) 18%,var(--surface));border-color:var(--primary);transform:translateY(-1px)}
+.install-app-btn .ic{width:15px;height:15px}
 
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:5px 12px 5px 10px;border-radius:100px;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border:0.5px solid color-mix(in srgb,var(--primary) 30%,transparent);letter-spacing:1.2px;text-transform:uppercase}
 .pill .ic{width:11px;height:11px}
@@ -3594,6 +3597,9 @@ window.__setDisplayName = async (nombre) => {
         <span class="pill" id="topbar-pill"><svg class="ic"><use href="#i-user"/></svg><span id="topbar-pill-text">Ingeniero</span></span>
       </div>
       <div class="topbar__right">
+        <button class="install-app-btn" id="install-app-btn" type="button" aria-label="Instalar IMDIIL en este dispositivo" hidden>
+          <svg class="ic"><use href="#i-download"/></svg><span>Instalar</span>
+        </button>
         <button class="icon-btn" id="btn-notif" aria-label="Notificaciones">
           <svg class="ic"><use href="#i-bell"/></svg>
           <span class="dot"></span>
@@ -3758,6 +3764,7 @@ window.__setDisplayName = async (nombre) => {
         <a class="mobile-drawer__item" data-section="foro"><svg class="ic"><use href="#i-messages"/></svg>Foro VIP</a>
         <a class="mobile-drawer__item" data-section="directorio"><svg class="ic"><use href="#i-users"/></svg>Directorio VIP</a>
         <a class="mobile-drawer__item" data-section="canal"><svg class="ic"><use href="#i-whatsapp"/></svg>Canal WhatsApp</a>
+        <a class="mobile-drawer__item" id="drawer-whatsapp-support" href="#"><svg class="ic"><use href="#i-whatsapp"/></svg>Soporte por WhatsApp</a>
       </div>
 
       <div class="mobile-drawer__section">
@@ -5773,6 +5780,10 @@ window.addEventListener('hashchange', __sincronizarDesdeURLVIP);
 function navigateToSection(section, opciones){
   if(!__seccionesValidasVIP().has(section)) section = SECCION_DEFAULT_VIP;
 
+  // Cada cambio de sección inicia arriba, también en navegadores móviles.
+  window.scrollTo({top:0,left:0,behavior:'auto'});
+  document.querySelector('main.main')?.scrollTo({top:0,left:0,behavior:'auto'});
+
   // ── Dejar la pestaña escrita en la URL ──
   __seccionActualVIP = section;
   const __destino = '#' + section;
@@ -5800,13 +5811,13 @@ function navigateToSection(section, opciones){
     try { window.__imdiilCheckout.destroy(); } catch(e) {}
     window.__imdiilCheckout = null;
   }
-  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();if(typeof window.__actualizarWidgetsActividad==='function')window.__actualizarWidgetsActividad();return;}
+  if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();if(typeof window.__actualizarWidgetsActividad==='function')window.__actualizarWidgetsActividad();window.scrollTo({top:0,left:0,behavior:'auto'});return;}
   inicio.style.display='none';dyn.style.display='';
   const renderer=Sections.renderers[section];
   if(renderer){dyn.innerHTML='';renderer(dyn);}
   else{dyn.innerHTML=sectionPlaceholder(section);}
-  window.scrollTo({top:0,behavior:'instant'});
-  document.querySelector('main.main')?.scrollTo({top:0,behavior:'instant'});
+  window.scrollTo({top:0,left:0,behavior:'auto'});
+  document.querySelector('main.main')?.scrollTo({top:0,left:0,behavior:'auto'});
 }
 
 function sectionPlaceholder(section){
@@ -6531,7 +6542,37 @@ const Sections = (function(){
       _cursosLoaded = true;
     } catch (e) {
       console.warn('No se pudieron cargar cursos de Firestore:', e.message);
-      cursos = [];
+      // Bunny es la fuente editorial del catálogo. Si Firestore no responde
+      // (modo demo, conexión lenta u offline), conservamos los 12 cursos.
+      const catalogo = Array.isArray(window.IMDIIL_BUNNY_CATALOG) ? window.IMDIIL_BUNNY_CATALOG : [];
+      cursos = catalogo.map((bunny, i) => {
+        const sesiones = sesionesConBunny(bunny.titulo, [], bunny.collectionId);
+        return {
+          id: `bunny-${bunny.collectionId || i + 1}`,
+          titulo: bunny.titulo || 'Sin título',
+          descripcion: bunny.descripcion || '',
+          desc: bunny.descripcion || '',
+          emoji: '📚',
+          area: bunny.area || 'General',
+          nivel: bunny.nivel || 'Intermedio',
+          instructor: bunny.instructor || 'Equipo IMDIIL',
+          horas: bunny.horas || sesiones.length || 0,
+          modulos: sesiones.length,
+          sesiones,
+          materiales: [],
+          disponibleSiempre: i === 0,
+          marcarProximamente: false,
+          orden: i + 1,
+          portada: getPortadaCurso({ titulo: bunny.titulo }),
+          status: 'catalogo',
+          progreso: 0
+        };
+      });
+      let _rankFallback = 0;
+      cursos.forEach(c => {
+        if (c.disponibleSiempre) c._unlockDay = 0;
+        else { c._unlockDay = _rankFallback * 8; _rankFallback++; }
+      });
       _cursosLoaded = true;
     } finally {
       _cursosLoading = false;
@@ -10594,6 +10635,16 @@ function initNav(){
     setTimeout(() => openLogoutModal(), 200);
   });
 
+  document.getElementById('drawer-whatsapp-support')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    cerrarDrawerMovil();
+    const contacto = window.IMDIIL_CONTACT;
+    const url = contacto?.waLink && contacto?.msgSoporte
+      ? contacto.waLink(contacto.msgSoporte())
+      : 'https://wa.me/5212211832603';
+    window.open(url, '_blank', 'noopener');
+  });
+
   document.querySelectorAll('[data-open-tool]').forEach(btn=>btn.addEventListener('click',()=>{const t=btn.dataset.openTool;if(Tools[t])Tools[t].open();}));
   document.querySelectorAll('.section-header__link[data-section], .widget [data-section], .banner__stat[data-section]').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();navigateToSection(el.dataset.section);});});
 
@@ -11460,7 +11511,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   html[data-theme="day"] #imdiil-install-pop .iip-feat{color:#1A1410}
   html[data-theme="day"] #imdiil-install-pop .iip-ios{background:#F4EFE3;border-color:#E5DCC9}
 </style>
-<div id="imdiil-install-pop" role="dialog" aria-modal="true" aria-labelledby="iip-title">
+<div id="imdiil-install-pop" role="dialog" aria-modal="true" aria-labelledby="iip-title" hidden>
   <div class="iip-overlay" id="iip-overlay"></div>
   <div class="iip-card">
     <div class="iip-glow"></div>
@@ -11484,66 +11535,165 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </div>
 <script>
 (function(){
-  var STORAGE_KEY = 'imdiil_install_dismissed';
   var deferredPrompt = null;
   var pop = document.getElementById('imdiil-install-pop');
-  var installBtn = document.getElementById('iip-install-btn');
+  var installBtn = document.getElementById('install-app-btn');
   var laterBtn = document.getElementById('iip-later-btn');
   var overlay = document.getElementById('iip-overlay');
   var iosHelp = document.getElementById('iip-ios-help');
 
-  if (!pop) return;
-
-  // ¿Ya está instalada (corriendo en modo app)? No mostrar nada.
   function yaInstalada(){
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  }
-  // ¿El usuario ya la cerró antes? Respetamos su decisión por 14 días.
-  function fueDescartada(){
-    try {
-      var v = localStorage.getItem(STORAGE_KEY);
-      if (!v) return false;
-      var dias = (Date.now() - parseInt(v,10)) / 86400000;
-      return dias < 14;
-    } catch(e){ return false; }
   }
   function esIOS(){
     return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
   }
-  function mostrar(){
-    if (yaInstalada() || fueDescartada()) return;
-    pop.classList.add('show');
-  }
-  function ocultar(recordar){
-    pop.classList.remove('show');
-    if (recordar){ try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch(e){} }
+  function mostrarBoton(){
+    if (installBtn && !yaInstalada()) installBtn.hidden = false;
   }
 
-  // Android/Chrome/Edge: capturamos el evento y mostramos NUESTRO popup
   window.addEventListener('beforeinstallprompt', function(e){
     e.preventDefault();
     deferredPrompt = e;
-    setTimeout(mostrar, 1200); // pequeño delay para no ser intrusivo al cargar
+    mostrarBoton();
   });
 
-  // iOS (Safari) no dispara beforeinstallprompt: mostramos instrucciones manuales
-  if (esIOS() && !yaInstalada()){
-    if (iosHelp) iosHelp.style.display = 'block';
-    if (installBtn) installBtn.style.display = 'none'; // en iOS no hay botón automático
-    setTimeout(mostrar, 1500);
-  }
+  if (esIOS() && !yaInstalada()) mostrarBoton();
 
-  // Si ya se instaló, ocultar y recordar
-  window.addEventListener('appinstalled', function(){ ocultar(true); deferredPrompt = null; });
+  window.addEventListener('appinstalled', function(){
+    deferredPrompt = null;
+    if (installBtn) installBtn.hidden = true;
+    Toast.success('IMDIIL instalada', 'Ya puedes abrirla desde tu pantalla de inicio');
+  });
 
   if (installBtn) installBtn.addEventListener('click', function(){
-    if (!deferredPrompt){ ocultar(true); return; }
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(){ ocultar(true); deferredPrompt = null; });
+    if (deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(){ deferredPrompt = null; });
+      return;
+    }
+    if (esIOS()){
+      Modal.open({
+        id:'install-ios-help',
+        title:'Instalar IMDIIL',
+        subtitle:'Añádela a tu pantalla de inicio',
+        icon:'i-download',
+        size:'sm',
+        body:'<div style="font-size:13.5px;line-height:1.7;color:var(--text-2)">En Safari toca <b style="color:var(--text)">Compartir</b> y después <b style="color:var(--text)">Agregar a pantalla de inicio</b>.</div>',
+        footer:'<button class="btn btn--primary" onclick="Modal.close(\'install-ios-help\')">Entendido</button>'
+      });
+      return;
+    }
+    Toast.info('Instalación no disponible', 'Abre esta página en Chrome, Edge o Safari para instalarla');
   });
-  if (laterBtn) laterBtn.addEventListener('click', function(){ ocultar(true); });
-  if (overlay) overlay.addEventListener('click', function(){ ocultar(false); });
+  if (laterBtn) laterBtn.addEventListener('click', function(){ pop?.classList.remove('show'); });
+  if (overlay) overlay.addEventListener('click', function(){ pop?.classList.remove('show'); });
 })();
 </script>
+<style>
+/* ═══ Ajuste móvil integral · agosto 2026 ═══ */
+#imdiil-install-pop{display:none!important}
+
+@media (max-width:880px){
+  :root{--club-mobile-nav-h:72px}
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{min-height:100dvh}
+  .app{width:100%;min-width:0;max-width:100%;grid-template-columns:minmax(0,1fr)!important}
+  .main{width:100%;min-width:0;max-width:100%;grid-column:1/-1;gap:16px;padding:calc(12px + env(safe-area-inset-top)) 14px calc(var(--club-mobile-nav-h) + 40px + env(safe-area-inset-bottom))}
+  .topbar{width:100%;min-width:0;flex-wrap:nowrap;gap:8px}
+  .topbar__left{min-width:0;overflow:hidden}
+  .topbar__right{flex-shrink:0;gap:6px}
+  .pill{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .theme-toggle,.icon-btn,.install-app-btn{min-width:44px;min-height:44px}
+  #dynamic-section,#dynamic-section>.fade-up,#inicio-content{width:100%;min-width:0;max-width:100%;align-self:stretch}
+  .banner,.section-header,.news-grid,.kpi-grid,.cursos-grid,.certs-grid,.webinars-grid{width:100%;min-width:0;max-width:100%}
+  .mobile-nav{z-index:1000;min-height:var(--club-mobile-nav-h);padding:6px 4px max(7px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 -8px 30px rgba(0,0,0,.12)}
+  .mobile-nav__item{flex:1;min-width:0;min-height:54px;justify-content:center;padding:6px 3px;touch-action:manipulation}
+  .mobile-nav__item .ic{width:20px;height:20px}
+  .mobile-drawer__item,.mobile-drawer__close{min-height:44px;touch-action:manipulation}
+  #wa-fab,#wa-fab-menu{display:none!important}
+
+  .perfil-hero,.perfil-grid,.perfil-card{width:100%;min-width:0;max-width:100%}
+  .perfil-grid{grid-template-columns:minmax(0,1fr)}
+  .perfil-hero__info{width:100%;min-width:0}
+  .perfil-hero__name,.perfil-hero__email{max-width:100%;overflow-wrap:anywhere}
+  .perfil-hero__email{white-space:normal;line-height:1.45}
+  .perfil-hero>.btn{width:100%;min-height:46px;align-self:stretch!important;justify-content:center}
+  .perfil-card{padding:17px 16px;overflow:hidden}
+  .perfil-field{width:100%;min-width:0;gap:10px}
+  .perfil-field__val{min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.4;text-align:right}
+  .perfil-field__edit{flex:0 0 44px;width:44px;height:44px}
+
+  .dir-bar{flex-wrap:wrap}
+  .dir-bar>*{min-width:0;max-width:100%}
+  .searchbar,.dd-fancy{width:100%;min-width:0;max-width:100%}
+  input,select,textarea{font-size:16px}
+}
+
+@media (max-width:560px){
+  .main{padding-left:12px;padding-right:12px}
+  .topbar__right .theme-toggle span{display:none}
+  .theme-toggle{padding:0;width:44px}
+  .install-app-btn{padding:0;width:44px}
+  .install-app-btn span{display:none}
+  .topbar .pill{font-size:9px;padding:5px 8px;letter-spacing:.8px}
+
+  #dynamic-section .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;padding:4px;overflow:visible}
+  #dynamic-section .tabs .tab{width:100%;min-width:0;min-height:48px;padding:7px 4px;white-space:normal;font-size:9px;line-height:1.25;text-align:center;justify-content:center}
+  #dynamic-section .toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%}
+  #dynamic-section .toolbar>*{width:100%;min-width:0;max-width:100%}
+  .curso-card,.content-row,.plan-card,.pago-row,.post,.oee-card,.oee-results,.ats-card,.iper-card,.ats-add,.iper-add,.logi-card{max-width:100%;min-width:0}
+  .content-row{align-items:flex-start}
+  .content-row__action{width:100%}
+  .content-row__action .row-btn{flex:1;min-height:44px;justify-content:center}
+
+  .modal-backdrop{align-items:flex-end;padding:env(safe-area-inset-top) 0 0}
+  .modal{width:100%;max-width:none;max-height:calc(100dvh - env(safe-area-inset-top));border-radius:22px 22px 0 0;border-bottom:0}
+  .modal__header{position:sticky;top:0;z-index:2;background:var(--surface);padding:14px 16px 12px}
+  .modal__body{padding:16px;overflow-x:hidden}
+  .modal__footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--surface)}
+  .modal__close{width:44px;height:44px;flex:0 0 44px}
+
+  .visor-overlay{padding:0;align-items:stretch}
+  .visor-container{height:100dvh;max-height:none;border-radius:0;border:0}
+  .visor-header{padding:calc(8px + env(safe-area-inset-top)) 10px 8px;gap:8px}
+  .visor-title{font-size:12px}
+  .visor-actions{gap:6px}
+  .visor-btn{width:44px;height:44px;flex:0 0 44px}
+  #visorMarkAsViewed{font-size:0!important;padding:0!important;width:44px!important}
+  #visorMarkAsViewed svg{width:18px;height:18px}
+
+  .oee-field-row{grid-template-columns:1fr}
+  .oee-card,.oee-results,.ats-card,.iper-card,.ats-add,.iper-add,.logi-card{padding:16px 14px}
+  .ats-tabs,.iper-tabs{overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none}
+  .ats-tabs::-webkit-scrollbar,.iper-tabs::-webkit-scrollbar{display:none}
+  .ats-step,.pago-row{flex-wrap:wrap}
+  .dir-bar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .plan-card{padding:18px 16px}
+  .post{padding:16px 14px}
+}
+
+@media (max-width:420px){
+  .topbar__left .pill .ic{display:none}
+  .topbar__right{gap:4px}
+  .topbar__right>.icon-btn,.topbar__right>.theme-toggle,.topbar__right>.install-app-btn{width:42px;min-width:42px;height:42px;min-height:42px}
+  .banner{padding:18px 16px}
+  .banner__stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+  .banner__stat{min-width:0}
+  .kpi-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .perfil-field{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:13px 0}
+  .perfil-field__lbl,.perfil-field__val{grid-column:1;text-align:left}
+  .perfil-field__edit{grid-column:2;grid-row:1/3}
+  .perfil-field__val{margin-top:3px}
+  .perfil-field>.btn{grid-column:1/-1;width:100%;justify-content:center}
+  .mobile-drawer__panel{width:min(92vw,340px)}
+}
+
+@media (max-width:380px){
+  .topbar .pill{max-width:110px}
+  .main{padding-left:10px;padding-right:10px}
+  .mobile-nav__item{font-size:9px}
+}
+</style>
 </body>
 </html>
