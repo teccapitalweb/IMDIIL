@@ -11558,6 +11558,9 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     mostrarBoton();
   });
 
+  // El acceso debe ser visible aunque el navegador aún no haya emitido
+  // beforeinstallprompt; al tocarlo explicamos la alternativa disponible.
+  if (!yaInstalada()) mostrarBoton();
   if (esIOS() && !yaInstalada()) mostrarBoton();
 
   window.addEventListener('appinstalled', function(){
