@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0E0A06">
+<meta name="theme-color" content="#0D1014">
 <meta name="description" content="IMDIIL Panel VIP · Capacitación industrial, herramientas pro y certificación con folio.">
 <title>IMDIIL · Panel VIP</title>
-<link rel="icon" type="image/png" href="assets/imdiil-favicon.png">
-<link rel="apple-touch-icon" href="assets/imdiil-apple-touch.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/imdiil-app-icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/imdiil-app-icon-180.png">
 <!-- ─── PWA · instalable como app ─── -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3548,7 +3548,7 @@ window.__setDisplayName = async (nombre) => {
   <aside class="sidebar">
     <div class="brand">
       <div class="brand__logo">
-        <img src="assets/imdiil-isotipo.png" alt="IMDIIL">
+        <img src="assets/imdiil-app-icon-512.png" alt="IMDIIL">
       </div>
       <div>
         <div class="brand__name">IMDIIL</div>
@@ -3728,7 +3728,7 @@ window.__setDisplayName = async (nombre) => {
     <div class="mobile-drawer__header">
       <div class="mobile-drawer__brand">
         <div class="brand__logo" style="width:42px;height:42px;border-radius:10px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);flex-shrink:0;">
-          <img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;">
+          <img src="assets/imdiil-app-icon-512.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;">
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
           <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1;">IMDIIL</div>
@@ -3783,7 +3783,7 @@ const Storage={pref:{get(k,d){const v=localStorage.getItem(PREFIX+'pref:'+k);ret
 
 const Theme={
   init(){this.apply(Storage.pref.get('theme','night'));document.getElementById('theme-toggle')?.addEventListener('click',()=>this.toggle());},
-  apply(t){if(t!=='day'&&t!=='night')t='night';document.documentElement.setAttribute('data-theme',t);Storage.pref.set('theme',t);const icon=document.getElementById('theme-icon')?.querySelector('use');const lbl=document.getElementById('theme-label');if(icon)icon.setAttribute('href',t==='night'?'#i-moon':'#i-sun');if(lbl)lbl.textContent=t==='night'?'Noche':'Día';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',t==='night'?'#0E0A06':'#F4EFE3');},
+  apply(t){if(t!=='day'&&t!=='night')t='night';document.documentElement.setAttribute('data-theme',t);Storage.pref.set('theme',t);const icon=document.getElementById('theme-icon')?.querySelector('use');const lbl=document.getElementById('theme-label');if(icon)icon.setAttribute('href',t==='night'?'#i-moon':'#i-sun');if(lbl)lbl.textContent=t==='night'?'Noche':'Día';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',t==='night'?'#0D1014':'#F3F4F5');},
   toggle(){this.apply(document.documentElement.getAttribute('data-theme')==='night'?'day':'night');}
 };
 
@@ -7588,7 +7588,7 @@ const Sections = (function(){
             <div class="cert-card__top">
               <div class="cert-preview-mini">
                 <div class="cert-preview-mini__head">
-                  <div class="cert-preview-mini__logo"><img src="assets/imdiil-isotipo.png" alt="IMDIIL"></div>
+                  <div class="cert-preview-mini__logo"><img src="assets/imdiil-app-icon-512.png" alt="IMDIIL"></div>
                   <div>
                     <div class="cert-preview-mini__brand">IMDIIL</div>
                     <div class="cert-preview-mini__brand-sub">Instituto Mexicano de Ingeniería Industrial</div>
@@ -7629,7 +7629,7 @@ const Sections = (function(){
         <div class="cert-preview__paper">
           <div class="cert-preview__border"></div>
           <div class="cert-preview__brand">
-            <div style="width:38px;height:38px;border-radius:10px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="assets/imdiil-isotipo.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;"></div>
+            <div style="width:38px;height:38px;border-radius:10px;background:#1A1410;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="assets/imdiil-app-icon-512.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;"></div>
             <div><div class="cert-preview__brand-name">IMDIIL</div><div class="cert-preview__brand-sub">Instituto Mexicano de Ingeniería Industrial y Logística</div></div>
           </div>
           <div class="cert-preview__eyebrow">Certificado de aprovechamiento</div>
@@ -11517,7 +11517,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     <div class="iip-glow"></div>
     <div class="iip-icon">
       <span class="iip-badge">App</span>
-      <img src="assets/imdiil-isotipo.png" alt="IMDIIL" onerror="this.style.display='none'">
+      <img src="assets/imdiil-app-icon-512.png" alt="IMDIIL" onerror="this.style.display='none'">
     </div>
     <h3 id="iip-title">Instala IMDIIL como app</h3>
     <p>Accede más rápido, sin la barra del navegador, y vive una mejor experiencia desde tu pantalla de inicio.</p>
