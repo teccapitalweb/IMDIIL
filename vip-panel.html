@@ -3166,6 +3166,9 @@ setPersistence(auth, browserLocalPersistence);
 // ⚠️ CAMBIA esta URL por la de tu Railway cuando esté deployado
 const WEBHOOK_URL = 'https://imdiil-webhook-production.up.railway.app';
 window.WEBHOOK_URL = WEBHOOK_URL;
+// El ID de la biblioteca es público y Bunny lo incluye en sus URLs de
+// reproducción. La API key permanece únicamente en el servidor.
+window.BUNNY_VIDEO_LIBRARY_ID = '727791';
 
 const ADMIN_EMAILS = ['teccapitalweb@gmail.com','imdiilmx@gmail.com','imdiilconsultoria@gmail.com'];
 
@@ -6242,6 +6245,8 @@ const Sections = (function(){
       return;
     }
 
+    const esVistaPreviaGratis = !toolEsVIP() && esClaseGratisGlobal(cursoId, sesionIdx);
+
     const numClase = sesion.numero || (sesionIdx + 1);
     if (!sesion.videoId) {
       if (sesion.url) window.abrirVisor(sesion.url, sesion.titulo, cursoId, numClase);
@@ -6257,6 +6262,23 @@ const Sections = (function(){
     if (frame) frame.dataset.bunnyRequest = requestId;
     if (titleEl) titleEl.textContent = `Cargando · ${sesion.titulo || `Clase ${numClase}`}`;
     if (dlEl) dlEl.style.display = 'none';
+
+    // Esta es la única clase pública del catálogo. Se reproduce directamente
+    // desde el iframe oficial de Bunny para que no dependa de la validación de
+    // membresía del webhook. Las demás clases continúan usando URL firmada.
+    if (esVistaPreviaGratis) {
+      const params = new URLSearchParams({
+        autoplay: 'true',
+        loop: 'false',
+        muted: 'false',
+        preload: 'true',
+        responsive: 'true'
+      });
+      if (frame?.dataset.bunnyRequest !== requestId) return;
+      frame.src = `https://iframe.mediadelivery.net/embed/${window.BUNNY_VIDEO_LIBRARY_ID}/${encodeURIComponent(sesion.videoId)}?${params}`;
+      if (titleEl) titleEl.textContent = sesion.titulo || `Clase ${numClase}`;
+      return;
+    }
 
     try {
       const user = window.__auth?.currentUser;
@@ -10948,13 +10970,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   let demoInterval = null;
   function startDemoTimer(){
     if (demoInterval) return;
-    const startTs = parseInt(localStorage.getItem('imdiil_demo_session_start') || '0', 10);
+    // Cada visita/pestaña recibe una sesión de demo limpia. Antes se guardaba
+    // en localStorage durante diez minutos, por lo que una visita anterior
+    // podía hacer que el paywall apareciera justo al abrir la primera clase.
+    const demoStorage = sessionStorage;
+    const startTs = parseInt(demoStorage.getItem('imdiil_demo_session_start') || '0', 10);
     const now = Date.now();
     let elapsed = 0;
-    if (startTs && (now - startTs) < 600000) {
+    if (startTs && (now - startTs) >= 0 && (now - startTs) < 300000) {
       elapsed = Math.floor((now - startTs) / 1000);
     } else {
-      localStorage.setItem('imdiil_demo_session_start', String(now));
+      demoStorage.setItem('imdiil_demo_session_start', String(now));
     }
     let remaining = Math.max(0, 300 - elapsed);
     const timerEl = document.getElementById('fomo-banner-timer');
