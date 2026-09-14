@@ -1,0 +1,156 @@
+:root {
+  --tour-accent: var(--primary, #ff7a2d);
+  --tour-accent-strong: var(--primary-deep, #e85a14);
+  --tour-panel: var(--surface, #1a130d);
+  --tour-panel-soft: var(--surface-2, #251c13);
+  --tour-text: var(--text, #f5f0e6);
+  --tour-muted: var(--text-2, #b0a492);
+  --tour-border: var(--border-2, rgba(255, 230, 200, .14));
+}
+
+.onboarding-tour-layer[hidden] { display: none !important; }
+.onboarding-tour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.onboarding-tour-backdrop {
+  position: fixed;
+  inset: 0;
+  cursor: default;
+}
+.onboarding-tour-spotlight {
+  position: fixed;
+  border: 2px solid var(--tour-accent);
+  border-radius: 13px;
+  box-shadow: 0 0 0 9999px rgba(5, 3, 2, .72), 0 0 0 5px rgba(255, 122, 45, .17), 0 14px 42px rgba(0, 0, 0, .34);
+  pointer-events: none;
+  transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
+}
+.onboarding-tour-dialog {
+  position: fixed;
+  width: min(390px, calc(100vw - 28px));
+  border: 1px solid var(--tour-border);
+  border-radius: 18px;
+  background: var(--tour-panel);
+  color: var(--tour-text);
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .48);
+  overflow: hidden;
+  outline: none;
+}
+.onboarding-tour-dialog::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: linear-gradient(90deg, var(--tour-accent), var(--tour-accent-strong));
+}
+.onboarding-tour-inner { padding: 20px 21px 19px; }
+.onboarding-tour-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.onboarding-tour-eyebrow {
+  color: var(--tour-accent);
+  font: 700 10px/1 'JetBrains Mono', monospace;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.onboarding-tour-skip {
+  min-height: 32px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  color: var(--tour-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.onboarding-tour-skip:hover,
+.onboarding-tour-skip:focus-visible { background: var(--tour-panel-soft); color: var(--tour-text); }
+.onboarding-tour-title {
+  margin: 0;
+  color: var(--tour-text);
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 21px;
+  line-height: 1.22;
+  letter-spacing: -.35px;
+}
+.onboarding-tour-copy {
+  margin: 9px 0 17px;
+  color: var(--tour-muted);
+  font-size: 13.5px;
+  line-height: 1.62;
+}
+.onboarding-tour-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 17px;
+}
+.onboarding-tour-progress {
+  height: 5px;
+  flex: 1;
+  border-radius: 99px;
+  overflow: hidden;
+  background: var(--tour-panel-soft);
+}
+.onboarding-tour-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--tour-accent), var(--tour-accent-strong));
+  transition: width .2s ease;
+}
+.onboarding-tour-count {
+  color: var(--tour-muted);
+  font: 600 10.5px/1 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+.onboarding-tour-actions { display: flex; justify-content: flex-end; gap: 9px; }
+.onboarding-tour-btn {
+  min-height: 39px;
+  padding: 9px 15px;
+  border: 1px solid var(--tour-border);
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.onboarding-tour-btn--back { color: var(--tour-muted); background: transparent; }
+.onboarding-tour-btn--back:hover,
+.onboarding-tour-btn--back:focus-visible { color: var(--tour-text); background: var(--tour-panel-soft); }
+.onboarding-tour-btn--next {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--tour-accent), var(--tour-accent-strong));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--tour-accent) 24%, transparent);
+}
+.onboarding-tour-btn:focus-visible,
+.onboarding-tour-skip:focus-visible,
+.onboarding-tour-launcher:focus-visible,
+.onboarding-tour-profile-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--tour-accent) 42%, transparent); outline-offset: 2px; }
+.onboarding-tour-btn[disabled] { visibility: hidden; }
+.onboarding-tour-launcher svg { width: 16px; height: 16px; }
+.onboarding-tour-profile-btn { margin-top: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-tour-spotlight,
+  .onboarding-tour-progress-fill { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .onboarding-tour-dialog {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    top: auto !important;
+    width: auto;
+    max-height: min(430px, calc(100dvh - 28px));
+    overflow-y: auto;
+    border-radius: 16px;
+  }
+  .onboarding-tour-inner { padding: 17px 17px 16px; }
+  .onboarding-tour-title { font-size: 19px; }
+  .onboarding-tour-copy { font-size: 13px; margin-bottom: 14px; }
+  .onboarding-tour-spotlight { border-radius: 10px; }
+}
