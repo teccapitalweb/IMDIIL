@@ -3158,6 +3158,10 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+// El reproductor protegido necesita la sesión Firebase para adjuntar el ID token.
+// Mantenerla disponible también evita que una cuenta VIP sea tratada como invitada
+// al pedir el enlace firmado de Bunny Stream.
+window.__auth = auth;
 window.__db = db;
 // Exponer funciones de Firestore para que el script no-module pueda usarlas
 window.__fs = { collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, setDoc, updateDoc, deleteDoc, deleteField, increment, serverTimestamp, Timestamp, db };
@@ -6374,7 +6378,7 @@ const Sections = (function(){
     if (dlEl) dlEl.style.display = 'none';
 
     try {
-      const user = window.__auth?.currentUser;
+      const user = window.__currentUser || window.__auth?.currentUser;
       const idToken = user ? await user.getIdToken() : '';
       const headers = { 'Content-Type': 'application/json' };
       if (idToken) headers.Authorization = `Bearer ${idToken}`;
