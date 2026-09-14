@@ -142,12 +142,18 @@
   .onboarding-tour-dialog {
     left: 12px !important;
     right: 12px !important;
-    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-    top: auto !important;
     width: auto;
-    max-height: min(430px, calc(100dvh - 28px));
+    max-height: min(430px, calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
     overflow-y: auto;
     border-radius: 16px;
+  }
+  .onboarding-tour-dialog--mobile-bottom {
+    top: auto !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+  .onboarding-tour-dialog--mobile-top {
+    top: calc(12px + env(safe-area-inset-top)) !important;
+    bottom: auto !important;
   }
   .onboarding-tour-inner { padding: 17px 17px 16px; }
   .onboarding-tour-title { font-size: 19px; }

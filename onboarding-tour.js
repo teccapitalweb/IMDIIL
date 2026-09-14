@@ -152,8 +152,12 @@
     if (innerWidth <= 640) {
       dialog.style.removeProperty('left');
       dialog.style.removeProperty('top');
+      const targetIsLower = rect.top + (rect.height / 2) > innerHeight / 2;
+      dialog.classList.toggle('onboarding-tour-dialog--mobile-top', targetIsLower);
+      dialog.classList.toggle('onboarding-tour-dialog--mobile-bottom', !targetIsLower);
       return;
     }
+    dialog.classList.remove('onboarding-tour-dialog--mobile-top', 'onboarding-tour-dialog--mobile-bottom');
     const gap = 18;
     const boxW = dialog.offsetWidth;
     const boxH = dialog.offsetHeight;
