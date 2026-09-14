@@ -51,6 +51,7 @@
   let fillEl;
   let backBtn;
   let nextBtn;
+  let automaticTimer = null;
 
   function isVisible(el) {
     if (!el || !el.isConnected) return false;
@@ -244,18 +245,53 @@
   }
 
   function blockingDialogVisible() {
-    return Array.from(document.querySelectorAll('[aria-modal="true"], .modal.active, .modal-overlay.active, .curso-modal-overlay.active'))
+    const selectors = [
+      '[aria-modal="true"]',
+      '.modal-backdrop',
+      '.modal.active',
+      '.modal-overlay.active',
+      '.curso-modal-overlay.active',
+      '#splash-bienvenida',
+      '#splash-completado',
+      '#visorOverlay',
+      '#imdiil-install-pop'
+    ];
+    return Array.from(document.querySelectorAll(selectors.join(', ')))
       .some((el) => !el.classList.contains('onboarding-tour-dialog') && isVisible(el));
   }
 
   function scheduleAutomatic(attempt) {
     const id = accountId();
     const ready = Boolean(id && window.UserState && window.UserState.modo !== 'cargando');
-    if (!ready || blockingDialogVisible()) {
-      if (attempt < 80) setTimeout(() => scheduleAutomatic(attempt + 1), 500);
+    if (!ready) {
+      if (attempt < 80) {
+        clearTimeout(automaticTimer);
+        automaticTimer = setTimeout(() => scheduleAutomatic(attempt + 1), 500);
+      }
       return;
     }
-    if (!wasSeen(id)) setTimeout(() => start({ automatic: true }), 650);
+    if (wasSeen(id)) return;
+    if (blockingDialogVisible()) {
+      clearTimeout(automaticTimer);
+      automaticTimer = setTimeout(() => scheduleAutomatic(0), 500);
+      return;
+    }
+    clearTimeout(automaticTimer);
+    automaticTimer = setTimeout(() => {
+      automaticTimer = null;
+      const latestId = accountId();
+      const stillReady = Boolean(latestId && latestId === id && window.UserState && window.UserState.modo !== 'cargando');
+      if (!stillReady) {
+        scheduleAutomatic(attempt + 1);
+        return;
+      }
+      if (wasSeen(latestId)) return;
+      if (blockingDialogVisible()) {
+        scheduleAutomatic(0);
+        return;
+      }
+      start({ automatic: true });
+    }, 650);
   }
 
   function addLaunchers() {
