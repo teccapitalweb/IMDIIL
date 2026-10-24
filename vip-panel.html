@@ -143,6 +143,27 @@ body::after{
 .avatar__circle,.perfil-hero__avatar,.foro-composer__avatar,.post__avatar,.com__avatar{overflow:hidden}
 .avatar__circle img,.perfil-hero__avatar img,.foro-composer__avatar img,.post__avatar img,.com__avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 
+/* Identidad del miembro en el menú, con el mismo patrón visual de SYNOVA/IMFRA. */
+.sidebar-account{display:grid;gap:8px;margin-top:auto;padding:13px 10px 0;background:var(--surface);flex:0 0 auto}
+.sidebar-account::before{content:"";height:1px;margin:0 2px 3px;background:var(--border)}
+.sidebar-account__cta{min-height:42px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--primary) 42%,#17120c);border-radius:11px;background:linear-gradient(135deg,#132f43,#0b608f);color:#fff;font-size:12px;font-weight:750;box-shadow:0 8px 18px rgba(14,41,57,.17)}
+.sidebar-account__cta:hover{border-color:var(--primary);filter:brightness(1.06)}
+.sidebar-account__cta .ic{width:14px;height:14px}.sidebar-account__cta-arrow{margin-left:auto;opacity:.75}
+.sidebar-account__card{min-width:0;display:grid;grid-template-columns:40px minmax(0,1fr) 27px;align-items:center;gap:9px;padding:9px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);transition:border-color .15s,background .15s}
+.sidebar-account__card:hover,.sidebar-account__card.is-active{border-color:color-mix(in srgb,var(--primary) 50%,var(--border));background:var(--surface-3)}
+.sidebar-account__avatar,.mobile-account-card__avatar{width:40px;height:40px;display:grid;place-items:center;overflow:hidden;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff;font-size:12px;font-weight:800}
+.sidebar-account__avatar img,.mobile-account-card__avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.sidebar-account__identity,.mobile-account-card__identity{min-width:0;display:grid;gap:3px}
+.sidebar-account__identity strong,.mobile-account-card__identity strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;line-height:1.15}
+.sidebar-account__identity small,.mobile-account-card__identity small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--primary);font:700 8px/1.2 'JetBrains Mono',monospace;letter-spacing:.75px;text-transform:uppercase}
+.sidebar-account__edit{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;color:var(--text-3)}
+.sidebar-account__edit .ic{width:13px;height:13px}.sidebar-account__card:hover .sidebar-account__edit{background:var(--surface);color:var(--primary)}
+.sidebar-account__logout{min-height:35px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--danger);font-size:11.5px;font-weight:650;border-radius:8px}
+.sidebar-account__logout:hover{background:color-mix(in srgb,var(--danger) 8%,transparent)}
+.sidebar-account__logout .ic{width:14px;height:14px}
+.mobile-account-card{display:grid;grid-template-columns:44px minmax(0,1fr) 28px;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+.mobile-account-card__avatar{width:44px;height:44px}.mobile-account-card__edit{display:grid;place-items:center;color:var(--primary)}
+
 /* Celebración al completar el recorrido inicial. */
 .celebracion-confetti{position:fixed;inset:0;z-index:2147483000;pointer-events:none;overflow:hidden}
 .celebracion-confetti span{position:absolute;top:-24px;left:var(--x);width:var(--w);height:var(--h);background:var(--c);border-radius:2px;opacity:0;animation:imdiilConfettiFall var(--t) cubic-bezier(.2,.65,.35,1) var(--d) forwards;transform:rotate(var(--r))}
@@ -1964,7 +1985,10 @@ body::after{
 .dir-card__badge-mia{position:absolute;top:12px;right:12px;z-index:2;background:var(--primary);color:#fff;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px}
 .dir-card__top{position:relative;z-index:1;margin-bottom:14px}
 .dir-card__foto{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:0 6px 18px rgba(0,0,0,.18);background:var(--surface-2);display:block}
+.dir-card__foto img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
 .dir-card__foto--ini{display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif}
+.dir-card__vip{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.92);color:#B86212;font:750 9px/1 'JetBrains Mono',monospace;letter-spacing:.7px;text-transform:uppercase;box-shadow:0 4px 12px rgba(36,24,12,.1)}
+.dir-card__vip .ic{width:10px;height:10px}.dir-count{display:inline-flex;align-items:center;gap:7px;margin-left:auto;padding:7px 10px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);color:var(--text-2);font-size:11px;font-weight:650}.dir-count strong{color:var(--text)}
 .dir-card__name{font-family:'Plus Jakarta Sans',sans-serif;font-size:16.5px;font-weight:800;letter-spacing:-.3px;line-height:1.25;margin-bottom:3px}
 .dir-card__puesto{font-size:13px;color:var(--text);font-weight:600;margin-bottom:5px;line-height:1.3}
 .dir-card__empresa{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2);margin-bottom:10px}
@@ -3117,7 +3141,7 @@ button.dir-det__row{background:var(--surface-2);border:1px solid var(--border-2)
 // UserState inicial (vacío) y detección de modo demo SIN depender de Firebase
 window.UserState = {
   modo: 'cargando',
-  uid: null, email: null, displayName: null, iniciales: 'IN',
+  uid: null, email: null, displayName: null, iniciales: 'IN', foto: '', fotoGoogle: '',
   plan: null, isAdmin: false,
   membership: { activo:false, proximaRenovacion:null, historial:[], metodoPago:null },
   demo: { timerRestante:300, iniciado:null, visitas:0 }
@@ -3273,6 +3297,9 @@ if (window.__isDemoMode) {
       window.UserState.nombre = nombre;
       window.UserState.displayName = nombre;        // todo el panel lee de aquí
       window.UserState.iniciales = calcIniciales(nombre);
+      window.UserState.whatsapp = md.whatsapp || ls.whatsapp || '';
+      window.UserState.empresa = md.empresa || ls.empresa || '';
+      window.UserState.especialidad = md.especialidad || ls.especialidad || '';
     })();
 
     // Identidad visual única: Google/Auth → copia persistida en miembros.
@@ -3686,7 +3713,15 @@ window.__setDisplayName = async (nombre) => {
       <div class="nav-label">Mi cuenta</div>
       <a class="nav-item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
       <a class="nav-item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
-      <a class="nav-item" id="btn-logout"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesión</a>
+    </div>
+    <div class="sidebar-account">
+      <a class="sidebar-account__cta" id="sidebar-account-cta" data-section="suscripcion"><svg class="ic"><use href="#i-crown"/></svg><span id="sidebar-account-cta-text">Hazte VIP</span><svg class="ic sidebar-account__cta-arrow"><use href="#i-arrow-right"/></svg></a>
+      <a class="sidebar-account__card" id="sidebar-user-card" data-section="perfil" aria-label="Abrir mi perfil">
+        <span class="sidebar-account__avatar" id="sidebar-user-avatar">IN</span>
+        <span class="sidebar-account__identity"><strong id="sidebar-user-name">Ingeniero</strong><small id="sidebar-user-plan">Sin membresía</small></span>
+        <span class="sidebar-account__edit" aria-hidden="true"><svg class="ic"><use href="#i-edit"/></svg></span>
+      </a>
+      <a class="sidebar-account__logout" id="btn-logout"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesión</a>
     </div>
   </aside>
 
@@ -3863,8 +3898,12 @@ window.__setDisplayName = async (nombre) => {
 
       <div class="mobile-drawer__section">
         <div class="mobile-drawer__label">Mi cuenta</div>
-        <a class="mobile-drawer__item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
         <a class="mobile-drawer__item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
+        <a class="mobile-account-card" data-section="perfil">
+          <span class="mobile-account-card__avatar" id="drawer-user-avatar">IN</span>
+          <span class="mobile-account-card__identity"><strong id="drawer-user-name">Ingeniero</strong><small id="drawer-user-plan">Sin membresía</small></span>
+          <span class="mobile-account-card__edit"><svg class="ic"><use href="#i-edit"/></svg></span>
+        </a>
         <a class="mobile-drawer__item" id="drawer-logout-btn" style="color:#EF4444;"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesión</a>
       </div>
     </div>
@@ -3884,10 +3923,16 @@ const Theme={
 
 function avatarHtml(foto, iniciales, alt){
   return foto
-    ? `<img src="${escapeHtml(foto)}" alt="${escapeHtml(alt || 'Foto de perfil')}" referrerpolicy="no-referrer">`
+    ? `<img class="member-avatar-img" src="${escapeHtml(foto)}" data-fallback="${escapeHtml(iniciales || 'IN')}" alt="${escapeHtml(alt || 'Foto de perfil')}" referrerpolicy="no-referrer">`
     : escapeHtml(iniciales || 'IN');
 }
 window.__avatarHtml = avatarHtml;
+document.addEventListener('error', event => {
+  const img = event.target;
+  if (!(img instanceof HTMLImageElement) || !img.classList.contains('member-avatar-img')) return;
+  const host = img.parentElement;
+  if (host) host.textContent = img.dataset.fallback || 'IN';
+}, true);
 
 window.celebrarImdiil = function(intensidad){
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -8782,6 +8827,7 @@ const Sections = (function(){
             <svg class="ic"><use href="#i-search"/></svg>
             <input type="text" id="dir-buscar" placeholder="Buscar por nombre, empresa o puesto…">
           </div>
+          <span class="dir-count" id="dir-count"><svg class="ic"><use href="#i-users"/></svg><strong>0</strong> perfiles</span>
           ${esVip?`<button class="btn btn--accent" id="dir-mi-tarjeta"><svg class="ic"><use href="#i-edit"/></svg>Mi tarjeta</button>`:''}
         </div>
 
@@ -8834,6 +8880,8 @@ const Sections = (function(){
       const blob = ((c.nombre||'')+' '+(c.empresa||'')+' '+(c.puesto||'')+' '+(c.sector||'')).toLowerCase();
       return blob.includes(_dirBusqueda);
     });
+    const count = document.getElementById('dir-count');
+    if (count) count.innerHTML = `<svg class="ic"><use href="#i-users"/></svg><strong>${cards.length}</strong> ${cards.length===1?'perfil':'perfiles'}`;
     if (!cards.length){
       grid.innerHTML = `<div class="foro-empty">${_dirBusqueda||_dirFiltroSector!=='todos'?'No hay miembros que coincidan con tu búsqueda.':'Aún no hay tarjetas en el directorio. ¡Sé el primero en crear la tuya!'}</div>`;
       return;
@@ -8841,9 +8889,7 @@ const Sections = (function(){
     const uid = window.UserState?.uid;
     grid.innerHTML = cards.map(c=>{
       const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
-      const foto = c.foto
-        ? `<img src="${c.foto}" alt="${escapeHtml(c.nombre||'')}" class="dir-card__foto">`
-        : `<div class="dir-card__foto dir-card__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${escapeHtml(inicial)}</div>`;
+      const foto = `<div class="dir-card__foto dir-card__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${window.__avatarHtml(c.foto,inicial,`Foto de ${c.nombre||'miembro'}`)}</div>`;
       const contactos = [];
       if (c.whatsapp) contactos.push(`<a class="dir-cta dir-cta--wa" href="https://wa.me/${(c.whatsapp||'').replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" title="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>`);
       if (c.email) contactos.push(`<button class="dir-cta dir-cta--mail" data-email="${escapeHtml(c.email)}" title="Copiar correo: ${escapeHtml(c.email)}"><svg class="ic"><use href="#i-mail"/></svg></button>`);
@@ -8853,15 +8899,16 @@ const Sections = (function(){
       return `
       <article class="dir-card${esMia?' dir-card--mia':''}" data-dircard="${c.id}">
         ${esMia?'<span class="dir-card__badge-mia">Tú</span>':''}
+        ${c.vip?'<span class="dir-card__vip"><svg class="ic"><use href="#i-crown"/></svg>VIP verificado</span>':''}
         <div class="dir-card__top">
           ${foto}
         </div>
         <div class="dir-card__body-m">
           <div class="dir-card__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
-          ${c.puesto?`<div class="dir-card__puesto">${escapeHtml(c.puesto)}</div>`:''}
+          <div class="dir-card__puesto">${escapeHtml(c.puesto||'Miembro de la comunidad IMDIIL')}</div>
           ${c.empresa?`<div class="dir-card__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
           ${c.sector?`<span class="dir-card__sector">${escapeHtml(c.sector)}</span>`:''}
-          ${c.bio?`<div class="dir-card__bio">${escapeHtml(c.bio)}</div>`:''}
+          <div class="dir-card__bio">${escapeHtml(c.bio||'Perfil profesional por completar.')}</div>
           ${contactos.length?`<div class="dir-card__ctas">${contactos.join('')}</div>`:'<div class="dir-card__sincontacto">Sin datos de contacto</div>'}
         </div>
       </article>`;
@@ -9495,16 +9542,27 @@ const Sections = (function(){
   /* ============================ MI PERFIL ============================ */
   function renderPerfil(container){
     const S = window.UserState || {};
+    const md = window.memberData || {};
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem('imdiil_profile') || '{}') || {}; } catch(e) {}
     const _nom = escapeHtml(S.nombre || S.displayName || 'Ingeniero');
     const _em  = escapeHtml(S.email || '—');
-    const _ini = (S.iniciales || 'IN');
+    const _ini = escapeHtml(S.iniciales || 'IN');
+    const _wa = escapeHtml(S.whatsapp || md.whatsapp || local.whatsapp || 'Por completar');
+    const _empresa = escapeHtml(S.empresa || md.empresa || local.empresa || 'Por completar');
+    const _especialidad = escapeHtml(S.especialidad || md.especialidad || local.especialidad || 'Por completar');
+    const _plan = S.isAdmin ? 'Administrador' : S.modo === 'vip'
+      ? ({ anual:'VIP Anual', mensual:'VIP Mensual', regalo:'Acceso temporal' }[S.plan] || 'Membresía VIP')
+      : 'Sin membresía';
+    const _estado = S.isAdmin ? 'Acceso total' : S.modo === 'vip' ? 'Activa' : 'Pendiente de activar';
+    const _planClass = S.modo === 'vip' || S.isAdmin ? 'is-vip' : '';
     container.innerHTML = `
       <div class="fade-up">
-        <div class="sec-hero">
-          <span class="sec-hero__eyebrow">Tu cuenta</span>
-          <h1 class="sec-hero__title">Mi perfil</h1>
-          <p class="sec-hero__sub">Tus datos personales, configuración de la membresía y preferencias de notificaciones.</p>
-        </div>
+        <header class="perfil-page-head">
+          <span class="perfil-page-head__eyebrow"><span></span>Tu cuenta</span>
+          <h1>Mi perfil</h1>
+          <p>Tu identidad profesional, fotografía y estado de membresía IMDIIL.</p>
+        </header>
 
         <section class="perfil-hero">
           <div class="perfil-hero__avatar">${window.__avatarHtml(S.foto,_ini,`Foto de ${S.nombre||S.displayName||'miembro'}`)}</div>
@@ -9512,50 +9570,39 @@ const Sections = (function(){
             <h2 class="perfil-hero__name">${_nom}</h2>
             <div class="perfil-hero__email">${_em}</div>
             <div class="perfil-hero__badges">
-              <span class="pill"><svg class="ic"><use href="#i-crown"/></svg>VIP Anual</span>
-              <span class="tag tag--new">Nivel 2 · Técnico</span>
-              <span class="tag tag--down">Miembro desde mar 2026</span>
+              <span class="perfil-membership-badge ${_planClass}"><svg class="ic"><use href="#i-crown"/></svg>${escapeHtml(_plan)}</span>
+              <span class="perfil-photo-badge ${S.fotoGoogle?'is-linked':''}"><svg class="ic"><use href="#i-image"/></svg>${S.fotoGoogle?'Foto de Google vinculada':'Foto pendiente'}</span>
             </div>
           </div>
-          ${!S.fotoGoogle?'<button class="btn btn--ghost" id="btn-google-photo" style="align-self:flex-start;"><svg class="ic"><use href="#i-image"/></svg>Vincular foto de Google</button>':''}
-          <button class="btn btn--ghost" id="btn-edit-profile" style="align-self:flex-start;"><svg class="ic"><use href="#i-tools"/></svg>Editar perfil</button>
-          <button class="btn btn--ghost" id="btn-mi-tarjeta-dir" style="align-self:flex-start;"><svg class="ic"><use href="#i-users"/></svg>Mi tarjeta del directorio</button>
+          <div class="perfil-hero__actions">
+            ${!S.fotoGoogle?'<button class="btn btn--primary" id="btn-google-photo"><svg class="ic"><use href="#i-image"/></svg>Vincular foto de Google</button>':''}
+            <button class="btn btn--ghost" id="btn-edit-profile"><svg class="ic"><use href="#i-edit"/></svg>Editar datos</button>
+            <button class="btn btn--ghost" id="btn-mi-tarjeta-dir"><svg class="ic"><use href="#i-users"/></svg>Mi tarjeta del directorio</button>
+          </div>
         </section>
 
         <div class="perfil-grid">
           <div class="perfil-card">
-            <div class="perfil-card__title">Datos personales</div>
-            <div class="perfil-field" data-field="nombre"><span class="perfil-field__lbl">Nombre</span><span class="perfil-field__val">${_nom}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field" data-field="email" data-readonly="1"><span class="perfil-field__lbl">Email</span><span class="perfil-field__val">${_em}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field" data-field="whatsapp"><span class="perfil-field__lbl">WhatsApp</span><span class="perfil-field__val">+52 238 ··· ··43</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field" data-field="empresa"><span class="perfil-field__lbl">Empresa</span><span class="perfil-field__val">—</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field" data-field="especialidad"><span class="perfil-field__lbl">Especialidad</span><span class="perfil-field__val">Seguridad industrial</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-tools"/></svg></button></div>
+            <div class="perfil-card__title">Datos de la cuenta</div>
+            <div class="perfil-field" data-field="nombre"><span class="perfil-field__lbl">Nombre</span><span class="perfil-field__val">${_nom}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-edit"/></svg></button></div>
+            <div class="perfil-field" data-field="email" data-readonly="1"><span class="perfil-field__lbl">Email</span><span class="perfil-field__val">${_em}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-edit"/></svg></button></div>
+            <div class="perfil-field" data-field="whatsapp"><span class="perfil-field__lbl">WhatsApp</span><span class="perfil-field__val">${_wa}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-edit"/></svg></button></div>
+            <div class="perfil-field" data-field="especialidad"><span class="perfil-field__lbl">Especialidad</span><span class="perfil-field__val">${_especialidad}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-edit"/></svg></button></div>
+            <div class="perfil-field" data-field="empresa"><span class="perfil-field__lbl">Empresa</span><span class="perfil-field__val">${_empresa}</span><button class="perfil-field__edit"><svg class="ic"><use href="#i-edit"/></svg></button></div>
           </div>
 
-          <div class="perfil-card">
-            <div class="perfil-card__title">Tu actividad</div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Cursos</span><span class="perfil-field__val" style="color:var(--primary);font-family:'JetBrains Mono',monospace;">5 en progreso · 2 completados</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Certificados</span><span class="perfil-field__val" style="color:var(--success);font-family:'JetBrains Mono',monospace;">2 emitidos</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Horas estudiadas</span><span class="perfil-field__val" style="font-family:'JetBrains Mono',monospace;">28 hrs</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Racha actual</span><span class="perfil-field__val" style="color:var(--primary);font-family:'JetBrains Mono',monospace;">🔥 7 días</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Último acceso</span><span class="perfil-field__val">hoy · 18:42 hrs</span></div>
-          </div>
-
-          <div class="perfil-card">
-            <div class="perfil-card__title">Notificaciones</div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Nuevos cursos</span><span class="perfil-field__val" style="color:var(--success);">✓ Activado</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Clases en vivo</span><span class="perfil-field__val" style="color:var(--success);">✓ Activado</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Foro VIP</span><span class="perfil-field__val" style="color:var(--success);">✓ Activado</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Newsletter quincenal</span><span class="perfil-field__val" style="color:var(--text-3);">— Desactivado</span></div>
-          </div>
-
-          <div class="perfil-card">
-            <div class="perfil-card__title">Seguridad</div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Contraseña</span><span class="perfil-field__val">Cambiada hace 32 días</span><button class="perfil-field__edit" id="btn-change-pass" title="Restablecer contraseña"><svg class="ic"><use href="#i-tools"/></svg></button></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">Sesiones activas</span><span class="perfil-field__val">2 dispositivos</span></div>
-            <div class="perfil-field"><span class="perfil-field__lbl">2FA</span><span class="perfil-field__val" style="color:var(--text-3);">Desactivado</span></div>
-            <div class="perfil-field" style="border-bottom:none;padding-top:10px;">
-              <button class="btn btn--ghost" id="btn-close-all-sessions" style="font-size:11px;color:var(--danger);border-color:color-mix(in srgb,var(--danger) 35%,transparent);"><svg class="ic"><use href="#i-logout"/></svg>Cerrar todas las sesiones</button>
+          <div class="perfil-card perfil-card--membership">
+            <div class="perfil-card__title">Tu membresía</div>
+            <div class="perfil-field"><span class="perfil-field__lbl">Plan</span><span class="perfil-field__val">${escapeHtml(_plan)}</span></div>
+            <div class="perfil-field"><span class="perfil-field__lbl">Estado</span><span class="perfil-field__val perfil-status ${_planClass}">${escapeHtml(_estado)}</span></div>
+            <div class="perfil-membership-note">
+              <span><svg class="ic"><use href="#i-shield-check"/></svg></span>
+              <p><strong>${S.modo === 'vip' || S.isAdmin ? 'Tu acceso está activo.' : 'Activa tu cuenta completa.'}</strong> ${S.modo === 'vip' || S.isAdmin ? 'Tu perfil y tarjeta profesional permanecen sincronizados.' : 'Desbloquea cursos, herramientas y la comunidad profesional.'}</p>
+            </div>
+            <button class="btn btn--primary perfil-membership-action" id="btn-profile-membership"><svg class="ic"><use href="#i-credit-card"/></svg>${S.modo === 'vip' || S.isAdmin ? 'Gestionar membresía' : 'Ver planes y activar'}</button>
+            <div class="perfil-security-actions">
+              <button class="btn btn--ghost" id="btn-change-pass"><svg class="ic"><use href="#i-shield-check"/></svg>Cambiar contraseña</button>
+              <button class="btn btn--ghost perfil-security-actions__danger" id="btn-close-all-sessions"><svg class="ic"><use href="#i-logout"/></svg>Cerrar sesiones</button>
             </div>
           </div>
         </div>
@@ -11043,6 +11090,11 @@ function initNav(){
       return;
     }
 
+    if(t.closest('#btn-profile-membership')){
+      window.navigateToSection?.('suscripcion');
+      return;
+    }
+
     // Abrir editor de tarjeta del directorio desde el perfil
     if(t.closest('#btn-mi-tarjeta-dir')){
       if(typeof window.__dirEditar==='function') window.__dirEditar();
@@ -11127,6 +11179,25 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       // El estado (VIP / Sin membresía) aparece en el brand del sidebar, no junto al avatar
       avatarPlan.style.display = 'none';
     }
+
+    // 1B. Tarjeta de identidad persistente en sidebar y drawer móvil.
+    const accountPhoto = /^https:\/\//i.test(S.foto || '') ? S.foto : '';
+    const accountName = (S.displayName || S.nombre || S.email?.split('@')[0] || 'Ingeniero').split(' ').slice(0,2).join(' ');
+    const accountPlan = S.isAdmin ? 'Administrador' : S.modo === 'vip'
+      ? ((PLAN_LABELS[S.plan] || PLAN_LABELS.mensual).name)
+      : S.modo === 'invitado' ? 'Modo demo' : 'Sin membresía';
+    ['sidebar-user-avatar','drawer-user-avatar'].forEach(id => {
+      const el = document.getElementById(id); if (!el) return;
+      el.innerHTML = window.__avatarHtml(accountPhoto,S.iniciales,`Foto de ${accountName}`);
+    });
+    ['sidebar-user-name','drawer-user-name'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = accountName;
+    });
+    ['sidebar-user-plan','drawer-user-plan'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = accountPlan;
+    });
+    const accountCta = document.getElementById('sidebar-account-cta-text');
+    if (accountCta) accountCta.textContent = S.modo === 'vip' || S.isAdmin ? 'Gestionar membresía' : 'Hazte VIP';
 
     // ─── Brand badge del sidebar (IMDIIL · estado real) ───
     const brandPlan = document.getElementById('brand-plan-badge');
@@ -12250,6 +12321,33 @@ body{letter-spacing:-.05px}
 }
 .perfil-hero::before{display:none!important}
 .perfil-hero__avatar{border-radius:16px!important}
+
+/* Perfil profesional · estructura equivalente a SYNOVA e IMFRA. */
+.perfil-page-head{padding:8px 2px 25px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.perfil-page-head__eyebrow{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;color:var(--primary);font:750 9px/1 'JetBrains Mono',monospace;letter-spacing:1.7px;text-transform:uppercase}
+.perfil-page-head__eyebrow>span{width:6px;height:6px;border-radius:50%;background:var(--primary)}
+.perfil-page-head h1{margin:0;color:var(--text);font:750 clamp(30px,3.8vw,43px)/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-1.6px}
+.perfil-page-head p{margin:9px 0 0;color:var(--text-2);font-size:13.5px}
+.perfil-hero{padding:24px!important;gap:18px!important;margin-bottom:14px!important;border-radius:15px!important}
+.perfil-hero__avatar{width:78px!important;height:78px!important;border:1px solid var(--border-2)!important;border-radius:18px!important;font-size:27px!important}
+.perfil-hero__name{font-size:22px!important;font-weight:750!important;letter-spacing:-.65px!important}
+.perfil-hero__email{margin-top:6px!important}.perfil-hero__badges{margin-top:10px!important}
+.perfil-membership-badge,.perfil-photo-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid var(--border-2);border-radius:999px;background:var(--surface-2);color:var(--text-2);font:700 9px/1 'JetBrains Mono',monospace;letter-spacing:.65px;text-transform:uppercase}
+.perfil-membership-badge.is-vip,.perfil-photo-badge.is-linked{border-color:color-mix(in srgb,var(--primary) 42%,var(--border));background:color-mix(in srgb,var(--primary) 9%,var(--surface));color:var(--primary)}
+.perfil-membership-badge .ic,.perfil-photo-badge .ic{width:11px;height:11px}
+.perfil-hero__actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-left:auto}
+.perfil-hero__actions .btn{min-height:39px;white-space:nowrap}
+.perfil-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+.perfil-card{padding:22px 20px!important;border-radius:15px!important}.perfil-card__title{margin-bottom:16px!important}.perfil-field{min-height:43px!important}
+.perfil-status{color:var(--warning)!important}.perfil-status.is-vip{color:var(--success)!important}
+.perfil-membership-note{display:flex;align-items:flex-start;gap:11px;margin:17px 0;padding:13px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}
+.perfil-membership-note>span{width:30px;height:30px;display:grid;place-items:center;flex:0 0 auto;border-radius:9px;background:color-mix(in srgb,var(--primary) 12%,var(--surface));color:var(--primary)}
+.perfil-membership-note .ic{width:15px;height:15px}.perfil-membership-note p{margin:0;color:var(--text-2);font-size:11.5px;line-height:1.5}.perfil-membership-note strong{color:var(--text)}
+.perfil-membership-action{width:100%;justify-content:center}
+.perfil-security-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.perfil-security-actions .btn{width:100%;justify-content:center;font-size:10.5px}.perfil-security-actions__danger{color:var(--danger)!important;border-color:color-mix(in srgb,var(--danger) 25%,var(--border))!important}
+@media(max-width:880px){.perfil-grid{grid-template-columns:minmax(0,1fr)!important}.perfil-hero{align-items:center!important;flex-wrap:wrap!important}.perfil-hero__actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:4px 0 0}.perfil-hero__actions .btn{width:100%;justify-content:center}.perfil-hero__actions .btn:last-child{grid-column:1/-1}}
+@media(max-width:560px){.perfil-page-head{padding-top:2px;margin-bottom:14px}.perfil-page-head h1{font-size:32px}.perfil-page-head p{font-size:13px;line-height:1.5}.perfil-hero{display:grid!important;grid-template-columns:58px minmax(0,1fr);gap:13px!important;padding:17px 15px!important}.perfil-hero__avatar{width:58px!important;height:58px!important;border-radius:15px!important;font-size:21px!important}.perfil-hero__info{text-align:left!important}.perfil-hero__badges{justify-content:flex-start!important}.perfil-hero__name{font-size:18px!important}.perfil-hero__email{font-size:10px!important;line-height:1.35!important}.perfil-hero__actions{grid-column:1/-1;grid-template-columns:minmax(0,1fr)}.perfil-hero__actions .btn:last-child{grid-column:auto}.perfil-card{padding:18px 15px!important}}
 .news-card,.cert-card,.webinar-card,.plan-card,.post{
   border-radius:12px!important;
   box-shadow:none!important;
