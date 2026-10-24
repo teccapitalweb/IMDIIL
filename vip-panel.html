@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="night">
+<html lang="es" data-theme="day">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0E0A06">
+<meta name="theme-color" content="#F4EFE3">
 <meta name="description" content="IMDIIL Panel VIP · Capacitación industrial, herramientas pro y certificación con folio.">
 <title>IMDIIL · Panel VIP</title>
 <link rel="icon" type="image/png" sizes="192x192" href="assets/imdiil-app-icon-192.png">
@@ -95,7 +95,8 @@ body::after{
 .sidebar::-webkit-scrollbar{width:5px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
 
-.brand{display:flex;align-items:center;gap:11px;padding:6px 16px 16px;border-bottom:0.5px solid var(--border);margin-bottom:6px}
+.brand{display:flex;align-items:center;justify-content:center;padding:0 10px 13px;border-bottom:0.5px solid var(--border);margin-bottom:6px;min-height:72px;overflow:hidden}
+.brand__official-logo{display:block;width:156px;height:70px;object-fit:contain;object-position:center center}
 .brand__logo{width:38px;height:38px;border-radius:10px;background:#1A1410;border:0.5px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .brand__logo svg{width:28px;height:28px}
 .brand__logo img{width:32px;height:32px;object-fit:contain;display:block}
@@ -139,6 +140,15 @@ body::after{
 .avatar__info{display:flex;flex-direction:column;line-height:1.1}
 .avatar__name{font-size:11px;font-weight:600}
 .avatar__plan{font-size:9px;font-weight:600;color:var(--primary);letter-spacing:.5px}
+.avatar__circle,.perfil-hero__avatar,.foro-composer__avatar,.post__avatar,.com__avatar{overflow:hidden}
+.avatar__circle img,.perfil-hero__avatar img,.foro-composer__avatar img,.post__avatar img,.com__avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+
+/* Celebración al completar el recorrido inicial. */
+.celebracion-confetti{position:fixed;inset:0;z-index:2147483000;pointer-events:none;overflow:hidden}
+.celebracion-confetti span{position:absolute;top:-24px;left:var(--x);width:var(--w);height:var(--h);background:var(--c);border-radius:2px;opacity:0;animation:imdiilConfettiFall var(--t) cubic-bezier(.2,.65,.35,1) var(--d) forwards;transform:rotate(var(--r))}
+.celebracion-confetti span.is-round{border-radius:50%}
+@keyframes imdiilConfettiFall{0%{opacity:0;transform:translate3d(0,-18px,0) rotate(var(--r))}8%{opacity:1}100%{opacity:0;transform:translate3d(var(--drift),105vh,0) rotate(calc(var(--r) + 720deg))}}
+@media(prefers-reduced-motion:reduce){.celebracion-confetti{display:none}}
 
 /* Banner — estilo agri-futurista con grid pattern + aurora + glassmorphism */
 .banner{
@@ -3144,7 +3154,7 @@ window.UserState = {
 <!-- ===== AUTH GUARD (Firebase) ===== -->
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, updateProfile, reload, GoogleAuthProvider, linkWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, onSnapshot, limit, where, addDoc, setDoc, updateDoc, deleteDoc, deleteField, increment, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -3194,6 +3204,12 @@ if (window.__isDemoMode) {
   // ─── Auth normal · puede ser sin-membresia o vip ───
   onAuthStateChanged(auth, async (user) => {
     if (!user) { window.location.href = 'vip-auth.html'; return; }
+
+    // Refrescar la identidad del proveedor para que un cambio de foto en Google
+    // se refleje la próxima vez que la persona entre al panel.
+    try {
+      if ((user.providerData || []).some(p => p && p.providerId === 'google.com')) await reload(user);
+    } catch (e) { console.warn('No se pudo refrescar el perfil de Google:', e.message); }
 
     window.__currentUser = user;
     window.UserState.uid = user.uid;
@@ -3259,6 +3275,63 @@ if (window.__isDemoMode) {
       window.UserState.iniciales = calcIniciales(nombre);
     })();
 
+    // Identidad visual única: Google/Auth → copia persistida en miembros.
+    // Esta misma foto alimenta panel, perfil, foro y tarjeta del directorio.
+    {
+      const md = window.memberData || {};
+      const perfilProveedor = (user.providerData || []).find(p => p && (p.photoURL || p.displayName)) || {};
+      const fotoGoogle = user.photoURL || perfilProveedor.photoURL || md.fotoGoogle || '';
+      const foto = fotoGoogle || md.foto || '';
+      window.UserState.foto = foto;
+      window.UserState.fotoGoogle = fotoGoogle;
+      const perfilCuenta = {
+        uid: user.uid,
+        email: window.UserState.email,
+        nombre: window.UserState.nombre,
+        displayName: window.UserState.displayName,
+        lastUpdatedAt: serverTimestamp()
+      };
+      if (fotoGoogle) perfilCuenta.fotoGoogle = fotoGoogle;
+
+      // Alta automática: también incorpora cuentas antiguas cuando vuelven a entrar.
+      // Nunca se guarda aquí información de pago ni se borra contenido de la tarjeta.
+      void (async () => {
+        try {
+          await setDoc(doc(db, 'miembros', user.uid), perfilCuenta, { merge:true });
+          const token = await user.getIdToken();
+          const bootstrap = await fetch(`${WEBHOOK_URL}/directory/bootstrap`, {
+            method:'PUT',
+            headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+            body:JSON.stringify({ nombre:window.UserState.nombre, foto:fotoGoogle })
+          });
+          if (!bootstrap.ok) throw new Error('directory-bootstrap-unavailable');
+          window.__dirFotos = window.__dirFotos || {};
+          if (foto) window.__dirFotos[user.uid] = foto;
+        } catch (apiError) {
+          // Compatibilidad mientras el servicio se actualiza o si la red falla:
+          // el propietario intenta crear su propia tarjeta directamente.
+          try {
+          const tarjetaRef = doc(db, 'directorio', user.uid);
+          const tarjetaSnap = await getDoc(tarjetaRef);
+          const esVipActual = window.UserState.modo === 'vip' || window.UserState.isAdmin;
+          const tarjetaBase = {
+            uid: user.uid,
+            nombre: window.UserState.nombre,
+            vip: esVipActual,
+            plan: window.UserState.plan || null,
+            updatedAt: serverTimestamp()
+          };
+          if (fotoGoogle) Object.assign(tarjetaBase, { foto:fotoGoogle, fotoFuente:'google' });
+          else if (!tarjetaSnap.exists() && foto) tarjetaBase.foto = foto;
+          if (!tarjetaSnap.exists()) Object.assign(tarjetaBase, { visible:true, autoAlta:true });
+          await setDoc(tarjetaRef, tarjetaBase, { merge:true });
+          window.__dirFotos = window.__dirFotos || {};
+          if (foto) window.__dirFotos[user.uid] = foto;
+          } catch (e) { console.warn('No se pudo sincronizar perfil/directorio:', e.message); }
+        }
+      })();
+    }
+
     document.body.style.visibility = 'visible';
 
     // Cargar noticias reales del home (Firestore noticias_auto)
@@ -3298,6 +3371,31 @@ if (window.__isDemoMode) {
     setTimeout(() => { if (typeof setupNotificacionesListener === 'function') setupNotificacionesListener(); }, 100);
   });
 }
+
+window.__conectarFotoGoogle = async () => {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No hay una sesión activa.');
+  const yaGoogle = (user.providerData || []).some(p => p && p.providerId === 'google.com');
+  if (!yaGoogle) {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt:'select_account' });
+    await linkWithPopup(user, provider);
+  } else {
+    await reload(user);
+  }
+  const perfilGoogle = (user.providerData || []).find(p => p && p.providerId === 'google.com') || {};
+  const foto = user.photoURL || perfilGoogle.photoURL || '';
+  if (!foto) throw new Error('La cuenta de Google seleccionada no tiene una foto disponible.');
+  if (!user.photoURL) await updateProfile(user, { photoURL:foto });
+  await setDoc(doc(db,'miembros',user.uid), { fotoGoogle:foto, lastUpdatedAt:serverTimestamp() }, { merge:true });
+  await setDoc(doc(db,'directorio',user.uid), { foto, fotoFuente:'google', updatedAt:serverTimestamp() }, { merge:true });
+  window.UserState.foto = foto;
+  window.UserState.fotoGoogle = foto;
+  window.__dirFotos = window.__dirFotos || {};
+  window.__dirFotos[user.uid] = foto;
+  window.__applyUserState?.();
+  return foto;
+};
 
 window.__signOut = async () => {
   try { await signOut(auth); window.location.href = 'vip-auth.html'; }
@@ -3555,13 +3653,7 @@ window.__setDisplayName = async (nombre) => {
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand__logo">
-        <img src="assets/imdiil-app-icon-512.png" alt="IMDIIL">
-      </div>
-      <div>
-        <div class="brand__name">IMDIIL</div>
-        <div class="brand__plan" id="brand-plan-badge">VIP Anual</div>
-      </div>
+      <img class="brand__official-logo" src="assets/imdiil-logo-oficial.png" alt="IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística">
     </div>
 
     <div class="nav-section">
@@ -3613,8 +3705,8 @@ window.__setDisplayName = async (nombre) => {
           <span class="dot"></span>
         </button>
         <button class="theme-toggle" id="theme-toggle">
-          <svg class="ic" id="theme-icon"><use href="#i-moon"/></svg>
-          <span id="theme-label">Noche</span>
+          <svg class="ic" id="theme-icon"><use href="#i-sun"/></svg>
+          <span id="theme-label">Día</span>
         </button>
         <div class="avatar" id="btn-avatar" style="cursor:pointer" title="Mi perfil">
           <div class="avatar__circle">IN</div>
@@ -3735,13 +3827,7 @@ window.__setDisplayName = async (nombre) => {
   <div class="mobile-drawer__panel">
     <div class="mobile-drawer__header">
       <div class="mobile-drawer__brand">
-        <div class="brand__logo" style="width:42px;height:42px;border-radius:10px;background:#0E0A06;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-2);flex-shrink:0;">
-          <img src="assets/imdiil-app-icon-512.png" alt="IMDIIL" style="width:30px;height:30px;object-fit:contain;display:block;">
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
-          <div class="brand__name" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1;">IMDIIL</div>
-          <div class="brand__plan" id="drawer-plan-badge" style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-3);font-weight:700;line-height:1;">Sin membresía</div>
-        </div>
+        <img class="brand__official-logo" src="assets/imdiil-logo-oficial.png" alt="IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística">
       </div>
       <button class="mobile-drawer__close" id="mobile-drawer-close" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -3791,9 +3877,42 @@ const Storage={pref:{get(k,d){const v=localStorage.getItem(PREFIX+'pref:'+k);ret
 
 const Theme={
   revision:'auth-palette-v1',
-  init(){const migrated=Storage.pref.get('theme-revision','')===this.revision;const theme=migrated?Storage.pref.get('theme','night'):'night';Storage.pref.set('theme-revision',this.revision);this.apply(theme);document.getElementById('theme-toggle')?.addEventListener('click',()=>this.toggle());},
-  apply(t){if(t!=='day'&&t!=='night')t='night';document.documentElement.setAttribute('data-theme',t);Storage.pref.set('theme',t);const icon=document.getElementById('theme-icon')?.querySelector('use');const lbl=document.getElementById('theme-label');if(icon)icon.setAttribute('href',t==='night'?'#i-moon':'#i-sun');if(lbl)lbl.textContent=t==='night'?'Noche':'Día';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',t==='night'?'#0E0A06':'#F4EFE3');},
+  init(){const migrated=Storage.pref.get('theme-revision','')===this.revision;const theme=migrated?Storage.pref.get('theme','day'):'day';Storage.pref.set('theme-revision',this.revision);this.apply(theme);document.getElementById('theme-toggle')?.addEventListener('click',()=>this.toggle());},
+  apply(t){if(t!=='day'&&t!=='night')t='day';document.documentElement.setAttribute('data-theme',t);Storage.pref.set('theme',t);const icon=document.getElementById('theme-icon')?.querySelector('use');const lbl=document.getElementById('theme-label');if(icon)icon.setAttribute('href',t==='night'?'#i-moon':'#i-sun');if(lbl)lbl.textContent=t==='night'?'Noche':'Día';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',t==='night'?'#0E0A06':'#F4EFE3');},
   toggle(){this.apply(document.documentElement.getAttribute('data-theme')==='night'?'day':'night');}
+};
+
+function avatarHtml(foto, iniciales, alt){
+  return foto
+    ? `<img src="${escapeHtml(foto)}" alt="${escapeHtml(alt || 'Foto de perfil')}" referrerpolicy="no-referrer">`
+    : escapeHtml(iniciales || 'IN');
+}
+window.__avatarHtml = avatarHtml;
+
+window.celebrarImdiil = function(intensidad){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.celebracion-confetti').forEach(el => el.remove());
+  const tipo = intensidad || 'normal';
+  const total = tipo === 'grande' ? 64 : (tipo === 'sutil' ? 24 : 42);
+  const colores = ['#FF7A2D','#FFB347','#0B5F93','#22C55E','#60A5FA','#FBBF24','#FFFFFF'];
+  const capa = document.createElement('div');
+  capa.className = 'celebracion-confetti';
+  capa.setAttribute('aria-hidden','true');
+  for (let i=0; i<total; i++) {
+    const pieza = document.createElement('span');
+    if (i % 5 === 0) pieza.className = 'is-round';
+    pieza.style.setProperty('--x',(Math.random()*100).toFixed(2)+'vw');
+    pieza.style.setProperty('--w',(5+Math.random()*7).toFixed(1)+'px');
+    pieza.style.setProperty('--h',(6+Math.random()*11).toFixed(1)+'px');
+    pieza.style.setProperty('--c',colores[i%colores.length]);
+    pieza.style.setProperty('--d',(Math.random()*.42).toFixed(2)+'s');
+    pieza.style.setProperty('--t',(1.75+Math.random()*1.05).toFixed(2)+'s');
+    pieza.style.setProperty('--r',((Math.random()*240)-120).toFixed(0)+'deg');
+    pieza.style.setProperty('--drift',((Math.random()*180)-90).toFixed(0)+'px');
+    capa.appendChild(pieza);
+  }
+  document.body.appendChild(capa);
+  setTimeout(()=>capa.remove(),3400);
 };
 
 function applyGreeting(){
@@ -8823,7 +8942,8 @@ const Sections = (function(){
     try { const ds = await fs.getDoc(fs.doc(fs.db,'directorio',uid)); if (ds.exists()) data = ds.data(); } catch(e){}
     _dirFotoTmp = undefined;
 
-    const fotoActual = data.foto || '';
+    const fotoVinculada = window.UserState?.fotoGoogle || '';
+    const fotoActual = fotoVinculada || data.foto || '';
     const body = `
       <div class="dir-form">
         <div class="dir-form__foto-wrap">
@@ -8831,8 +8951,10 @@ const Sections = (function(){
             ${fotoActual ? `<img src="${fotoActual}" alt="">` : `<svg class="ic"><use href="#i-user"/></svg>`}
           </div>
           <div class="dir-form__foto-acts">
-            <button class="btn btn--ghost btn--sm" id="dirf-foto-btn"><svg class="ic"><use href="#i-image"/></svg>Subir foto</button>
-            ${fotoActual?`<button class="btn btn--ghost btn--sm" id="dirf-foto-quitar">Quitar</button>`:''}
+            ${fotoVinculada
+              ? '<span class="dir-form__opt">Foto vinculada con tu cuenta de Google</span>'
+              : '<button class="btn btn--ghost btn--sm" id="dirf-foto-btn"><svg class="ic"><use href="#i-image"/></svg>Subir foto</button>'}
+            ${fotoActual&&!fotoVinculada?`<button class="btn btn--ghost btn--sm" id="dirf-foto-quitar">Quitar</button>`:''}
             <input type="file" id="dirf-foto-file" accept="image/*" style="display:none;">
           </div>
         </div>
@@ -8867,7 +8989,7 @@ const Sections = (function(){
 
     // Foto
     const fileInput = document.getElementById('dirf-foto-file');
-    document.getElementById('dirf-foto-btn').addEventListener('click', ()=> fileInput.click());
+    document.getElementById('dirf-foto-btn')?.addEventListener('click', ()=> fileInput.click());
     fileInput.addEventListener('change', async (e)=>{
       const f=e.target.files[0]; if(!f) return;
       if(!f.type.startsWith('image/')){ Toast.error('Solo imágenes',''); return; }
@@ -8898,7 +9020,8 @@ const Sections = (function(){
         color: dirColorFor(uid),
         updatedAt: fs.serverTimestamp()
       };
-      if (_dirFotoTmp !== undefined) payload.foto = _dirFotoTmp; // string o null
+      if (fotoVinculada) { payload.foto = fotoVinculada; payload.fotoFuente = 'google'; }
+      else if (_dirFotoTmp !== undefined) payload.foto = _dirFotoTmp; // string o null
       else if (data.foto) payload.foto = data.foto; // conservar
       try {
         await fs.setDoc(fs.doc(fs.db,'directorio',uid), payload, { merge:true });
@@ -8923,6 +9046,18 @@ const Sections = (function(){
   let _foroFiltro = 'recientes';
   let _foroImg = null; // base64 de la imagen adjunta pendiente
   let _foroPosts = [];
+
+  async function foroCargarFotosAutores(){
+    const fs = window.__fs;
+    if (!fs?.getDocs) return;
+    try {
+      const snap = await fs.getDocs(fs.query(fs.collection(fs.db,'directorio'),fs.limit(300)));
+      const fotos = window.__dirFotos || {};
+      snap.forEach(d=>{ const x=d.data(); if(x.foto) fotos[d.id]=x.foto; });
+      window.__dirFotos = fotos;
+      foroPintar();
+    } catch(e) { console.warn('No se pudieron resolver fotos del foro:',e.message); }
+  }
 
   function foroColorFor(uid){
     const colores = ['#FF7A2D','#10B981','#60A5FA','#A78BFA','#F87171','#FBBF24','#38BDF8','#FB7185'];
@@ -8990,7 +9125,7 @@ const Sections = (function(){
 
         ${esVip ? `
         <div class="foro-composer">
-          <div class="foro-composer__avatar" style="background:linear-gradient(135deg,${miColor},${miColor}aa);">${ini}</div>
+          <div class="foro-composer__avatar" style="background:linear-gradient(135deg,${miColor},${miColor}aa);">${window.__avatarHtml(window.UserState?.foto,ini,'Tu foto de perfil')}</div>
           <div class="foro-composer__main">
             <textarea class="foro-composer__input" id="foro-text" placeholder="¿Qué pasa en tu planta? Comparte un caso o haz una pregunta…" rows="2" maxlength="1500"></textarea>
             <div id="foro-img-preview" class="foro-img-preview" style="display:none;">
@@ -9067,6 +9202,7 @@ const Sections = (function(){
 
     // Suscripción en tiempo real
     foroSuscribir();
+    void foroCargarFotosAutores();
   }
 
   function foroSuscribir(){
@@ -9110,7 +9246,7 @@ const Sections = (function(){
       const dias = foroDiasRestantes(p.createdAt);
       return `
       <article class="post" data-post="${p.id}">
-        <div class="post__avatar" style="background:linear-gradient(135deg,${p.color||'#FF7A2D'},${(p.color||'#FF7A2D')}aa);">${escapeHtml(p.iniciales||'?')}</div>
+        <div class="post__avatar" style="background:linear-gradient(135deg,${p.color||'#FF7A2D'},${(p.color||'#FF7A2D')}aa);">${window.__avatarHtml(window.__dirFotos?.[p.uid] || p.foto,p.iniciales||'?',`Foto de ${p.nombre||'Miembro'}`)}</div>
         <div class="post__main">
           <div class="post__header">
             <span class="post__author">${escapeHtml(p.nombre||'Miembro')}</span>
@@ -9149,6 +9285,7 @@ const Sections = (function(){
         uid: window.UserState.uid,
         nombre: window.UserState?.nombre || window.UserState?.displayName || 'Miembro',
         iniciales: window.UserState?.iniciales || 'IN',
+        foto: window.UserState?.foto || null,
         color: foroColorFor(window.UserState?.uid),
         esAdmin: esAdminReal(),
         texto: contenido,
@@ -9230,7 +9367,7 @@ const Sections = (function(){
       snap.forEach(d=>{ const c=d.data(); c.id=d.id; arr.push(c); });
       cl.innerHTML = arr.map(c=>`
         <div class="com">
-          <div class="com__avatar" style="background:linear-gradient(135deg,${c.color||'#888'},${(c.color||'#888')}aa);">${escapeHtml(c.iniciales||'?')}</div>
+          <div class="com__avatar" style="background:linear-gradient(135deg,${c.color||'#888'},${(c.color||'#888')}aa);">${window.__avatarHtml(window.__dirFotos?.[c.uid] || c.foto,c.iniciales||'?',`Foto de ${c.nombre||'Miembro'}`)}</div>
           <div class="com__body">
             <div class="com__head"><span class="com__author">${escapeHtml(c.nombre||'Miembro')}</span><span class="com__time">${foroTiempoRel(c.createdAt)}</span>${(c.uid===uid||esAdmin)?`<button class="com__del" data-comdel="${postId}|${c.id}">&times;</button>`:''}</div>
             <div class="com__text">${escapeHtml(c.texto||'').replace(/\n/g,'<br>')}</div>
@@ -9252,6 +9389,7 @@ const Sections = (function(){
         uid: window.UserState.uid,
         nombre: window.UserState?.nombre || 'Miembro',
         iniciales: window.UserState?.iniciales || 'IN',
+        foto: window.UserState?.foto || null,
         color: foroColorFor(window.UserState?.uid),
         texto: t,
         createdAt: fs.serverTimestamp()
@@ -9369,7 +9507,7 @@ const Sections = (function(){
         </div>
 
         <section class="perfil-hero">
-          <div class="perfil-hero__avatar">${_ini}</div>
+          <div class="perfil-hero__avatar">${window.__avatarHtml(S.foto,_ini,`Foto de ${S.nombre||S.displayName||'miembro'}`)}</div>
           <div class="perfil-hero__info">
             <h2 class="perfil-hero__name">${_nom}</h2>
             <div class="perfil-hero__email">${_em}</div>
@@ -9379,6 +9517,7 @@ const Sections = (function(){
               <span class="tag tag--down">Miembro desde mar 2026</span>
             </div>
           </div>
+          ${!S.fotoGoogle?'<button class="btn btn--ghost" id="btn-google-photo" style="align-self:flex-start;"><svg class="ic"><use href="#i-image"/></svg>Vincular foto de Google</button>':''}
           <button class="btn btn--ghost" id="btn-edit-profile" style="align-self:flex-start;"><svg class="ic"><use href="#i-tools"/></svg>Editar perfil</button>
           <button class="btn btn--ghost" id="btn-mi-tarjeta-dir" style="align-self:flex-start;"><svg class="ic"><use href="#i-users"/></svg>Mi tarjeta del directorio</button>
         </section>
@@ -10891,6 +11030,19 @@ function initNav(){
       return;
     }
 
+    if(t.closest('#btn-google-photo')){
+      const btn=t.closest('#btn-google-photo');
+      btn.disabled=true; btn.textContent='Vinculando…';
+      window.__conectarFotoGoogle?.().then(()=>{
+        Toast.success('Foto vinculada','Se usará en tu perfil, el foro y el directorio');
+        window.navigateToSection?.('perfil');
+      }).catch(e=>{
+        btn.disabled=false; btn.innerHTML='<svg class="ic"><use href="#i-image"/></svg>Vincular foto de Google';
+        Toast.error('No se pudo vincular',e.message||'Intenta de nuevo');
+      });
+      return;
+    }
+
     // Abrir editor de tarjeta del directorio desde el perfil
     if(t.closest('#btn-mi-tarjeta-dir')){
       if(typeof window.__dirEditar==='function') window.__dirEditar();
@@ -10964,7 +11116,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     const avatarCircle = document.querySelector('.avatar__circle');
     const avatarName = document.querySelector('.avatar__name');
     const avatarPlan = document.querySelector('.avatar__plan');
-    if (avatarCircle) avatarCircle.textContent = S.iniciales;
+    if (avatarCircle) avatarCircle.innerHTML = window.__avatarHtml(S.foto,S.iniciales,`Foto de ${S.displayName||'miembro'}`);
     if (avatarName) {
       avatarName.textContent = S.modo === 'invitado'
         ? 'Invitado'
@@ -12142,6 +12294,6 @@ body{letter-spacing:-.05px}
   #dynamic-section .tabs .tab{padding:7px 4px!important;border-radius:7px!important}
 }
 </style>
-<script src="onboarding-tour.js?v=1" defer></script>
+<script src="onboarding-tour.js?v=2" defer></script>
 </body>
 </html>
