@@ -211,6 +211,9 @@
     window.removeEventListener('resize', positionUi);
     window.removeEventListener('scroll', positionUi, true);
     if (state.previousFocus && state.previousFocus.isConnected) state.previousFocus.focus({ preventScroll: true });
+    if (reason === 'completed' && typeof window.celebrarImdiil === 'function') {
+      window.celebrarImdiil('normal');
+    }
   }
 
   function onKeydown(event) {

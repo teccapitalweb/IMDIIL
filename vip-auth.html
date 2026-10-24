@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="night">
+<html lang="es" data-theme="day">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0E0A06">
+<meta name="theme-color" content="#F4EFE3">
 <meta name="description" content="IMDIIL · Inicia sesión o crea tu cuenta">
 <title>IMDIIL · Acceso</title>
 <link rel="icon" type="image/png" sizes="192x192" href="assets/imdiil-app-icon-192.png">
@@ -653,7 +653,7 @@ body{display:block}
 /* ===== Tema ===== */
 const Theme = {
   init() {
-    const s = localStorage.getItem('imdiil-auth:theme') || 'night';
+    const s = localStorage.getItem('imdiil-auth:theme') || 'day';
     document.documentElement.dataset.theme = s;
     this.updateIcon();
   },
@@ -789,6 +789,7 @@ const ADMINS = [
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const WEBHOOK_URL = 'https://imdiil-webhook-production.up.railway.app';
 setPersistence(auth, browserLocalPersistence);
 
 /* =========================================================
@@ -806,17 +807,17 @@ async function ensureMiembroDoc(user, displayName, origen) {
   try {
     const ref = doc(db, 'miembros', user.uid);
     const snap = await getDoc(ref);
+    const perfilProveedor = (user.providerData || []).find(p => p && (p.photoURL || p.displayName)) || {};
+    const fotoGoogle = user.photoURL || perfilProveedor.photoURL || '';
     if (snap.exists()) {
-      // Ya existe · si tiene activa:true NO tocar nada (es miembro pagado)
-      // Si tiene activa:false pero le falta nombre, actualizar solo eso
       const data = snap.data();
-      if (data.activa !== true && displayName && !data.nombre) {
-        await setDoc(ref, {
-          nombre: displayName,
-          displayName: displayName,
-          lastUpdatedAt: serverTimestamp()
-        }, { merge: true });
-      }
+      const sync = {
+        email: (user.email || '').toLowerCase(),
+        lastUpdatedAt: serverTimestamp()
+      };
+      if (displayName && !data.nombre) Object.assign(sync, { nombre: displayName, displayName });
+      if (fotoGoogle) sync.fotoGoogle = fotoGoogle;
+      await setDoc(ref, sync, { merge: true });
       console.log('[ensureMiembroDoc] ya existía:', user.uid);
       return { ok: true, action: 'exists', uid: user.uid };
     }
@@ -827,6 +828,7 @@ async function ensureMiembroDoc(user, displayName, origen) {
       email: (user.email || '').toLowerCase(),
       nombre: displayName || user.displayName || (user.email || '').split('@')[0] || 'Sin nombre',
       displayName: displayName || user.displayName || '',
+      fotoGoogle: fotoGoogle || null,
       activa: false,
       plan: null,
       fechaRegistro: serverTimestamp(),
@@ -846,11 +848,42 @@ async function ensureMiembroDoc(user, displayName, origen) {
   }
 }
 
+async function ensureDirectorioDoc(user, displayName) {
+  if (!user || !user.uid) return;
+  const perfilProveedor = (user.providerData || []).find(p => p && (p.photoURL || p.displayName)) || {};
+  const nombre = displayName || user.displayName || perfilProveedor.displayName || (user.email || '').split('@')[0] || 'Miembro IMDIIL';
+  const foto = user.photoURL || perfilProveedor.photoURL || '';
+  try {
+    const token = await user.getIdToken();
+    const response = await fetch(`${WEBHOOK_URL}/directory/bootstrap`, {
+      method:'PUT',
+      headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+      body:JSON.stringify({ nombre, foto })
+    });
+    if (!response.ok) throw new Error('bootstrap-unavailable');
+    return;
+  } catch(e) {
+    console.warn('[ensureDirectorioDoc API]',e.message);
+  }
+  try {
+    const ref = doc(db,'directorio',user.uid);
+    const snap = await getDoc(ref);
+    const payload = { uid:user.uid, nombre, updatedAt:serverTimestamp() };
+    if (foto) Object.assign(payload,{ foto, fotoFuente:'google' });
+    if (!snap.exists()) Object.assign(payload,{ visible:true, autoAlta:true, vip:false, plan:null });
+    await setDoc(ref,payload,{ merge:true });
+  } catch(e) {
+    // El panel vuelve a intentar la sincronización; el acceso nunca se bloquea.
+    console.warn('[ensureDirectorioDoc]',e.code || e.message);
+  }
+}
+
 /* Si ya está logueado, redirige inmediatamente · pero PRIMERO asegura el doc */
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     // Asegurar que existe el doc (si entró por login y no tenía uno, lo creamos)
     await ensureMiembroDoc(user, user.displayName, 'login-web');
+    await ensureDirectorioDoc(user, user.displayName);
     // Recordar quién entró (para el "Hola de nuevo" si cierra sesión)
     try { localStorage.setItem('imdiil_last_user', JSON.stringify({ email:user.email||'', nombre:user.displayName||'' })); } catch(e){}
     const isAdmin = ADMINS.includes((user.email || "").toLowerCase());
