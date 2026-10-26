@@ -3262,25 +3262,26 @@ if (window.__isDemoMode) {
         window.UserState.modo = 'sin-membresia';
       }
 
-      // ─── Leer doc miembros/{uid} de Firestore para obtener fechaAlta ───
-      // (para el desbloqueo progresivo de cursos como Sinergia)
-      try {
-        const memberSnap = await getDoc(doc(db, 'miembros', user.uid));
-        if (memberSnap.exists()) {
-          window.memberData = memberSnap.data();
-          // Propagar campos de cancelación al UserState para que el panel los use
-          window.UserState.cancelacionProgramada = !!window.memberData.cancelacionProgramada;
-          const ffa = window.memberData.fechaFinAcceso;
-          window.UserState.fechaFinAcceso = ffa
-            ? (ffa.toDate ? ffa.toDate().toISOString() : new Date(ffa).toISOString())
-            : null;
-        } else {
-          window.memberData = null;
-        }
-      } catch(e) {
-        console.warn('No se pudo leer miembros/' + user.uid, e.message);
+    }
+
+    // Leer el perfil para todas las cuentas, incluidas las administradoras.
+    // Antes esta lectura quedaba dentro del bloque "no admin", por lo que
+    // teccapitalweb@gmail.com perdía nombre y foto y siempre mostraba "IN".
+    try {
+      const memberSnap = await getDoc(doc(db, 'miembros', user.uid));
+      if (memberSnap.exists()) {
+        window.memberData = memberSnap.data();
+        window.UserState.cancelacionProgramada = !!window.memberData.cancelacionProgramada;
+        const ffa = window.memberData.fechaFinAcceso;
+        window.UserState.fechaFinAcceso = ffa
+          ? (ffa.toDate ? ffa.toDate().toISOString() : new Date(ffa).toISOString())
+          : null;
+      } else {
         window.memberData = null;
       }
+    } catch(e) {
+      console.warn('No se pudo leer miembros/' + user.uid, e.message);
+      window.memberData = null;
     }
 
     // ─── Nombre canónico · UNA sola fuente para dashboard, splash y certificados ───
@@ -3332,8 +3333,17 @@ if (window.__isDemoMode) {
             body:JSON.stringify({ nombre:window.UserState.nombre, foto:fotoGoogle })
           });
           if (!bootstrap.ok) throw new Error('directory-bootstrap-unavailable');
+          const bootstrapData = await bootstrap.json().catch(() => ({}));
+          const fotoSincronizada = bootstrapData?.card?.foto || foto;
+          if (fotoSincronizada) {
+            window.UserState.foto = fotoSincronizada;
+            if (bootstrapData?.card?.fotoFuente === 'google') {
+              window.UserState.fotoGoogle = fotoSincronizada;
+            }
+          }
           window.__dirFotos = window.__dirFotos || {};
-          if (foto) window.__dirFotos[user.uid] = foto;
+          if (fotoSincronizada) window.__dirFotos[user.uid] = fotoSincronizada;
+          if (typeof window.__applyUserState === 'function') window.__applyUserState();
         } catch (apiError) {
           // Compatibilidad mientras el servicio se actualiza o si la red falla:
           // el propietario intenta crear su propia tarjeta directamente.
@@ -3921,10 +3931,15 @@ const Theme={
   toggle(){this.apply(document.documentElement.getAttribute('data-theme')==='night'?'day':'night');}
 };
 
+function avatarEscape(valor){
+  if (valor == null) return '';
+  return String(valor).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function avatarHtml(foto, iniciales, alt){
   return foto
-    ? `<img class="member-avatar-img" src="${escapeHtml(foto)}" data-fallback="${escapeHtml(iniciales || 'IN')}" alt="${escapeHtml(alt || 'Foto de perfil')}" referrerpolicy="no-referrer">`
-    : escapeHtml(iniciales || 'IN');
+    ? `<img class="member-avatar-img" src="${avatarEscape(foto)}" data-fallback="${avatarEscape(iniciales || 'IN')}" alt="${avatarEscape(alt || 'Foto de perfil')}" referrerpolicy="no-referrer">`
+    : avatarEscape(iniciales || 'IN');
 }
 window.__avatarHtml = avatarHtml;
 document.addEventListener('error', event => {
@@ -8716,6 +8731,49 @@ const Sections = (function(){
     let h=0; const s=String(uid||'x'); for(let i=0;i<s.length;i++) h=((h<<5)-h+s.charCodeAt(i))|0;
     return colores[Math.abs(h)%colores.length];
   }
+  function dirTexto(valor, fallback=''){
+    if (valor == null) return fallback;
+    if (['string','number','boolean'].includes(typeof valor)) return String(valor).trim();
+    return fallback;
+  }
+  function dirColorSeguro(valor, uid){
+    const color = dirTexto(valor);
+    return /^#[0-9a-f]{6}$/i.test(color) ? color : dirColorFor(uid);
+  }
+  function dirFotoSegura(valor){
+    const foto = dirTexto(valor);
+    return /^(https:\/\/|data:image\/(?:png|jpe?g|webp);base64,)/i.test(foto) ? foto : '';
+  }
+  function dirEnlaceSeguro(valor){
+    const enlace = dirTexto(valor);
+    if (!enlace) return '';
+    try {
+      const url = new URL(/^https?:\/\//i.test(enlace) ? enlace : `https://${enlace}`);
+      return ['http:','https:'].includes(url.protocol) ? url.href : '';
+    } catch (_) { return ''; }
+  }
+  function dirNormalizarTarjeta(raw, id){
+    const x = raw && typeof raw === 'object' ? raw : {};
+    const uid = dirTexto(id || x.uid);
+    return {
+      ...x,
+      id: uid,
+      uid: dirTexto(x.uid, uid),
+      nombre: dirTexto(x.nombre, 'Miembro VIP'),
+      puesto: dirTexto(x.puesto),
+      empresa: dirTexto(x.empresa),
+      sector: dirTexto(x.sector),
+      bio: dirTexto(x.bio),
+      whatsapp: dirTexto(x.whatsapp),
+      email: dirTexto(x.email),
+      linkedin: dirTexto(x.linkedin),
+      web: dirTexto(x.web),
+      foto: dirFotoSegura(x.foto),
+      color: dirColorSeguro(x.color, uid),
+      vip: x.vip === true,
+      visible: x.visible !== false
+    };
+  }
   function dirComprimirFoto(file){
     return new Promise((resolve,reject)=>{
       const r=new FileReader();
@@ -8867,8 +8925,16 @@ const Sections = (function(){
     const q = fs.query(fs.collection(fs.db,'directorio'), fs.orderBy('updatedAt','desc'), fs.limit(300));
     _dirUnsub = fs.onSnapshot(q, (snap)=>{
       _dirCards = [];
-      snap.forEach(d=>{ const x=d.data(); x.id=d.id; if(x.visible!==false) _dirCards.push(x); });
-      dirPintar();
+      snap.forEach(d=>{
+        const x = dirNormalizarTarjeta(d.data(), d.id);
+        if (x.visible) _dirCards.push(x);
+      });
+      try { dirPintar(); }
+      catch (error) {
+        console.error('dir render', error);
+        const g=document.getElementById('dir-grid');
+        if(g) g.innerHTML='<div class="foro-empty">No se pudieron dibujar los perfiles. Actualiza la página para volver a intentarlo.</div>';
+      }
     }, (err)=>{ console.error('dir snap',err); const g=document.getElementById('dir-grid'); if(g) g.innerHTML='<div class="foro-empty">No se pudo cargar el directorio.</div>'; });
   }
 
@@ -8891,13 +8957,15 @@ const Sections = (function(){
       const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
       const foto = `<div class="dir-card__foto dir-card__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${window.__avatarHtml(c.foto,inicial,`Foto de ${c.nombre||'miembro'}`)}</div>`;
       const contactos = [];
-      if (c.whatsapp) contactos.push(`<a class="dir-cta dir-cta--wa" href="https://wa.me/${(c.whatsapp||'').replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" title="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>`);
+      if (c.whatsapp) contactos.push(`<a class="dir-cta dir-cta--wa" href="https://wa.me/${c.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" title="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>`);
       if (c.email) contactos.push(`<button class="dir-cta dir-cta--mail" data-email="${escapeHtml(c.email)}" title="Copiar correo: ${escapeHtml(c.email)}"><svg class="ic"><use href="#i-mail"/></svg></button>`);
-      if (c.linkedin) contactos.push(`<a class="dir-cta dir-cta--li" href="${c.linkedin.startsWith('http')?c.linkedin:'https://'+c.linkedin}" target="_blank" rel="noopener" title="LinkedIn"><svg class="ic"><use href="#i-linkedin"/></svg></a>`);
-      if (c.web) contactos.push(`<a class="dir-cta" href="${c.web.startsWith('http')?c.web:'https://'+c.web}" target="_blank" rel="noopener" title="Sitio web"><svg class="ic"><use href="#i-link"/></svg></a>`);
+      const linkedin = dirEnlaceSeguro(c.linkedin);
+      const web = dirEnlaceSeguro(c.web);
+      if (linkedin) contactos.push(`<a class="dir-cta dir-cta--li" href="${escapeHtml(linkedin)}" target="_blank" rel="noopener" title="LinkedIn"><svg class="ic"><use href="#i-linkedin"/></svg></a>`);
+      if (web) contactos.push(`<a class="dir-cta" href="${escapeHtml(web)}" target="_blank" rel="noopener" title="Sitio web"><svg class="ic"><use href="#i-link"/></svg></a>`);
       const esMia = c.id===uid;
       return `
-      <article class="dir-card${esMia?' dir-card--mia':''}" data-dircard="${c.id}">
+      <article class="dir-card${esMia?' dir-card--mia':''}" data-dircard="${escapeHtml(c.id)}">
         ${esMia?'<span class="dir-card__badge-mia">Tú</span>':''}
         ${c.vip?'<span class="dir-card__vip"><svg class="ic"><use href="#i-crown"/></svg>VIP verificado</span>':''}
         <div class="dir-card__top">
@@ -8936,14 +9004,16 @@ const Sections = (function(){
     const esMia = c.id===uid;
     const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
     const foto = c.foto
-      ? `<img src="${c.foto}" alt="" class="dir-det__foto">`
+      ? `<img src="${escapeHtml(c.foto)}" alt="" class="dir-det__foto" referrerpolicy="no-referrer">`
       : `<div class="dir-det__foto dir-det__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${escapeHtml(inicial)}</div>`;
     const row = (icon,label,val,href,extraClass='') => val
       ? `<a class="dir-det__row ${extraClass}" ${href?`href="${href}" target="_blank" rel="noopener"`:''}>
            <span class="dir-det__row-ic"><svg class="ic"><use href="#${icon}"/></svg></span>
            <span class="dir-det__row-tx"><span class="dir-det__row-lbl">${label}</span><span class="dir-det__row-val">${escapeHtml(val)}</span></span>
          </a>` : '';
-    const waNum = (c.whatsapp||'').replace(/[^0-9]/g,'');
+    const waNum = c.whatsapp.replace(/[^0-9]/g,'');
+    const linkedin = dirEnlaceSeguro(c.linkedin);
+    const web = dirEnlaceSeguro(c.web);
     const body = `
       <div class="dir-det">
         <div class="dir-det__head">
@@ -8960,8 +9030,8 @@ const Sections = (function(){
              <span class="dir-det__row-ic"><svg class="ic"><use href="#i-mail"/></svg></span>
              <span class="dir-det__row-tx"><span class="dir-det__row-lbl">Correo · toca para copiar</span><span class="dir-det__row-val">${escapeHtml(c.email)}</span></span>
            </button>`:''}
-          ${row('i-linkedin','LinkedIn',c.linkedin, c.linkedin?(c.linkedin.startsWith('http')?c.linkedin:'https://'+c.linkedin):'', 'dir-det__row--li')}
-          ${row('i-link','Sitio web',c.web, c.web?(c.web.startsWith('http')?c.web:'https://'+c.web):'')}
+          ${row('i-linkedin','LinkedIn',c.linkedin, linkedin, 'dir-det__row--li')}
+          ${row('i-link','Sitio web',c.web, web)}
         </div>
         ${(!c.whatsapp&&!c.email&&!c.linkedin&&!c.web)?'<div class="dir-det__sincontacto">Este miembro no agregó datos de contacto.</div>':''}
       </div>
