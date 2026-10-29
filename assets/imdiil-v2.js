@@ -42,6 +42,7 @@
   ];
 
   const state = { catalog:FALLBACK_CATALOG.slice(), owned:new Set(), balance:0, history:[], loaded:false, courseFilter:'all', courseSearch:'' };
+  let installedOnce = false;
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const icon = name => `<svg class="ic" aria-hidden="true"><use href="#${name}"/></svg>`;
   const targetNode = () => document.getElementById('dynamic-section');
@@ -372,6 +373,24 @@
     window.Sections.renderers.herramientas = renderTools;
     if (!window.__abrirClaseIMDIILOriginal && typeof window.abrirClaseIMDIIL === 'function') window.__abrirClaseIMDIILOriginal = window.abrirClaseIMDIIL;
     window.abrirClaseIMDIIL = (courseId,lessonIndex) => go(lessonRoute(courseId,Number(lessonIndex) || 0));
+
+    if (!installedOnce) {
+      installedOnce = true;
+      const current = decodeURIComponent(String(location.hash || '').replace(/^#/, ''));
+      const v2Sections = new Set(['cursos','pdfs','libros','creditos','retos','logros','herramientas']);
+      requestAnimationFrame(() => {
+        const target = targetNode();
+        if (!target || !current || current === 'inicio') return;
+        if (/^curso\//.test(current)) {
+          renderRoute(current,target);
+          return;
+        }
+        if (v2Sections.has(current)) {
+          target.innerHTML = '';
+          window.Sections.renderers[current](target);
+        }
+      });
+    }
   }
 
   window.IMDIILV2 = { openCourse, renderRoute, renderCourses, renderCatalog, renderChallenges, renderProgress, renderCredits, renderTools, install };
