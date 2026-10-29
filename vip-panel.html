@@ -18,6 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
+<link rel="stylesheet" href="assets/imdiil-v2.css?v=1">
 
 <style>
 /* IMDIIL VIP · Layout estilo Zoorigen/Sinergia · 3 columnas */
@@ -3704,8 +3705,10 @@ window.__setDisplayName = async (nombre) => {
       <a class="nav-item is-active" data-section="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
       <a class="nav-item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Mis cursos<span class="nav-item__badge">12</span></a>
       <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo<span class="nav-item__dot"></span></a>
-      <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
-      <a class="nav-item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mis logros</a>
+      <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>Materiales</a>
+      <a class="nav-item" data-section="libros"><svg class="ic"><use href="#i-book-2"/></svg>Libros</a>
+      <a class="nav-item" data-section="retos"><svg class="ic"><use href="#i-bolt"/></svg>Retos</a>
+      <a class="nav-item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mi progreso</a>
       <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
     </div>
 
@@ -3868,7 +3871,7 @@ window.__setDisplayName = async (nombre) => {
   <a class="mobile-nav__item is-active" data-section="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
   <a class="mobile-nav__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
   <a class="mobile-nav__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Vivo</a>
-  <a class="mobile-nav__item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Plan</a>
+  <a class="mobile-nav__item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Progreso</a>
   <a class="mobile-nav__item" id="mobile-nav-more" role="button"><svg class="ic"><use href="#i-menu"/></svg>Más</a>
 </nav>
 
@@ -3891,8 +3894,10 @@ window.__setDisplayName = async (nombre) => {
         <a class="mobile-drawer__item" data-section="inicio"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
         <a class="mobile-drawer__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Mis cursos</a>
         <a class="mobile-drawer__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo</a>
-        <a class="mobile-drawer__item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
-        <a class="mobile-drawer__item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mis logros</a>
+        <a class="mobile-drawer__item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>Materiales</a>
+        <a class="mobile-drawer__item" data-section="libros"><svg class="ic"><use href="#i-book-2"/></svg>Libros</a>
+        <a class="mobile-drawer__item" data-section="retos"><svg class="ic"><use href="#i-bolt"/></svg>Retos</a>
+        <a class="mobile-drawer__item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mi progreso</a>
         <a class="mobile-drawer__item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
       </div>
 
@@ -6351,11 +6356,24 @@ const Sections = (function(){
 
   function claseDesbloqueada(cursoId, indexClase, sesiones) {
     if (esAdminReal()) return true;
-    if (esClaseGratisGlobal(cursoId, indexClase, sesiones)) return true;
-    if (window.UserState?.modo !== 'vip') return false;
+    const accesoBaseGratis = esClaseGratisGlobal(cursoId, indexClase, sesiones);
+    if (!accesoBaseGratis && window.UserState?.modo !== 'vip') return false;
     const curso = cursos.find(c => String(c.id) === String(cursoId));
     const indexCurso = cursos.findIndex(c => String(c.id) === String(cursoId));
-    return !!curso && cursoDesbloqueado(indexCurso, curso);
+    const accesoCurso = accesoBaseGratis || (!!curso && cursoDesbloqueado(indexCurso, curso));
+    if (!accesoCurso) return false;
+
+    // IMDIIL 2.0: las grabaciones avanzan en orden. Los registros históricos
+    // nunca se bloquean de nuevo y la primera clase disponible abre normalmente.
+    const lista = Array.isArray(sesiones) ? sesiones : [];
+    const actual = lista[indexClase];
+    const numeroActual = Number(actual?.numero || indexClase + 1);
+    const progreso = getProgresoCurso(cursoId);
+    if ((progreso.clasesVistas || []).includes(numeroActual)) return true;
+    if (indexClase <= 0) return true;
+    const anterior = lista[indexClase - 1];
+    const numeroAnterior = Number(anterior?.numero || indexClase);
+    return (progreso.clasesVistas || []).includes(numeroAnterior);
   }
 
   function esMaterialGratisGlobal(cursoId, indexMaterial) {
@@ -7269,6 +7287,12 @@ const Sections = (function(){
       return;
     }
 
+    // La experiencia 2.0 usa una vista de curso completa. El detalle anterior
+    // queda como respaldo seguro si el nuevo módulo no llegara a cargar.
+    if (window.IMDIILV2?.openCourse && window.__IMDIIL_V2_BRIDGE) {
+      if (window.IMDIILV2.openCourse(c, window.__IMDIIL_V2_BRIDGE)) return;
+    }
+
     const portada = c.portada || PORTADA_DEFAULT;
     const colorArea = COLOR_AREA[c.area] || '#FF7A2D';
     const iconArea = ICON_AREA[c.area] || 'i-book';
@@ -7493,6 +7517,11 @@ const Sections = (function(){
   // para no chocar con la animación y dejar el modal huérfano (no-cerrable).
   window.__refrescarCursoDetalle = function(cid){
     if (!cid) return;
+    if (window.IMDIILV2?.openCourse && window.__IMDIIL_V2_BRIDGE) {
+      const actual = cursos.find(curso => String(curso.id) === String(cid));
+      if (actual) window.IMDIILV2.openCourse(actual, window.__IMDIIL_V2_BRIDGE);
+      return;
+    }
     try { if (typeof Modal !== 'undefined' && Modal.close) Modal.close('curso-' + cid); } catch(e){}
     setTimeout(() => { try { openCursoDetalle(cid); } catch(e){} }, 300);
   };
@@ -10374,6 +10403,19 @@ const Sections = (function(){
     });
   }
 
+  window.__IMDIIL_V2_BRIDGE = {
+    getCourses: () => cursos,
+    getProgress: getProgreso,
+    getCourseProgress: getProgresoCurso,
+    courseUnlocked: cursoDesbloqueado,
+    daysForCourse: diasParaDesbloquear,
+    lessonUnlocked: claseDesbloqueada,
+    daysForLesson: diasParaDesbloquearClase,
+    materialUnlocked: materialDesbloqueado,
+    daysForMaterial: diasParaDesbloquearMaterial,
+    courseProgressPct: progresoCursoPct
+  };
+
   return {
     renderers:{
       cursos:renderCursos,
@@ -10395,6 +10437,7 @@ const Sections = (function(){
     countdownTimer:null
   };
 })();
+window.Sections = Sections;
 
 // ═══════════════════════════════════════════════════════════════════
 // IMDIIL_CONTACT · constantes globales de contacto y mensajes
@@ -11276,7 +11319,7 @@ function init(){
   Theme.init();applyGreeting();initCountdown();initNav();
   loadProfileFromLS();
   injectSupportFAB();
-  window.Modal=Modal;window.Tools=Tools;window.Toast=Toast;window.navigateToSection=navigateToSection;
+  window.Modal=Modal;window.Tools=Tools;window.Toast=Toast;window.navigateToSection=navigateToSection;window.Sections=Sections;
   window.__leerSeccionURLVIP=__leerSeccionURLVIP;  // MODIFICADO: lo usa la ruta inicial
   window.openReferralModal=openReferralModal;
 }
@@ -12534,5 +12577,6 @@ body{letter-spacing:-.05px}
 }
 </style>
 <script src="onboarding-tour.js?v=2" defer></script>
+<script src="assets/imdiil-v2.js?v=1" defer></script>
 </body>
 </html>
