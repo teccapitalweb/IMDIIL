@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
-<link rel="stylesheet" href="assets/imdiil-v2.css?v=1">
+<link rel="stylesheet" href="assets/imdiil-v2.css?v=2">
 
 <style>
 /* IMDIIL VIP · Layout estilo Zoorigen/Sinergia · 3 columnas */
@@ -3668,6 +3668,8 @@ window.__setDisplayName = async (nombre) => {
 <symbol id="i-linkedin" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0 -5M3 8.98h4v12H3zM9 8.98h3.8v1.64h.05c.53 -1 1.83 -2.05 3.76 -2.05c4.02 0 4.76 2.65 4.76 6.1v6.31h-4v-5.6c0 -1.33 -.02 -3.05 -1.86 -3.05c-1.86 0 -2.14 1.45 -2.14 2.95v5.7H9z"/></symbol>
 <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5 -10.5a2.83 2.83 0 0 0 -4 -4l-10.5 10.5z"/><path d="M13.5 6.5l4 4"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35 -4.35"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10v-3a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0 -14.8 -4l-2.2 3"/><path d="M3 4v6h6"/><path d="M4 13a8 8 0 0 0 14.8 4l2.2 -3"/><path d="M21 20v-6h-6"/></symbol>
 <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/></symbol>
 <symbol id="i-messages" viewBox="0 0 24 24"><path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/></symbol>
 <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9"/></symbol>
@@ -3707,6 +3709,7 @@ window.__setDisplayName = async (nombre) => {
       <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo<span class="nav-item__dot"></span></a>
       <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>Materiales</a>
       <a class="nav-item" data-section="libros"><svg class="ic"><use href="#i-book-2"/></svg>Libros</a>
+      <a class="nav-item" data-section="creditos"><svg class="ic"><use href="#i-credit-card"/></svg>Créditos</a>
       <a class="nav-item" data-section="retos"><svg class="ic"><use href="#i-bolt"/></svg>Retos</a>
       <a class="nav-item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mi progreso</a>
       <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
@@ -3714,11 +3717,7 @@ window.__setDisplayName = async (nombre) => {
 
     <div class="nav-section">
       <div class="nav-label">Herramientas pro</div>
-      <a class="nav-item" data-tool="iper"><svg class="ic"><use href="#i-shield-check"/></svg>Matriz IPER</a>
-      <a class="nav-item" data-tool="oee"><svg class="ic"><use href="#i-gauge"/></svg>Calculadora OEE</a>
-      <a class="nav-item" data-tool="ats"><svg class="ic"><use href="#i-clipboard-check"/></svg>Generador ATS</a>
-      <a class="nav-item" data-tool="noms"><svg class="ic"><use href="#i-book-2"/></svg>Tabla NOM-STPS</a>
-      <a class="nav-item" data-tool="logistica"><svg class="ic"><use href="#i-chart-bar"/></svg>Indicadores log.</a>
+      <a class="nav-item" data-section="herramientas"><svg class="ic"><use href="#i-tools"/></svg>Herramientas<span class="nav-item__badge">5</span></a>
     </div>
 
     <div class="nav-section">
@@ -3896,6 +3895,7 @@ window.__setDisplayName = async (nombre) => {
         <a class="mobile-drawer__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo</a>
         <a class="mobile-drawer__item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>Materiales</a>
         <a class="mobile-drawer__item" data-section="libros"><svg class="ic"><use href="#i-book-2"/></svg>Libros</a>
+        <a class="mobile-drawer__item" data-section="creditos"><svg class="ic"><use href="#i-credit-card"/></svg>Créditos</a>
         <a class="mobile-drawer__item" data-section="retos"><svg class="ic"><use href="#i-bolt"/></svg>Retos</a>
         <a class="mobile-drawer__item" data-section="logros"><svg class="ic"><use href="#i-trophy"/></svg>Mi progreso</a>
         <a class="mobile-drawer__item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
@@ -3903,10 +3903,7 @@ window.__setDisplayName = async (nombre) => {
 
       <div class="mobile-drawer__section">
         <div class="mobile-drawer__label">Herramientas pro</div>
-        <a class="mobile-drawer__item" data-tool="iper"><svg class="ic"><use href="#i-shield-check"/></svg>Matriz IPER</a>
-        <a class="mobile-drawer__item" data-tool="oee"><svg class="ic"><use href="#i-gauge"/></svg>Calculadora OEE</a>
-        <a class="mobile-drawer__item" data-tool="ats"><svg class="ic"><use href="#i-tools"/></svg>Generador ATS</a>
-        <a class="mobile-drawer__item" data-tool="noms"><svg class="ic"><use href="#i-news"/></svg>Tabla NOM-STPS</a>
+        <a class="mobile-drawer__item" data-section="herramientas"><svg class="ic"><use href="#i-tools"/></svg>Herramientas</a>
       </div>
 
       <div class="mobile-drawer__section">
@@ -5963,11 +5960,14 @@ function __seccionesValidasVIP(){
   try { Object.keys(Sections.renderers || {}).forEach(k => s.add(k)); } catch(e) {}
   return s;
 }
+function __esRutaAprendizajeVIP(section){
+  return /^curso\/[^/]+(?:\/clase\/\d+)?$/.test(String(section || ''));
+}
 function __leerSeccionURLVIP(){
   let s = '';
   try { s = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim(); } catch(e) { s = ''; }
   if (!s) s = (new URLSearchParams(location.search).get('seccion') || '').trim();
-  return __seccionesValidasVIP().has(s) ? s : SECCION_DEFAULT_VIP;
+  return (__seccionesValidasVIP().has(s) || __esRutaAprendizajeVIP(s)) ? s : SECCION_DEFAULT_VIP;
 }
 function __sincronizarDesdeURLVIP(){
   const s = __leerSeccionURLVIP();
@@ -5977,7 +5977,7 @@ window.addEventListener('popstate', __sincronizarDesdeURLVIP);
 window.addEventListener('hashchange', __sincronizarDesdeURLVIP);
 
 function navigateToSection(section, opciones){
-  if(!__seccionesValidasVIP().has(section)) section = SECCION_DEFAULT_VIP;
+  if(!__seccionesValidasVIP().has(section) && !__esRutaAprendizajeVIP(section)) section = SECCION_DEFAULT_VIP;
 
   // Cada cambio de sección inicia arriba, también en navegadores móviles.
   window.scrollTo({top:0,left:0,behavior:'auto'});
@@ -5992,12 +5992,14 @@ function navigateToSection(section, opciones){
   }
 
   document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item').forEach(n=>n.classList.remove('is-active'));
-  document.querySelectorAll(`[data-section="${section}"]`).forEach(ni => ni.classList.add('is-active'));
+  const navSection = __esRutaAprendizajeVIP(section) ? 'cursos' : (section.startsWith('tool-') ? 'herramientas' : section);
+  document.querySelectorAll(`[data-section="${navSection}"]`).forEach(ni => ni.classList.add('is-active'));
   // Si es una herramienta-sección (tool-iper, tool-oee...), resaltar su item data-tool
   if(section.startsWith('tool-')){
     const toolKey=section.slice(5);
     document.querySelectorAll(`[data-tool="${toolKey}"]`).forEach(ni => ni.classList.add('is-active'));
   }
+  document.body.classList.toggle('v2-focus-mode', section !== 'inicio');
   const inicio=document.getElementById('inicio-content');const dyn=document.getElementById('dynamic-section');
   if(!inicio||!dyn)return;
   if(Sections.countdownTimer){clearInterval(Sections.countdownTimer);Sections.countdownTimer=null;}
@@ -6012,6 +6014,9 @@ function navigateToSection(section, opciones){
   }
   if(section==='inicio'){inicio.style.display='';dyn.style.display='none';if(typeof window.__cargarNoticiasHome==='function')window.__cargarNoticiasHome();if(typeof window.__actualizarWidgetsActividad==='function')window.__actualizarWidgetsActividad();window.scrollTo({top:0,left:0,behavior:'auto'});return;}
   inicio.style.display='none';dyn.style.display='';
+  if(__esRutaAprendizajeVIP(section) && window.IMDIILV2?.renderRoute){
+    dyn.innerHTML='';window.IMDIILV2.renderRoute(section,dyn);return;
+  }
   const renderer=Sections.renderers[section];
   if(renderer){dyn.innerHTML='';renderer(dyn);}
   else{dyn.innerHTML=sectionPlaceholder(section);}
@@ -12577,6 +12582,6 @@ body{letter-spacing:-.05px}
 }
 </style>
 <script src="onboarding-tour.js?v=2" defer></script>
-<script src="assets/imdiil-v2.js?v=1" defer></script>
+<script src="assets/imdiil-v2.js?v=2" defer></script>
 </body>
 </html>
