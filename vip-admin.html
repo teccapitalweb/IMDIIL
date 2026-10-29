@@ -1169,6 +1169,7 @@ window.__signOut = async () => {
     <div class="nav-section">
       <div class="nav-label">Comunidad</div>
       <a class="nav-item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros VIP<span class="nav-item__badge">486</span></a>
+      <a class="nav-item" data-section="estado-pagos" data-control-hub="1"><svg class="ic"><use href="#i-dollar"/></svg>Control de cuentas<span class="nav-item__badge">NUEVO</span></a>
       <a class="nav-item" data-section="noticias"><svg class="ic"><use href="#i-news"/></svg>Noticias</a>
       <a class="nav-item" data-section="foro"><svg class="ic"><use href="#i-users"/></svg>Foro<span class="nav-item__badge" id="badge-foro">0</span></a>
       <a class="nav-item" data-section="directorio"><svg class="ic"><use href="#i-user"/></svg>Directorio<span class="nav-item__badge" id="badge-dir">0</span></a>
@@ -1206,7 +1207,7 @@ window.__signOut = async () => {
     <a class="mobile-nav__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
     <a class="mobile-nav__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Vivo</a>
     <a class="mobile-nav__item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros</a>
-    <a class="mobile-nav__item" data-section="config"><svg class="ic"><use href="#i-settings"/></svg>Config</a>
+    <a class="mobile-nav__item" data-section="estado-pagos" data-control-hub="1"><svg class="ic"><use href="#i-dollar"/></svg>Cuentas</a>
   </nav>
 
 </div>
@@ -5491,9 +5492,12 @@ const SECCION_DEFAULT = 'dashboard';
 let __seccionActual = null;
 
 function __seccionesValidas(){
-  return new Set(Array.from(
+  const secciones = new Set(Array.from(
     document.querySelectorAll('.nav-item[data-section], .mobile-nav__item[data-section]')
   ).map(n => n.dataset.section));
+  secciones.add('auditoria');
+  secciones.add('creditos-masivos');
+  return secciones;
 }
 function __leerSeccionURL(){
   let s = '';
@@ -5515,7 +5519,11 @@ function navigate(section, opciones){
   if(section!=='directorio' && typeof _dirAdminUnsub==='function'){ _dirAdminUnsub(); _dirAdminUnsub=null; }
   document.querySelectorAll('.nav-item, .mobile-nav__item').forEach(n=>n.classList.remove('is-active'));
   document.querySelectorAll(`[data-section="${section}"]`).forEach(n=>n.classList.add('is-active'));
+  if(['estado-pagos','auditoria','creditos-masivos'].includes(section)){
+    document.querySelectorAll('[data-control-hub]').forEach(n=>n.classList.add('is-active'));
+  }
   const p=document.getElementById('page');
+  p.dataset.live=section;
   const fn=Pages[section]||Pages.dashboard;
   fn(p);
   window.scrollTo({top:0,behavior:'instant'});
@@ -5529,6 +5537,11 @@ function navigate(section, opciones){
     else history.pushState(null, '', destino);
   }
 }
+
+window.Pages=Pages;
+window.Toast=Toast;
+window.Modal=Modal;
+window.navigateTo=navigate;
 
 /* =========================================================
    ADMIN STORE · estado reactivo conectado a Firestore
@@ -5804,6 +5817,8 @@ if (window.__currentAdmin) {
   if (window.__cargarPrecios) window.__cargarPrecios(); // MODIFICADO: caché de precios
 }
 </script>
+
+<script src="assets/imdiil-account-control.js?v=20261029-1"></script>
 
 </body>
 </html>

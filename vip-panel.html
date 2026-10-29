@@ -3143,6 +3143,7 @@ window.UserState = {
   modo: 'cargando',
   uid: null, email: null, displayName: null, iniciales: 'IN', foto: '', fotoGoogle: '',
   plan: null, isAdmin: false,
+  creditos: 0,
   membership: { activo:false, proximaRenovacion:null, historial:[], metodoPago:null },
   demo: { timerRestante:300, iniciado:null, visitas:0 }
 };
@@ -3271,6 +3272,7 @@ if (window.__isDemoMode) {
       const memberSnap = await getDoc(doc(db, 'miembros', user.uid));
       if (memberSnap.exists()) {
         window.memberData = memberSnap.data();
+        window.UserState.creditos = Math.max(0, Number(window.memberData.creditos || 0));
         window.UserState.cancelacionProgramada = !!window.memberData.cancelacionProgramada;
         const ffa = window.memberData.fechaFinAcceso;
         window.UserState.fechaFinAcceso = ffa
@@ -3283,6 +3285,10 @@ if (window.__isDemoMode) {
       console.warn('No se pudo leer miembros/' + user.uid, e.message);
       window.memberData = null;
     }
+    setTimeout(() => {
+      if (typeof window.__syncLearningProgress === 'function') window.__syncLearningProgress();
+      if (typeof window.__startActivityTracking === 'function') window.__startActivityTracking();
+    }, 250);
 
     // ─── Nombre canónico · UNA sola fuente para dashboard, splash y certificados ───
     // Prioridad: nombre guardado en Firestore (registro) → displayName Auth → local → correo
@@ -6209,6 +6215,62 @@ const Sections = (function(){
 
   function setProgreso(p) {
     try { localStorage.setItem(getProgresoKey(), JSON.stringify(p)); } catch {}
+    scheduleProgressSync();
+  }
+
+  let __progressSyncTimer = null;
+  function scheduleProgressSync(){
+    clearTimeout(__progressSyncTimer);
+    __progressSyncTimer = setTimeout(() => window.__syncLearningProgress(), 900);
+  }
+
+  window.__syncLearningProgress = async function(){
+    const user = window.__auth?.currentUser;
+    if (!user || window.__isDemoMode) return;
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch(`${window.WEBHOOK_URL}/activity/progress`, {
+        method:'POST',
+        headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+        body:JSON.stringify({ courses:getProgreso() })
+      });
+      if (!response.ok) throw new Error('progress-sync-unavailable');
+    } catch(error) {
+      console.warn('[progreso] sincronización pendiente:', error.message);
+    }
+  };
+
+  window.__startActivityTracking = function(){
+    if (window.__imdiilActivityStarted || !window.__auth?.currentUser || window.__isDemoMode) return;
+    window.__imdiilActivityStarted = true;
+    const key = 'imdiil_activity_session';
+    let sessionId = sessionStorage.getItem(key);
+    if (!sessionId) {
+      sessionId = (window.crypto?.randomUUID?.() || `${Date.now()}_${Math.random()}`).replace(/[^A-Za-z0-9_-]/g,'');
+      sessionStorage.setItem(key, sessionId);
+    }
+    const startedAt = new Date().toISOString();
+    const startMs = Date.now();
+    const send = async () => {
+      const user = window.__auth?.currentUser;
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
+        const section = String(location.hash || '#dashboard').replace(/^#/,'') || 'dashboard';
+        await fetch(`${window.WEBHOOK_URL}/activity/session`, {
+          method:'POST', keepalive:true,
+          headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+          body:JSON.stringify({ sessionId, startedAt, seconds:Math.floor((Date.now()-startMs)/1000), area:'panel', section })
+        });
+      } catch(error) { console.warn('[actividad] registro pendiente:', error.message); }
+    };
+    send();
+    setInterval(send, 60000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') send(); });
+    window.addEventListener('pagehide', send);
+  };
+  if (window.__auth?.currentUser) {
+    setTimeout(() => { window.__syncLearningProgress(); window.__startActivityTracking(); }, 250);
   }
 
   function getProgresoCurso(cursoId) {
@@ -6219,6 +6281,8 @@ const Sections = (function(){
   window.marcarClaseVista = function(cursoId, numeroClase) {
     const p = getProgreso();
     if (!p[cursoId]) p[cursoId] = { clasesVistas: [], completado: false, fechaCompletado: null };
+    if (!p[cursoId].classViewedAt) p[cursoId].classViewedAt = {};
+    if (!p[cursoId].classViewedAt[String(numeroClase)]) p[cursoId].classViewedAt[String(numeroClase)] = new Date().toISOString();
     if (!p[cursoId].clasesVistas.includes(numeroClase)) {
       p[cursoId].clasesVistas.push(numeroClase);
       p[cursoId].clasesVistas.sort((a, b) => a - b);
@@ -9626,6 +9690,7 @@ const Sections = (function(){
       : 'Sin membresía';
     const _estado = S.isAdmin ? 'Acceso total' : S.modo === 'vip' ? 'Activa' : 'Pendiente de activar';
     const _planClass = S.modo === 'vip' || S.isAdmin ? 'is-vip' : '';
+    const _creditos = Math.max(0, Number(S.creditos || md.creditos || 0));
     container.innerHTML = `
       <div class="fade-up">
         <header class="perfil-page-head">
@@ -9665,6 +9730,7 @@ const Sections = (function(){
             <div class="perfil-card__title">Tu membresía</div>
             <div class="perfil-field"><span class="perfil-field__lbl">Plan</span><span class="perfil-field__val">${escapeHtml(_plan)}</span></div>
             <div class="perfil-field"><span class="perfil-field__lbl">Estado</span><span class="perfil-field__val perfil-status ${_planClass}">${escapeHtml(_estado)}</span></div>
+            <div class="perfil-field"><span class="perfil-field__lbl">Créditos disponibles</span><span class="perfil-field__val">${_creditos.toLocaleString('es-MX')}</span></div>
             <div class="perfil-membership-note">
               <span><svg class="ic"><use href="#i-shield-check"/></svg></span>
               <p><strong>${S.modo === 'vip' || S.isAdmin ? 'Tu acceso está activo.' : 'Activa tu cuenta completa.'}</strong> ${S.modo === 'vip' || S.isAdmin ? 'Tu perfil y tarjeta profesional permanecen sincronizados.' : 'Desbloquea cursos, herramientas y la comunidad profesional.'}</p>
