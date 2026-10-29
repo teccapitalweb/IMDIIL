@@ -9836,14 +9836,13 @@ const Sections = (function(){
       }
       mountEl.innerHTML = `<div class="sub-loading"><div class="sub-loading__spin"></div><div>Cargando plan ${selectedPlan}…</div></div>`;
       try {
+        const user = window.__currentUser || window.__auth?.currentUser;
+        if (!user) throw new Error('Inicia sesión nuevamente para continuar');
+        const idToken = await user.getIdToken();
         const res = await fetch(`${window.WEBHOOK_URL || 'https://imdiil-webhook-production.up.railway.app'}/stripe/checkout`, {
           method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            plan: selectedPlan,
-            uid: S.uid,
-            email: S.email
-          })
+          headers:{'Content-Type':'application/json', Authorization:`Bearer ${idToken}`},
+          body: JSON.stringify({ plan: selectedPlan })
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({error:'Error desconocido'}));
@@ -10089,10 +10088,13 @@ const Sections = (function(){
     btnSpinner.style.display = 'inline-flex';
 
     try {
+      const user = window.__currentUser || window.__auth?.currentUser;
+      if (!user) throw new Error('Inicia sesión nuevamente para continuar');
+      const idToken = await user.getIdToken();
       const resp = await fetch(WEBHOOK_BASE_URL + '/stripe/cancel-subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: S.uid, email: S.email })
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: '{}'
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'No se pudo cancelar');
@@ -10163,10 +10165,13 @@ const Sections = (function(){
     btn.querySelector('.lbl').textContent = 'Reactivando…';
 
     try {
+      const user = window.__currentUser || window.__auth?.currentUser;
+      if (!user) throw new Error('Inicia sesión nuevamente para continuar');
+      const idToken = await user.getIdToken();
       const resp = await fetch(WEBHOOK_BASE_URL + '/stripe/reactivate-subscription', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: S.uid, email: S.email })
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: '{}'
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'No se pudo reactivar');
