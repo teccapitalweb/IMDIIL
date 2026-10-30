@@ -3,7 +3,7 @@
   var API=function(){return window.WEBHOOK_URL||'https://imdiil-webhook-production.up.railway.app';};
   function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];});}
   function fmt(value){if(!value)return'';var date=new Date(value);return Number.isNaN(date.getTime())?'':new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(date);}
-  async function token(){var user=window.__auth&&window.__auth.currentUser;if(!user)throw new Error('Inicia sesión para usar esta función.');return user.getIdToken();}
+  async function token(){var user=window.__auth&&window.__auth.currentUser;for(var attempt=0;!user&&attempt<80;attempt+=1){await new Promise(function(resolve){window.setTimeout(resolve,100);});user=window.__auth&&window.__auth.currentUser;}if(!user)throw new Error('Inicia sesión para usar esta función.');return user.getIdToken();}
   async function request(path,options){var response=await fetch(API()+path,Object.assign({},options||{},{headers:Object.assign({'Authorization':'Bearer '+await token(),'Content-Type':'application/json'},options&&options.headers||{}),cache:'no-store'}));var data=await response.json().catch(function(){return{};});if(!response.ok)throw new Error(data.error||'No se pudo completar la solicitud.');return data;}
   function label(value){return['Elige una calificación','Necesita mejorar','Puede mejorar','Buen curso','Muy buen curso','Excelente curso'][Number(value)||0];}
 

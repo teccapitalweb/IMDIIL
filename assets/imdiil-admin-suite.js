@@ -23,8 +23,22 @@
     var parsed = timestamp(value);
     return parsed ? parsed.toLocaleString('es-MX', { dateStyle:'medium', timeStyle:'short' }) : 'Sin fecha';
   };
+  var adminToken = async function () {
+    var user = window._fb?.auth?.currentUser;
+    if (!user) {
+      await new Promise(function (resolve) {
+        var done = false;
+        var finish = function () { if (done) return; done = true; window.removeEventListener('adminready', finish); resolve(); };
+        window.addEventListener('adminready', finish, { once:true });
+        window.setTimeout(finish, 8000);
+      });
+      user = window._fb?.auth?.currentUser;
+    }
+    if (!user) throw new Error('La sesión de administrador no pudo restaurarse. Recarga la página.');
+    return user.getIdToken();
+  };
   var request = async function (path, options) {
-    var token = await pages._getAuthToken();
+    var token = await adminToken();
     var config = Object.assign({ cache:'no-store' }, options || {});
     config.headers = Object.assign({ Authorization:'Bearer ' + token }, config.headers || {});
     var response = await fetch(pages._webhookUrl + path, config);
