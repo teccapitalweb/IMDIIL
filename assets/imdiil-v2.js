@@ -20,11 +20,14 @@
   };
 
   const QUIZZES = [
-    { q:'¿Qué acción ayuda más a conservar una mejora?', options:['Asignar responsable, frecuencia y evidencia','Agregar indicadores sin dueño','Esperar al cierre del mes'], answer:0 },
-    { q:'¿Cuál es la mejor evidencia de que una clase fue comprendida?', options:['Abrir el video','Aplicar el criterio correcto en una decisión','Permanecer conectado algunos minutos'], answer:1 },
-    { q:'Cuando aparece una desviación, ¿qué conviene registrar primero?', options:['Una opinión general','La condición observable y su contexto','Sólo el nombre del área'], answer:1 },
-    { q:'¿Qué hace verificable una acción de mejora?', options:['Que sea urgente','Que tenga fecha, responsable y resultado esperado','Que se comunique por chat'], answer:1 },
-    { q:'¿Qué debe ocurrir antes de abrir la siguiente grabación?', options:['Completar la clase y aprobar su quiz','Recargar la página','Abrir cualquier material'], answer:0 }
+    { q:'¿Qué acción ayuda más a conservar una mejora?', options:['Asignar responsable, frecuencia y evidencia','Agregar indicadores sin dueño','Esperar al cierre del mes'], answer:0, explanation:'Una mejora se sostiene cuando tiene una rutina verificable, una persona responsable y evidencia de seguimiento.' },
+    { q:'¿Cuál es la mejor evidencia de que una clase fue comprendida?', options:['Abrir el video','Aplicar el criterio correcto en una decisión','Permanecer conectado algunos minutos'], answer:1, explanation:'Comprender implica usar el criterio aprendido para tomar una decisión correcta, no solamente reproducir el contenido.' },
+    { q:'Cuando aparece una desviación, ¿qué conviene registrar primero?', options:['Una opinión general','La condición observable y su contexto','Sólo el nombre del área'], answer:1, explanation:'La condición observable y su contexto permiten analizar causas y comparar el resultado después de intervenir.' },
+    { q:'¿Qué hace verificable una acción de mejora?', options:['Que sea urgente','Que tenga fecha, responsable y resultado esperado','Que se comunique por chat'], answer:1, explanation:'Fecha, responsable y resultado esperado convierten una intención en una acción que puede comprobarse.' },
+    { q:'¿Qué debe ocurrir antes de abrir la siguiente grabación?', options:['Completar la clase y aprobar su evaluación','Recargar la página','Abrir cualquier material'], answer:0, explanation:'La evaluación confirma el aprendizaje de la clase y mantiene el avance en el orden correcto.' },
+    { q:'¿Qué indicador es útil para controlar un proceso?', options:['Uno sin definición','Uno con fórmula, fuente, frecuencia y meta','Cualquier cifra disponible'], answer:1, explanation:'Un indicador sólo es comparable cuando su definición, fuente, frecuencia y meta son consistentes.' },
+    { q:'Ante un riesgo operativo importante, ¿qué debe definirse?', options:['Una acción, un responsable y una señal de alerta','Sólo una reunión','Esperar a que ocurra'], answer:0, explanation:'El control preventivo necesita una acción concreta, una persona responsable y una señal que active la respuesta.' },
+    { q:'¿Cuál es el mejor punto de partida para resolver una falla?', options:['Cambiar todo el proceso','Confirmar el problema con evidencia','Buscar un culpable'], answer:1, explanation:'Confirmar la falla con evidencia evita corregir síntomas o tomar decisiones basadas en suposiciones.' }
   ];
 
   const CHALLENGES = [
@@ -259,6 +262,42 @@
 
   function noteKey(courseId, lessonIndex) { return `imdiil_note_${window.UserState?.uid || 'demo'}_${courseId}_${lessonIndex}`; }
 
+  function quizKey(courseId, lessonNumber) {
+    return `imdiil:class-quiz:${window.UserState?.uid || 'demo'}:${courseId}:${lessonNumber}`;
+  }
+
+  function normalizeQuizQuestion(item) {
+    if (!item) return null;
+    const options = item.options || item.opciones;
+    const question = item.q || item.pregunta || item.question;
+    if (!question || !Array.isArray(options) || options.length < 2) return null;
+    const answer = Number(item.answer ?? item.correcta ?? item.correct ?? 0);
+    if (!Number.isInteger(answer) || answer < 0 || answer >= options.length) return null;
+    return {
+      q:String(question),
+      options:options.map(String),
+      answer,
+      explanation:String(item.explanation || item.explicacion || 'La respuesta marcada en verde aplica el criterio correcto de esta clase.')
+    };
+  }
+
+  function lessonQuizQuestions(course, lesson, lessonNumber) {
+    const custom = lesson?.quiz || lesson?.cuestionario || lesson?.ejercicio || lesson?.exercise;
+    const customList = (Array.isArray(custom) ? custom : custom ? [custom] : []).map(normalizeQuizQuestion).filter(Boolean);
+    const seed = [...`${course.id}:${lessonNumber}`].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const editorial = customList.filter((item, index, list) => list.findIndex(other => other.q === item.q) === index);
+    const result = editorial.slice(0,3);
+    for (let offset = 0; result.length < 3 && offset < QUIZZES.length * 2; offset += 1) {
+      const fallback = QUIZZES[(seed + offset * 3) % QUIZZES.length];
+      if (!result.some(item => item.q === fallback.q)) result.push(fallback);
+    }
+    return result;
+  }
+
+  function rememberQuizPass(courseId, lessonNumber, score, total) {
+    try { localStorage.setItem(quizKey(courseId,lessonNumber), JSON.stringify({ passed:true, score, total, completedAt:new Date().toISOString() })); } catch (_) { /* almacenamiento opcional */ }
+  }
+
   async function renderLesson(course, lessonIndex, target) {
     const api = bridge();
     const lesson = course.sesiones?.[lessonIndex];
@@ -268,13 +307,22 @@
     const lessons = course.sesiones || [];
     const nextIndex = lessonIndex + 1 < lessons.length ? lessonIndex + 1 : -1;
     const pct = Math.round((lessonIndex + (status.viewed ? 1 : 0)) / Math.max(1,lessons.length) * 100);
-    target.innerHTML = `<div class="v2-shell v2-lesson-page"><button class="v2-back" data-back-course>← ${esc(course.titulo || 'Curso')}</button><div class="v2-lesson-layout"><main><div class="v2-player"><div class="v2-player__status"><span class="v2-spinner"></span><strong>Cargando clase</strong><small>Preparando el reproductor protegido.</small></div><iframe title="${esc(lesson.titulo || 'Clase')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen hidden></iframe></div><section class="v2-lesson-heading"><div><span>CLASE ${String(lessonIndex + 1).padStart(2,'0')} DE ${String(lessons.length).padStart(2,'0')}</span><h1>${esc(lesson.titulo || `Clase ${lessonIndex + 1}`)}</h1><div class="v2-lesson-heading__bar"><i style="width:${pct}%"></i></div></div><button class="v2-complete ${status.viewed ? 'is-complete' : ''}" data-complete ${status.viewed ? 'disabled' : ''}>${status.viewed ? '✓ Completada' : 'Completar quiz →'}</button></section>${nextIndex >= 0 ? `<button class="v2-next-lesson" data-next ${api.lessonUnlocked(course.id,nextIndex,lessons) ? '' : 'disabled'}><span>Después</span><strong>${esc(lessons[nextIndex]?.titulo || `Clase ${nextIndex + 1}`)}</strong><b>→</b></button>` : ''}<section class="v2-lesson-summary"><span class="v2-kicker">RESUMEN</span><h2>En esta clase</h2><p>${esc(lesson.descripcion || course.descripcion || course.desc || 'Revisa el contenido y completa el quiz para registrar tu avance.')}</p><div><span>01</span><p>Observa el proceso y reconoce los criterios principales del tema.</p></div><div><span>02</span><p>Relaciona la explicación con una decisión real de operación.</p></div></section></main><aside class="v2-study-side"><div class="v2-study-tabs"><button class="is-active" data-study-tab="outline">Temario</button><button data-study-tab="notes">Notas</button><button data-study-tab="quiz">Quiz</button></div><section class="is-active" data-study-panel="outline"><div class="v2-outline">${lessons.map((entry,index) => { const s = courseStatus(api,course,entry,index); return `<button class="${index === lessonIndex ? 'is-current' : ''} ${s.viewed ? 'is-complete' : ''}" data-outline="${index}" ${s.unlocked ? '' : 'disabled'}><span>${s.viewed ? '✓' : index + 1}</span><strong>${esc(entry.titulo || `Clase ${index + 1}`)}</strong></button>`; }).join('')}</div></section><section data-study-panel="notes"><label class="v2-notes">Mis notas<textarea placeholder="Escribe aquí tus ideas…">${esc(localStorage.getItem(noteKey(course.id,lessonIndex)) || '')}</textarea><small>Se guardan en este dispositivo.</small></label></section><section data-study-panel="quiz"><div class="v2-quiz-intro"><span>✓</span><h3>${status.viewed ? 'Quiz aprobado' : 'Cierra la clase'}</h3><p>${status.viewed ? 'Tu avance ya quedó registrado.' : 'Responde 3 preguntas y acierta al menos 2.'}</p><button data-side-quiz ${status.viewed ? 'disabled' : ''}>${status.viewed ? 'Completado' : 'Comenzar quiz'}</button></div></section></aside></div></div>`;
+    target.innerHTML = `<div class="v2-shell v2-lesson-page"><button class="v2-back" data-back-course>← ${esc(course.titulo || 'Curso')}</button><div class="v2-lesson-layout"><main><div class="v2-player"><div class="v2-player__status"><span class="v2-spinner"></span><strong>Cargando clase</strong><small>Preparando el reproductor protegido.</small></div><iframe title="${esc(lesson.titulo || 'Clase')}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen hidden></iframe></div><section class="v2-lesson-heading"><div><span>CLASE ${String(lessonIndex + 1).padStart(2,'0')} DE ${String(lessons.length).padStart(2,'0')}</span><h1>${esc(lesson.titulo || `Clase ${lessonIndex + 1}`)}</h1><div class="v2-lesson-heading__bar"><i style="width:${pct}%"></i></div></div><button class="v2-complete ${status.viewed ? 'is-complete' : ''}" data-complete>${status.viewed ? 'Repasar evaluación' : 'Completar evaluación →'}</button></section>${nextIndex >= 0 ? `<button class="v2-next-lesson" data-next ${api.lessonUnlocked(course.id,nextIndex,lessons) ? '' : 'disabled'}><span>Después</span><strong>${esc(lessons[nextIndex]?.titulo || `Clase ${nextIndex + 1}`)}</strong><b>→</b></button>` : ''}<section class="v2-lesson-summary"><span class="v2-kicker">RESUMEN</span><h2>En esta clase</h2><p>${esc(lesson.descripcion || course.descripcion || course.desc || 'Revisa el contenido y completa la evaluación para registrar tu avance.')}</p><div><span>01</span><p>Observa el proceso y reconoce los criterios principales del tema.</p></div><div><span>02</span><p>Relaciona la explicación con una decisión real de operación.</p></div></section></main><aside class="v2-study-side"><div class="v2-study-tabs"><button class="is-active" data-study-tab="outline">Temario</button><button data-study-tab="notes">Notas</button><button data-study-tab="quiz">Evaluación</button></div><section class="is-active" data-study-panel="outline"><div class="v2-outline">${lessons.map((entry,index) => { const s = courseStatus(api,course,entry,index); return `<button class="${index === lessonIndex ? 'is-current' : ''} ${s.viewed ? 'is-complete' : ''}" data-outline="${index}" ${s.unlocked ? '' : 'disabled'}><span>${s.viewed ? '✓' : index + 1}</span><strong>${esc(entry.titulo || `Clase ${index + 1}`)}</strong></button>`; }).join('')}</div></section><section data-study-panel="notes"><label class="v2-notes">Mis notas<textarea placeholder="Escribe aquí tus ideas…">${esc(localStorage.getItem(noteKey(course.id,lessonIndex)) || '')}</textarea><small>Se guardan en este dispositivo.</small></label></section><section data-study-panel="quiz"><div class="v2-quiz-intro"><span>✓</span><h3>${status.viewed ? 'Evaluación aprobada' : 'Cierra la clase'}</h3><p>${status.viewed ? 'Tu avance está registrado. Puedes practicar otra vez.' : 'Responde 3 preguntas y acierta al menos 2.'}</p><button data-side-quiz>${status.viewed ? 'Practicar de nuevo' : 'Comenzar evaluación'}</button></div></section></aside></div></div>`;
     target.querySelector('[data-back-course]').addEventListener('click', () => go(courseRoute(course.id)));
     target.querySelectorAll('[data-study-tab]').forEach(button => button.addEventListener('click', () => { target.querySelectorAll('[data-study-tab]').forEach(item => item.classList.toggle('is-active',item === button)); target.querySelectorAll('[data-study-panel]').forEach(panel => panel.classList.toggle('is-active',panel.dataset.studyPanel === button.dataset.studyTab)); }));
     target.querySelectorAll('[data-outline]').forEach(button => button.addEventListener('click', () => go(lessonRoute(course.id,Number(button.dataset.outline)))));
     target.querySelector('.v2-notes textarea')?.addEventListener('input', event => localStorage.setItem(noteKey(course.id,lessonIndex),event.target.value));
     target.querySelector('[data-next]')?.addEventListener('click', () => go(lessonRoute(course.id,nextIndex)));
-    const startQuiz = () => runQuiz(course.id,status.number,() => { window.marcarClaseVista?.(course.id,status.number); window.Toast?.success?.('Clase completada','La siguiente clase ya puede abrirse'); if (nextIndex >= 0) go(lessonRoute(course.id,nextIndex)); else go(courseRoute(course.id)); });
+    const startQuiz = () => runQuiz(course,lesson,status.number,result => {
+      if (status.viewed) {
+        window.Toast?.success?.('Práctica terminada',`Resultado: ${result.score} de ${result.total}`);
+        renderLesson(course,lessonIndex,target);
+        return;
+      }
+      window.marcarClaseVista?.(course.id,status.number);
+      window.Toast?.success?.('Clase completada','La siguiente clase ya puede abrirse');
+      if (nextIndex >= 0) go(lessonRoute(course.id,nextIndex)); else go(courseRoute(course.id));
+    });
     target.querySelector('[data-complete]')?.addEventListener('click', startQuiz);
     target.querySelector('[data-side-quiz]')?.addEventListener('click', startQuiz);
     try {
@@ -288,22 +336,47 @@
     }
   }
 
-  function runQuiz(courseId, lessonNumber, onPass) {
-    const seed = [...String(courseId)].reduce((sum,char) => sum + char.charCodeAt(0),Number(lessonNumber) || 0);
-    const questions = [0,1,2].map(offset => QUIZZES[(seed + offset) % QUIZZES.length]);
+  function runQuiz(course, lesson, lessonNumber, onPass) {
+    const questions = lessonQuizQuestions(course,lesson,lessonNumber);
     let current = 0; let score = 0; let selected = false;
-    const view = modal('Quiz de cierre',`Clase ${lessonNumber} · necesitas 2 de 3.`, '<div data-quiz></div>', '<button class="v2-btn v2-btn--primary" data-next disabled>Siguiente</button>');
+    const view = modal('Evaluación de la clase',`${lesson.titulo || `Clase ${lessonNumber}`} · necesitas 2 de 3.`, '<div data-quiz></div>', '<button class="v2-btn v2-btn--primary" data-next disabled>Siguiente</button>');
     const body = view.el.querySelector('[data-quiz]'); const next = view.el.querySelector('[data-next]');
     const draw = () => {
-      const question = questions[current]; selected = false; next.disabled = true;
-      body.innerHTML = `<span class="v2-kicker">PREGUNTA ${current + 1} DE 3</span><h3>${esc(question.q)}</h3><div class="v2-quiz-options">${question.options.map((option,index) => `<button data-answer="${index}">${esc(option)}</button>`).join('')}</div>`;
-      body.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click', () => { if (selected) return; selected = true; const answer = Number(button.dataset.answer); if (answer === question.answer) score += 1; body.querySelectorAll('[data-answer]').forEach(item => item.disabled = true); button.classList.add(answer === question.answer ? 'is-correct' : 'is-wrong'); body.querySelector(`[data-answer="${question.answer}"]`)?.classList.add('is-correct'); next.disabled = false; }));
+      const question = questions[current]; selected = false; next.disabled = true; next.textContent = current === questions.length - 1 ? 'Ver resultado' : 'Siguiente';
+      body.innerHTML = `<span class="v2-kicker">PREGUNTA ${current + 1} DE ${questions.length}</span><h3>${esc(question.q)}</h3><div class="v2-quiz-options">${question.options.map((option,index) => `<button data-answer="${index}"><b>${String.fromCharCode(65 + index)}</b><span>${esc(option)}</span></button>`).join('')}</div><div class="v2-quiz-feedback" data-feedback aria-live="polite">Elige una respuesta para continuar.</div>`;
+      body.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click', () => {
+        if (selected) return;
+        selected = true;
+        const answer = Number(button.dataset.answer);
+        const correct = answer === question.answer;
+        if (correct) score += 1;
+        body.querySelectorAll('[data-answer]').forEach(item => item.disabled = true);
+        button.classList.add(correct ? 'is-correct' : 'is-wrong');
+        body.querySelector(`[data-answer="${question.answer}"]`)?.classList.add('is-correct');
+        body.querySelector('[data-feedback]').innerHTML = `<strong>${correct ? 'Correcto.' : 'Revisa la respuesta marcada en verde.'}</strong> ${esc(question.explanation)}`;
+        next.disabled = false;
+      }));
+      next.onclick = () => {
+        if (!selected) return;
+        if (current < questions.length - 1) { current += 1; draw(); return; }
+        finish();
+      };
     };
-    next.addEventListener('click', () => {
-      if (current < 2) { current += 1; draw(); return; }
-      if (score >= 2) { body.innerHTML = `<span class="v2-success-mark">✓</span><h3>Clase completada</h3><p>Obtuviste ${score} de 3 respuestas correctas.</p>`; next.textContent = 'Continuar'; next.onclick = () => { view.close(); onPass(); }; }
-      else { body.innerHTML = `<h3>Repasa e intenta de nuevo</h3><p>Obtuviste ${score} de 3. Tu avance anterior se conserva.</p>`; next.textContent = 'Reintentar'; next.onclick = () => { current = 0; score = 0; next.onclick = null; draw(); }; }
-    });
+    const finish = () => {
+      const total = questions.length;
+      if (score >= 2) {
+        rememberQuizPass(course.id,lessonNumber,score,total);
+        body.innerHTML = `<span class="v2-success-mark">✓</span><h3>Evaluación aprobada</h3><p>Obtuviste ${score} de ${total} respuestas correctas. Tu avance quedó protegido.</p>`;
+        next.disabled = false;
+        next.textContent = 'Continuar';
+        next.onclick = () => { view.close(); onPass({ score, total }); };
+        return;
+      }
+      body.innerHTML = `<h3>Repasa e intenta de nuevo</h3><p>Obtuviste ${score} de ${total}. Necesitas al menos 2 respuestas correctas; tu avance anterior se conserva.</p>`;
+      next.disabled = false;
+      next.textContent = 'Reintentar';
+      next.onclick = () => { current = 0; score = 0; draw(); };
+    };
     draw();
   }
 
