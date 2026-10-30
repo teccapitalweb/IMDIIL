@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="night">
+<html lang="es" data-theme="day">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1031,6 +1031,7 @@ body{
   .modal__footer .btn{flex:1;min-width:100px}
 }
 </style>
+<link rel="stylesheet" href="assets/imdiil-admin-v2.css?v=1">
 </head>
 <body style="visibility:hidden">
 
@@ -1126,6 +1127,7 @@ window.__signOut = async () => {
 <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="9"/><path d="M12 13l3-3"/><path d="M5.2 8.8a8.5 8.5 0 0 1 13.6 0"/></symbol>
 <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.1 8.3 22 9.3 17 14.2 18.2 21.1 12 17.8 5.8 21.1 7 14.2 2 9.3 8.9 8.3 12 2"/></symbol>
 <symbol id="i-dollar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
 <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
 <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
@@ -1140,7 +1142,7 @@ window.__signOut = async () => {
   <aside class="sidebar">
     <div class="brand">
       <div class="brand__logo">
-        <img src="assets/imdiil-app-icon-512.png" alt="IMDIIL">
+        <img src="assets/imdiil-horizontal.png" alt="IMDIIL">
       </div>
       <div>
         <div class="brand__name">IMDIIL</div>
@@ -1151,28 +1153,39 @@ window.__signOut = async () => {
     <div class="nav-section">
       <div class="nav-label">Resumen</div>
       <a class="nav-item is-active" data-section="dashboard"><svg class="ic"><use href="#i-home"/></svg>Dashboard</a>
+      <a class="nav-item" data-section="actividad"><svg class="ic"><use href="#i-trend"/></svg>Actividad</a>
     </div>
 
     <div class="nav-section">
       <div class="nav-label">Contenido</div>
-      <a class="nav-item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos<span class="nav-item__badge">12</span></a>
-      <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo<span class="nav-item__badge">3</span></a>
-      <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material<span class="nav-item__badge">9</span></a>
-      <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados<span class="nav-item__badge">2</span></a>
+      <a class="nav-item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
+      <a class="nav-item" data-section="calificaciones"><svg class="ic"><use href="#i-star"/></svg>Calificaciones</a>
+      <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo</a>
+      <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
+      <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
+      <a class="nav-item" data-section="recompensas"><svg class="ic"><use href="#i-zap"/></svg>Retos y recompensas</a>
     </div>
 
     <div class="nav-section">
       <div class="nav-label">Comunicación</div>
-      <a class="nav-item" data-section="notificaciones"><svg class="ic"><use href="#i-bell"/></svg>Notificaciones<span class="nav-item__badge" id="badge-notif">0</span></a>
+      <a class="nav-item" data-section="soporte"><svg class="ic"><use href="#i-mail"/></svg>Buzón privado</a>
+      <a class="nav-item" data-section="notificaciones"><svg class="ic"><use href="#i-bell"/></svg>Notificaciones</a>
+      <a class="nav-item" data-section="noticias"><svg class="ic"><use href="#i-news"/></svg>Noticias</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Crecimiento</div>
+      <a class="nav-item" data-section="metricas"><svg class="ic"><use href="#i-chart-bar"/></svg>Métricas</a>
+      <a class="nav-item" data-section="encuestas"><svg class="ic"><use href="#i-check"/></svg>Encuestas</a>
+      <a class="nav-item" data-section="pruebas"><svg class="ic"><use href="#i-clock"/></svg>Pruebas gratuitas</a>
     </div>
 
     <div class="nav-section">
       <div class="nav-label">Comunidad</div>
-      <a class="nav-item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros VIP<span class="nav-item__badge">486</span></a>
-      <a class="nav-item" data-section="estado-pagos" data-control-hub="1"><svg class="ic"><use href="#i-dollar"/></svg>Control de cuentas<span class="nav-item__badge">NUEVO</span></a>
-      <a class="nav-item" data-section="noticias"><svg class="ic"><use href="#i-news"/></svg>Noticias</a>
-      <a class="nav-item" data-section="foro"><svg class="ic"><use href="#i-users"/></svg>Foro<span class="nav-item__badge" id="badge-foro">0</span></a>
-      <a class="nav-item" data-section="directorio"><svg class="ic"><use href="#i-user"/></svg>Directorio<span class="nav-item__badge" id="badge-dir">0</span></a>
+      <a class="nav-item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros VIP</a>
+      <a class="nav-item" data-section="estado-pagos" data-control-hub="1"><svg class="ic"><use href="#i-dollar"/></svg>Control de cuentas</a>
+      <a class="nav-item" data-section="foro"><svg class="ic"><use href="#i-users"/></svg>Foro</a>
+      <a class="nav-item" data-section="directorio"><svg class="ic"><use href="#i-user"/></svg>Directorio</a>
     </div>
 
     <div class="nav-section">
@@ -1185,7 +1198,7 @@ window.__signOut = async () => {
   <!-- MAIN -->
   <main class="main">
     <div class="topbar">
-      <span class="topbar__pill">Modo administrador</span>
+      <span class="topbar__pill" aria-hidden="true">Modo administrador</span>
       <div class="topbar__right">
         <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema"><svg class="ic"><use href="#i-moon"/></svg></button>
         <div class="avatar">
@@ -1205,8 +1218,8 @@ window.__signOut = async () => {
   <nav class="mobile-nav">
     <a class="mobile-nav__item is-active" data-section="dashboard"><svg class="ic"><use href="#i-home"/></svg>Inicio</a>
     <a class="mobile-nav__item" data-section="cursos"><svg class="ic"><use href="#i-book"/></svg>Cursos</a>
-    <a class="mobile-nav__item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Vivo</a>
-    <a class="mobile-nav__item" data-section="miembros"><svg class="ic"><use href="#i-users"/></svg>Miembros</a>
+    <a class="mobile-nav__item" data-section="calificaciones"><svg class="ic"><use href="#i-star"/></svg>Opiniones</a>
+    <a class="mobile-nav__item" data-section="soporte"><svg class="ic"><use href="#i-mail"/></svg>Buzón</a>
     <a class="mobile-nav__item" data-section="estado-pagos" data-control-hub="1"><svg class="ic"><use href="#i-dollar"/></svg>Cuentas</a>
   </nav>
 
@@ -1238,7 +1251,7 @@ window.__signOut = async () => {
    ========================================================= */
 
 const Theme={
-  init(){const s=localStorage.getItem('imdiil-admin:theme')||'night';document.documentElement.dataset.theme=s;this.updateIcon();},
+  init(){document.documentElement.dataset.theme='day';localStorage.setItem('imdiil-admin:theme','day');this.updateIcon();},
   toggle(){const c=document.documentElement.dataset.theme;const n=c==='night'?'day':'night';document.documentElement.dataset.theme=n;localStorage.setItem('imdiil-admin:theme',n);this.updateIcon();},
   updateIcon(){const b=document.getElementById('theme-toggle');if(!b)return;const isDay=document.documentElement.dataset.theme==='day';b.innerHTML='<svg class="ic"><use href="#'+(isDay?'i-sun':'i-moon')+'"/></svg>';}
 };
@@ -5819,6 +5832,7 @@ if (window.__currentAdmin) {
 </script>
 
 <script src="assets/imdiil-account-control.js?v=20261029-1"></script>
+<script src="assets/imdiil-admin-suite.js?v=1"></script>
 
 </body>
 </html>

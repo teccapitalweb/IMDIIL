@@ -19,6 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
 <link rel="stylesheet" href="assets/imdiil-v2.css?v=3">
+<link rel="stylesheet" href="assets/imdiil-experience.css?v=1">
 
 <style>
 /* IMDIIL VIP · Layout estilo Zoorigen/Sinergia · 3 columnas */
@@ -3729,6 +3730,7 @@ window.__setDisplayName = async (nombre) => {
 
     <div class="nav-section">
       <div class="nav-label">Mi cuenta</div>
+      <a class="nav-item" data-section="soporte"><svg class="ic"><use href="#i-messages"/></svg>Soporte privado</a>
       <a class="nav-item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
       <a class="nav-item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
     </div>
@@ -3790,11 +3792,16 @@ window.__setDisplayName = async (nombre) => {
       <div style="height:22px"></div>
 
       <!-- Noticias diarias (reales desde Firestore) -->
-      <section>
-        <div class="section-header">
-          <h2 class="section-header__title">Noticias del sector<span class="section-header__badge">Hoy</span></h2>
+      <section class="home-news">
+        <div class="home-news__head">
+          <div>
+            <span class="home-news__eyebrow">ACTUALIDAD INDUSTRIAL</span>
+            <h2>Lo importante, sin ruido</h2>
+            <p>Una selección breve para mantenerte al día sin saturar tu inicio.</p>
+          </div>
+          <span class="home-news__fresh"><span></span>Actualizado hoy</span>
         </div>
-        <div class="news-grid" id="home-news-grid">
+        <div class="home-news__layout" id="home-news-grid">
           <div class="foro-empty" style="grid-column:1/-1;">Cargando noticias…</div>
         </div>
       </section>
@@ -3916,6 +3923,7 @@ window.__setDisplayName = async (nombre) => {
 
       <div class="mobile-drawer__section">
         <div class="mobile-drawer__label">Mi cuenta</div>
+        <a class="mobile-drawer__item" data-section="soporte"><svg class="ic"><use href="#i-messages"/></svg>Soporte privado</a>
         <a class="mobile-drawer__item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
         <a class="mobile-account-card" data-section="perfil">
           <span class="mobile-account-card__avatar" id="drawer-user-avatar">IN</span>
@@ -8907,31 +8915,35 @@ const Sections = (function(){
         _noticiasCargadas = true;
         return;
       }
-      grid.innerHTML = arts.map(n=>{
+      const noticiaCard = (n,index)=>{
         const fecha = noticiaTiempoRel(n.createdAt || n.fechaPublicacion);
+        const link = escapeHtml(n.link || '#');
+        const imagen = escapeHtml(n.imagen || '');
+        const categoria = escapeHtml(n.categoriaNombre || n.categoria || 'Industria');
         const cover = n.imagen
-          ? `<div class="news-card__cover" style="background-image:url('${n.imagen}');background-size:cover;background-position:center;">
+          ? `<div class="news-card__cover" style="background-image:url('${imagen}');background-size:cover;background-position:center;">
                <span class="news-card__date">${fecha}</span>
-               <span class="news-card__cat">${escapeHtml(n.categoriaNombre||n.categoria||'')}</span>
+               <span class="news-card__cat">${categoria}</span>
              </div>`
           : `<div class="news-card__cover">
                <svg class="ic"><use href="#i-news"/></svg>
                <span class="news-card__date">${fecha}</span>
-               <span class="news-card__cat">${escapeHtml(n.categoriaNombre||n.categoria||'')}</span>
+               <span class="news-card__cat">${categoria}</span>
              </div>`;
         return `
-        <article class="news-card" style="--cat-color:${n.color||'#FF7A2D'};">
+        <article class="news-card ${index===0?'news-card--featured':'news-card--compact'}" style="--cat-color:${escapeHtml(n.color||'#FF7A2D')};">
           ${cover}
           <div class="news-card__body">
             <h3 class="news-card__title">${escapeHtml(n.titulo||'')}</h3>
-            ${n.extracto?`<p class="news-card__excerpt">${escapeHtml(n.extracto).slice(0,140)}${(n.extracto||'').length>140?'…':''}</p>`:''}
+            ${n.extracto?`<p class="news-card__excerpt">${escapeHtml(n.extracto).slice(0,index===0?210:110)}${(n.extracto||'').length>(index===0?210:110)?'…':''}</p>`:''}
             <div class="news-card__footer">
               <span class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>${escapeHtml(n.fuente||'Fuente')}</span>
-              <a class="news-card__more" href="${n.link||'#'}" target="_blank" rel="noopener">Leer más<svg class="ic"><use href="#i-arrow-right"/></svg></a>
+              <a class="news-card__more" href="${link}" target="_blank" rel="noopener">Leer nota<svg class="ic"><use href="#i-arrow-right"/></svg></a>
             </div>
           </div>
         </article>`;
-      }).join('');
+      };
+      grid.innerHTML = `<div class="home-news__featured">${noticiaCard(arts[0],0)}</div><div class="home-news__list">${arts.slice(1,5).map((article,index)=>noticiaCard(article,index+1)).join('')}</div>`;
       _noticiasCargadas = true;
     } catch(e){
       console.error('noticias home', e);
@@ -12596,6 +12608,7 @@ body{letter-spacing:-.05px}
 .sec-hero{padding-top:0}
 </style>
 <script src="onboarding-tour.js?v=2" defer></script>
+<script src="assets/imdiil-experience.js?v=1" defer></script>
 <script src="assets/imdiil-v2.js?v=4" defer></script>
 </body>
 </html>
