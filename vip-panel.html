@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
-<link rel="stylesheet" href="assets/imdiil-v2.css?v=4">
+<link rel="stylesheet" href="assets/imdiil-v2.css?v=5">
 <link rel="stylesheet" href="assets/imdiil-experience.css?v=1">
 
 <style>
@@ -3731,8 +3731,6 @@ window.__setDisplayName = async (nombre) => {
     <div class="nav-section">
       <div class="nav-label">Mi cuenta</div>
       <a class="nav-item" data-section="soporte"><svg class="ic"><use href="#i-messages"/></svg>Soporte privado</a>
-      <a class="nav-item" data-section="perfil"><svg class="ic"><use href="#i-user"/></svg>Mi perfil</a>
-      <a class="nav-item" data-section="suscripcion"><svg class="ic"><use href="#i-credit-card"/></svg>Suscripción</a>
     </div>
     <div class="sidebar-account">
       <a class="sidebar-account__cta" id="sidebar-account-cta" data-section="suscripcion"><svg class="ic"><use href="#i-crown"/></svg><span id="sidebar-account-cta-text">Hazte VIP</span><svg class="ic sidebar-account__cta-arrow"><use href="#i-arrow-right"/></svg></a>
@@ -5964,7 +5962,7 @@ let __seccionActualVIP = null;
 
 function __seccionesValidasVIP(){
   const s = new Set(Array.from(
-    document.querySelectorAll('.nav-item[data-section], .mobile-nav__item[data-section], .mobile-drawer__item[data-section]')
+    document.querySelectorAll('.nav-item[data-section], .mobile-nav__item[data-section], .mobile-drawer__item[data-section], .sidebar-account [data-section], .mobile-account-card[data-section]')
   ).map(n => n.dataset.section));
   s.add('inicio');
   try { Object.keys(Sections.renderers || {}).forEach(k => s.add(k)); } catch(e) {}
@@ -6001,7 +5999,7 @@ function navigateToSection(section, opciones){
     else history.pushState(null, '', __destino);
   }
 
-  document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item').forEach(n=>n.classList.remove('is-active'));
+  document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item, .sidebar-account__cta, .sidebar-account__card, .mobile-account-card').forEach(n=>n.classList.remove('is-active'));
   const navSection = __esRutaAprendizajeVIP(section) ? 'cursos' : (section.startsWith('tool-') ? 'herramientas' : section);
   document.querySelectorAll(`[data-section="${navSection}"]`).forEach(ni => ni.classList.add('is-active'));
   // Si es una herramienta-sección (tool-iper, tool-oee...), resaltar su item data-tool
@@ -11201,11 +11199,13 @@ function injectSupportFAB(){
 }
 
 function initNav(){
-  document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item').forEach(it=>{
+  // Incluye los accesos de cuenta del fondo del sidebar (Hazte VIP / tarjeta de usuario)
+  // y la tarjeta de cuenta del drawer móvil: ahora son la única vía a Suscripción y Perfil.
+  document.querySelectorAll('.nav-item, .mobile-nav__item, .mobile-drawer__item, .sidebar-account__cta, .sidebar-account__card, .mobile-account-card').forEach(it=>{
     it.addEventListener('click',e=>{
       e.preventDefault();
       // Si es item del drawer móvil, cerrar el drawer al elegir
-      if (it.classList.contains('mobile-drawer__item')) {
+      if (it.classList.contains('mobile-drawer__item') || it.classList.contains('mobile-account-card')) {
         cerrarDrawerMovil();
       }
       // Herramientas con sección propia (se abren dentro del panel, no como popup)
@@ -12675,8 +12675,8 @@ body{letter-spacing:-.05px}
 .sec-hero__title{margin-top:0!important}
 .sec-hero{padding-top:0}
 </style>
-<script src="onboarding-tour.js?v=2" defer></script>
+<script src="onboarding-tour.js?v=3" defer></script>
 <script src="assets/imdiil-experience.js?v=2" defer></script>
-<script src="assets/imdiil-v2.js?v=4" defer></script>
+<script src="assets/imdiil-v2.js?v=5" defer></script>
 </body>
 </html>

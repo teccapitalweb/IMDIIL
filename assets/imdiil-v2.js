@@ -1,23 +1,12 @@
 (function () {
   'use strict';
 
+  // Catálogo canjeable: la fuente real es el webhook (/rewards/state).
+  // Este respaldo sólo se muestra si el webhook no responde.
   const FALLBACK_CATALOG = [
-    { id:'material-5s-audit', type:'material', title:'Kit de auditoría 5S', description:'Lista de verificación, matriz de hallazgos y plan de seguimiento.', cost:120, format:'Plantilla práctica' },
-    { id:'material-oee-shift', type:'material', title:'Control OEE por turno', description:'Guía para capturar disponibilidad, rendimiento y calidad.', cost:160, format:'Guía + formato' },
-    { id:'material-supply-risk', type:'material', title:'Mapa de riesgos logísticos', description:'Método para priorizar riesgos de abastecimiento y distribución.', cost:190, format:'Manual de trabajo' },
-    { id:'book-lean-floor', type:'book', title:'Lean en el piso de producción', description:'Lectura IMDIIL sobre flujo, desperdicio y mejora diaria.', cost:240, format:'Libro digital' },
-    { id:'book-logistics-decisions', type:'book', title:'Decisiones para una logística confiable', description:'Casos y criterios para inventario, rutas y nivel de servicio.', cost:280, format:'Libro digital' },
-    { id:'book-quality-system', type:'book', title:'Calidad que sí se sostiene', description:'Un sistema práctico de hábitos, indicadores y estandarización.', cost:320, format:'Libro digital' }
+    { id:'libro-50-herramientas-ingenieria-industrial', type:'book', title:'50 herramientas de ingeniería industrial que todo profesional debe dominar', description:'Las herramientas esenciales del ingeniero industrial explicadas para aplicarse en planta: cuándo usarlas, cómo y qué resultado esperar.', area:'Biblioteca técnica · Libro 2', cost:800, ext:'docx', format:'Libro digital · DOCX' },
+    { id:'libro-mantenimiento-industrial', type:'book', title:'Mantenimiento industrial: cómo prevenir fallas, paros y costos innecesarios', description:'Estrategias de mantenimiento preventivo y predictivo para reducir paros no planeados y controlar el costo de operación.', area:'Biblioteca técnica · Libro 6', cost:800, ext:'docx', format:'Libro digital · DOCX' }
   ];
-
-  const CONTENT = {
-    'material-5s-audit': [['Cómo usarlo','Recorre cada zona con una escala de 0 a 3. Registra evidencia, responsable y fecha de cierre.'],['Qué revisar','Clasificar, ordenar, limpiar, estandarizar y sostener. Describe siempre una condición observable.']],
-    'material-oee-shift': [['Datos mínimos','Tiempo planificado, paros, producción total, producción buena y ciclo ideal.'],['Rutina','Compara turnos bajo las mismas reglas y abre una acción sólo cuando tenga responsable.']],
-    'material-supply-risk': [['Mapa','Ubica proveedor, origen, ruta, almacén y cliente. Registra evento, probabilidad e impacto.'],['Control','Define señal de alerta, dueño, acción preventiva, plan alterno y evidencia de prueba.']],
-    'book-lean-floor': [['Ver el flujo','El inventario entre procesos suele ocultar esperas, defectos y desbalance.'],['Sostener','Una mejora sin responsable, frecuencia y evidencia vuelve a su estado anterior.']],
-    'book-logistics-decisions': [['Nivel de servicio','Define qué promesa se hace, a quién y con qué medición.'],['Rutas','Evalúa costo, cumplimiento y resiliencia juntos.']],
-    'book-quality-system': [['Estándar útil','El estándar debe poder observarse, verificarse y enseñarse.'],['Aprendizaje','Cada desviación importante debe actualizar el conocimiento del equipo.']]
-  };
 
   const QUIZZES = [
     { q:'¿Qué acción ayuda más a conservar una mejora?', options:['Asignar responsable, frecuencia y evidencia','Agregar indicadores sin dueño','Esperar al cierre del mes'], answer:0, explanation:'Una mejora se sostiene cuando tiene una rutina verificable, una persona responsable y evidencia de seguimiento.' },
@@ -96,44 +85,147 @@
     return { el, close };
   }
 
-  function openContent(item) {
-    const sections = CONTENT[item.id] || [['Contenido disponible',item.description || 'Este recurso forma parte de tu biblioteca IMDIIL.']];
-    const body = sections.map(section => `<h3>${esc(section[0])}</h3><p>${esc(section[1])}</p>`).join('');
-    const view = modal(item.title, item.format, body, '<button class="v2-btn v2-btn--primary" data-close>Terminar lectura</button>');
-    view.el.querySelector('[data-close]').addEventListener('click', view.close);
+  // ─── Libros y Materiales: canje con confirmación, celebración y visor ───
+  const fmt = value => Number(value || 0).toLocaleString('es-MX');
+  const typeLabel = item => item.type === 'book' ? 'libro' : 'material';
+  const reducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  // Splash de desbloqueo con confeti (misma idea que SYNOVA / ICADEM / IMFRA).
+  function celebrateUnlock(item) {
+    return new Promise(resolve => {
+      document.querySelectorAll('.v2-unlock-splash').forEach(el => el.remove());
+      const splash = document.createElement('div');
+      splash.className = 'v2-unlock-splash';
+      splash.setAttribute('role', 'status');
+      const colors = ['#FF7A2D', '#FFB377', '#0B608F', '#37B8C8', '#F1B93B', '#22C55E', '#FFFFFF'];
+      const pieces = reducedMotion() ? '' : Array.from({ length: 90 }, (_, i) => {
+        const round = i % 4 === 0;
+        return `<span class="${round ? 'is-round' : ''}" style="--x:${(Math.random() * 100).toFixed(1)}vw;--w:${(6 + Math.random() * 6).toFixed(0)}px;--h:${(round ? 8 : 10 + Math.random() * 8).toFixed(0)}px;--c:${colors[i % colors.length]};--t:${(1.9 + Math.random() * 1.3).toFixed(2)}s;--d:${(Math.random() * .45).toFixed(2)}s;--r:${(Math.random() * 360).toFixed(0)}deg;--drift:${(Math.random() * 160 - 80).toFixed(0)}px"></span>`;
+      }).join('');
+      splash.innerHTML = `<div class="celebracion-confetti" aria-hidden="true">${pieces}</div><div class="v2-unlock-splash__card"><div class="v2-unlock-splash__icon">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div><span>¡${item.type === 'book' ? 'Libro' : 'Material'} desbloqueado!</span><h2>${esc(item.title)}</h2><p>Ya es tuyo para siempre. Abriendo…</p><i class="v2-unlock-splash__bar"><b></b></i></div>`;
+      document.body.appendChild(splash);
+      requestAnimationFrame(() => splash.classList.add('is-visible'));
+      const wait = reducedMotion() ? 700 : 2000;
+      setTimeout(() => {
+        splash.classList.remove('is-visible');
+        setTimeout(() => { splash.querySelector('.v2-unlock-splash__card')?.remove(); resolve(); }, 220);
+        setTimeout(() => splash.remove(), 2600);
+      }, wait);
+    });
   }
 
+  function closeViewer() {
+    document.querySelector('.v2-doc-viewer')?.remove();
+    document.body.classList.remove('v2-doc-open');
+  }
+
+  async function downloadReward(item, button) {
+    const original = button?.innerHTML;
+    try {
+      if (button) { button.disabled = true; button.textContent = 'Descargando…'; }
+      const idToken = await userToken();
+      if (!idToken) throw new Error('Inicia sesión para continuar.');
+      const response = await fetch(`${window.WEBHOOK_URL}/rewards/${encodeURIComponent(item.id)}/file`, { headers:{ Authorization:`Bearer ${idToken}` } });
+      if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error || 'No pudimos descargar el archivo.'); }
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `IMDIIL_${item.title.replace(/[^\wÁÉÍÓÚÜáéíóúüÑñ]+/g, '_').slice(0, 80)}.${item.ext || 'docx'}`;
+      document.body.appendChild(link); link.click();
+      setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1500);
+    } catch (error) {
+      window.Toast?.error?.('No se pudo descargar', error.message);
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = original; }
+    }
+  }
+
+  // Visor a pantalla completa dentro del panel (PDF nativo u Office Online).
+  async function openContent(item) {
+    closeViewer();
+    const viewer = document.createElement('div');
+    viewer.className = 'v2-doc-viewer';
+    viewer.innerHTML = `<header class="v2-doc-viewer__bar"><div class="v2-doc-viewer__title"><span>${esc(item.format || (item.type === 'book' ? 'Libro digital' : 'Material'))}</span><strong>${esc(item.title)}</strong></div><button class="v2-btn" type="button" data-doc-download>${icon('i-download')}<span>Descargar</span></button><button class="v2-doc-viewer__close" type="button" aria-label="Cerrar">×</button></header><div class="v2-doc-viewer__body"><div class="v2-doc-viewer__loading"><i></i>Preparando tu ${typeLabel(item)}…</div></div>`;
+    document.body.appendChild(viewer);
+    document.body.classList.add('v2-doc-open');
+    viewer.querySelector('.v2-doc-viewer__close').addEventListener('click', closeViewer);
+    viewer.querySelector('[data-doc-download]').addEventListener('click', event => downloadReward(item, event.currentTarget));
+    try {
+      const idToken = await userToken();
+      if (!idToken) throw new Error('Inicia sesión para continuar.');
+      const response = await fetch(`${window.WEBHOOK_URL}/rewards/${encodeURIComponent(item.id)}/view`, { method:'POST', headers:{ Authorization:`Bearer ${idToken}` } });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.embedUrl) throw new Error(data.error || 'No pudimos abrir el documento.');
+      if (!document.body.contains(viewer)) return;
+      const frame = document.createElement('iframe');
+      frame.className = 'v2-doc-viewer__frame';
+      frame.title = item.title;
+      frame.src = data.embedUrl;
+      frame.setAttribute('allowfullscreen', '');
+      frame.addEventListener('load', () => viewer.querySelector('.v2-doc-viewer__loading')?.remove(), { once:true });
+      viewer.querySelector('.v2-doc-viewer__body').appendChild(frame);
+    } catch (error) {
+      closeViewer();
+      window.Toast?.error?.('No se pudo abrir', error.message);
+    }
+  }
+
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && document.querySelector('.v2-doc-viewer')) closeViewer(); });
+
+  // Popup de confirmación: costo, saldo actual, si alcanza y saldo restante.
   async function redeem(item, rerender) {
     if (state.owned.has(item.id)) return openContent(item);
-    const view = modal(`Canjear ${item.title}`,'El canje se registra una sola vez.',`<p>Cuesta <strong>${Number(item.cost)} créditos</strong>. Tu saldo es <strong>${state.balance}</strong>.</p>`,`<button class="v2-btn" data-cancel>Cancelar</button><button class="v2-btn v2-btn--primary" data-confirm ${state.balance < item.cost ? 'disabled' : ''}>Confirmar</button>`);
+    const cost = Number(item.cost) || 0;
+    const balance = state.balance;
+    const enough = balance >= cost;
+    const kind = typeLabel(item);
+    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
+      + `<dl class="v2-redeem__math"><div><dt>Costo</dt><dd>${fmt(cost)} créditos</dd></div><div><dt>Tu saldo</dt><dd>${fmt(balance)} créditos</dd></div><div class="${enough ? 'is-ok' : 'is-short'}"><dt>${enough ? 'Te quedarán' : 'Te faltan'}</dt><dd>${fmt(enough ? balance - cost : cost - balance)} créditos</dd></div></dl>`
+      + `<p class="v2-redeem__note ${enough ? 'is-ok' : 'is-short'}">${enough ? `✓ Te alcanza. El ${kind} queda en tu cuenta para siempre y se abrirá al confirmar.` : `Aún no te alcanza. Gana créditos completando clases y Retos.`}</p></div>`;
+    const footer = enough
+      ? `<button class="v2-btn" data-cancel>Cancelar</button><button class="v2-btn v2-btn--primary" data-confirm>Canjear y abrir</button>`
+      : `<button class="v2-btn" data-cancel>Cerrar</button><button class="v2-btn v2-btn--primary" data-earn>Ganar créditos</button>`;
+    const view = modal(enough ? `¿Canjear ${fmt(cost)} créditos?` : 'Créditos insuficientes', 'Créditos IMDIIL', body, footer);
+    view.el.classList.add('v2-modal--redeem');
     view.el.querySelector('[data-cancel]').addEventListener('click', view.close);
+    view.el.querySelector('[data-earn]')?.addEventListener('click', () => { view.close(); go('retos'); });
     view.el.querySelector('[data-confirm]')?.addEventListener('click', async event => {
-      const button = event.currentTarget; button.disabled = true; button.textContent = 'Procesando…';
+      const button = event.currentTarget; button.disabled = true; button.textContent = 'Canjeando…';
       try {
         const response = await fetch(`${window.WEBHOOK_URL}/rewards/redeem`, { method:'POST', headers:{ Authorization:`Bearer ${await userToken()}`, 'Content-Type':'application/json' }, body:JSON.stringify({ itemId:item.id }) });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || 'No se pudo completar el canje');
-        state.owned.add(item.id); state.balance = Math.max(0, Number(data.balance || 0)); state.loaded = false;
-        view.close(); window.Toast?.success?.('Canje completado','El recurso ya está en tu biblioteca');
-        await loadRewards(true); rerender?.(); openContent(item);
-      } catch (error) { button.disabled = false; button.textContent = 'Confirmar'; window.Toast?.error?.('No se pudo canjear',error.message); }
+        state.owned.add(item.id);
+        state.balance = Math.max(0, Number(data.balance || 0));
+        if (window.UserState) window.UserState.creditos = state.balance;
+        view.close();
+        rerender?.();
+        if (!data.repeated) await celebrateUnlock(item);
+        openContent(item);
+        loadRewards(true).then(() => rerender?.());
+      } catch (error) { button.disabled = false; button.textContent = 'Canjear y abrir'; window.Toast?.error?.('No se pudo canjear', error.message); }
     });
   }
 
   function rewardCard(item) {
     const owned = state.owned.has(item.id);
-    return `<article class="v2-reward-card"><div class="v2-reward-card__art">${item.type === 'book' ? '▤' : '⌁'}</div><span>${esc(item.format)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><footer><strong>${owned ? 'En tu biblioteca' : `${Number(item.cost)} créditos`}</strong><button class="v2-btn ${owned ? '' : 'v2-btn--primary'}" data-reward="${esc(item.id)}">${owned ? 'Abrir' : 'Canjear'}</button></footer></article>`;
+    const ext = String(item.ext || '').toUpperCase();
+    return `<article class="v2-reward-card ${owned ? 'is-owned' : ''}" data-open-reward="${esc(item.id)}"><div class="v2-reward-card__top"><div class="v2-reward-card__art">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div>${ext ? `<em class="v2-reward-card__ext">${esc(ext)}</em>` : ''}</div><span>${esc(item.area || item.format)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><footer><strong>${owned ? '✓ En tu biblioteca' : `${fmt(item.cost)} créditos`}</strong><button class="v2-btn ${owned ? '' : 'v2-btn--primary'}" data-reward="${esc(item.id)}">${owned ? 'Abrir' : 'Canjear'}</button></footer></article>`;
   }
 
   async function renderCatalog(target, type) {
-    target.innerHTML = `<div class="v2-shell">${compactHero(type === 'book' ? 'Libros' : 'Materiales',type === 'book' ? 'Lecturas canjeables para ampliar tu biblioteca.' : 'Recursos independientes de las diapositivas de tus cursos.')}<div class="v2-loading">Cargando biblioteca…</div></div>`;
+    target.innerHTML = `<div class="v2-shell">${compactHero(type === 'book' ? 'Libros' : 'Materiales','')}<div class="v2-loading">Cargando biblioteca…</div></div>`;
     await loadRewards();
     const draw = () => {
       const items = state.catalog.filter(item => item.type === type);
-      target.innerHTML = `<div class="v2-shell">${compactHero(type === 'book' ? 'Libros' : 'Materiales',type === 'book' ? 'Lecturas canjeables para ampliar tu biblioteca.' : 'Recursos independientes de las diapositivas de tus cursos.',`<button class="v2-credit-chip" data-go-credits><span>Saldo</span><strong>${state.balance}</strong> créditos</button>`)}<div class="v2-section-head"><div><h2>${type === 'book' ? 'Biblioteca' : 'Recursos disponibles'}</h2><p>${items.filter(item => state.owned.has(item.id)).length} canjeados · ${items.length} publicados</p></div><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div><div class="v2-card-grid">${items.map(rewardCard).join('') || '<div class="v2-empty">Aún no hay recursos publicados.</div>'}</div></div>`;
+      const isBook = type === 'book';
+      target.innerHTML = `<div class="v2-shell">${compactHero(isBook ? 'Libros' : 'Materiales', isBook ? 'Biblioteca técnica IMDIIL: canjea tus créditos y consérvala para siempre.' : 'Herramientas y plantillas premium listas para usar en planta.',`<button class="v2-credit-chip" data-go-credits><span>Saldo</span><strong>${fmt(state.balance)}</strong> créditos</button>`)}<div class="v2-section-head"><div><h2>${isBook ? 'Biblioteca' : 'Recursos disponibles'}</h2><p>${items.filter(item => state.owned.has(item.id)).length} canjeados · ${items.length} publicados</p></div><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div><div class="v2-card-grid">${items.map(rewardCard).join('') || `<div class="v2-empty">Muy pronto publicaremos ${isBook ? 'nuevos libros' : 'nuevos materiales'} aquí.</div>`}</div></div>`;
       target.querySelector('[data-go-credits]')?.addEventListener('click', () => go('creditos'));
       target.querySelector('[data-refresh]')?.addEventListener('click', async () => { await loadRewards(true); draw(); });
-      target.querySelectorAll('[data-reward]').forEach(button => button.addEventListener('click', () => { const item = state.catalog.find(entry => entry.id === button.dataset.reward); if (item) redeem(item, draw); }));
+      target.querySelectorAll('[data-open-reward]').forEach(card => card.addEventListener('click', () => {
+        const item = state.catalog.find(entry => entry.id === card.dataset.openReward);
+        if (item) redeem(item, draw);
+      }));
     };
     draw();
   }

@@ -37,7 +37,7 @@
     {
       title: 'Perfil y configuración',
       copy: 'En Mi perfil actualizas tus datos y preferencias. En Suscripción puedes consultar o gestionar tu plan. Podrás repetir este recorrido desde el botón “Ver recorrido guiado”.',
-      selectors: ['.sidebar .nav-item[data-section="perfil"]', '#btn-avatar', '.mobile-drawer__item[data-section="perfil"]', '#mobile-nav-more']
+      selectors: ['#sidebar-user-card', '.sidebar .nav-item[data-section="perfil"]', '#btn-avatar', '.mobile-drawer__item[data-section="perfil"]', '#mobile-nav-more']
     }
   ];
 
