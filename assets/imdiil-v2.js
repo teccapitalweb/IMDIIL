@@ -217,8 +217,19 @@
   }
 
   const coverUrl = item => `${window.WEBHOOK_URL}/rewards/${encodeURIComponent(item.id)}/cover`;
+  const localCoverUrl = item => `assets/img/books/${encodeURIComponent(item.id)}.webp`;
+
+  // Tarjeta de libro (misma estructura que la biblioteca de SYNOVA)
+  function bookCard(item) {
+    const owned = state.owned.has(item.id);
+    const fallback = esc(coverUrl(item));
+    const cover = `<span class="book-card__cover"><img src="${esc(localCoverUrl(item))}" alt="Portada de ${esc(item.title)}" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${fallback}';}else{this.remove();}"><span class="book-badge">${owned ? 'En tu biblioteca' : 'Canjeable'}</span></span>`;
+    const cost = owned ? `<span class="book-cost">${icon('i-check-circle')}Canjeado</span>` : `<span class="book-cost"><span class="credit-coin">C</span>${fmt(item.cost)} créditos</span>`;
+    return `<article class="book-card ${owned ? 'is-owned' : ''}" data-open-reward="${esc(item.id)}">${cover}<span class="book-card__body"><span class="book-card__tag">${esc(item.area || item.format)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><span class="book-card__foot">${cost}<button class="book-open" type="button" data-reward="${esc(item.id)}" aria-label="${owned ? 'Abrir' : 'Canjear'} ${esc(item.title)}">${icon(owned ? 'i-book-2' : 'i-arrow-right')}</button></span></span></article>`;
+  }
 
   function rewardCard(item) {
+    if (item.type === 'book') return bookCard(item);
     const owned = state.owned.has(item.id);
     const ext = String(item.downloadExt || item.ext || '').toUpperCase();
     const cover = item.hasCover ? `<div class="v2-reward-card__cover"><img src="${esc(coverUrl(item))}" alt="Portada de ${esc(item.title)}" loading="lazy" onerror="this.parentNode.remove()">${owned ? '<b>✓ Tuyo</b>' : ''}</div>` : '';
@@ -231,6 +242,9 @@
     const draw = () => {
       const items = state.catalog.filter(item => item.type === type);
       const isBook = type === 'book';
+      if (isBook) {
+        target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero"><div class="books-hero__copy"><div class="books-kicker">${icon('i-book-2')}Biblioteca IMDIIL</div><h1>Tu biblioteca técnica.</h1><p>Canjea créditos por libros que conservarás en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próximo libro</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${items.filter(item => state.owned.has(item.id)).length} canjeados</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="book-shelf">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevos libros aquí.</div>'}</div></div></div>`;
+      } else
       target.innerHTML = `<div class="v2-shell">${compactHero(isBook ? 'Libros' : 'Materiales', isBook ? 'Biblioteca técnica IMDIIL: canjea tus créditos y consérvala para siempre.' : 'Herramientas y plantillas premium listas para usar en planta.',`<button class="v2-credit-chip" data-go-credits><span>Saldo</span><strong>${fmt(state.balance)}</strong> créditos</button>`)}<div class="v2-section-head"><div><h2>${isBook ? 'Biblioteca' : 'Recursos disponibles'}</h2><p>${items.filter(item => state.owned.has(item.id)).length} canjeados · ${items.length} publicados</p></div><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div><div class="v2-card-grid">${items.map(rewardCard).join('') || `<div class="v2-empty">Muy pronto publicaremos ${isBook ? 'nuevos libros' : 'nuevos materiales'} aquí.</div>`}</div></div>`;
       target.querySelector('[data-go-credits]')?.addEventListener('click', () => go('retos'));
       target.querySelector('[data-refresh]')?.addEventListener('click', async () => { await loadRewards(true); draw(); });
