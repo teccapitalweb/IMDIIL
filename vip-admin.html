@@ -1032,6 +1032,7 @@ body{
 }
 </style>
 <link rel="stylesheet" href="assets/imdiil-admin-v2.css?v=1">
+<link rel="stylesheet" href="assets/imdiil-admin-correos.css?v=1">
 </head>
 <body style="visibility:hidden">
 
@@ -1164,6 +1165,7 @@ window.__signOut = async () => {
       <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
       <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
       <a class="nav-item" data-section="recompensas"><svg class="ic"><use href="#i-zap"/></svg>Retos y recompensas</a>
+      <a class="nav-item" data-section="entrenamiento"><svg class="ic"><use href="#i-book"/></svg>Entrenamiento</a>
     </div>
 
     <div class="nav-section">
@@ -1176,8 +1178,11 @@ window.__signOut = async () => {
     <div class="nav-section">
       <div class="nav-label">Crecimiento</div>
       <a class="nav-item" data-section="metricas"><svg class="ic"><use href="#i-chart-bar"/></svg>Métricas</a>
+      <a class="nav-item" data-section="tiempo-panel"><svg class="ic"><use href="#i-clock"/></svg>Tiempo en el panel</a>
       <a class="nav-item" data-section="encuestas"><svg class="ic"><use href="#i-check"/></svg>Encuestas</a>
       <a class="nav-item" data-section="pruebas"><svg class="ic"><use href="#i-clock"/></svg>Pruebas gratuitas</a>
+      <a class="nav-item" data-section="referidos"><svg class="ic"><use href="#i-users"/></svg>Referidos</a>
+      <a class="nav-item" data-section="correos"><svg class="ic"><use href="#i-mail"/></svg>Correos de seguimiento</a>
     </div>
 
     <div class="nav-section">
@@ -5849,6 +5854,17 @@ if (window.__currentAdmin) {
 
 <script src="assets/imdiil-account-control.js?v=20261029-1"></script>
 <script src="assets/imdiil-admin-suite.js?v=2"></script>
+<script src="assets/imdiil-training-content.js?v=1"></script>
+<script src="assets/imdiil-training-admin.js?v=1"></script>
+<script src="assets/imdiil-referrals-admin.js?v=1"></script>
+<script src="assets/imdiil-push-admin.js?v=1"></script>
+<script src="assets/imdiil-admin-credits.js?v=1"></script>
+<script src="assets/imdiil-admin-correos.js?v=1"></script>
+<!-- Crecimiento: Métricas (visitas), Tiempo en el panel, Encuestas (landing + ruta de la guía) y Pruebas gratuitas -->
+<link rel="stylesheet" href="assets/imdiil-admin-metrics.css?v=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="assets/imdiil-admin-marketing.js?v=1"></script>
+<script src="assets/imdiil-admin-metrics.js?v=1"></script>
 
 </body>
 </html>

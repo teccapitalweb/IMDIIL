@@ -54,7 +54,7 @@
   // Espera a que Firebase termine de restaurar la sesión (hasta ~10 s) antes de pedir el token.
   async function userToken() {
     let user = window.__auth?.currentUser || window.__currentUser;
-    for (let attempt = 0; !user && attempt < 50; attempt += 1) {
+    for (let attempt = 0; !user && !window.__isDemoMode && attempt < 50; attempt += 1) {
       await new Promise(resolve => setTimeout(resolve, 200));
       user = window.__auth?.currentUser || window.__currentUser;
     }
@@ -286,7 +286,7 @@
         const owned = items.filter(item => state.owned.has(item.id)).length;
         target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero books-hero--tools"><div class="books-hero__copy"><div class="books-kicker">${icon('i-tools')}Herramientas premium IMDIIL</div><h1>Herramientas para tu planta.</h1><p>Canjea créditos por herramientas y plantillas que se abren aquí mismo y quedan en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próxima herramienta</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${owned} desbloqueadas</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="mat-shelf">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevas herramientas aquí.</div>'}</div></div></div>`;
       }
-      target.querySelector('[data-go-credits]')?.addEventListener('click', () => go('retos'));
+      target.querySelector('[data-go-credits]')?.addEventListener('click', () => (window.IMDIILCredits?.openWallet ? window.IMDIILCredits.openWallet() : go('retos')));
       target.querySelector('[data-refresh]')?.addEventListener('click', async () => { await loadRewards(true); draw(); });
       target.querySelectorAll('[data-open-reward]').forEach(card => card.addEventListener('click', () => {
         const item = state.catalog.find(entry => entry.id === card.dataset.openReward);
@@ -311,6 +311,7 @@
       target.querySelector(`[data-answer="${item.answer}"]`)?.classList.add('is-correct');
       if (selected === item.answer) {
         const progress = challengeState(); progress[item.id] = { completed:true, completedAt:new Date().toISOString() }; saveChallenges(progress);
+        window.IMDIILCredits?.reto?.(item.id, selected);
         window.Toast?.success?.('Reto completado','El resultado quedó guardado');
         setTimeout(() => renderChallenges(target), 800);
       } else {
@@ -578,11 +579,12 @@
     const history = state.history.length
       ? state.history.map(entry => `<article><span class="${Number(entry.amount) >= 0 ? 'is-positive' : ''}">${Number(entry.amount) >= 0 ? '+' : ''}${fmt(entry.amount)}</span><div><strong>${esc(historyLabel(entry))}</strong><small>${entry.createdAt ? new Date(entry.createdAt).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'}) : 'Fecha pendiente'}</small></div></article>`).join('')
       : '<div class="v2-empty">Aún no hay movimientos registrados.</div>';
-    return `<div class="v2-section-head"><div><h2>Mi cartera IMDIIL</h2><p>Gana créditos con clases y Retos, y canjéalos por libros y materiales.</p></div></div><div class="v2-credit-layout"><section class="v2-credit-actions"><div class="v2-wallet-balance"><span>Saldo disponible</span><strong>${fmt(state.balance)}</strong><small>créditos</small></div><span class="v2-kicker">USAR CRÉDITOS</span><h2>Elige tu próxima recompensa</h2><div><button data-credit-go="libros"><span>▤</span><div><strong>Libros</strong><small>Biblioteca técnica · 800 créditos</small></div><b>→</b></button><button data-credit-go="pdfs"><span>⌁</span><div><strong>Materiales</strong><small>Herramientas premium · 250 créditos</small></div><b>→</b></button></div></section><section class="v2-credit-history"><div class="v2-section-head"><div><h2>Movimientos</h2><p>Últimos cambios registrados.</p></div></div><div>${history}</div></section></div>`;
+    return `<div class="v2-section-head"><div><h2>Mi cartera IMDIIL</h2><p>Gana créditos con clases y Retos, y canjéalos por libros y materiales.</p></div><button class="v2-btn" type="button" data-open-wallet>Ver mi cartera →</button></div><div class="v2-credit-layout"><section class="v2-credit-actions"><div class="v2-wallet-balance"><span>Saldo disponible</span><strong>${fmt(state.balance)}</strong><small>créditos</small></div><span class="v2-kicker">USAR CRÉDITOS</span><h2>Elige tu próxima recompensa</h2><div><button data-credit-go="libros"><span>▤</span><div><strong>Libros</strong><small>Biblioteca técnica · 800 créditos</small></div><b>→</b></button><button data-credit-go="pdfs"><span>⌁</span><div><strong>Materiales</strong><small>Herramientas premium · 250 créditos</small></div><b>→</b></button></div></section><section class="v2-credit-history"><div class="v2-section-head"><div><h2>Movimientos</h2><p>Últimos cambios registrados.</p></div></div><div>${history}</div></section></div>`;
   }
 
   function bindCreditSections(root) {
     root.querySelectorAll('[data-credit-go]').forEach(button => button.addEventListener('click', () => go(button.dataset.creditGo)));
+    root.querySelectorAll('[data-open-wallet]').forEach(button => button.addEventListener('click', () => window.IMDIILCredits?.openWallet?.()));
   }
 
   // Enlaces viejos a #creditos llevan a Retos, donde ahora vive la cartera.

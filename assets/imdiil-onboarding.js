@@ -174,7 +174,8 @@
   // ─── Créditos otorgados (cortesía del admin, etc.) → cofre con monedas ───
   let noticesBusy = false;
   let noticesCheckedAt = 0;
-  const popupOpen = () => !!document.querySelector('#welcome-gift, #profile-intake-modal, #free-course-intro, #splash-bienvenida, .v2-modal, .v2-unlock-splash, .v2-doc-viewer') || document.body.classList.contains('onboarding-tour-open');
+  // Incluye los popups de avisos push e instalación, y la cola de experiencias (sin encimarse).
+  const popupOpen = () => !!document.querySelector('#welcome-gift, #profile-intake-modal, #free-course-intro, #splash-bienvenida, .v2-modal, .v2-unlock-splash, .v2-doc-viewer, .ips-overlay, #imdiil-install-pop.show') || document.body.classList.contains('onboarding-tour-open') || !!window.IMDIILExperienceQueue?.activeKey?.();
   async function checkCreditNotices(force) {
     const S = window.UserState || {};
     if (noticesBusy || !S.uid || S.modo === 'invitado' || window.__isDemoMode) return;
