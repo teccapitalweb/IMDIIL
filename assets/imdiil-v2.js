@@ -227,7 +227,7 @@
       const items = state.catalog.filter(item => item.type === type);
       const isBook = type === 'book';
       target.innerHTML = `<div class="v2-shell">${compactHero(isBook ? 'Libros' : 'Materiales', isBook ? 'Biblioteca técnica IMDIIL: canjea tus créditos y consérvala para siempre.' : 'Herramientas y plantillas premium listas para usar en planta.',`<button class="v2-credit-chip" data-go-credits><span>Saldo</span><strong>${fmt(state.balance)}</strong> créditos</button>`)}<div class="v2-section-head"><div><h2>${isBook ? 'Biblioteca' : 'Recursos disponibles'}</h2><p>${items.filter(item => state.owned.has(item.id)).length} canjeados · ${items.length} publicados</p></div><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div><div class="v2-card-grid">${items.map(rewardCard).join('') || `<div class="v2-empty">Muy pronto publicaremos ${isBook ? 'nuevos libros' : 'nuevos materiales'} aquí.</div>`}</div></div>`;
-      target.querySelector('[data-go-credits]')?.addEventListener('click', () => go('creditos'));
+      target.querySelector('[data-go-credits]')?.addEventListener('click', () => go('retos'));
       target.querySelector('[data-refresh]')?.addEventListener('click', async () => { await loadRewards(true); draw(); });
       target.querySelectorAll('[data-open-reward]').forEach(card => card.addEventListener('click', () => {
         const item = state.catalog.find(entry => entry.id === card.dataset.openReward);
@@ -265,8 +265,16 @@
     const progress = challengeState();
     const completed = CHALLENGES.filter(item => progress[item.id]?.completed).length;
     const pct = Math.round(completed / CHALLENGES.length * 100);
-    target.innerHTML = `<div class="v2-shell">${compactHero('Retos',completed ? 'Sigue aplicando criterio a situaciones reales.' : 'Tres ejercicios breves para poner en práctica lo aprendido.',`<div class="v2-hero-score"><strong>${completed}/${CHALLENGES.length}</strong><span>completados</span></div>`,'dark')}<section class="v2-mission-overview"><div><span class="v2-kicker">RUTA PRÁCTICA</span><h2>Decisiones de planta</h2><p>Resuelve cada situación y conserva tu avance.</p></div><div class="v2-mission-overview__progress"><span><i style="width:${pct}%"></i></span><strong>${pct}%</strong></div></section><div class="v2-mission-grid">${CHALLENGES.map((item,index) => `<article class="v2-mission ${progress[item.id]?.completed ? 'is-complete' : ''}"><div class="v2-mission__icon">${item.icon}</div><div><span>${esc(item.label)} · 0${index + 1}</span><h3>${esc(item.title)}</h3><p>${esc(item.text)}</p></div><button data-open-challenge="${item.id}">${progress[item.id]?.completed ? 'Repetir' : 'Comenzar'} →</button></article>`).join('')}</div></div>`;
+    target.innerHTML = `<div class="v2-shell">${compactHero('Retos',completed ? 'Sigue aplicando criterio a situaciones reales.' : 'Tres ejercicios breves para poner en práctica lo aprendido.',`<div class="v2-hero-score"><strong>${completed}/${CHALLENGES.length}</strong><span>completados</span></div>`,'dark')}<section class="v2-mission-overview"><div><span class="v2-kicker">RUTA PRÁCTICA</span><h2>Decisiones de planta</h2><p>Resuelve cada situación y conserva tu avance.</p></div><div class="v2-mission-overview__progress"><span><i style="width:${pct}%"></i></span><strong>${pct}%</strong></div></section><div class="v2-mission-grid">${CHALLENGES.map((item,index) => `<article class="v2-mission ${progress[item.id]?.completed ? 'is-complete' : ''}"><div class="v2-mission__icon">${item.icon}</div><div><span>${esc(item.label)} · 0${index + 1}</span><h3>${esc(item.title)}</h3><p>${esc(item.text)}</p></div><button data-open-challenge="${item.id}">${progress[item.id]?.completed ? 'Repetir' : 'Comenzar'} →</button></article>`).join('')}</div><section class="v2-retos-wallet" data-retos-wallet>${creditSectionsHtml()}</section></div>`;
     target.querySelectorAll('[data-open-challenge]').forEach(button => button.addEventListener('click', () => renderChallengeStage(target, CHALLENGES.find(item => item.id === button.dataset.openChallenge))));
+    bindCreditSections(target);
+    // Saldo y movimientos reales (como en SYNOVA: la cartera vive dentro de Retos).
+    loadRewards(true).then(() => {
+      const wallet = target.querySelector('[data-retos-wallet]');
+      if (!wallet || !document.body.contains(wallet)) return;
+      wallet.innerHTML = creditSectionsHtml();
+      bindCreditSections(wallet);
+    });
   }
 
   function getCourseRows() {
@@ -499,12 +507,24 @@
     return entry.note || 'Movimiento de créditos';
   }
 
-  async function renderCredits(target) {
-    target.innerHTML = `<div class="v2-shell"><div class="v2-loading">Consultando tus créditos…</div></div>`;
-    await loadRewards(true);
-    target.innerHTML = `<div class="v2-shell">${compactHero('Créditos','Tu saldo y tus movimientos en un solo lugar.',`<div class="v2-credit-total"><strong>${state.balance}</strong><span>disponibles</span></div>`,'dark')}<div class="v2-credit-layout"><section class="v2-credit-actions"><span class="v2-kicker">USAR CRÉDITOS</span><h2>Elige tu próxima recompensa</h2><div><button data-credit-go="pdfs"><span>⌁</span><div><strong>Materiales</strong><small>Plantillas y guías prácticas</small></div><b>→</b></button><button data-credit-go="libros"><span>▤</span><div><strong>Libros</strong><small>Lecturas para tu biblioteca</small></div><b>→</b></button></div></section><section class="v2-credit-history"><div class="v2-section-head"><div><h2>Movimientos</h2><p>Últimos cambios registrados.</p></div></div><div>${state.history.length ? state.history.map(entry => `<article><span class="${Number(entry.amount) >= 0 ? 'is-positive' : ''}">${Number(entry.amount) >= 0 ? '+' : ''}${Number(entry.amount || 0)}</span><div><strong>${esc(historyLabel(entry))}</strong><small>${entry.createdAt ? new Date(entry.createdAt).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'}) : 'Fecha pendiente'}</small></div></article>`).join('') : '<div class="v2-empty">Aún no hay movimientos registrados.</div>'}</div></section></div></div>`;
-    target.querySelectorAll('[data-credit-go]').forEach(button => button.addEventListener('click', () => go(button.dataset.creditGo)));
+  // Cartera de créditos: saldo, accesos a premios y movimientos. Se muestra dentro de Retos.
+  function creditSectionsHtml() {
+    const history = state.history.length
+      ? state.history.map(entry => `<article><span class="${Number(entry.amount) >= 0 ? 'is-positive' : ''}">${Number(entry.amount) >= 0 ? '+' : ''}${fmt(entry.amount)}</span><div><strong>${esc(historyLabel(entry))}</strong><small>${entry.createdAt ? new Date(entry.createdAt).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'}) : 'Fecha pendiente'}</small></div></article>`).join('')
+      : '<div class="v2-empty">Aún no hay movimientos registrados.</div>';
+    return `<div class="v2-section-head"><div><h2>Mi cartera IMDIIL</h2><p>Gana créditos con clases y Retos, y canjéalos por libros y materiales.</p></div></div><div class="v2-credit-layout"><section class="v2-credit-actions"><div class="v2-wallet-balance"><span>Saldo disponible</span><strong>${fmt(state.balance)}</strong><small>créditos</small></div><span class="v2-kicker">USAR CRÉDITOS</span><h2>Elige tu próxima recompensa</h2><div><button data-credit-go="libros"><span>▤</span><div><strong>Libros</strong><small>Biblioteca técnica · 800 créditos</small></div><b>→</b></button><button data-credit-go="pdfs"><span>⌁</span><div><strong>Materiales</strong><small>Herramientas premium · 250 créditos</small></div><b>→</b></button></div></section><section class="v2-credit-history"><div class="v2-section-head"><div><h2>Movimientos</h2><p>Últimos cambios registrados.</p></div></div><div>${history}</div></section></div>`;
   }
+
+  function bindCreditSections(root) {
+    root.querySelectorAll('[data-credit-go]').forEach(button => button.addEventListener('click', () => go(button.dataset.creditGo)));
+  }
+
+  // Enlaces viejos a #creditos llevan a Retos, donde ahora vive la cartera.
+  function renderCredits(target) {
+    renderChallenges(target);
+    if (window.navigateToSection) setTimeout(() => window.navigateToSection('retos', { reemplazar:true }), 0);
+  }
+
 
   function renderTools(target) {
     target.innerHTML = `<div class="v2-shell">${compactHero('Herramientas','Cinco utilidades profesionales, reunidas en un solo lugar.','','dark')}<div class="v2-tool-grid">${TOOLS.map((tool,index) => `<button data-tool-route="${tool.route}"><span>${icon(tool.icon)}</span><small>0${index + 1}</small><h3>${esc(tool.title)}</h3><p>${esc(tool.copy)}</p><b>Abrir herramienta →</b></button>`).join('')}</div></div>`;
