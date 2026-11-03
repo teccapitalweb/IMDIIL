@@ -18,8 +18,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
-<link rel="stylesheet" href="assets/imdiil-v2.css?v=9">
+<link rel="stylesheet" href="assets/imdiil-v2.css?v=10">
 <link rel="stylesheet" href="assets/imdiil-experience.css?v=1">
+<link rel="stylesheet" href="assets/imdiil-onboarding.css?v=1">
 
 <style>
 /* IMDIIL VIP · Layout estilo Zoorigen/Sinergia · 3 columnas */
@@ -3227,6 +3228,7 @@ const isCheckoutSuccess = new URLSearchParams(window.location.search).get('check
 // Si ya estamos en modo demo (configurado en script anterior), aplicar UserState y salir
 if (window.__isDemoMode) {
   setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 80);
+  setTimeout(() => { window.__runInitialExperienceFlow && window.__runInitialExperienceFlow(); }, 520);
 } else {
   // ─── Auth normal · puede ser sin-membresia o vip ───
   onAuthStateChanged(auth, async (user) => {
@@ -3384,8 +3386,10 @@ if (window.__isDemoMode) {
     // Llenar widgets de actividad con datos reales
     setTimeout(()=>{ if(typeof window.__actualizarWidgetsActividad==='function') window.__actualizarWidgetsActividad(); }, 400);
 
+    // El splash de bienvenida post-pago lo abre el coordinador de la
+    // experiencia inicial (bienvenida → recorrido → ficha → curso gratis).
     if (isCheckoutSuccess && window.UserState.modo === 'vip') {
-      setTimeout(() => { window.__showWelcomeSplash && window.__showWelcomeSplash(); }, 600);
+      window.__pendingWelcomeSplash = {};
     }
 
     // ─── Splash de activación MANUAL (admin) · lee notificacionPendiente ───
@@ -3395,22 +3399,26 @@ if (window.__isDemoMode) {
       try {
         const np = window.memberData && window.memberData.notificacionPendiente;
         if (np && !np.mostrada) {
-          setTimeout(() => {
-            window.__showWelcomeSplash && window.__showWelcomeSplash({
-              tipo: np.tipo || null,
-              plan: window.UserState.plan,
-              dias: np.dias || window.UserState.diasRegalo || null,
-              fromNotif: true
-            });
-          }, 700);
+          window.__pendingWelcomeSplash = {
+            tipo: np.tipo || null,
+            plan: window.UserState.plan,
+            dias: np.dias || window.UserState.diasRegalo || null,
+            fromNotif: true
+          };
         }
       } catch(e) { console.warn('notificacionPendiente:', e.message); }
     }
 
     setTimeout(() => { window.__applyUserState && window.__applyUserState(); }, 50);
 
-    // ─── Popup: confirmar/editar nombre (1ª vez) · evita certificados con el email ───
-    setTimeout(() => { try { window.__maybeAskName && window.__maybeAskName(); } catch(e){} }, 900);
+    // ─── Primera entrada: bienvenida → recorrido → ficha profesional → curso gratis ───
+    // (assets/imdiil-onboarding.js · misma secuencia que IMFRA)
+    setTimeout(() => {
+      try {
+        if (window.__runInitialExperienceFlow) window.__runInitialExperienceFlow();
+        else if (window.__maybeAskName) window.__maybeAskName();
+      } catch(e){}
+    }, 500);
 
     // Arrancar listener de notificaciones de Firestore (tiempo real)
     setTimeout(() => { if (typeof setupNotificacionesListener === 'function') setupNotificacionesListener(); }, 100);
@@ -3612,7 +3620,10 @@ window.__showWelcomeSplash = function(opts) {
     if (timer) clearInterval(timer);
     marcarMostrada();
     splash.style.animation = 'bnvFadeOut .3s ease forwards';
-    setTimeout(() => splash.remove(), 300);
+    setTimeout(() => {
+      splash.remove();
+      window.dispatchEvent(new CustomEvent('imdiil:welcome-splash-finished'));
+    }, 300);
   }
 
   // listeners
@@ -6073,6 +6084,8 @@ const Sections = (function(){
 
   // Array global de cursos cargados desde Firestore
   let cursos = [];
+  // Curso gratis elegido por la cuenta (ver cargarCursoGratisEstado). Misma lógica que IMFRA.
+  const cursoGratisEstado = { cargado: false, error: false, elegido: null, elegible: false };
   let _cursosLoaded = false;
   let _cursosLoading = false;
 
@@ -6174,7 +6187,13 @@ const Sections = (function(){
 
   function asignarDiasDesbloqueoCursos(lista){
     let turno = 0;
-    (Array.isArray(lista) ? lista : []).forEach(curso => {
+    // El curso gratis elegido abre primero también al activar la membresía;
+    // el resto conserva el orden del catálogo (mismo criterio que el servidor).
+    const ordenados = (Array.isArray(lista) ? lista : []).slice();
+    const elegido = cursoGratisEstado.elegido;
+    const indiceElegido = elegido ? ordenados.findIndex(curso => curso?.bunnyCollectionId === elegido) : -1;
+    if (indiceElegido > 0) ordenados.unshift(ordenados.splice(indiceElegido, 1)[0]);
+    ordenados.forEach(curso => {
       if (curso?.marcarProximamente === true) {
         curso._unlockDay = Number.POSITIVE_INFINITY;
         return;
@@ -6319,16 +6338,264 @@ const Sections = (function(){
     return p[cursoId];
   };
 
-  function primerCursoGratisId() {
-    const primero = cursos.find(c =>
+  function cursoPuedeSerGratis(c) {
+    return !!c &&
       c.activo !== false &&
       c.publicado !== false &&
       c.marcarProximamente !== true &&
       Array.isArray(c.sesiones) &&
-      c.sesiones.some(s => s?.videoId)
-    );
+      c.sesiones.some(s => s?.videoId);
+  }
+
+  function primerCursoPublicadoId() {
+    const primero = cursos.find(cursoPuedeSerGratis);
     return primero ? String(primero.id) : '';
   }
+
+  function cursoElegidoComoGratis() {
+    const clave = cursoGratisEstado.elegido;
+    return clave ? (cursos.find(c => c.bunnyCollectionId === clave && cursoPuedeSerGratis(c)) || null) : null;
+  }
+
+  // Curso con la muestra gratuita: el que eligió la cuenta. Mientras una cuenta
+  // sin membresía aún no elige, ninguno; si no se pudo leer la elección (o es
+  // VIP sin elección), el primero publicado, como antes.
+  function primerCursoGratisId() {
+    const elegido = cursoElegidoComoGratis();
+    if (elegido) return String(elegido.id);
+    if (cursoGratisPendiente()) return '';
+    return primerCursoPublicadoId();
+  }
+
+  // true mientras una cuenta sin membresía todavía no elige su curso gratis.
+  function cursoGratisPendiente() {
+    return !!window.UserState?.uid &&
+      window.UserState?.modo !== 'vip' &&
+      !esAdminReal() &&
+      cursoGratisEstado.cargado &&
+      cursoGratisEstado.elegible &&
+      !cursoGratisEstado.elegido;
+  }
+
+  function refrescarVistaCursos() {
+    const hash = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+    if ((hash === 'cursos' || /^curso\//.test(hash)) && typeof navigateToSection === 'function') navigateToSection(hash);
+  }
+
+  let _cursoGratisPromesa = null;
+  async function cargarCursoGratisEstado(forzar) {
+    if (_cursoGratisPromesa && !forzar) return _cursoGratisPromesa;
+    _cursoGratisPromesa = (async () => {
+      const user = window.__currentUser || window.__auth?.currentUser;
+      const previo = cursoGratisEstado.elegido;
+      if (!user || esAdminReal() || window.__isDemoMode) {
+        cursoGratisEstado.cargado = true;
+        return cursoGratisEstado;
+      }
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch(`${window.WEBHOOK_URL}/api/bunny/free-course`, {
+          cache: 'no-store',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'No pudimos leer tu curso gratis');
+        cursoGratisEstado.elegido = data.elegido || null;
+        cursoGratisEstado.elegible = data.elegible === true;
+        cursoGratisEstado.error = false;
+      } catch (error) {
+        console.warn('[curso gratis]', error.message);
+        cursoGratisEstado.error = true;
+      }
+      const cambio = !cursoGratisEstado.cargado || previo !== cursoGratisEstado.elegido;
+      cursoGratisEstado.cargado = true;
+      asignarDiasDesbloqueoCursos(cursos);
+      const bannerText = document.getElementById('fomo-banner-text');
+      if (bannerText && window.UserState?.modo === 'sin-membresia') bannerText.innerHTML = textoOfertaGratis();
+      if (cambio && _cursosLoaded && !_cursosLoading && cursoGratisPendiente()) refrescarVistaCursos();
+      if (cursoGratisPendiente() && window.__IMDIIL_INITIAL_FLOW_DONE === true) programarInvitacionCursoGratis();
+      return cursoGratisEstado;
+    })();
+    return _cursoGratisPromesa;
+  }
+  window.__cargarCursoGratis = cargarCursoGratisEstado;
+
+  // ─── Invitación "Elige tu curso gratis" (igual que IMFRA) ───
+  // Aparece una sola vez por cuenta a quien aún no elige, cuando ya terminaron
+  // el regalo de bienvenida, el recorrido guiado y la ficha profesional.
+  let _invitacionCursoGratis = false;
+  let _tourTerminadoEn = 0;
+  window.addEventListener('imdiil:onboarding-finished', () => { _tourTerminadoEn = Date.now(); });
+
+  function esperarPanelLibre(cb){
+    const inicio = Date.now();
+    let libreDesde = 0;
+    const iv = setInterval(() => {
+      const ocupado = Date.now() - _tourTerminadoEn < 3500
+        || document.body.classList.contains('onboarding-tour-open')
+        || document.querySelector('#profile-intake-modal, #welcome-gift, #name-modal, .modal-backdrop, #splash-bienvenida, #free-course-intro, .v2-unlock-splash, .v2-doc-viewer');
+      if (ocupado) libreDesde = 0;
+      else if (!libreDesde) libreDesde = Date.now();
+      if ((libreDesde && Date.now() - libreDesde > 1500 && Date.now() - inicio > 3000) || Date.now() - inicio > 600000) {
+        clearInterval(iv);
+        cb();
+      }
+    }, 600);
+  }
+
+  function programarInvitacionCursoGratis(){
+    if (_invitacionCursoGratis || !window.UserState?.uid) return;
+    const clave = `imdiil:curso-gratis-intro:${window.UserState.uid}`;
+    try {
+      if (localStorage.getItem(clave) || window.memberData?.cursoGratisIntroVista === true) {
+        localStorage.setItem(clave, '1');
+        return;
+      }
+    } catch(e) {}
+    _invitacionCursoGratis = true;
+    esperarPanelLibre(async () => {
+      if (!cursoGratisPendiente()) return;
+      if (!_cursosLoaded) { try { await cargarCursosFirestore(); } catch(e) {} }
+      if (!cursoGratisPendiente() || document.getElementById('free-course-intro')) return;
+      try { localStorage.setItem(clave, '1'); } catch(e) {}
+      try {
+        const S = window.UserState || {};
+        const fs = window.__fs;
+        if (fs?.setDoc && S.uid) {
+          await fs.setDoc(fs.doc(fs.db, 'miembros', S.uid), {
+            cursoGratisIntroVista: true,
+            cursoGratisIntroVistaAt: fs.serverTimestamp()
+          }, { merge: true });
+          window.memberData = Object.assign({}, window.memberData || {}, { cursoGratisIntroVista: true });
+        }
+      } catch(e) { console.warn('[curso gratis] No se pudo sincronizar el aviso único', e); }
+      mostrarInvitacionCursoGratis();
+    });
+  }
+  window.__programarInvitacionCursoGratis = programarInvitacionCursoGratis;
+
+  function irAElegirCursoGratis(){
+    navigateToSection('cursos');
+    setTimeout(() => {
+      const banner = document.querySelector('.free-course-banner');
+      if (!banner) return;
+      banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      banner.classList.remove('is-pulse'); void banner.offsetWidth; banner.classList.add('is-pulse');
+    }, 650);
+  }
+
+  const _escFci = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const _iconGift = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9.5 3 12 8 12 8s2.5-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>';
+
+  function mostrarInvitacionCursoGratis(){
+    if (document.getElementById('free-course-intro')) return;
+    const opciones = cursos.filter(cursoPuedeSerGratis);
+    const gratis = opciones.length ? Math.max(...opciones.map(c => cantidadClasesGratis(c.sesiones.length))) : 4;
+    const portadas = opciones.slice(0, 3).map((c, i) => `<span class="fci__cover fci__cover--${i}" style="background-image:url('${String(c.portada || PORTADA_DEFAULT).replace(/'/g, '%27')}')"></span>`).join('');
+    const nombre = String(window.UserState?.nombre || window.UserState?.displayName || '').trim().split(' ')[0];
+    const pop = document.createElement('div');
+    pop.id = 'free-course-intro';
+    pop.innerHTML = `<div class="fci__backdrop" data-fci-later></div>
+      <section class="fci__card" role="dialog" aria-modal="true" aria-labelledby="fci-title">
+        <button type="button" class="fci__close" data-fci-later aria-label="Cerrar">×</button>
+        <div class="fci__art" aria-hidden="true">${portadas}<span class="fci__badge">${_iconGift}Gratis</span></div>
+        <span class="fci__kicker">Para usuarios nuevos</span>
+        <h2 id="fci-title">${nombre ? `${_escFci(nombre)}, elige` : 'Elige'} tu <em>curso gratis</em></h2>
+        <p>Te regalamos las primeras <strong>${gratis} clases</strong> del curso que tú elijas y su primer material. Solo puedes elegir uno, así que escoge el que más te sirva.</p>
+        <ol class="fci__steps">
+          <li><b>1</b>Elige tu curso</li>
+          <li><b>2</b>Ve ${gratis} clases gratis</li>
+          <li><b>3</b>Gana créditos en cada reto</li>
+        </ol>
+        <div class="fci__actions">
+          <button type="button" class="fci__later" data-fci-later>Más tarde</button>
+          <button type="button" class="fci__cta" data-fci-go>Elegir mi curso gratis <span aria-hidden="true">→</span></button>
+        </div>
+      </section>`;
+    document.body.appendChild(pop);
+    requestAnimationFrame(() => pop.classList.add('is-open'));
+    const cerrar = (despues) => {
+      document.removeEventListener('keydown', onKey, true);
+      pop.classList.add('is-closing');
+      setTimeout(() => { pop.remove(); if (despues) despues(); }, 220);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); cerrar(); } };
+    document.addEventListener('keydown', onKey, true);
+    pop.querySelectorAll('[data-fci-later]').forEach(el => el.addEventListener('click', () => cerrar()));
+    pop.querySelector('[data-fci-go]').addEventListener('click', () => cerrar(irAElegirCursoGratis));
+    setTimeout(() => pop.querySelector('[data-fci-go]')?.focus({ preventScroll: true }), 120);
+  }
+
+  function confirmarCursoGratis(curso, alTerminar) {
+    if (!curso || !cursoGratisPendiente()) return false;
+    const gratis = cantidadClasesGratis(curso.sesiones?.length || 0);
+    const footer = document.createElement('div');
+    footer.innerHTML = `<button type="button" class="btn btn--ghost" data-free-no>No, ver otros cursos</button><button type="button" class="btn btn--accent" data-free-yes>Sí, es mi curso gratis</button>`;
+    const modal = Modal.open({
+      id: 'curso-gratis-confirmar',
+      title: '¿Seguro que deseas este curso?',
+      subtitle: 'Tu curso gratis',
+      icon: 'i-play',
+      size: 'sm',
+      body: `<div class="free-course-confirm">
+        <div class="free-course-confirm__cover" style="background-image:url('${String(curso.portada || PORTADA_DEFAULT).replace(/'/g, '%27')}')"></div>
+        <h3>${_escFci(curso.titulo)}</h3>
+        <p>Será tu curso gratis: podrás ver sus primeras <strong>${gratis} clase${gratis !== 1 ? 's' : ''}</strong>, una tras otra, y su primer material.</p>
+        <p class="free-course-confirm__warn"><svg class="ic"><use href="#i-shield-check"/></svg>Solo puedes elegir uno y después no se puede cambiar.</p>
+      </div>`,
+      footer
+    });
+    footer.querySelector('[data-free-no]').addEventListener('click', () => modal.close());
+    footer.querySelector('[data-free-yes]').addEventListener('click', async event => {
+      const boton = event.currentTarget;
+      boton.disabled = true;
+      boton.textContent = 'Guardando…';
+      try {
+        const user = window.__currentUser || window.__auth?.currentUser;
+        const token = await user.getIdToken();
+        const response = await fetch(`${window.WEBHOOK_URL}/api/bunny/free-course`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ collectionId: curso.bunnyCollectionId })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok && !data.elegido) throw new Error(data.error || 'No se pudo guardar tu elección');
+        cursoGratisEstado.elegido = data.elegido || curso.bunnyCollectionId;
+        cursoGratisEstado.elegible = false;
+        asignarDiasDesbloqueoCursos(cursos);
+        modal.close();
+        const bannerText = document.getElementById('fomo-banner-text');
+        if (bannerText) bannerText.innerHTML = textoOfertaGratis();
+        const elegido = cursoElegidoComoGratis();
+        Toast.success('¡Listo! Ya tienes tu curso gratis', elegido ? elegido.titulo : curso.titulo);
+        window.celebrarImdiil?.('normal');
+        if (typeof alTerminar === 'function') alTerminar(elegido || curso);
+        else navigateToSection('curso/' + encodeURIComponent(String(elegido ? elegido.id : curso.id)));
+      } catch (error) {
+        Toast.error('No se pudo guardar', error.message || 'Intenta de nuevo');
+        boton.disabled = false;
+        boton.textContent = 'Sí, es mi curso gratis';
+      }
+    });
+    return true;
+  }
+
+  function bannerCursoGratisHtml() {
+    if (!cursoGratisPendiente()) return '';
+    const opciones = cursos.filter(cursoPuedeSerGratis);
+    const gratis = opciones.length ? Math.max(...opciones.map(c => cantidadClasesGratis(c.sesiones.length))) : 4;
+    return `<div class="free-course-banner"><div class="free-course-banner__icon">${_iconGift}</div><div class="free-course-banner__copy"><span>Para usuarios nuevos</span><strong>Elige tu curso gratis</strong><p>Toca el curso que más te interese: te regalamos sus primeras ${gratis} clases y su primer material. Solo puedes elegir uno.</p></div><span class="free-course-banner__hint">Elige abajo <svg class="ic"><use href="#i-arrow-right"/></svg></span></div>`;
+  }
+
+  // Puente para la vista "Mis cursos" (IMDIIL v2).
+  window.__IMDIIL_FREE_COURSE = {
+    pendiente: cursoGratisPendiente,
+    puedeSerGratis: cursoPuedeSerGratis,
+    confirmar: confirmarCursoGratis,
+    bannerHtml: bannerCursoGratisHtml,
+    cargar: cargarCursoGratisEstado,
+    estado: cursoGratisEstado
+  };
 
   function cantidadClasesGratis(totalClases) {
     const total = Math.max(0, Number(totalClases) || 0);
@@ -6338,6 +6605,9 @@ const Sections = (function(){
   }
 
   function textoOfertaGratis() {
+    if (cursoGratisPendiente()) {
+      return `<strong>Elige tu curso gratis.</strong> Ve a Mis cursos y escoge el que más te interese para ver sus primeras clases sin costo.`;
+    }
     const primero = cursos.find(c => String(c.id) === primerCursoGratisId());
     const gratis = cantidadClasesGratis(primero?.sesiones?.length || 0);
     const clases = gratis > 0
@@ -6928,6 +7198,7 @@ const Sections = (function(){
           : (Array.isArray(data.sesiones) ? data.sesiones : []);
         return {
           id: d?.id || `bunny-${bunny?.collectionId || i + 1}`,
+          bunnyCollectionId: bunny?.collectionId || data.bunnyCollectionId || '',
           titulo,
           descripcion,
           desc: descripcion,
@@ -6964,6 +7235,7 @@ const Sections = (function(){
         const sesiones = sesionesConBunny(bunny.titulo, [], bunny.collectionId);
         return {
           id: `bunny-${bunny.collectionId || i + 1}`,
+          bunnyCollectionId: bunny.collectionId || '',
           titulo: bunny.titulo || 'Sin título',
           descripcion: bunny.descripcion || '',
           desc: bunny.descripcion || '',
@@ -6986,6 +7258,8 @@ const Sections = (function(){
       asignarDiasDesbloqueoCursos(cursos);
       _cursosLoaded = true;
     } finally {
+      // La muestra gratuita depende del curso que eligió la cuenta.
+      try { await cargarCursoGratisEstado(); } catch (e) {}
       _cursosLoading = false;
       if (window.UserState?.modo === 'sin-membresia') {
         const bannerText = document.getElementById('fomo-banner-text');
@@ -12673,8 +12947,9 @@ body{letter-spacing:-.05px}
 .sec-hero__title{margin-top:0!important}
 .sec-hero{padding-top:0}
 </style>
-<script src="onboarding-tour.js?v=3" defer></script>
+<script src="assets/imdiil-onboarding.js?v=1" defer></script>
+<script src="onboarding-tour.js?v=4" defer></script>
 <script src="assets/imdiil-experience.js?v=2" defer></script>
-<script src="assets/imdiil-v2.js?v=9" defer></script>
+<script src="assets/imdiil-v2.js?v=10" defer></script>
 </body>
 </html>
