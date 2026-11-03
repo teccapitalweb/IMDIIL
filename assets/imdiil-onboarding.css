@@ -130,3 +130,25 @@
   #welcome-gift .wg-cta{order:-1}
 }
 @media(prefers-reduced-motion:reduce){#welcome-gift,#welcome-gift .wg-card{animation:none}}
+/* ─── Cofre con monedas (todo crédito otorgado) ─── */
+#welcome-gift .cc-chest{position:relative;width:150px;height:128px;margin:6px auto 24px}
+#welcome-gift .cc-glow{position:absolute;left:50%;top:44%;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(255,196,90,.55),rgba(255,122,45,.18) 45%,transparent 70%);transform:translate(-50%,-50%) scale(.3);opacity:0;animation:ccGlow .7s ease-out .62s forwards}
+#welcome-gift .cc-rays{position:absolute;left:50%;top:46%;width:230px;height:230px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,214,120,.22) 0 8deg,transparent 8deg 24deg);transform:translate(-50%,-50%) scale(.4);opacity:0;-webkit-mask:radial-gradient(circle,#000 30%,transparent 68%);mask:radial-gradient(circle,#000 30%,transparent 68%);animation:ccRays .8s ease-out .66s forwards,ccSpin 14s linear 1.4s infinite}
+#welcome-gift .cc-box{position:absolute;left:23px;right:23px;bottom:6px;height:58px;border-radius:6px 6px 12px 12px;background:linear-gradient(180deg,#a0561f,#6e3510 60%,#552708);border:3px solid #f3b33d;box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),0 12px 22px rgba(0,0,0,.45);animation:ccShake .55s ease-in-out .05s 1}
+#welcome-gift .cc-band{position:absolute;inset:0 auto 0 50%;width:16px;transform:translateX(-50%);background:linear-gradient(90deg,#f7c75a,#e09a20)}
+#welcome-gift .cc-lock{position:absolute;left:50%;top:-9px;width:22px;height:24px;transform:translateX(-50%);border-radius:5px;background:linear-gradient(180deg,#ffe08a,#d99318);border:2px solid #8a4b10;box-shadow:0 3px 6px rgba(0,0,0,.3)}
+#welcome-gift .cc-lock:after{content:"";position:absolute;left:50%;top:8px;width:5px;height:7px;transform:translateX(-50%);border-radius:3px;background:#6b3608}
+#welcome-gift .cc-lid{position:absolute;left:19px;right:19px;bottom:58px;height:34px;border-radius:40px 40px 6px 6px;background:linear-gradient(180deg,#b9672a,#7a3c12);border:3px solid #f3b33d;transform-origin:8% 100%;box-shadow:inset 0 6px 0 rgba(255,255,255,.12);z-index:2;animation:ccShakeLid .55s ease-in-out .05s 1,ccOpen .5s cubic-bezier(.2,1.5,.4,1) .6s forwards}
+#welcome-gift .cc-lid i{position:absolute;inset:0 auto 0 50%;width:16px;transform:translateX(-50%);background:linear-gradient(90deg,#f7c75a,#e09a20)}
+#welcome-gift .cc-coins{position:absolute;left:50%;top:58%;width:0;height:0;z-index:1}
+#welcome-gift .cc-coin{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff3c4,#ffd45c 45%,#d99a1c);border:2px solid #b97a12;color:#7a4a05;font:900 11px/1 'JetBrains Mono',monospace;box-shadow:0 4px 10px rgba(0,0,0,.35);opacity:0;animation:ccCoin 1.25s cubic-bezier(.15,.75,.35,1) var(--d) forwards}
+#welcome-gift .cc-amount{position:absolute;left:50%;bottom:-14px;z-index:3;padding:6px 12px;border-radius:999px;background:#141414;color:#FFB377;border:2px solid #FF7A2D;font:800 14px/1 'JetBrains Mono',monospace;transform:translateX(-50%) scale(0);animation:ccPop .45s cubic-bezier(.2,1.6,.4,1) 1.05s forwards;box-shadow:0 8px 18px rgba(0,0,0,.4)}
+@keyframes ccShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-4deg)}40%{transform:rotate(4deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(2deg)}}
+@keyframes ccShakeLid{0%,100%{transform:rotate(0)}20%{transform:rotate(-4deg) translateY(-2px)}40%{transform:rotate(4deg)}60%{transform:rotate(-3deg) translateY(-2px)}80%{transform:rotate(2deg)}}
+@keyframes ccOpen{to{transform:translate(-6px,-14px) rotate(-38deg)}}
+@keyframes ccGlow{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes ccRays{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes ccSpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ccCoin{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(0)}12%{opacity:1}60%{opacity:1;transform:translate(var(--x),var(--y)) scale(1) rotate(var(--r))}100%{opacity:0;transform:translate(calc(var(--x)*1.1),calc(var(--y) + 70px)) scale(.85) rotate(var(--r))}}
+@keyframes ccPop{to{transform:translateX(-50%) scale(1)}}
+@media(prefers-reduced-motion:reduce){#welcome-gift .cc-box,#welcome-gift .cc-lid,#welcome-gift .cc-coin,#welcome-gift .cc-rays{animation:none}#welcome-gift .cc-lid{transform:translate(-6px,-14px) rotate(-38deg)}#welcome-gift .cc-glow{opacity:1;transform:translate(-50%,-50%);animation:none}#welcome-gift .cc-amount{transform:translateX(-50%);animation:none}}

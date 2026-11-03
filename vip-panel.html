@@ -18,9 +18,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
-<link rel="stylesheet" href="assets/imdiil-v2.css?v=10">
+<link rel="stylesheet" href="assets/imdiil-v2.css?v=11">
 <link rel="stylesheet" href="assets/imdiil-experience.css?v=1">
-<link rel="stylesheet" href="assets/imdiil-onboarding.css?v=1">
+<link rel="stylesheet" href="assets/imdiil-onboarding.css?v=2">
 
 <style>
 /* IMDIIL VIP · Layout estilo Zoorigen/Sinergia · 3 columnas */
@@ -6259,21 +6259,103 @@ const Sections = (function(){
     __progressSyncTimer = setTimeout(() => window.__syncLearningProgress(), 900);
   }
 
-  window.__syncLearningProgress = async function(){
-    const user = window.__auth?.currentUser;
-    if (!user || window.__isDemoMode) return;
+  window.__scheduleLearningSync = scheduleProgressSync;
+
+  // ─── Avance entre dispositivos ───
+  // El servidor (learning_progress/{uid}) es la fuente de verdad. Cada
+  // sincronización sube la copia local (clases, retos y evaluaciones), recibe
+  // el estado ya fusionado de la cuenta y lo aplica aquí. La fusión es aditiva:
+  // un dispositivo nuevo o vacío nunca borra el avance logrado en otro.
+  const __quizPrefix = uid => `imdiil:class-quiz:${uid}:`;
+  const __challengesKey = uid => `imdiil_v2_challenges_${uid}`;
+  const __stable = value => JSON.stringify(value, (key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.keys(item).sort().reduce((acc, k) => { acc[k] = item[k]; return acc; }, {}) : item);
+  const __readJSON = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; } };
+
+  function __localLearningExtras(uid){
+    const quizzes = {};
     try {
-      const token = await user.getIdToken();
-      const response = await fetch(`${window.WEBHOOK_URL}/activity/progress`, {
-        method:'POST',
-        headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
-        body:JSON.stringify({ courses:getProgreso() })
+      const prefix = __quizPrefix(uid);
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key || !key.startsWith(prefix)) continue;
+        const value = __readJSON(key, null);
+        if (value && value.passed === true) quizzes[key.slice(prefix.length)] = value;
+      }
+    } catch {}
+    return { challenges: __readJSON(__challengesKey(uid), {}) || {}, quizzes };
+  }
+
+  function __applyRemoteLearning(uid, remote){
+    if (!remote || typeof remote !== 'object') return false;
+    const before = __stable(getProgreso()) + __stable(__localLearningExtras(uid));
+    const local = getProgreso();
+    Object.entries(remote.courses || {}).forEach(([cursoId, nube]) => {
+      const actual = local[cursoId] || { clasesVistas: [], completado: false, fechaCompletado: null };
+      const clases = [...new Set([...(actual.clasesVistas || []), ...(nube.clasesVistas || [])].map(Number).filter(n => Number.isInteger(n) && n > 0))].sort((a, b) => a - b);
+      local[cursoId] = Object.assign({}, actual, {
+        clasesVistas: clases,
+        classViewedAt: Object.assign({}, nube.classViewedAt || {}, actual.classViewedAt || {}),
+        ultimaClase: Math.max(Number(actual.ultimaClase) || 0, Number(nube.ultimaClase) || 0),
+        completado: actual.completado === true || nube.completado === true,
+        fechaCompletado: actual.fechaCompletado || nube.completadoEn || null
       });
-      if (!response.ok) throw new Error('progress-sync-unavailable');
-    } catch(error) {
-      console.warn('[progreso] sincronización pendiente:', error.message);
-    }
+    });
+    try { localStorage.setItem(getProgresoKey(), JSON.stringify(local)); } catch {}
+    try {
+      const retos = Object.assign({}, remote.challenges || {}, __readJSON(__challengesKey(uid), {}) || {});
+      localStorage.setItem(__challengesKey(uid), JSON.stringify(retos));
+      Object.entries(remote.quizzes || {}).forEach(([key, value]) => {
+        const storageKey = __quizPrefix(uid) + key;
+        if (!localStorage.getItem(storageKey)) localStorage.setItem(storageKey, JSON.stringify(value));
+      });
+    } catch {}
+    return before !== __stable(getProgreso()) + __stable(__localLearningExtras(uid));
+  }
+
+  // Vuelve a pintar listas/avance si llegó progreso de otro dispositivo
+  // (nunca interrumpe una clase en reproducción).
+  function __refreshAfterLearningSync(){
+    const hash = decodeURIComponent(String(location.hash || '').replace(/^#/, ''));
+    const safe = ['', 'inicio', 'dashboard', 'cursos', 'logros', 'retos', 'certificados', 'creditos'].includes(hash) || /^curso\/[^/]+$/.test(hash);
+    if (safe && typeof window.navigateToSection === 'function') window.navigateToSection(hash || 'inicio', { reemplazar: true });
+  }
+
+  let __learningSyncPromise = null;
+  window.__syncLearningProgress = function(){
+    const user = window.__auth?.currentUser;
+    if (!user || window.__isDemoMode) return Promise.resolve(false);
+    if (__learningSyncPromise) { __learningSyncPromise.then(() => scheduleProgressSync()); return __learningSyncPromise; }
+    __learningSyncPromise = (async () => {
+      try {
+        const token = await user.getIdToken();
+        const extras = __localLearningExtras(user.uid);
+        const response = await fetch(`${window.WEBHOOK_URL}/activity/progress`, {
+          method:'POST',
+          cache:'no-store',
+          headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+          body:JSON.stringify({ courses:getProgreso(), challenges:extras.challenges, quizzes:extras.quizzes })
+        });
+        if (!response.ok) throw new Error('progress-sync-unavailable');
+        const data = await response.json().catch(() => ({}));
+        if (window.__auth?.currentUser?.uid !== user.uid) return false;
+        const changed = __applyRemoteLearning(user.uid, data);
+        window.dispatchEvent(new CustomEvent('imdiil:learning-progress-synced', { detail:{ changed } }));
+        if (changed) __refreshAfterLearningSync();
+        return changed;
+      } catch(error) {
+        console.warn('[progreso] sincronización pendiente:', error.message);
+        return false;
+      } finally {
+        setTimeout(() => { __learningSyncPromise = null; }, 0);
+      }
+    })();
+    return __learningSyncPromise;
   };
+
+  // Al volver a la pestaña (p. ej. después de estudiar en otro dispositivo).
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && window.__auth?.currentUser) window.__syncLearningProgress();
+  });
 
   window.__startActivityTracking = function(){
     if (window.__imdiilActivityStarted || !window.__auth?.currentUser || window.__isDemoMode) return;
@@ -12947,9 +13029,9 @@ body{letter-spacing:-.05px}
 .sec-hero__title{margin-top:0!important}
 .sec-hero{padding-top:0}
 </style>
-<script src="assets/imdiil-onboarding.js?v=1" defer></script>
+<script src="assets/imdiil-onboarding.js?v=2" defer></script>
 <script src="onboarding-tour.js?v=4" defer></script>
 <script src="assets/imdiil-experience.js?v=2" defer></script>
-<script src="assets/imdiil-v2.js?v=10" defer></script>
+<script src="assets/imdiil-v2.js?v=11" defer></script>
 </body>
 </html>

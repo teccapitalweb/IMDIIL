@@ -51,8 +51,13 @@
     return `<section class="v2-route-hero ${tone ? `v2-route-hero--${tone}` : ''}"><div><span class="v2-kicker">IMDIIL · ÁREA DE MIEMBRO</span><h1>${esc(title)}</h1>${copy ? `<p>${esc(copy)}</p>` : ''}</div>${side || ''}</section>`;
   }
 
+  // Espera a que Firebase termine de restaurar la sesión (hasta ~10 s) antes de pedir el token.
   async function userToken() {
-    const user = window.__auth?.currentUser || window.__currentUser;
+    let user = window.__auth?.currentUser || window.__currentUser;
+    for (let attempt = 0; !user && attempt < 50; attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      user = window.__auth?.currentUser || window.__currentUser;
+    }
     return user ? user.getIdToken() : '';
   }
 
@@ -70,10 +75,12 @@
       state.balance = Math.max(0, Number(data.balance || 0));
       state.history = Array.isArray(data.history) ? data.history : [];
       if (window.UserState) window.UserState.creditos = state.balance;
+      if (data.materialsStatus) window.__IMDIIL_MATERIALS_STATUS = data.materialsStatus;
+      // Solo se da por cargado cuando el servidor respondió; si falló, el siguiente render reintenta.
+      state.loaded = true;
     } catch (error) {
       console.warn('[IMDIIL 2.1] Créditos en modo local:', error.message);
     }
-    state.loaded = true;
     return state;
   }
 
@@ -291,7 +298,7 @@
 
   function challengeKey() { return `imdiil_v2_challenges_${window.UserState?.uid || 'demo'}`; }
   function challengeState() { try { return JSON.parse(localStorage.getItem(challengeKey()) || '{}'); } catch (_) { return {}; } }
-  function saveChallenges(value) { localStorage.setItem(challengeKey(), JSON.stringify(value)); }
+  function saveChallenges(value) { localStorage.setItem(challengeKey(), JSON.stringify(value)); window.__scheduleLearningSync?.(); }
 
   function renderChallengeStage(target, item) {
     const done = !!challengeState()[item.id]?.completed;
@@ -461,6 +468,7 @@
 
   function rememberQuizPass(courseId, lessonNumber, score, total) {
     try { localStorage.setItem(quizKey(courseId,lessonNumber), JSON.stringify({ passed:true, score, total, completedAt:new Date().toISOString() })); } catch (_) { /* almacenamiento opcional */ }
+    window.__scheduleLearningSync?.();
   }
 
   async function renderLesson(course, lessonIndex, target) {
@@ -642,6 +650,15 @@
       });
     }
   }
+
+  // Cuando el saldo cambia fuera de esta capa (regalo, cortesía), se refleja en las vistas abiertas.
+  window.addEventListener('imdiil:credits-changed', event => {
+    const balance = Number(event.detail?.balance);
+    if (!Number.isFinite(balance)) return;
+    state.balance = Math.max(0, balance);
+    state.loaded = false;
+    document.querySelectorAll('.credit-wallet__value > span:last-child').forEach(el => { el.textContent = fmt(state.balance); });
+  });
 
   window.IMDIILV2 = { openCourse, renderRoute, renderCourses, renderCatalog, renderChallenges, renderProgress, renderCredits, renderTools, install };
   install();
