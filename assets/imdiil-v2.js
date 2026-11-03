@@ -161,6 +161,11 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.embedUrl) throw new Error(data.error || 'No pudimos abrir el documento.');
       if (!document.body.contains(viewer)) return;
+      // En teléfonos/tabletas un PDF dentro de un iframe se ve incompleto: se abre en el visor nativo.
+      if (data.ext === 'pdf' && window.matchMedia?.('(pointer: coarse)').matches) {
+        viewer.querySelector('.v2-doc-viewer__body').innerHTML = `<div class="v2-doc-viewer__native"><div class="v2-unlock-splash__icon">${icon('i-news')}</div><strong>Tu ${typeLabel(item)} está listo</strong><p>Ábrelo en el visor de tu dispositivo para leerlo completo.</p><a class="v2-btn v2-btn--primary" href="${esc(data.url)}" target="_blank" rel="noopener">Abrir PDF</a></div>`;
+        return;
+      }
       const frame = document.createElement('iframe');
       frame.className = 'v2-doc-viewer__frame';
       frame.title = item.title;
