@@ -4,9 +4,13 @@
   // Catálogo canjeable: la fuente real es el webhook (/rewards/state).
   // Este respaldo sólo se muestra si el webhook no responde.
   const FALLBACK_CATALOG = [
-    { id:'libro-50-herramientas-ingenieria-industrial', type:'book', title:'50 herramientas de ingeniería industrial que todo profesional debe dominar', description:'Las herramientas esenciales del ingeniero industrial explicadas para aplicarse en planta: cuándo usarlas, cómo y qué resultado esperar.', area:'Biblioteca técnica · Libro 2', cost:800, ext:'docx', format:'Libro digital · DOCX' },
-    { id:'libro-mantenimiento-industrial', type:'book', title:'Mantenimiento industrial: cómo prevenir fallas, paros y costos innecesarios', description:'Estrategias de mantenimiento preventivo y predictivo para reducir paros no planeados y controlar el costo de operación.', area:'Biblioteca técnica · Libro 6', cost:800, ext:'docx', format:'Libro digital · DOCX' }
-  ];
+    ['libro-errores-produccion-industrial', 1, 'Errores en la producción industrial', 'Los errores más comunes en planta, cómo detectarlos a tiempo y qué hacer para que no se repitan.'],
+    ['libro-50-herramientas-ingenieria-industrial', 2, '50 herramientas de ingeniería industrial que todo profesional debe dominar', 'Las herramientas esenciales del ingeniero industrial explicadas para aplicarse en planta: cuándo usarlas, cómo y qué resultado esperar.'],
+    ['libro-diagnostico-fallas-manufactura', 3, 'Diagnóstico de fallas en manufactura', 'Método práctico para identificar la causa raíz de una falla y corregirla con evidencia.'],
+    ['libro-lean-manufacturing-30-casos', 4, 'Lean Manufacturing: 30 casos', 'Treinta casos reales para entender y aplicar Lean en el piso de producción.'],
+    ['libro-control-calidad-25-problemas', 5, 'Control de calidad industrial: 25 problemas', 'Veinticinco problemas de calidad resueltos paso a paso con herramientas de control.'],
+    ['libro-mantenimiento-industrial', 6, 'Mantenimiento industrial: cómo prevenir fallas, paros y costos innecesarios', 'Estrategias de mantenimiento preventivo y predictivo para reducir paros no planeados y controlar el costo de operación.']
+  ].map(([id, n, title, description]) => ({ id, type:'book', title, description, area:`Biblioteca técnica · Libro ${n}`, cost:800, ext:'docx', downloadExt:'pdf', format:'Libro digital · PDF', hasCover:true }));
 
   const QUIZZES = [
     { q:'¿Qué acción ayuda más a conservar una mejora?', options:['Asignar responsable, frecuencia y evidencia','Agregar indicadores sin dueño','Esperar al cierre del mes'], answer:0, explanation:'Una mejora se sostiene cuando tiene una rutina verificable, una persona responsable y evidencia de seguimiento.' },
@@ -130,7 +134,7 @@
       const blob = await response.blob();
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `IMDIIL_${item.title.replace(/[^\wÁÉÍÓÚÜáéíóúüÑñ]+/g, '_').slice(0, 80)}.${item.ext || 'docx'}`;
+      link.download = `IMDIIL_${item.title.replace(/[^\wÁÉÍÓÚÜáéíóúüÑñ]+/g, '_').slice(0, 80)}.${item.downloadExt || item.ext || 'pdf'}`;
       document.body.appendChild(link); link.click();
       setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1500);
     } catch (error) {
@@ -179,7 +183,7 @@
     const balance = state.balance;
     const enough = balance >= cost;
     const kind = typeLabel(item);
-    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
+    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art ${item.hasCover ? 'has-cover' : ''}">${item.hasCover ? `<img src="${esc(coverUrl(item))}" alt="" onerror="this.remove()">` : ''}${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
       + `<dl class="v2-redeem__math"><div><dt>Costo</dt><dd>${fmt(cost)} créditos</dd></div><div><dt>Tu saldo</dt><dd>${fmt(balance)} créditos</dd></div><div class="${enough ? 'is-ok' : 'is-short'}"><dt>${enough ? 'Te quedarán' : 'Te faltan'}</dt><dd>${fmt(enough ? balance - cost : cost - balance)} créditos</dd></div></dl>`
       + `<p class="v2-redeem__note ${enough ? 'is-ok' : 'is-short'}">${enough ? `✓ Te alcanza. El ${kind} queda en tu cuenta para siempre y se abrirá al confirmar.` : `Aún no te alcanza. Gana créditos completando clases y Retos.`}</p></div>`;
     const footer = enough
@@ -207,10 +211,13 @@
     });
   }
 
+  const coverUrl = item => `${window.WEBHOOK_URL}/rewards/${encodeURIComponent(item.id)}/cover`;
+
   function rewardCard(item) {
     const owned = state.owned.has(item.id);
-    const ext = String(item.ext || '').toUpperCase();
-    return `<article class="v2-reward-card ${owned ? 'is-owned' : ''}" data-open-reward="${esc(item.id)}"><div class="v2-reward-card__top"><div class="v2-reward-card__art">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div>${ext ? `<em class="v2-reward-card__ext">${esc(ext)}</em>` : ''}</div><span>${esc(item.area || item.format)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><footer><strong>${owned ? '✓ En tu biblioteca' : `${fmt(item.cost)} créditos`}</strong><button class="v2-btn ${owned ? '' : 'v2-btn--primary'}" data-reward="${esc(item.id)}">${owned ? 'Abrir' : 'Canjear'}</button></footer></article>`;
+    const ext = String(item.downloadExt || item.ext || '').toUpperCase();
+    const cover = item.hasCover ? `<div class="v2-reward-card__cover"><img src="${esc(coverUrl(item))}" alt="Portada de ${esc(item.title)}" loading="lazy" onerror="this.parentNode.remove()">${owned ? '<b>✓ Tuyo</b>' : ''}</div>` : '';
+    return `<article class="v2-reward-card ${owned ? 'is-owned' : ''} ${cover ? 'has-cover' : ''}" data-open-reward="${esc(item.id)}">${cover}<div class="v2-reward-card__top"><div class="v2-reward-card__art">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div>${ext ? `<em class="v2-reward-card__ext">${esc(ext)}</em>` : ''}</div><span>${esc(item.area || item.format)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><footer><strong>${owned ? '✓ En tu biblioteca' : `${fmt(item.cost)} créditos`}</strong><button class="v2-btn ${owned ? '' : 'v2-btn--primary'}" data-reward="${esc(item.id)}">${owned ? 'Abrir' : 'Canjear'}</button></footer></article>`;
   }
 
   async function renderCatalog(target, type) {

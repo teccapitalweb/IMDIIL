@@ -111,3 +111,9 @@
 @keyframes v2Spin{to{transform:rotate(360deg)}}
 @media(max-width:650px){.v2-doc-viewer__bar{padding:8px 10px}.v2-doc-viewer__bar [data-doc-download] span{display:none}.v2-doc-viewer__title strong{font-size:12.5px}.v2-modal--redeem .v2-modal__foot{display:grid;grid-template-columns:1fr 1fr}.v2-modal--redeem .v2-modal__foot .v2-btn{justify-content:center}.v2-reward-card{min-height:0}}
 @media(prefers-reduced-motion:reduce){.v2-unlock-splash__card,.v2-unlock-splash__icon{transition:none;animation:none}}
+/* Portadas de libros */
+.v2-reward-card.has-cover{padding-top:14px}.v2-reward-card.has-cover .v2-reward-card__art{display:none}.v2-reward-card.has-cover .v2-reward-card__top{justify-content:flex-end;margin-top:-4px}.v2-reward-card.has-cover .v2-reward-card__ext{margin-bottom:8px}
+.v2-reward-card__cover{position:relative;box-sizing:border-box;height:230px;display:flex;align-items:center;justify-content:center;margin:0 0 12px;padding:16px;overflow:hidden;border-radius:12px;background:linear-gradient(160deg,var(--surface-2),color-mix(in srgb,var(--primary) 9%,var(--surface-2)))}.v2-reward-card__cover img{height:100%;width:auto;max-width:100%;min-height:0;flex:0 1 auto;object-fit:contain;display:block;border-radius:5px;box-shadow:5px 9px 20px rgba(20,14,8,.25);transition:transform .3s}.v2-reward-card:hover .v2-reward-card__cover img{transform:translateY(-3px) rotate(-1deg)}
+.v2-reward-card__cover b{position:absolute;top:10px;left:10px;padding:5px 9px;border-radius:999px;background:#16a34a;color:#fff;font-size:10px;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.v2-redeem__art{position:relative;overflow:hidden}.v2-redeem__art.has-cover{flex-basis:56px;width:56px;height:75px;border-radius:9px;box-shadow:3px 6px 14px rgba(0,0,0,.18)}.v2-redeem__art.has-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media(max-width:650px){.v2-reward-card__cover{height:210px}}
