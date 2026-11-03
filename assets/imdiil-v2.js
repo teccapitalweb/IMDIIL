@@ -91,7 +91,10 @@
 
   // ─── Libros y Materiales: canje con confirmación, celebración y visor ───
   const fmt = value => Number(value || 0).toLocaleString('es-MX');
-  const typeLabel = item => item.type === 'book' ? 'libro' : 'material';
+  const isWebTool = item => item?.kind === 'web' || item?.ext === 'web';
+  const typeLabel = item => item.type === 'book' ? 'libro' : isWebTool(item) ? 'herramienta' : 'material';
+  const typeTitle = item => item.type === 'book' ? 'Libro' : isWebTool(item) ? 'Herramienta' : 'Material';
+  const typeIcon = item => item.type === 'book' ? icon('i-book-2') : isWebTool(item) ? icon('i-tools') : icon('i-news');
   const reducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   // Splash de desbloqueo con confeti (misma idea que SYNOVA / ICADEM / IMFRA).
@@ -106,7 +109,7 @@
         const round = i % 4 === 0;
         return `<span class="${round ? 'is-round' : ''}" style="--x:${(Math.random() * 100).toFixed(1)}vw;--w:${(6 + Math.random() * 6).toFixed(0)}px;--h:${(round ? 8 : 10 + Math.random() * 8).toFixed(0)}px;--c:${colors[i % colors.length]};--t:${(1.9 + Math.random() * 1.3).toFixed(2)}s;--d:${(Math.random() * .45).toFixed(2)}s;--r:${(Math.random() * 360).toFixed(0)}deg;--drift:${(Math.random() * 160 - 80).toFixed(0)}px"></span>`;
       }).join('');
-      splash.innerHTML = `<div class="celebracion-confetti" aria-hidden="true">${pieces}</div><div class="v2-unlock-splash__card"><div class="v2-unlock-splash__icon">${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div><span>¡${item.type === 'book' ? 'Libro' : 'Material'} desbloqueado!</span><h2>${esc(item.title)}</h2><p>Ya es tuyo para siempre. Abriendo…</p><i class="v2-unlock-splash__bar"><b></b></i></div>`;
+      splash.innerHTML = `<div class="celebracion-confetti" aria-hidden="true">${pieces}</div><div class="v2-unlock-splash__card"><div class="v2-unlock-splash__icon">${typeIcon(item)}</div><span>¡${typeTitle(item)} ${item.type === 'book' ? 'desbloqueado' : isWebTool(item) ? 'desbloqueada' : 'desbloqueado'}!</span><h2>${esc(item.title)}</h2><p>Ya es tuyo para siempre. Abriendo…</p><i class="v2-unlock-splash__bar"><b></b></i></div>`;
       document.body.appendChild(splash);
       requestAnimationFrame(() => splash.classList.add('is-visible'));
       const wait = reducedMotion() ? 700 : 2000;
@@ -119,6 +122,7 @@
   }
 
   function closeViewer() {
+    if (document.fullscreenElement && document.querySelector('.v2-doc-viewer')?.contains(document.fullscreenElement)) document.exitFullscreen?.().catch(() => {});
     document.querySelector('.v2-doc-viewer')?.remove();
     document.body.classList.remove('v2-doc-open');
   }
@@ -149,11 +153,21 @@
     closeViewer();
     const viewer = document.createElement('div');
     viewer.className = 'v2-doc-viewer';
-    viewer.innerHTML = `<header class="v2-doc-viewer__bar"><div class="v2-doc-viewer__title"><span>${esc(item.format || (item.type === 'book' ? 'Libro digital' : 'Material'))}</span><strong>${esc(item.title)}</strong></div><button class="v2-btn" type="button" data-doc-download>${icon('i-download')}<span>Descargar</span></button><button class="v2-doc-viewer__close" type="button" aria-label="Cerrar">×</button></header><div class="v2-doc-viewer__body"><div class="v2-doc-viewer__loading"><i></i>Preparando tu ${typeLabel(item)}…</div></div>`;
+    viewer.setAttribute('role', 'dialog');
+    viewer.setAttribute('aria-modal', 'true');
+    const web = isWebTool(item);
+    const fsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+    viewer.innerHTML = `<div class="v2-doc-viewer__box"><header class="v2-doc-viewer__bar"><div class="v2-doc-viewer__title"><span>${esc(item.format || (item.type === 'book' ? 'Libro digital' : 'Material'))}</span><strong>${esc(item.title)}</strong></div><div class="v2-doc-viewer__actions"><button class="v2-doc-viewer__btn" type="button" data-doc-fullscreen title="Pantalla completa" aria-label="Pantalla completa">${fsIcon}</button>${web ? '' : `<button class="v2-doc-viewer__btn" type="button" data-doc-download title="Descargar" aria-label="Descargar">${icon('i-download')}</button>`}<button class="v2-doc-viewer__btn v2-doc-viewer__close" type="button" aria-label="Cerrar" title="Cerrar">×</button></div></header><div class="v2-doc-viewer__body"><div class="v2-doc-viewer__loading"><i></i>Preparando tu ${typeLabel(item)}…</div></div></div>`;
     document.body.appendChild(viewer);
     document.body.classList.add('v2-doc-open');
     viewer.querySelector('.v2-doc-viewer__close').addEventListener('click', closeViewer);
-    viewer.querySelector('[data-doc-download]').addEventListener('click', event => downloadReward(item, event.currentTarget));
+    viewer.addEventListener('click', event => { if (event.target === viewer) closeViewer(); });
+    viewer.querySelector('[data-doc-fullscreen]').addEventListener('click', () => {
+      const box = viewer.querySelector('.v2-doc-viewer__box');
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+      else box.requestFullscreen?.().catch(() => {});
+    });
+    viewer.querySelector('[data-doc-download]')?.addEventListener('click', event => downloadReward(item, event.currentTarget));
     try {
       const idToken = await userToken();
       if (!idToken) throw new Error('Inicia sesión para continuar.');
@@ -171,6 +185,7 @@
       frame.title = item.title;
       frame.src = data.embedUrl;
       frame.setAttribute('allowfullscreen', '');
+      if (web) frame.setAttribute('allow', 'fullscreen; clipboard-read; clipboard-write');
       frame.addEventListener('load', () => viewer.querySelector('.v2-doc-viewer__loading')?.remove(), { once:true });
       viewer.querySelector('.v2-doc-viewer__body').appendChild(frame);
     } catch (error) {
@@ -188,9 +203,9 @@
     const balance = state.balance;
     const enough = balance >= cost;
     const kind = typeLabel(item);
-    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art ${item.hasCover ? 'has-cover' : ''}">${item.hasCover ? `<img src="${esc(coverUrl(item))}" alt="" onerror="this.remove()">` : ''}${item.type === 'book' ? icon('i-book-2') : icon('i-news')}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
+    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art ${item.type === 'book' ? 'has-cover' : ''}">${item.type === 'book' ? `<img src="${esc(localCoverUrl(item))}" alt="" onerror="this.remove()">` : ''}${typeIcon(item)}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
       + `<dl class="v2-redeem__math"><div><dt>Costo</dt><dd>${fmt(cost)} créditos</dd></div><div><dt>Tu saldo</dt><dd>${fmt(balance)} créditos</dd></div><div class="${enough ? 'is-ok' : 'is-short'}"><dt>${enough ? 'Te quedarán' : 'Te faltan'}</dt><dd>${fmt(enough ? balance - cost : cost - balance)} créditos</dd></div></dl>`
-      + `<p class="v2-redeem__note ${enough ? 'is-ok' : 'is-short'}">${enough ? `✓ Te alcanza. El ${kind} queda en tu cuenta para siempre y se abrirá al confirmar.` : `Aún no te alcanza. Gana créditos completando clases y Retos.`}</p></div>`;
+      + `<p class="v2-redeem__note ${enough ? 'is-ok' : 'is-short'}">${enough ? `✓ Te alcanza. ${kind === 'herramienta' ? 'La' : 'El'} ${kind} queda en tu cuenta para siempre y se abrirá al confirmar.` : `Aún no te alcanza. Gana créditos completando clases y Retos.`}</p></div>`;
     const footer = enough
       ? `<button class="v2-btn" data-cancel>Cancelar</button><button class="v2-btn v2-btn--primary" data-confirm>Canjear y abrir</button>`
       : `<button class="v2-btn" data-cancel>Cerrar</button><button class="v2-btn v2-btn--primary" data-earn>Ganar créditos</button>`;
@@ -228,8 +243,24 @@
     return `<article class="book-card ${owned ? 'is-owned' : ''}" data-open-reward="${esc(item.id)}">${cover}<span class="book-card__body"><span class="book-card__tag">${esc(item.area || item.format)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><span class="book-card__foot">${cost}<button class="book-open" type="button" data-reward="${esc(item.id)}" aria-label="${owned ? 'Abrir' : 'Canjear'} ${esc(item.title)}">${icon(owned ? 'i-book-2' : 'i-arrow-right')}</button></span></span></article>`;
   }
 
+  // Tarjeta de material / herramienta (misma estructura que SYNOVA)
+  const TOOL_BADGES = { 'oee master pro':'OEE', 'plant design 3d':'3D', 'production ai':'PA', 'quality lab pro':'QL', 'time study pro':'TS', 'maintenance master':'MM', 'process ai studio':'PS' };
+  function materialBadge(item) {
+    if (!isWebTool(item)) return String(item.downloadExt || item.ext || 'doc').toUpperCase().slice(0, 4);
+    const known = TOOL_BADGES[String(item.title || '').toLowerCase()];
+    if (known) return known;
+    return String(item.title || 'H').split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+  }
+  function materialCard(item) {
+    const owned = state.owned.has(item.id);
+    const web = isWebTool(item);
+    const cost = owned ? `<span class="book-cost">${icon('i-check-circle')}${web ? 'Desbloqueada' : 'Canjeado'}</span>` : `<span class="book-cost"><span class="credit-coin">C</span>${fmt(item.cost)} créditos</span>`;
+    return `<article class="mat-item ${owned ? 'is-owned' : ''} ${web ? 'is-web' : ''}" data-open-reward="${esc(item.id)}"><span class="mat-item__icon"><b>${esc(materialBadge(item))}</b></span><span class="mat-item__body"><span class="book-card__tag">${esc(item.area || item.format)}</span><strong>${esc(item.title)}</strong><span class="mat-item__desc">${esc(item.description)}</span><span class="mat-item__foot">${cost}<button class="book-open" type="button" data-reward="${esc(item.id)}" aria-label="${owned ? 'Abrir' : 'Canjear'} ${esc(item.title)}">${icon(owned ? 'i-arrow-right' : 'i-arrow-right')}</button></span></span></article>`;
+  }
+
   function rewardCard(item) {
     if (item.type === 'book') return bookCard(item);
+    if (item.type === 'material') return materialCard(item);
     const owned = state.owned.has(item.id);
     const ext = String(item.downloadExt || item.ext || '').toUpperCase();
     const cover = item.hasCover ? `<div class="v2-reward-card__cover"><img src="${esc(coverUrl(item))}" alt="Portada de ${esc(item.title)}" loading="lazy" onerror="this.parentNode.remove()">${owned ? '<b>✓ Tuyo</b>' : ''}</div>` : '';
@@ -244,8 +275,10 @@
       const isBook = type === 'book';
       if (isBook) {
         target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero"><div class="books-hero__copy"><div class="books-kicker">${icon('i-book-2')}Biblioteca IMDIIL</div><h1>Tu biblioteca técnica.</h1><p>Canjea créditos por libros que conservarás en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próximo libro</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${items.filter(item => state.owned.has(item.id)).length} canjeados</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="book-shelf">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevos libros aquí.</div>'}</div></div></div>`;
-      } else
-      target.innerHTML = `<div class="v2-shell">${compactHero(isBook ? 'Libros' : 'Materiales', isBook ? 'Biblioteca técnica IMDIIL: canjea tus créditos y consérvala para siempre.' : 'Herramientas y plantillas premium listas para usar en planta.',`<button class="v2-credit-chip" data-go-credits><span>Saldo</span><strong>${fmt(state.balance)}</strong> créditos</button>`)}<div class="v2-section-head"><div><h2>${isBook ? 'Biblioteca' : 'Recursos disponibles'}</h2><p>${items.filter(item => state.owned.has(item.id)).length} canjeados · ${items.length} publicados</p></div><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div><div class="v2-card-grid">${items.map(rewardCard).join('') || `<div class="v2-empty">Muy pronto publicaremos ${isBook ? 'nuevos libros' : 'nuevos materiales'} aquí.</div>`}</div></div>`;
+      } else {
+        const owned = items.filter(item => state.owned.has(item.id)).length;
+        target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero books-hero--tools"><div class="books-hero__copy"><div class="books-kicker">${icon('i-tools')}Herramientas premium IMDIIL</div><h1>Herramientas para tu planta.</h1><p>Canjea créditos por herramientas y plantillas que se abren aquí mismo y quedan en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próxima herramienta</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${owned} desbloqueadas</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="mat-shelf">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevas herramientas aquí.</div>'}</div></div></div>`;
+      }
       target.querySelector('[data-go-credits]')?.addEventListener('click', () => go('retos'));
       target.querySelector('[data-refresh]')?.addEventListener('click', async () => { await loadRewards(true); draw(); });
       target.querySelectorAll('[data-open-reward]').forEach(card => card.addEventListener('click', () => {
@@ -319,11 +352,17 @@
         const q = state.courseSearch.trim().toLowerCase();
         return !q || `${row.course.titulo || ''} ${row.course.instructor || ''} ${row.course.area || ''}`.toLowerCase().includes(q);
       });
-      target.innerHTML = `<div class="v2-shell">${compactHero('Mis cursos','Aprende a tu ritmo y continúa desde tu última clase.',`<div class="v2-course-hero-stats"><strong>${rows.length}</strong><span>rutas disponibles</span></div>`,'dark')}<div class="v2-course-controls"><div class="v2-segmented"><button class="${state.courseFilter === 'all' ? 'is-active' : ''}" data-filter="all">Todos</button><button class="${state.courseFilter === 'progress' ? 'is-active' : ''}" data-filter="progress">En curso</button><button class="${state.courseFilter === 'completed' ? 'is-active' : ''}" data-filter="completed">Completados</button></div><label class="v2-search">${icon('i-search')}<input value="${esc(state.courseSearch)}" placeholder="Buscar curso"></label></div><div class="v2-course-grid">${visible.map(row => courseCard(row)).join('') || '<div class="v2-empty">No hay cursos con esos filtros.</div>'}</div></div>`;
+      target.innerHTML = `<div class="v2-shell">${compactHero('Mis cursos','Aprende a tu ritmo y continúa desde tu última clase.',`<div class="v2-course-hero-stats"><strong>${rows.length}</strong><span>rutas disponibles</span></div>`,'dark')}<div class="v2-course-controls"><div class="v2-segmented"><button class="${state.courseFilter === 'all' ? 'is-active' : ''}" data-filter="all">Todos</button><button class="${state.courseFilter === 'progress' ? 'is-active' : ''}" data-filter="progress">En curso</button><button class="${state.courseFilter === 'completed' ? 'is-active' : ''}" data-filter="completed">Completados</button></div><label class="v2-search">${icon('i-search')}<input value="${esc(state.courseSearch)}" placeholder="Buscar curso"></label></div>${window.__IMDIIL_FREE_COURSE?.bannerHtml?.() || ''}<div class="v2-course-grid">${visible.map(row => courseCard(row)).join('') || '<div class="v2-empty">No hay cursos con esos filtros.</div>'}</div></div>`;
       target.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.courseFilter = button.dataset.filter; draw(); }));
       target.querySelector('.v2-search input')?.addEventListener('input', event => { state.courseSearch = event.target.value; draw(); requestAnimationFrame(() => { const input = target.querySelector('.v2-search input'); input?.focus(); input?.setSelectionRange(input.value.length,input.value.length); }); });
       target.querySelectorAll('[data-course]').forEach(card => card.addEventListener('click', () => {
         const row = rows.find(entry => String(entry.course.id) === card.dataset.course);
+        // Cuenta nueva sin curso gratis elegido: tocar un curso abre la confirmación (igual que IMFRA).
+        const freeCourse = window.__IMDIIL_FREE_COURSE;
+        if (row && freeCourse?.pendiente?.() && freeCourse.puedeSerGratis?.(row.course)) {
+          freeCourse.confirmar(row.course, chosen => go(courseRoute(chosen.id)));
+          return;
+        }
         if (!row?.unlocked) {
           if (window.UserState?.modo !== 'vip') window.__showPaywallModal?.({ title:'Curso exclusivo para miembros', sub:'Activa tu membresía para continuar tu ruta de aprendizaje.', cta:'Ir a Suscripción' });
           else window.Toast?.info?.(row.wait === 1 ? 'Disponible mañana' : `Disponible en ${row.wait || 0} días`,'Los cursos se habilitan de forma progresiva');

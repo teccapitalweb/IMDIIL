@@ -92,11 +92,26 @@
     try { return Boolean(localStorage.getItem(storageKey(id))); } catch (error) { return false; }
   }
 
-  function markSeen(reason) {
-    if (!state.accountId) return;
+  function markSeenFor(id, reason) {
+    if (!id) return;
     try {
-      localStorage.setItem(storageKey(state.accountId), JSON.stringify({ version: VERSION, status: reason, viewedAt: new Date().toISOString() }));
+      localStorage.setItem(storageKey(id), JSON.stringify({ version: VERSION, status: reason, viewedAt: new Date().toISOString() }));
     } catch (error) { /* El recorrido sigue funcionando sin almacenamiento. */ }
+  }
+
+  function markSeen(reason) { markSeenFor(state.accountId, reason); }
+
+  // Igual que IMFRA: el servidor recuerda que el recorrido ya se mostró, para
+  // no repetirlo al cambiar de navegador. null = no se pudo confirmar.
+  async function claimAutomaticExperience() {
+    if (window.__isDemoMode || window.UserState?.modo === 'demo') return true;
+    const claim = window.IMDIILOnboarding?.claimExperience;
+    if (typeof claim !== 'function') return null;
+    try { return await claim('panel-tour', VERSION); }
+    catch (error) {
+      console.warn('[recorrido] No se pudo sincronizar el estado único', error);
+      return null;
+    }
   }
 
   function ensureUi() {
@@ -214,6 +229,14 @@
     if (reason === 'completed' && typeof window.celebrarImdiil === 'function') {
       window.celebrarImdiil('normal');
     }
+    // El coordinador de la experiencia inicial usa este aviso para abrir la ficha.
+    window.dispatchEvent(new CustomEvent('imdiil:onboarding-finished', { detail: { reason, automatic: state.automatic === true } }));
+  }
+
+  function notifyAutomaticSkip(reason) {
+    window.dispatchEvent(new CustomEvent('imdiil:onboarding-finished', {
+      detail: { reason, automatic: true, shown: false }
+    }));
   }
 
   function onKeydown(event) {
@@ -234,11 +257,12 @@
     const opts = options || {};
     if (state.active) return;
     const id = accountId();
-    if (opts.automatic && (!id || wasSeen(id))) return;
+    if (opts.automatic && (!id || (!opts.serverClaimed && wasSeen(id)))) { if (opts.automatic) notifyAutomaticSkip('seen'); return; }
     ensureUi();
     const first = availableIndex(0, 1);
-    if (first < 0) return;
+    if (first < 0) { if (opts.automatic) notifyAutomaticSkip('empty'); return; }
     state.accountId = id;
+    state.automatic = opts.automatic === true;
     state.previousFocus = document.activeElement;
     state.previousOverflow = document.body.style.overflow;
     state.active = true;
@@ -261,7 +285,10 @@
       '#splash-bienvenida',
       '#splash-completado',
       '#visorOverlay',
-      '#imdiil-install-pop'
+      '#imdiil-install-pop',
+      '#welcome-gift',
+      '#profile-intake-modal',
+      '#free-course-intro'
     ];
     return Array.from(document.querySelectorAll(selectors.join(', ')))
       .some((el) => !el.classList.contains('onboarding-tour-dialog') && isVisible(el));
@@ -269,7 +296,9 @@
 
   function scheduleAutomatic(attempt) {
     const id = accountId();
-    const ready = Boolean(id && window.UserState && window.UserState.modo !== 'cargando');
+    // Solo arranca cuando el coordinador de la experiencia inicial lo indica
+    // (después del regalo de bienvenida), igual que en IMFRA.
+    const ready = Boolean(id && window.UserState && window.UserState.modo !== 'cargando' && window.__IMDIIL_ONBOARDING_FLOW_READY === true);
     if (!ready) {
       if (attempt < 80) {
         clearTimeout(automaticTimer);
@@ -277,14 +306,13 @@
       }
       return;
     }
-    if (wasSeen(id)) return;
     if (blockingDialogVisible()) {
       clearTimeout(automaticTimer);
       automaticTimer = setTimeout(() => scheduleAutomatic(0), 500);
       return;
     }
     clearTimeout(automaticTimer);
-    automaticTimer = setTimeout(() => {
+    automaticTimer = setTimeout(async () => {
       automaticTimer = null;
       const latestId = accountId();
       const stillReady = Boolean(latestId && latestId === id && window.UserState && window.UserState.modo !== 'cargando');
@@ -292,12 +320,22 @@
         scheduleAutomatic(attempt + 1);
         return;
       }
-      if (wasSeen(latestId)) return;
       if (blockingDialogVisible()) {
         scheduleAutomatic(0);
         return;
       }
-      start({ automatic: true });
+      const localSeen = wasSeen(latestId);
+      if (localSeen) { notifyAutomaticSkip('local'); return; }
+      let claimed = await claimAutomaticExperience();
+      // Si el servidor no responde, se conserva el comportamiento anterior
+      // (solo con el registro de este navegador) para no perder el recorrido.
+      if (claimed === null) claimed = true;
+      if (!claimed) {
+        markSeenFor(latestId, 'server');
+        notifyAutomaticSkip('server');
+        return;
+      }
+      start({ automatic: true, serverClaimed: true });
     }, 650);
   }
 
@@ -327,6 +365,10 @@
   }
 
   window.startImdiilOnboarding = () => start({ automatic: false });
+  window.__runAutomaticImdiilOnboarding = () => {
+    clearTimeout(automaticTimer);
+    scheduleAutomatic(0);
+  };
   window.__IMDIIL_ONBOARDING_VERSION = VERSION;
 
   function init() {

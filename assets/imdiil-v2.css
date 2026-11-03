@@ -146,3 +146,32 @@
 @media(max-width:720px){.books-hero{grid-template-columns:1fr;align-items:start;gap:20px;min-height:0;padding:26px 22px}.credit-wallet{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 14px;min-width:0;width:100%;padding:14px 16px;border-radius:16px}.credit-wallet__label{grid-column:1;grid-row:1}.credit-wallet__value{grid-column:2;grid-row:1/3;margin:0}.credit-wallet .credit-wallet__sub{grid-column:1;grid-row:2;margin:0}.book-shelf{grid-template-columns:1fr}.book-card{grid-template-columns:115px 1fr}}
 @media(max-width:440px){.book-card{grid-template-columns:104px 1fr;padding:14px}.book-card__body{padding-left:13px}.book-card p{display:none}.books-head{align-items:start;flex-direction:column;gap:10px}.books-head small{display:none}}
 @media(prefers-reduced-motion:reduce){.book-card,.book-card__cover{transition:none}.book-card:hover{transform:none}}
+/* ─── Visor embebido (mismo estilo que IMFRA / SYNOVA) ─── */
+.v2-doc-viewer{flex-direction:row;align-items:center;justify-content:center;padding:24px;background:rgba(7,5,3,.94);backdrop-filter:blur(8px);animation:v2VisorIn .25s ease}
+@keyframes v2VisorIn{from{opacity:0}to{opacity:1}}
+.v2-doc-viewer__box{width:100%;max-width:1200px;height:88vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:#0D0D0D;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.v2-doc-viewer__box:fullscreen{width:100vw;max-width:none;height:100vh;border:0;border-radius:0;box-shadow:none}
+.v2-doc-viewer .v2-doc-viewer__bar{gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,#161616,#0D0D0D)}
+.v2-doc-viewer .v2-doc-viewer__title span{color:#FFB377}.v2-doc-viewer .v2-doc-viewer__title strong{color:#F5F5F4;font:700 15px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.2px}
+.v2-doc-viewer__actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.v2-doc-viewer__btn,.v2-doc-viewer .v2-doc-viewer__close{display:inline-flex;align-items:center;justify-content:center;flex:0 0 38px;width:38px;height:38px;padding:0;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:transparent;color:#F5F5F4;font-size:22px;line-height:1;cursor:pointer;transition:all .15s ease}
+.v2-doc-viewer__btn .ic{width:16px;height:16px}.v2-doc-viewer__btn:hover{background:rgba(255,255,255,.06);border-color:color-mix(in srgb,var(--primary) 55%,transparent);color:var(--primary)}
+.v2-doc-viewer .v2-doc-viewer__close:hover{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.5);color:#EF4444}
+.v2-doc-viewer .v2-doc-viewer__body{background:#000}.v2-doc-viewer .v2-doc-viewer__frame{background:#fff}
+.v2-doc-viewer .v2-doc-viewer__loading{background:#0D0D0D;color:#cbd5e1}.v2-doc-viewer .v2-doc-viewer__loading i{border-color:rgba(255,255,255,.15);border-top-color:var(--primary)}
+.v2-doc-viewer .v2-doc-viewer__native{background:#0D0D0D;color:#F5F5F4}.v2-doc-viewer .v2-doc-viewer__native p{color:#cbd5e1}
+@media(max-width:650px){.v2-doc-viewer{padding:0;align-items:stretch}.v2-doc-viewer__box{height:100dvh;border:0;border-radius:0}.v2-doc-viewer .v2-doc-viewer__bar{padding:calc(8px + env(safe-area-inset-top)) 10px 8px;gap:8px}.v2-doc-viewer .v2-doc-viewer__title strong{font-size:12.5px}.v2-doc-viewer__actions{gap:6px}.v2-doc-viewer__btn,.v2-doc-viewer .v2-doc-viewer__close{flex-basis:34px;width:34px;height:34px}}
+/* ─── Materiales · herramientas premium (misma estructura que SYNOVA) ─── */
+.books-hero--tools{background:linear-gradient(125deg,#1a1208 0%,#5a2a0c 58%,#c4561a 100%);box-shadow:0 24px 54px rgba(90,42,12,.22)}
+.mat-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+.mat-item{display:grid;grid-template-columns:64px minmax(0,1fr);gap:16px;align-items:start;padding:18px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;box-shadow:var(--shadow-sm,0 2px 8px rgba(20,14,8,.06));transition:border-color .18s,transform .18s,box-shadow .18s}
+.mat-item:hover{border-color:color-mix(in srgb,var(--primary) 40%,var(--border));transform:translateY(-2px);box-shadow:0 14px 30px rgba(20,14,8,.1)}
+.mat-item.is-owned{border-color:color-mix(in srgb,var(--success,#16a34a) 32%,var(--border))}.mat-item.is-owned .book-cost{color:var(--success,#16a34a)}
+.mat-item__icon{display:grid;place-items:center;width:64px;height:64px;border-radius:16px;background:linear-gradient(145deg,#fff1e6,#ffd9bf);color:#b84a10}
+.mat-item.is-web .mat-item__icon{background:linear-gradient(145deg,var(--primary),var(--primary-deep,#E85A14));color:#fff;box-shadow:0 8px 18px color-mix(in srgb,var(--primary) 30%,transparent)}
+.mat-item__icon b{font:800 15px 'Plus Jakarta Sans',sans-serif;letter-spacing:-.3px}
+[data-theme="night"] .mat-item:not(.is-web) .mat-item__icon,[data-theme="dark"] .mat-item:not(.is-web) .mat-item__icon{background:linear-gradient(145deg,#3a2414,#2a1a0e);color:#ffb377}
+.mat-item__body{display:flex;flex-direction:column;min-width:0}.mat-item__body>strong{margin:7px 0 5px;font:800 15px/1.3 'Plus Jakarta Sans',sans-serif;letter-spacing:-.3px}
+.mat-item__desc{font-size:11.5px;line-height:1.5;color:var(--text-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.mat-item__foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:11px;border-top:1px solid var(--border);font:750 10px 'JetBrains Mono',monospace;color:var(--text-3)}
+@media(max-width:720px){.mat-shelf{grid-template-columns:1fr}.mat-item{grid-template-columns:52px minmax(0,1fr);padding:15px}.mat-item__icon{width:52px;height:52px;border-radius:14px}.mat-item__icon b{font-size:13px}}
