@@ -1052,6 +1052,7 @@ const firebaseConfig = {
   appId: "1:875137053237:web:65d81cceb6b5ec233bb77c"
 };
 const ADMINS = ["teccapitalweb@gmail.com","imdiilmx@gmail.com","imdiilconsultoria@gmail.com"];
+window.__ADMINS = ADMINS.slice();
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -1164,8 +1165,7 @@ window.__signOut = async () => {
       <a class="nav-item" data-section="webinars"><svg class="ic"><use href="#i-broadcast"/></svg>Clases en vivo</a>
       <a class="nav-item" data-section="pdfs"><svg class="ic"><use href="#i-news"/></svg>PDFs y material</a>
       <a class="nav-item" data-section="certificados"><svg class="ic"><use href="#i-certificate"/></svg>Certificados</a>
-      <a class="nav-item" data-section="recompensas"><svg class="ic"><use href="#i-zap"/></svg>Retos y recompensas</a>
-      <a class="nav-item" data-section="entrenamiento"><svg class="ic"><use href="#i-book"/></svg>Entrenamiento</a>
+      <a class="nav-item" data-section="recompensas"><svg class="ic"><use href="#i-zap"/></svg>Retos</a>
     </div>
 
     <div class="nav-section">
@@ -1577,9 +1577,9 @@ const Pages={
                 }
                 return arr.map(n => {
                   const colorMap = {'Seguridad':'#FF7A2D','NOM-STPS':'#3B82F6','Industria MX':'#10B981','Logística':'#A855F7'};
-                  const c = colorMap[n.categoria] || colorMap[n.cat] || '#FF7A2D';
+                  const c = n.color || colorMap[n.categoriaNombre] || colorMap[n.categoria] || colorMap[n.cat] || '#FF7A2D';
                   const titulo = n.titulo || 'Sin título';
-                  const f = n.fecha?.toDate ? n.fecha.toDate() : (n.fecha ? new Date(n.fecha) : null);
+                  const _nf = n.createdAt || n.fechaPublicacion || n.fecha; const f = _nf?.toDate ? _nf.toDate() : (_nf ? new Date(_nf) : null);
                   let fechaStr = '—';
                   if (f) {
                     const diff = (Date.now() - f.getTime()) / 86400000;
@@ -3943,73 +3943,106 @@ const Pages={
   },
 
   certificados(p){
+    const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const st=Pages._certState||(Pages._certState={q:'',curso:'todos'});
     p.innerHTML=`
       <div class="fade-up">
         <div class="sec-hero">
-          <span class="sec-hero__eyebrow">Emisión</span>
+          <span class="sec-hero__eyebrow">Credenciales</span>
           <h1 class="sec-hero__title">Certificados</h1>
-          <p class="sec-hero__sub">Emite certificados con folio único IMDIIL-AÑO-XXXXX. El sistema genera el PDF, lo guarda y envía al estudiante por email.</p>
+          <p class="sec-hero__sub">Certificados reales emitidos al terminar un curso. Cada folio se puede verificar en línea.</p>
           <div class="sec-hero__actions">
-            <button class="btn btn--accent" id="new-cert"><svg class="ic"><use href="#i-plus"/></svg>Emitir certificado</button>
+            <button class="btn btn--accent" id="new-cert"><svg class="ic"><use href="#i-plus"/></svg>Emitir manual</button>
           </div>
+        </div>
+        <div class="kpi-grid" id="cert-kpis"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+          <input class="input" id="cert-q" placeholder="Buscar por nombre, correo, curso o folio" value="${E(st.q)}" style="flex:1;min-width:220px;">
+          <select class="select" id="cert-curso" style="max-width:280px;"></select>
         </div>
         <div class="adm-list" id="cert-list"></div>
-      </div>
-    `;
-    document.getElementById('new-cert').addEventListener('click',()=>certModal());
-    renderCerts();
-    function renderCerts(){
+      </div>`;
+    const fb=()=>window._fb;
+    const miembro=uid=>(AdminStore.miembros||[]).find(m=>m.id===uid||m.uid===uid)||{};
+    const fecha=v=>{const d=v&&v.toDate?v.toDate():new Date(v);return isNaN(d)?'—':d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});};
+    const certs=()=>(AdminStore.certificados||[]).map(c=>{const m=miembro(c.uid);return {...c,nombre:c.nombre||c.estudiante||m.nombre||'Miembro',email:c.email||m.email||'',folio:c.folio||c.id};});
+    const render=()=>{
+      const all=certs();
+      const mes=new Date().toISOString().slice(0,7);
+      const kp=document.getElementById('cert-kpis');if(!kp)return;
+      const personas=new Set(all.map(c=>c.uid||c.email)).size;
+      kp.innerHTML=`
+        <div class="kpi-card" style="--c1:#1E3A8A;--c2:#3B82F6;"><div class="kpi-card__label">Emitidos</div><div class="kpi-card__value">${all.length}</div><div class="kpi-card__sub">${personas} persona${personas!==1?'s':''}</div></div>
+        <div class="kpi-card" style="--c1:#F7941D;--c2:#FFB377;"><div class="kpi-card__label">Este mes</div><div class="kpi-card__value">${all.filter(c=>String(c.emitido||'').slice(0,7)===mes).length}</div><div class="kpi-card__sub">Cursos terminados</div></div>
+        <div class="kpi-card" style="--c1:#22C55E;--c2:#34D399;"><div class="kpi-card__label">Cursos distintos</div><div class="kpi-card__value">${new Set(all.map(c=>c.curso)).size}</div><div class="kpi-card__sub">Con al menos un certificado</div></div>`;
+      const sel=document.getElementById('cert-curso');
+      const cursos=[...new Set(all.map(c=>c.curso).filter(Boolean))].sort();
+      sel.innerHTML='<option value="todos">Todos los cursos</option>'+cursos.map(c=>`<option ${st.curso===c?'selected':''}>${E(c)}</option>`).join('');
+      const q=st.q.toLowerCase();
+      const rows=all.filter(c=>(st.curso==='todos'||c.curso===st.curso)&&(!q||[c.nombre,c.email,c.curso,c.folio].join(' ').toLowerCase().includes(q)));
       const list=document.getElementById('cert-list');
-      if(SEED.certificados.length===0){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-certificate"/></svg></div><h3>Sin certificados emitidos</h3><p>Empieza emitiendo el primer certificado.</p></div>`;return;}
-      list.innerHTML=SEED.certificados.map(c=>`
-        <div class="adm-row" style="--c1:#FF7A2D;">
+      if(!rows.length){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-certificate"/></svg></div><h3>${all.length?'Sin resultados':'Aún no hay certificados'}</h3><p>${all.length?'Prueba con otra búsqueda.':'Se emiten solos cuando un miembro termina un curso.'}</p></div>`;return;}
+      list.innerHTML=rows.map(c=>`
+        <div class="adm-row" style="--c1:#F7941D;">
           <div class="adm-row__thumb"><svg class="ic"><use href="#i-certificate"/></svg></div>
           <div class="adm-row__body">
-            <div class="adm-row__title">${c.estudiante} · ${c.curso}</div>
+            <div class="adm-row__title">${E(c.nombre)} · ${E(c.curso||'Curso')}</div>
             <div class="adm-row__meta">
-              <span><svg class="ic"><use href="#i-mail"/></svg>${c.email}</span>
-              <span><svg class="ic"><use href="#i-calendar"/></svg>${c.emitido}</span>
-              <span><svg class="ic"><use href="#i-clock"/></svg>${c.horas}h · ${c.calificacion}/100</span>
-              <span style="color:var(--primary);font-weight:700;">${c.folio}</span>
+              ${c.email?`<span><svg class="ic"><use href="#i-mail"/></svg>${E(c.email)}</span>`:''}
+              <span><svg class="ic"><use href="#i-calendar"/></svg>${fecha(c.emitido)}</span>
+              ${c.horas?`<span><svg class="ic"><use href="#i-clock"/></svg>${E(c.horas)} h</span>`:''}
+              <span style="color:var(--primary);font-weight:700;font-family:'JetBrains Mono',monospace;">${E(c.folio)}</span>
             </div>
           </div>
-          <span class="tag ${c.enviado?'tag--success':'tag--warning'}">${c.enviado?'Enviado':'Pendiente'}</span>
+          ${c.manual?'<span class="tag tag--warning">Manual</span>':'<span class="tag tag--success">Automático</span>'}
           <div class="adm-row__actions">
-            <button class="icon-action" title="Ver PDF"><svg class="ic"><use href="#i-eye"/></svg></button>
-            <button class="icon-action icon-action--danger" data-del="${c.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
+            <button class="icon-action" data-ver="${E(c.folio)}" title="Ver verificación"><svg class="ic"><use href="#i-eye"/></svg></button>
+            <button class="icon-action" data-copy="${E(c.folio)}" title="Copiar enlace de verificación"><svg class="ic"><use href="#i-send"/></svg></button>
+            <button class="icon-action icon-action--danger" data-del="${E(c.id)}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
           </div>
-        </div>
-      `).join('');
-      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
-        if(confirm('¿Eliminar este certificado? Esta acción es irreversible.')){
-          const i=SEED.certificados.findIndex(x=>x.id===b.dataset.del);if(i>=0){SEED.certificados.splice(i,1);renderCerts();Toast.success('Certificado eliminado');}
-        }
+        </div>`).join('');
+      const url=f=>location.origin+location.pathname.replace(/[^/]*$/,'')+'verificar.html?folio='+encodeURIComponent(f);
+      list.querySelectorAll('[data-ver]').forEach(b=>b.addEventListener('click',()=>window.open(url(b.dataset.ver),'_blank','noopener')));
+      list.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url(b.dataset.copy));Toast.success('Enlace copiado');}catch(e){Toast.info('Enlace',url(b.dataset.copy));}}));
+      list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
+        if(!confirm('¿Eliminar este certificado? El folio dejará de verificarse.'))return;
+        try{const f=fb();await f.deleteDoc(f.doc(f.db,'certificados',b.dataset.del));Toast.success('Certificado eliminado');}catch(e){Toast.error('No se pudo eliminar',e.message);}
       }));
-    }
+    };
+    Pages._renderCerts=render;
+    document.getElementById('cert-q').addEventListener('input',e=>{st.q=e.target.value;render();});
+    document.getElementById('cert-curso').addEventListener('change',e=>{st.curso=e.target.value;render();});
+    document.getElementById('new-cert').addEventListener('click',()=>certModal());
+    render();
     function certModal(){
-      const cursosOpts=SEED.cursos.filter(c=>c.activo).map(c=>`<option>${c.titulo}</option>`).join('');
-      const folio='IMDIIL-2026-'+String(Math.floor(10000+Math.random()*89999));
+      const cursosOpts=(AdminStore.cursos||[]).map(c=>`<option value="${E(c.id)}">${E(c.titulo||c.id)}</option>`).join('');
+      const folio='IMDIIL-'+new Date().getFullYear()+'-'+String(Math.floor(100000+Math.random()*899999));
       const body=`
         <div class="form-grid">
-          <div class="form-field form-field--full"><label class="label">Estudiante</label><input type="text" class="input" id="ce-nom" placeholder="Nombre completo del estudiante"></div>
-          <div class="form-field"><label class="label">Email</label><input type="email" class="input" id="ce-email" placeholder="email@example.com"></div>
-          <div class="form-field"><label class="label">Folio (auto)</label><input type="text" class="input" id="ce-folio" value="${folio}" readonly style="font-family:'JetBrains Mono',monospace;color:var(--primary);font-weight:700;"></div>
-          <div class="form-field form-field--full"><label class="label">Curso completado</label><select class="select" id="ce-curso">${cursosOpts}</select></div>
+          <div class="form-field form-field--full"><label class="label">Correo del miembro</label><input type="email" class="input" id="ce-email" placeholder="correo@ejemplo.com" list="ce-mails"><datalist id="ce-mails">${(AdminStore.miembros||[]).slice(0,500).map(m=>m.email?`<option value="${E(m.email)}">`:'').join('')}</datalist></div>
+          <div class="form-field form-field--full"><label class="label">Nombre en el certificado</label><input type="text" class="input" id="ce-nom" placeholder="Nombre completo"></div>
+          <div class="form-field form-field--full"><label class="label">Curso</label><select class="select" id="ce-curso">${cursosOpts||'<option value="">Sin cursos</option>'}</select></div>
           <div class="form-field"><label class="label">Horas</label><input type="number" class="input" id="ce-horas" value="8" min="1"></div>
-          <div class="form-field"><label class="label">Calificación</label><input type="number" class="input" id="ce-cal" value="90" min="0" max="100"></div>
-          <div class="form-field form-field--full" style="display:flex;align-items:center;gap:10px;flex-direction:row;"><input type="checkbox" id="ce-enviar" checked><label for="ce-enviar" style="cursor:pointer;font-size:13px;font-weight:500;">Enviar al estudiante por email automáticamente</label></div>
-        </div>
-      `;
+          <div class="form-field"><label class="label">Folio</label><input type="text" class="input" id="ce-folio" value="${folio}" readonly style="font-family:'JetBrains Mono',monospace;color:var(--primary);font-weight:700;"></div>
+        </div>`;
       const footer=document.createElement('div');
       footer.innerHTML=`<button class="btn btn--ghost" id="m-cancel">Cancelar</button><button class="btn btn--accent" id="m-save">Emitir certificado<svg class="ic"><use href="#i-certificate"/></svg></button>`;
-      Modal.open({title:'Emitir nuevo certificado',subtitle:folio,icon:'i-certificate',body,footer});
+      Modal.open({title:'Emitir certificado manual',subtitle:folio,icon:'i-certificate',body,footer});
+      const emailEl=document.getElementById('ce-email');
+      emailEl.addEventListener('change',()=>{const m=(AdminStore.miembros||[]).find(x=>String(x.email||'').toLowerCase()===emailEl.value.trim().toLowerCase());if(m&&!document.getElementById('ce-nom').value)document.getElementById('ce-nom').value=m.nombre||m.displayName||'';});
       footer.querySelector('#m-cancel').addEventListener('click',()=>Modal.close());
-      footer.querySelector('#m-save').addEventListener('click',()=>{
-        const data={estudiante:document.getElementById('ce-nom').value.trim(),email:document.getElementById('ce-email').value.trim(),folio:document.getElementById('ce-folio').value,curso:document.getElementById('ce-curso').value,horas:+document.getElementById('ce-horas').value,calificacion:+document.getElementById('ce-cal').value,enviado:document.getElementById('ce-enviar').checked,emitido:new Date().toISOString().slice(0,10)};
-        if(!data.estudiante||!data.email){Toast.error('Faltan datos','Nombre y email son obligatorios.');return;}
-        SEED.certificados.unshift({id:'cert'+Date.now(),...data});
-        Toast.success('Certificado emitido',data.folio+(data.enviado?' · Enviado por email':''));
-        Modal.close();renderCerts();
+      footer.querySelector('#m-save').addEventListener('click',async()=>{
+        const email=emailEl.value.trim().toLowerCase();
+        const nombre=document.getElementById('ce-nom').value.trim();
+        const sel=document.getElementById('ce-curso');
+        const curso=(AdminStore.cursos||[]).find(c=>c.id===sel.value)||{};
+        if(!email||!nombre||!sel.value){Toast.error('Faltan datos','Correo, nombre y curso son obligatorios.');return;}
+        const m=(AdminStore.miembros||[]).find(x=>String(x.email||'').toLowerCase()===email);
+        const f=fb();const fechaIso=new Date().toISOString();
+        try{
+          await f.setDoc(f.doc(f.db,'certificados',folio),{folio,uid:m?m.id:null,email,nombre,cursoId:curso.id||sel.value,curso:curso.titulo||sel.options[sel.selectedIndex].text,area:curso.area||'Ingeniería Industrial',horas:+document.getElementById('ce-horas').value||0,instructor:curso.instructor||'Equipo IMDIIL',emitido:fechaIso,year:new Date().getFullYear(),manual:true,emitidoPor:(f.auth&&f.auth.currentUser&&f.auth.currentUser.email)||'admin',createdAt:f.serverTimestamp()});
+          Toast.success('Certificado emitido',folio);Modal.close();
+        }catch(e){Toast.error('No se pudo emitir',e.message);}
       });
     }
   },
@@ -4997,53 +5030,84 @@ const Pages={
   },
 
   noticias(p){
+    const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const toDate=v=>v&&v.toDate?v.toDate():(v&&v.seconds?new Date(v.seconds*1000):(v?new Date(v):null));
+    const fecha=v=>{const d=toDate(v);return d&&!isNaN(d)?d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})+' · '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}):'—';};
     p.innerHTML=`
       <div class="fade-up">
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Cron automático</span>
           <h1 class="sec-hero__title">Noticias</h1>
-          <p class="sec-hero__sub">El cron de Railway corre cada día a las 7 AM y publica noticias del sector industrial en el panel VIP.</p>
+          <p class="sec-hero__sub">Cada día a las 7 AM se publican noticias del sector industrial en el inicio del panel VIP.</p>
         </div>
-
         <section class="cron-card">
           <div class="cron-card__row">
             <div class="cron-card__icon"><svg class="ic" style="width:24px;height:24px;"><use href="#i-refresh"/></svg></div>
             <div class="cron-card__info">
-              <span class="cron-card__lbl">${SEED.config.cronStatus==='activo'?'Cron en línea':'Cron pausado'}</span>
-              <div class="cron-card__title">NewsData → Firestore</div>
-              <div class="cron-card__sub">Última ejecución: <strong>${SEED.config.cronUltima}</strong> · Próxima: <strong>${SEED.config.cronProxima}</strong> · <strong>${SEED.config.noticiasGeneradas}</strong> noticias publicadas en mayo</div>
+              <span class="cron-card__lbl" id="cron-lbl">Consultando…</span>
+              <div class="cron-card__title">NewsData → panel VIP</div>
+              <div class="cron-card__sub" id="cron-sub">Revisando el estado del cron…</div>
             </div>
             <button class="btn btn--ghost" id="cron-run"><svg class="ic"><use href="#i-refresh"/></svg>Ejecutar ahora</button>
           </div>
         </section>
-
-        <div class="section-header"><h2 class="section-header__title">Noticias publicadas hoy<span class="section-header__badge">${SEED.noticias.filter(n=>n.fecha==='Hoy').length} nuevas</span></h2></div>
-        <div class="adm-list">
-          ${SEED.noticias.map(n=>`
-            <div class="news-card" style="--c1:${n.color};">
-              <div class="news-card__cover"><svg class="ic"><use href="#i-news"/></svg></div>
-              <div class="news-card__body">
-                <div class="news-card__head">
-                  <span class="tag" style="color:${n.color};border-color:${n.color}40;background:${n.color}14;">${n.cat}</span>
-                  <span class="news-card__date">${n.fecha}</span>
-                </div>
-                <div class="news-card__title">${n.titulo}</div>
-                <div class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>${n.fuente}</div>
-              </div>
-              <div class="adm-row__actions">
-                <button class="icon-action icon-action--danger" data-del-news="${n.id}" title="Eliminar"><svg class="ic"><use href="#i-trash"/></svg></button>
-              </div>
+        <div class="section-header"><h2 class="section-header__title">Publicadas<span class="section-header__badge" id="news-badge">0</span></h2></div>
+        <div class="adm-list" id="news-list"></div>
+      </div>`;
+    const render=()=>{
+      const list=document.getElementById('news-list');if(!list)return;
+      const items=(AdminStore.noticias||[]).slice().sort((a,b)=>(toDate(b.createdAt||b.fechaPublicacion)||0)-(toDate(a.createdAt||a.fechaPublicacion)||0));
+      const hoy=new Date().toDateString();
+      document.getElementById('news-badge').textContent=items.length+' · '+items.filter(n=>{const d=toDate(n.createdAt);return d&&d.toDateString()===hoy;}).length+' hoy';
+      if(!items.length){list.innerHTML=`<div class="empty"><div class="empty__icon"><svg class="ic"><use href="#i-news"/></svg></div><h3>Sin noticias publicadas</h3><p>Cuando corra el cron aparecerán aquí. Puedes ejecutarlo a mano con el botón de arriba.</p></div>`;return;}
+      list.innerHTML=items.map(n=>{const color=n.color||'#3B82F6';return `
+        <div class="news-card" style="--c1:${E(color)};">
+          ${n.imagen?`<img src="${E(n.imagen)}" alt="" loading="lazy" style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0;" onerror="this.outerHTML='<div class=&quot;news-card__cover&quot;><svg class=&quot;ic&quot;><use href=&quot;#i-news&quot;/></svg></div>'">`:'<div class="news-card__cover"><svg class="ic"><use href="#i-news"/></svg></div>'}
+          <div class="news-card__body">
+            <div class="news-card__head">
+              <span class="tag" style="color:${E(color)};border-color:${E(color)}40;background:${E(color)}14;">${E(n.categoriaNombre||n.categoria||'Industria')}</span>
+              <span class="news-card__date">${fecha(n.createdAt||n.fechaPublicacion)}</span>
             </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-    document.getElementById('cron-run').addEventListener('click',()=>Toast.info('Cron ejecutado','Buscando noticias nuevas… 3 publicadas.'));
-    p.querySelectorAll('[data-del-news]').forEach(b=>b.addEventListener('click',()=>{
-      if(confirm('¿Eliminar esta noticia del panel?')){
-        const i=SEED.noticias.findIndex(x=>x.id===b.dataset.delNews);if(i>=0){SEED.noticias.splice(i,1);Pages.noticias(document.getElementById('page'));Toast.success('Noticia eliminada');}
-      }
-    }));
+            <div class="news-card__title">${E(n.titulo||'Sin título')}</div>
+            ${n.extracto?`<div class="news-card__desc">${E(n.extracto)}</div>`:''}
+            <div class="news-card__source"><svg class="ic"><use href="#i-news"/></svg>${E(n.fuente||'Fuente')}</div>
+          </div>
+          <div class="adm-row__actions">
+            ${n.link?`<a class="icon-action" href="${E(n.link)}" target="_blank" rel="noopener" title="Abrir nota"><svg class="ic"><use href="#i-eye"/></svg></a>`:''}
+            <button class="icon-action icon-action--danger" data-del-news="${E(n.id)}" title="Quitar del panel"><svg class="ic"><use href="#i-trash"/></svg></button>
+          </div>
+        </div>`;}).join('');
+      list.querySelectorAll('[data-del-news]').forEach(b=>b.addEventListener('click',async()=>{
+        if(!confirm('¿Quitar esta noticia del panel VIP?'))return;
+        try{const f=window._fb;await f.deleteDoc(f.doc(f.db,'noticias_auto',b.dataset.delNews));Toast.success('Noticia eliminada');}catch(e){Toast.error('No se pudo eliminar',e.message);}
+      }));
+    };
+    Pages._renderNoticias=render;
+    render();
+    const estado=async()=>{
+      const lbl=document.getElementById('cron-lbl'),sub=document.getElementById('cron-sub');
+      try{
+        const t=await Pages._getAuthToken();
+        const r=await fetch(Pages._webhookUrl+'/admin/noticias/estado',{headers:{Authorization:'Bearer '+t}});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(d.error||'Sin respuesta');
+        if(!lbl)return;
+        lbl.textContent=d.hayCredenciales?'Cron en línea':'Falta la clave de NewsData';
+        sub.innerHTML='Última publicación: <strong>'+(d.ultimaActualizacion?fecha(d.ultimaActualizacion):'nunca')+'</strong> · Corre diario 7:00 AM (CDMX)';
+      }catch(e){if(lbl){lbl.textContent='Estado no disponible';sub.textContent=e.message;}}
+    };
+    estado();
+    document.getElementById('cron-run').addEventListener('click',async e=>{
+      const b=e.currentTarget;b.disabled=true;const txt=b.innerHTML;b.textContent='Buscando…';
+      try{
+        const t=await Pages._getAuthToken();
+        const r=await fetch(Pages._webhookUrl+'/admin/noticias/sync',{method:'POST',headers:{Authorization:'Bearer '+t}});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(d.error||'No se pudo ejecutar');
+        Toast.success('Cron ejecutado',(d.total||0)+' noticia'+(d.total===1?'':'s')+' nuevas');estado();
+      }catch(err){Toast.error('No se pudo ejecutar',err.message);}
+      finally{b.disabled=false;b.innerHTML=txt;}
+    });
   },
 
   config(p){
@@ -5057,7 +5121,7 @@ const Pages={
         <div class="sec-hero">
           <span class="sec-hero__eyebrow">Ajustes globales</span>
           <h1 class="sec-hero__title">Configuración</h1>
-          <p class="sec-hero__sub">Precios de membresía Stripe, datos de contacto, emails admin y claves de servicios externos.</p>
+          <p class="sec-hero__sub">Precios de la membresía, datos de contacto, administradores y estado real de los servicios.</p>
         </div>
 
         <div class="dash-grid">
@@ -5069,7 +5133,6 @@ const Pages={
                    sobrescribías el precio bueno con el viejo. Ya no puede pasar. -->
               <div class="form-field"><label class="label">Plan Mensual (MXN)</label><input type="number" class="input" id="cfg-mens" value="" placeholder="Cargando…" min="1" disabled></div>
               <div class="form-field"><label class="label">Plan Anual (MXN)</label><input type="number" class="input" id="cfg-anual" value="" placeholder="Cargando…" min="1" disabled></div>
-              <div class="form-field form-field--full"><label class="label">Stripe Public Key</label><input type="text" class="input" id="cfg-stripe" value="${c.stripePublicKey}" placeholder="pk_live_…"></div>
             </div>
             <!-- MODIFICADO: precios en vivo · el botón se habilita al leer Firestore -->
             <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:color-mix(in srgb,var(--primary) 8%,var(--surface-2));border-left:3px solid var(--primary);border-radius:6px;line-height:1.55;margin:0 0 14px">Al guardar, este es el precio que se muestra en el panel VIP, la página de venta y el sitio, y con el que se arma el cobro dinámico en Stripe — sin crear productos nuevos en Stripe ni cambiar variables en Railway. Las suscripciones ya activas conservan su precio original.</div>
@@ -5088,28 +5151,20 @@ const Pages={
 
           <div class="dash-card">
             <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-shield-check"/></svg>Administradores</div></div>
-            <p style="font-size:12.5px;color:var(--text-2);line-height:1.55;margin-bottom:14px;">Los emails registrados aquí pueden acceder al panel admin. <strong style="color:var(--danger);">No elimines <code style="font-family:JetBrains Mono,monospace;color:var(--primary);">teccapitalweb@gmail.com</code> bajo ningún motivo.</strong></p>
-            <div id="adm-list" class="adm-list" style="margin-bottom:14px;">
-              ${c.admins.map((e,i)=>`
+            <p style="font-size:12.5px;color:var(--text-2);line-height:1.55;margin-bottom:14px;">Correos con acceso a este panel. La lista vive en el panel y en el webhook, así que para sumar a alguien hay que cambiarla en ambos.</p>
+            <div class="adm-list">
+              ${(window.__ADMINS||c.admins).map(e=>`
                 <div class="adm-row" style="padding:11px 14px;">
-                  <div class="adm-row__thumb" style="--c1:#FF7A2D;"><svg class="ic"><use href="#i-shield-check"/></svg></div>
+                  <div class="adm-row__thumb" style="--c1:#1E3A8A;"><svg class="ic"><use href="#i-shield-check"/></svg></div>
                   <div class="adm-row__body"><div class="adm-row__title" style="font-size:13px;">${e}</div></div>
-                  ${e==='teccapitalweb@gmail.com'?'<span class="tag tag--primary">Superadmin</span>':`<button class="icon-action icon-action--danger" data-rm-admin="${i}"><svg class="ic"><use href="#i-trash"/></svg></button>`}
-                </div>
-              `).join('')}
+                  ${e===(window._fb&&window._fb.auth&&window._fb.auth.currentUser&&window._fb.auth.currentUser.email)?'<span class="tag tag--primary">Tú</span>':'<span class="tag">Admin</span>'}
+                </div>`).join('')}
             </div>
-            <div style="display:flex;gap:8px;"><input type="email" class="input" id="cfg-new-admin" placeholder="nuevo@email.com"><button class="btn btn--ghost btn--sm" id="add-admin"><svg class="ic"><use href="#i-plus"/></svg>Agregar</button></div>
           </div>
 
           <div class="dash-card">
-            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-bolt"/></svg>Estado de servicios</div></div>
-            <div class="mini-list">
-              <div class="mini-row" style="--c1:#34D399;"><div class="mini-row__dot"><svg class="ic"><use href="#i-shield-check"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Firebase Auth</div><div class="mini-row__meta">imdiil-vip · Funcionando</div></div><span class="tag tag--success">OK</span></div>
-              <div class="mini-row" style="--c1:#34D399;"><div class="mini-row__dot"><svg class="ic"><use href="#i-shield-check"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Firestore</div><div class="mini-row__meta">us-central1 · Reglas v1</div></div><span class="tag tag--success">OK</span></div>
-              <div class="mini-row" style="--c1:#FBBF24;"><div class="mini-row__dot"><svg class="ic"><use href="#i-bolt"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Stripe LIVE</div><div class="mini-row__meta">Webhook pendiente de conectar</div></div><span class="tag tag--warning">Pendiente</span></div>
-              <div class="mini-row" style="--c1:#34D399;"><div class="mini-row__dot"><svg class="ic"><use href="#i-refresh"/></svg></div><div class="mini-row__body"><div class="mini-row__title">Railway Cron (noticias)</div><div class="mini-row__meta">Última: ${c.cronUltima}</div></div><span class="tag tag--success">OK</span></div>
-              <div class="mini-row" style="--c1:#FBBF24;"><div class="mini-row__dot"><svg class="ic"><use href="#i-mail"/></svg></div><div class="mini-row__body"><div class="mini-row__title">EmailJS · Certificados</div><div class="mini-row__meta">Sin configurar</div></div><span class="tag tag--warning">Pendiente</span></div>
-            </div>
+            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-bolt"/></svg>Estado de servicios</div><button class="btn btn--ghost btn--sm" id="cfg-svc-refresh"><svg class="ic"><use href="#i-refresh"/></svg>Revisar</button></div>
+            <div class="mini-list" id="cfg-svc"><div style="padding:18px;text-align:center;color:var(--text-3);font-size:13px;">Revisando servicios…</div></div>
           </div>
         </div>
       </div>
@@ -5128,6 +5183,8 @@ const Pages={
         const cfg=snap.exists()?snap.data():{};
         if(inMes&&Number(cfg.precioMes)>0){inMes.value=Number(cfg.precioMes);c.precioMensual=Number(cfg.precioMes);}
         if(inAno&&Number(cfg.precioAno)>0){inAno.value=Number(cfg.precioAno);c.precioAnual=Number(cfg.precioAno);}
+        const ct=cfg.contacto||{};
+        ['wa:whatsapp','ig:instagram','em:email'].forEach(k=>{const [id,f]=k.split(':');const el=document.getElementById('cfg-'+id);if(el&&ct[f])el.value=ct[f];});
         if(inMes){inMes.disabled=false;inMes.placeholder='Ej. 199';}
         if(inAno){inAno.disabled=false;inAno.placeholder='Ej. 1899';}
         if(btn)btn.disabled=false;
@@ -5155,24 +5212,37 @@ const Pages={
             actualizadoPor:(window.__currentAdmin&&window.__currentAdmin.email)||null,
             actualizadoEn:fb.serverTimestamp()
           },{merge:true});
-          c.precioMensual=precioMes;c.precioAnual=precioAno;c.stripePublicKey=document.getElementById('cfg-stripe').value;
+          c.precioMensual=precioMes;c.precioAnual=precioAno;
           if(window.__PRECIOS){window.__PRECIOS.mes=precioMes;window.__PRECIOS.ano=precioAno;}
           Toast.success('Precios guardados','Ya se reflejan en el panel VIP y en el cobro de Stripe');
         }catch(e){Toast.error('Error al guardar',e.message||'Revisa las reglas de Firestore');}
         b.disabled=false;
       }
-      else if(type==='contacto'){c.whatsapp=document.getElementById('cfg-wa').value;c.instagram=document.getElementById('cfg-ig').value;c.emailContacto=document.getElementById('cfg-em').value;Toast.success('Contacto actualizado');}
+      else if(type==='contacto'){
+        const contacto={whatsapp:document.getElementById('cfg-wa').value.trim(),instagram:document.getElementById('cfg-ig').value.trim(),email:document.getElementById('cfg-em').value.trim()};
+        if(contacto.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto.email)){Toast.error('Correo inválido');return;}
+        b.disabled=true;
+        try{const fb=window._fb;await fb.setDoc(fb.doc(fb.db,'config','club'),{contacto,actualizadoEn:fb.serverTimestamp()},{merge:true});c.whatsapp=contacto.whatsapp;c.instagram=contacto.instagram;c.emailContacto=contacto.email;Toast.success('Contacto guardado');}
+        catch(e){Toast.error('Error al guardar',e.message||'Revisa las reglas de Firestore');}
+        b.disabled=false;
+      }
     }));
-    document.getElementById('add-admin').addEventListener('click',()=>{
-      const e=document.getElementById('cfg-new-admin').value.trim();
-      if(!e||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){Toast.error('Email inválido');return;}
-      if(c.admins.includes(e)){Toast.error('Ya existe');return;}
-      c.admins.push(e);Toast.success('Admin agregado',e);Pages.config(p);
-    });
-    p.querySelectorAll('[data-rm-admin]').forEach(b=>b.addEventListener('click',()=>{
-      const i=+b.dataset.rmAdmin;
-      if(confirm('¿Eliminar este administrador?')){c.admins.splice(i,1);Toast.success('Admin eliminado');Pages.config(p);}
-    }));
+    const svc=async()=>{
+      const box=document.getElementById('cfg-svc');if(!box)return;
+      const row=(ok,t,d,ic)=>`<div class="mini-row" style="--c1:${ok?'#22C55E':'#F59E0B'};"><div class="mini-row__dot"><svg class="ic"><use href="#${ic}"/></svg></div><div class="mini-row__body"><div class="mini-row__title">${t}</div><div class="mini-row__meta">${d}</div></div><span class="tag ${ok?'tag--success':'tag--warning'}">${ok?'OK':'Revisar'}</span></div>`;
+      const base=[row(!!(window._fb&&window._fb.auth&&window._fb.auth.currentUser),'Firebase Auth','Sesión de administrador activa','i-shield-check'),row(!!(window.AdminStore&&AdminStore.ready),'Firestore',AdminStore&&AdminStore.ready?'Datos en tiempo real':'Conectando…','i-shield-check')];
+      box.innerHTML=base.join('')+'<div style="padding:12px;text-align:center;color:var(--text-3);font-size:12px;">Consultando webhook…</div>';
+      try{
+        const t=await Pages._getAuthToken();
+        const r=await fetch(Pages._webhookUrl+'/admin/servicios',{headers:{Authorization:'Bearer '+t}});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok)throw new Error(d.error||('HTTP '+r.status));
+        const icons={stripe:'i-credit-card',email:'i-mail',news:'i-news',push:'i-bell',bunny:'i-broadcast',games:'i-star',firebase:'i-shield-check'};
+        box.innerHTML=base.join('')+row(true,'Webhook Railway','En línea','i-bolt')+(d.services||[]).map(s=>row(!!s.ok,s.label,s.detail||'',icons[s.id]||'i-bolt')).join('');
+      }catch(e){box.innerHTML=base.join('')+row(false,'Webhook Railway','No respondió: '+e.message,'i-bolt');}
+    };
+    svc();
+    document.getElementById('cfg-svc-refresh').addEventListener('click',svc);
   },
 
   // ═══════════ FORO · moderación ═══════════
@@ -5531,6 +5601,7 @@ function __seccionesValidas(){
   ).map(n => n.dataset.section));
   secciones.add('auditoria');
   secciones.add('creditos-masivos');
+  secciones.add('entrenamiento');
   return secciones;
 }
 function __leerSeccionURL(){
@@ -5547,6 +5618,8 @@ window.addEventListener('popstate', __sincronizarDesdeURL);
 window.addEventListener('hashchange', __sincronizarDesdeURL);
 
 function navigate(section, opciones){
+  // "Entrenamiento" ahora vive dentro de Retos (pestaña Entrenamiento)
+  if(section==='entrenamiento'){ window.__retosTab = window.__retosTab || 'miembros'; section = 'recompensas'; }
   if(!__seccionesValidas().has(section)) section = SECCION_DEFAULT;
 
   if(section!=='foro' && typeof _foroAdminUnsub==='function'){ _foroAdminUnsub(); _foroAdminUnsub=null; }
@@ -5715,7 +5788,7 @@ const AdminStore = {
 
     // ─── 6. NOTICIAS (col que ya existe del cron) ───
     try {
-      const q = query(collection(db, 'noticias_auto'), orderBy('fecha', 'desc'), limit(20));
+      const q = query(collection(db, 'noticias_auto'), orderBy('createdAt', 'desc'), limit(60));
       const u = onSnapshot(q, (snap) => {
         this.noticias = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         this._emit('noticias');
@@ -5748,7 +5821,7 @@ const AdminStore = {
     }).length;
     const pdfsPubl = this.pdfs.filter(p => p.publicado !== false).length;
     const noticiasHoy = this.noticias.filter(n => {
-      const f = n.fecha?.toDate ? n.fecha.toDate() : (n.fecha ? new Date(n.fecha) : null);
+      const _nf = n.createdAt || n.fechaPublicacion || n.fecha; const f = _nf?.toDate ? _nf.toDate() : (_nf ? new Date(_nf) : null);
       if (!f) return false;
       const diff = (Date.now() - f.getTime()) / 86400000;
       return diff < 1;
@@ -5809,6 +5882,10 @@ const AdminStore = {
       // Webinars: refrescar KPIs + lista
       if (typeof Pages._renderKpisWebs === 'function') Pages._renderKpisWebs();
       if (typeof Pages._renderListaWebs === 'function') Pages._renderListaWebs();
+    } else if (section === 'noticias' && typeof Pages._renderNoticias === 'function') {
+      Pages._renderNoticias();
+    } else if (section === 'certificados' && typeof Pages._renderCerts === 'function') {
+      Pages._renderCerts();
     } else if (section === 'miembros' && Pages[section]) {
       // Miembros: refrescar KPIs + lista
       if (typeof Pages._renderKpisMiembros === 'function') Pages._renderKpisMiembros();
