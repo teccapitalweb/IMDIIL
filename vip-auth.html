@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#F4EFE3">
+<meta name="theme-color" content="#0d2536">
 <meta name="description" content="IMDIIL · Inicia sesión o crea tu cuenta">
 <title>IMDIIL · Acceso</title>
 <link rel="icon" type="image/png" sizes="192x192" href="assets/imdiil-app-icon-192.png">
@@ -459,6 +459,51 @@ body{display:block}
   .hero-ref .avi{width:28px;height:28px;font-size:.58rem}
   .hero-trust{text-align:center;letter-spacing:1px;font-size:8.5px;white-space:normal;padding:0 8px}
 }
+
+/* ═══ Paleta del panel VIP · azul marino + naranja IMDIIL ═══ */
+:root[data-theme="day"]{
+  --bg:#F2F6F8;--bg-deep:#E3ECF0;
+  --surface:#FFFFFF;--surface-2:#F4F8FA;--surface-3:#E8F0F4;
+  --border:rgba(13,37,54,0.07);--border-2:rgba(13,37,54,0.13);--border-strong:rgba(13,37,54,0.22);
+  --text:#0D2536;--text-2:#4A6273;--text-3:#7F93A1;
+  --primary-glow:rgba(255,122,45,0.26);--highlight:#FF9A4D;
+  --shadow-card:0 18px 50px rgba(13,37,54,0.13);
+}
+:root[data-theme="night"]{
+  --bg:#081A27;--bg-deep:#04111B;
+  --surface:#0F2738;--surface-2:#143247;--surface-3:#1A3D55;
+  --border:rgba(190,225,245,0.08);--border-2:rgba(190,225,245,0.14);--border-strong:rgba(190,225,245,0.24);
+  --text:#EEF5F9;--text-2:#A4BCCB;--text-3:#6F8A9C;
+  --shadow-card:0 20px 60px rgba(0,0,0,0.5);
+}
+body::before{background:radial-gradient(circle at 75% 25%,rgba(29,109,143,.22),transparent 52%),radial-gradient(circle at 80% 85%,rgba(255,122,45,.14),transparent 50%)}
+body::after,:root[data-theme="day"] body::after{background-image:linear-gradient(to right,rgba(13,37,54,.035) 1px,transparent 1px),linear-gradient(to bottom,rgba(13,37,54,.035) 1px,transparent 1px)}
+:root[data-theme="night"] body::after{background-image:linear-gradient(to right,rgba(190,225,245,.035) 1px,transparent 1px),linear-gradient(to bottom,rgba(190,225,245,.035) 1px,transparent 1px)}
+
+/* Hero izquierdo: igual que los banners del panel, en ambos temas */
+.auth-hero,:root[data-theme="day"] .auth-hero{
+  --text:#FFFFFF;--text-2:rgba(232,243,250,.84);--text-3:rgba(200,222,236,.66);
+  --surface:rgba(255,255,255,.08);--surface-2:rgba(255,255,255,.12);
+  --border-2:rgba(255,255,255,.16);--border-strong:rgba(255,255,255,.26);
+  background:linear-gradient(150deg,#0d2536 0%,#14425f 62%,#1d6d8f 100%);
+  border-right:0;color:#fff;
+}
+.auth-hero::before{top:auto;bottom:-25%;left:auto;right:-15%;background:radial-gradient(circle,rgba(255,122,45,.42),transparent 62%)}
+.auth-hero::after,:root[data-theme="day"] .auth-hero::after{background-image:linear-gradient(to right,rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.05) 1px,transparent 1px)}
+.auth-hero .brand__name{background:none;-webkit-text-fill-color:#fff;color:#fff}
+.auth-hero .hero-price .opt{backdrop-filter:blur(6px)}
+.auth-hero .hero-price .opt--star{background:linear-gradient(135deg,rgba(255,122,45,.2),rgba(13,37,54,.35))}
+.auth-hero .hero-ref:nth-child(3) .avi{background:linear-gradient(135deg,#4f8fb0,#1d6d8f)}
+.auth-hero .hero-marquee img{border-color:rgba(255,255,255,.18);box-shadow:0 10px 26px rgba(0,0,0,.3)}
+
+/* Formulario */
+.card{border-color:var(--border-2)}
+.card::before{background:linear-gradient(90deg,#14425f,#1d6d8f 35%,var(--primary) 70%,#14425f);background-size:200% 100%}
+.tabs{background:var(--surface-3)}
+.tab.is-active{background:linear-gradient(135deg,#14425f,#1d6d8f);box-shadow:0 4px 14px rgba(20,66,95,.3),inset 0 1px 0 rgba(255,255,255,.16)}
+:root[data-theme="night"] .tab.is-active{background:linear-gradient(135deg,var(--primary),var(--primary-deep));box-shadow:0 4px 14px var(--primary-glow)}
+.input:focus{border-color:#1d6d8f;box-shadow:0 0 0 4px rgba(29,109,143,.16)}
+:root[data-theme="night"] .input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-glow)}
 </style>
 </head>
 <body>
