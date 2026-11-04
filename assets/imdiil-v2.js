@@ -210,7 +210,7 @@
     const balance = state.balance;
     const enough = balance >= cost;
     const kind = typeLabel(item);
-    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art ${item.type === 'book' ? 'has-cover' : ''}">${item.type === 'book' ? `<img src="${esc(localCoverUrl(item))}" alt="" onerror="this.remove()">` : ''}${typeIcon(item)}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
+    const body = `<div class="v2-redeem"><div class="v2-redeem__item"><div class="v2-redeem__art ${item.type === 'book' || toolCoverUrl(item) ? 'has-cover' : ''}">${item.type === 'book' ? `<img src="${esc(localCoverUrl(item))}" alt="" onerror="this.remove()">` : toolCoverUrl(item) ? `<img src="${esc(toolCoverUrl(item))}" alt="" onerror="this.remove()">` : ''}${typeIcon(item)}</div><div><span>${esc(item.format || kind)}</span><strong>${esc(item.title)}</strong></div></div>`
       + `<dl class="v2-redeem__math"><div><dt>Costo</dt><dd>${fmt(cost)} créditos</dd></div><div><dt>Tu saldo</dt><dd>${fmt(balance)} créditos</dd></div><div class="${enough ? 'is-ok' : 'is-short'}"><dt>${enough ? 'Te quedarán' : 'Te faltan'}</dt><dd>${fmt(enough ? balance - cost : cost - balance)} créditos</dd></div></dl>`
       + `<p class="v2-redeem__note ${enough ? 'is-ok' : 'is-short'}">${enough ? `✓ Te alcanza. ${kind === 'herramienta' ? 'La' : 'El'} ${kind} queda en tu cuenta para siempre y se abrirá al confirmar.` : `Aún no te alcanza. Gana créditos completando clases y Retos.`}</p></div>`;
     const footer = enough
@@ -258,7 +258,20 @@
     if (known) return known;
     return String(item.title || 'H').split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase();
   }
+  // Portadas de las herramientas premium (assets/img/tools). Ya traen nombre y descripción.
+  const TOOL_COVERS = { 'oee master pro':'oee-master-pro', 'plant design 3d':'plant-design-3d', 'production ai':'production-ai', 'quality lab pro':'quality-lab-pro', 'time study pro':'time-study-pro', 'maintenance master':'maintenance-master', 'process ai studio':'process-ai-studio' };
+  const toolCoverUrl = item => { const key = TOOL_COVERS[String(item?.title || '').toLowerCase()]; return key ? `assets/img/tools/${key}.webp` : ''; };
+  function toolCard(item) {
+    const owned = state.owned.has(item.id);
+    const label = `${owned ? 'Abrir' : 'Canjear'} ${item.title}`;
+    const price = owned
+      ? `<span class="tool-card__state is-owned">${icon('i-check-circle')}Desbloqueada</span>`
+      : `<span class="tool-card__state"><span class="credit-coin">C</span>${fmt(item.cost)} créditos</span>`;
+    return `<article class="tool-card ${owned ? 'is-owned' : ''}" data-open-reward="${esc(item.id)}"><span class="tool-card__cover"><span class="tool-card__frame"><img src="${esc(toolCoverUrl(item))}" alt="${esc(item.title)}: ${esc(item.description)}" loading="lazy" decoding="async"></span></span><span class="tool-card__foot">${price}<button class="tool-card__btn ${owned ? '' : 'is-primary'}" type="button" data-reward="${esc(item.id)}" aria-label="${esc(label)}">${owned ? 'Abrir' : 'Canjear'}</button></span></article>`;
+  }
+
   function materialCard(item) {
+    if (isWebTool(item) && toolCoverUrl(item)) return toolCard(item);
     const owned = state.owned.has(item.id);
     const web = isWebTool(item);
     const cost = owned ? `<span class="book-cost">${icon('i-check-circle')}${web ? 'Desbloqueada' : 'Canjeado'}</span>` : `<span class="book-cost"><span class="credit-coin">C</span>${fmt(item.cost)} créditos</span>`;
@@ -284,7 +297,7 @@
         target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero"><div class="books-hero__copy"><div class="books-kicker">${icon('i-book-2')}Biblioteca IMDIIL</div><h1>Tu biblioteca técnica.</h1><p>Canjea créditos por libros que conservarás en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próximo libro</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${items.filter(item => state.owned.has(item.id)).length} canjeados</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="book-shelf">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevos libros aquí.</div>'}</div></div></div>`;
       } else {
         const owned = items.filter(item => state.owned.has(item.id)).length;
-        target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero books-hero--tools"><div class="books-hero__copy"><div class="books-kicker">${icon('i-tools')}Herramientas premium IMDIIL</div><h1>Herramientas para tu planta.</h1><p>Canjea créditos por herramientas y plantillas que se abren aquí mismo y quedan en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próxima herramienta</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${owned} desbloqueadas</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="mat-shelf">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevas herramientas aquí.</div>'}</div></div></div>`;
+        target.innerHTML = `<div class="v2-shell"><div class="books-page"><section class="books-hero books-hero--tools"><div class="books-hero__copy"><div class="books-kicker">${icon('i-tools')}Herramientas premium IMDIIL</div><h1>Herramientas para tu planta.</h1><p>Canjea créditos por herramientas y plantillas que se abren aquí mismo y quedan en tu cuenta para siempre.</p></div><button class="credit-wallet" type="button" data-go-credits><div class="credit-wallet__label">Saldo</div><div class="credit-wallet__value"><span class="credit-coin">C</span><span>${fmt(state.balance)}</span></div><p class="credit-wallet__sub">Créditos IMDIIL</p></button></section><div class="books-head"><div><span>Catálogo canjeable</span><h2>Elige tu próxima herramienta</h2></div><div class="books-head__side"><small>${items.length} disponibles · ${owned} desbloqueadas</small><button class="v2-btn" data-refresh>${icon('i-refresh')} Actualizar</button></div></div><div class="mat-shelf ${items.some(toolCoverUrl) ? 'mat-shelf--tools' : ''}">${items.map(rewardCard).join('') || '<div class="v2-empty">Muy pronto publicaremos nuevas herramientas aquí.</div>'}</div></div></div>`;
       }
       target.querySelector('[data-go-credits]')?.addEventListener('click', () => (window.IMDIILCredits?.openWallet ? window.IMDIILCredits.openWallet() : go('retos')));
       target.querySelector('[data-refresh]')?.addEventListener('click', async () => { await loadRewards(true); draw(); });
