@@ -156,13 +156,13 @@ function construirUI() {
 // Personaje: la guía virtual de IMDIIL (ingeniero con casco), recortada de la cabeza a la cintura.
 // Solo hay dos dibujos (normal y parpadeando): el parpadeo se usa cuando "piensa".
 const IMAGENES_EXPR = {
-  neutral: 'assets/img/guia/busto-guia.webp',
-  thinking: 'assets/img/guia/busto-guia-parpadeo.webp',
-  confused: 'assets/img/guia/busto-guia-parpadeo.webp',
-  concerned: 'assets/img/guia/busto-guia.webp',
-  surprised: 'assets/img/guia/busto-guia.webp',
-  happy: 'assets/img/guia/busto-guia.webp',
-  excited: 'assets/img/guia/busto-guia.webp'
+  neutral: 'assets/img/guia/guia.webp',
+  thinking: 'assets/img/guia/guia-parpadeo.webp',
+  confused: 'assets/img/guia/guia-parpadeo.webp',
+  concerned: 'assets/img/guia/guia.webp',
+  surprised: 'assets/img/guia/guia.webp',
+  happy: 'assets/img/guia/guia.webp',
+  excited: 'assets/img/guia/guia.webp'
 };
 
 // Se guardan las imágenes y se decodifican de antemano para que el cambio de pose

@@ -32,10 +32,11 @@
   }
 
   function characterMarkup(alt, variant) {
-    const bust = variant === 'bust' && config.bustImage;
-    const image = bust ? config.bustImage : config.image;
-    const blinkImage = bust ? (config.bustBlinkImage || config.bustImage) : (config.blinkImage || config.image);
-    return `<span class="syg-character${bust ? ' syg-character--bust' : ''}">
+    const avatar = variant === 'avatar' && config.avatarImage;
+    const bust = !avatar && variant === 'bust' && config.bustImage;
+    const image = avatar ? config.avatarImage : bust ? config.bustImage : config.image;
+    const blinkImage = avatar ? (config.avatarBlinkImage || config.avatarImage) : bust ? (config.bustBlinkImage || config.bustImage) : (config.blinkImage || config.image);
+    return `<span class="syg-character${avatar ? ' syg-character--avatar' : bust ? ' syg-character--bust' : ''}">
       <span class="syg-character__motion">
         <img class="syg-character__frame syg-character__frame--open" src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" decoding="async">
         <img class="syg-character__frame syg-character__frame--blink" src="${escapeHtml(blinkImage)}" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
@@ -125,8 +126,8 @@
     </button>
     <section class="syg-panel" aria-label="Conversación con la guía virtual de IMDIIL" hidden>
       <header class="syg-header">
-        <button class="syg-avatar" type="button" aria-label="Saludar a la guía">${characterMarkup('Guía virtual de IMDIIL', 'bust')}</button>
-        <span class="syg-header__title"><strong>${escapeHtml(config.assistantName)}</strong><small>${escapeHtml(config.assistantLabel)}</small></span>
+        <button class="syg-avatar" type="button" aria-label="Saludar a la guía">${characterMarkup('Guía virtual de IMDIIL', 'avatar')}<i class="syg-avatar__status" aria-hidden="true"></i></button>
+        <span class="syg-header__title"><strong>${escapeHtml(config.assistantName)}</strong><small><b class="syg-online">En línea</b> · ${escapeHtml(config.assistantLabel)}</small></span>
         <span class="syg-header__actions">
           <button class="syg-icon-btn" type="button" data-action="reset" aria-label="Empezar de nuevo" title="Empezar de nuevo">↻</button>
           <button class="syg-icon-btn" type="button" data-action="pause" aria-label="Pausar movimiento" title="Pausar movimiento">Ⅱ</button>
@@ -189,17 +190,15 @@
   }
 
   function renderMessages() {
-    messageBox.innerHTML = messages.map(message => `
-      <div class="syg-message syg-message--${message.role}">
-        <div class="syg-message__bubble">
-          ${message.role === 'assistant' ? `<span class="syg-message__label">GUÍA IMDIIL · ASISTENTE VIRTUAL</span>` : ''}
-          ${escapeHtml(message.text)}
-          ${courseCards(message.items)}
-          ${sourceCard(message.source)}
-          ${message.human ? `<div class="syg-source"><span aria-hidden="true">💬</span><span><a href="${escapeHtml(config.whatsappUrl)}" target="_blank" rel="noreferrer">Abrir WhatsApp con un asesor</a>. La conversación no se transfiere automáticamente.</span></div>` : ''}
-          <span class="syg-message__time">${escapeHtml(message.time || '')}</span>
-        </div>
-      </div>`).join('') + (waiting ? `<div class="syg-message syg-message--assistant"><div class="syg-message__bubble"><span class="syg-message__label">La guía está buscando</span><span class="syg-thinking" aria-label="Preparando respuesta"><i></i><i></i><i></i></span></div></div>` : '');
+    messageBox.innerHTML = messages.map(message => `<div class="syg-message syg-message--${message.role}">`
+        + (message.role === 'assistant' ? `<span class="syg-message__avatar" aria-hidden="true"><img src="${escapeHtml(config.avatarImage || config.bustImage || config.image)}" alt=""></span>` : '')
+        + `<div class="syg-message__bubble">`
+        + (message.role === 'assistant' ? `<span class="syg-message__label">Guía IMDIIL</span>` : '')
+        + `<span class="syg-message__text">${escapeHtml(String(message.text || '').trim())}</span>`
+        + courseCards(message.items)
+        + sourceCard(message.source)
+        + (message.human ? `<div class="syg-source"><span aria-hidden="true">💬</span><span><a href="${escapeHtml(config.whatsappUrl)}" target="_blank" rel="noreferrer">Abrir WhatsApp con un asesor</a>. La conversación no se transfiere automáticamente.</span></div>` : '')
+        + `<span class="syg-message__time">${escapeHtml(message.time || '')}</span></div></div>`).join('') + (waiting ? `<div class="syg-message syg-message--assistant"><span class="syg-message__avatar" aria-hidden="true"><img src="${escapeHtml(config.avatarImage || config.image)}" alt=""></span><div class="syg-message__bubble"><span class="syg-message__label">La guía está buscando</span><span class="syg-thinking" aria-label="Preparando respuesta"><i></i><i></i><i></i></span></div></div>` : '');
     requestAnimationFrame(() => { messageBox.scrollTop = messageBox.scrollHeight; });
   }
 
