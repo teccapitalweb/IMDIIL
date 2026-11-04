@@ -9,7 +9,7 @@
   const sessionKey = 'imdiil:guide:session:v2';
   const cookieKey = 'imdiil:privacy:consent:v1';
   const welcomeKey = 'imdiil:guide:welcome:v1';
-  const positionKey = 'imdiil:guide:position:v1';
+  const positionKey = 'imdiil:guide:position:v2';
   const emergency = /(?:incendio|explosion|fuga\s+de\s+(?:gas|quimico|amoniaco)|derrame\s+(?:quimico|grande)|accidente\s+(?:grave|en\s+planta)|persona\s+(?:atrapada|herida|inconsciente)|no\s+respira|quemadura\s+grave|electrocut)/i;
   const stopwords = new Set(['quiero','curso','cursos','sobre','para','como','algo','una','uno','unos','unas','del','las','los','que','con','por','me','interesa','busco','aprender','capacitacion','tema','pregunta','industrial','industria','ingenieria']);
 
@@ -31,11 +31,13 @@
     return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
   }
 
-  function characterMarkup(alt) {
-    const blinkImage = config.blinkImage || config.image;
-    return `<span class="syg-character">
+  function characterMarkup(alt, variant) {
+    const bust = variant === 'bust' && config.bustImage;
+    const image = bust ? config.bustImage : config.image;
+    const blinkImage = bust ? (config.bustBlinkImage || config.bustImage) : (config.blinkImage || config.image);
+    return `<span class="syg-character${bust ? ' syg-character--bust' : ''}">
       <span class="syg-character__motion">
-        <img class="syg-character__frame syg-character__frame--open" src="${escapeHtml(config.image)}" alt="${escapeHtml(alt)}" decoding="async">
+        <img class="syg-character__frame syg-character__frame--open" src="${escapeHtml(image)}" alt="${escapeHtml(alt)}" decoding="async">
         <img class="syg-character__frame syg-character__frame--blink" src="${escapeHtml(blinkImage)}" alt="" aria-hidden="true" decoding="async" fetchpriority="low">
       </span>
     </span>`;
@@ -112,16 +114,18 @@
   root.dataset.paused = 'false';
   root.innerHTML = `
     <button class="syg-launcher" type="button" aria-label="Abrir la guía virtual de IMDIIL">
+      <span class="syg-launcher__halo" aria-hidden="true"></span>
       <span class="syg-launcher__avatar">${characterMarkup('Guía virtual de IMDIIL')}</span>
-      <span class="syg-launcher__copy">
-        <span class="syg-launcher__bubble"><strong>¡Hola! Soy tu guía IMDIIL 👋</strong><span>Pregúntame de ingeniería industrial o encuentra tu siguiente curso.</span></span>
-        <em class="syg-launcher__cta">Preparar mi ruta <b aria-hidden="true">→</b></em>
-        <small class="syg-launcher__drag"><span aria-hidden="true">✣</span> Arrástrame</small>
+      <span class="syg-launcher__bubbles" aria-hidden="true">
+        <span class="syg-launcher__bubble">¡Hola! Soy tu guía IMDIIL 👋</span>
+        <span class="syg-launcher__bubble">Cuéntame qué quieres aprender o resolver.</span>
+        <span class="syg-launcher__bubble syg-launcher__bubble--accent">Encuentra tu curso ideal <b>→</b></span>
       </span>
+      <span class="syg-launcher__hint">Toca para conversar</span>
     </button>
     <section class="syg-panel" aria-label="Conversación con la guía virtual de IMDIIL" hidden>
       <header class="syg-header">
-        <button class="syg-avatar" type="button" aria-label="Saludar a la guía">${characterMarkup('Guía virtual de IMDIIL')}</button>
+        <button class="syg-avatar" type="button" aria-label="Saludar a la guía">${characterMarkup('Guía virtual de IMDIIL', 'bust')}</button>
         <span class="syg-header__title"><strong>${escapeHtml(config.assistantName)}</strong><small>${escapeHtml(config.assistantLabel)}</small></span>
         <span class="syg-header__actions">
           <button class="syg-icon-btn" type="button" data-action="reset" aria-label="Empezar de nuevo" title="Empezar de nuevo">↻</button>
