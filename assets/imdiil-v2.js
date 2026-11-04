@@ -30,11 +30,11 @@
   ];
 
   const TOOLS = [
-    { route:'tool-iper', icon:'i-shield-check', title:'Matriz IPER', copy:'Identifica peligros, evalúa riesgos y documenta controles.' },
-    { route:'tool-oee', icon:'i-gauge', title:'Calculadora OEE', copy:'Mide disponibilidad, rendimiento y calidad por turno.' },
-    { route:'tool-ats', icon:'i-clipboard-check', title:'Generador ATS', copy:'Prepara un análisis de trabajo seguro paso a paso.' },
-    { route:'tool-noms', icon:'i-book-2', title:'Tabla NOM-STPS', copy:'Consulta obligaciones y referencias normativas.' },
-    { route:'tool-logistica', icon:'i-chart-bar', title:'Indicadores logísticos', copy:'Calcula y compara métricas operativas esenciales.' }
+    { route:'tool-iper', cover:'assets/img/tools-pro/matriz-iper.webp', icon:'i-shield-check', title:'Matriz IPER', copy:'Identifica peligros, evalúa riesgos y documenta controles.' },
+    { route:'tool-oee', cover:'assets/img/tools-pro/calculadora-oee.webp', icon:'i-gauge', title:'Calculadora OEE', copy:'Mide disponibilidad, rendimiento y calidad por turno.' },
+    { route:'tool-ats', cover:'assets/img/tools-pro/generador-ats.webp', icon:'i-clipboard-check', title:'Generador ATS', copy:'Prepara un análisis de trabajo seguro paso a paso.' },
+    { route:'tool-noms', cover:'assets/img/tools-pro/tabla-nom-stps.webp', icon:'i-book-2', title:'Tabla NOM-STPS', copy:'Consulta obligaciones y referencias normativas.' },
+    { route:'tool-logistica', cover:'assets/img/tools-pro/indicadores-logisticos.webp', icon:'i-chart-bar', title:'Indicadores logísticos', copy:'Calcula y compara métricas operativas esenciales.' }
   ];
 
   const state = { catalog:FALLBACK_CATALOG.slice(), owned:new Set(), balance:0, history:[], loaded:false, courseFilter:'all', courseSearch:'' };
@@ -608,8 +608,9 @@
 
 
   function renderTools(target) {
-    target.innerHTML = `<div class="v2-shell">${compactHero('Herramientas','Cinco utilidades profesionales, reunidas en un solo lugar.','','dark')}<div class="v2-tool-grid">${TOOLS.map((tool,index) => `<button data-tool-route="${tool.route}"><span>${icon(tool.icon)}</span><small>0${index + 1}</small><h3>${esc(tool.title)}</h3><p>${esc(tool.copy)}</p><b>Abrir herramienta →</b></button>`).join('')}</div></div>`;
-    target.querySelectorAll('[data-tool-route]').forEach(button => button.addEventListener('click', () => go(button.dataset.toolRoute)));
+    const cards = TOOLS.map(tool => `<article class="tool-card tool-card--pro" data-tool-route="${tool.route}"><span class="tool-card__cover"><span class="tool-card__frame"><img src="${esc(tool.cover)}" alt="${esc(tool.title)}: ${esc(tool.copy)}" loading="lazy" decoding="async"></span></span><span class="tool-card__foot"><span class="tool-card__state">${icon('i-check-circle')}Herramienta pro</span><button class="tool-card__btn is-primary" type="button" aria-label="Abrir ${esc(tool.title)}">Abrir</button></span></article>`).join('');
+    target.innerHTML = `<div class="v2-shell">${compactHero('Herramientas','Cinco utilidades profesionales, reunidas en un solo lugar.','','dark')}<div class="mat-shelf mat-shelf--tools">${cards}</div></div>`;
+    target.querySelectorAll('[data-tool-route]').forEach(card => card.addEventListener('click', () => go(card.dataset.toolRoute)));
   }
 
   async function renderRoute(route, target) {
