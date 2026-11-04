@@ -143,7 +143,7 @@
     if (!root) return;
     const s = combinedStats();
     root.innerHTML = `<div class="rt-page fade-up">
-      <header class="rt-hero" style="--hero:url('${abs(`${IMG}retos-hero.webp`)}')">
+      <header class="rt-hero" style="--hero:url('${abs(`${IMG}retos-hero-orange.png`)}')">
         <div class="rt-hero__copy">
           <span class="rt-kicker">${icon('i-bolt')}Retos IMDIIL</span>
           <h1>Entrena tu <em>criterio de planta.</em></h1>
