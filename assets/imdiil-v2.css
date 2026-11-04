@@ -196,3 +196,7 @@
 @media(max-width:1100px){.mat-shelf--tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.mat-shelf--tools{grid-template-columns:1fr;gap:18px}.tool-card__frame{max-height:460px}}
 @media(prefers-reduced-motion:reduce){.tool-card,.tool-card__cover img{transition:none}.tool-card:hover{transform:none}}
+/* Herramientas pro con portada */
+.tool-card--pro .tool-card__frame{aspect-ratio:548/507}
+.tool-card--pro .tool-card__state{color:var(--text-3)}
+.tool-card--pro .tool-card__state .ic{color:var(--success,#16a34a)}
