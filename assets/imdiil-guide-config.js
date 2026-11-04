@@ -10,6 +10,8 @@ window.IMDIIL_GUIDE_CONFIG = Object.freeze({
   blinkImage: 'assets/img/guia/guia-parpadeo.webp',
   bustImage: 'assets/img/guia/busto-guia.webp',
   bustBlinkImage: 'assets/img/guia/busto-guia-parpadeo.webp',
+  avatarImage: 'assets/img/guia/avatar-guia.webp',
+  avatarBlinkImage: 'assets/img/guia/avatar-guia-parpadeo.webp',
   privacyUrl: '',
   whatsappUrl: 'https://wa.me/522211832603?text=Hola%2C%20vengo%20de%20la%20gu%C3%ADa%20virtual%20de%20IMDIIL%20y%20necesito%20orientaci%C3%B3n.',
   catalogUrl: 'vip-auth.html?origen=guia-imdiil',
