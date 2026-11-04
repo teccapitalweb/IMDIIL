@@ -176,7 +176,7 @@
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'ips-title');
     overlay.setAttribute('data-imdiil-experience', 'push-consent');
-    overlay.innerHTML = '<div class="ips-dialog"><div class="ips-icon">🔔</div><h2 id="ips-title">¿Quieres recibir avisos de IMDIIL?</h2>' +
+    overlay.innerHTML = '<div class="ips-dialog"><button type="button" class="ips-close" data-ips-close aria-label="Cerrar">×</button><div class="ips-icon">🔔</div><h2 id="ips-title">¿Quieres recibir avisos de IMDIIL?</h2>' +
       '<p>Te acompañamos fuera del panel con mensajes útiles y breves. Tú eliges qué categorías recibir.</p>' +
       '<div class="ips-list"><span>📚 Cursos y clases en vivo</span><span>🏆 Créditos y certificados</span><span>⭐ Beneficios VIP</span><span>📢 Avisos importantes</span></div>' +
       '<div class="ips-actions"><button type="button" data-ips-no>No por ahora</button><button type="button" data-ips-yes>Sí, activar</button></div>' +
@@ -184,21 +184,30 @@
     document.body.appendChild(overlay);
     requestAnimationFrame(function () { overlay.classList.add('is-open'); });
     var closed = false;
-    var close = function () {
+    var close = function (after) {
       if (closed) return; closed = true;
+      document.removeEventListener('keydown', onKey, true);
       overlay.classList.remove('is-open');
-      setTimeout(function () { overlay.remove(); done(); }, 230);
+      setTimeout(function () { overlay.remove(); done(); if (typeof after === 'function') after(); }, 230);
     };
+    // Cerrar sin responder (X, clic fuera o Esc): se vuelve a ofrecer en unos días.
+    var later = function () { localSet(answerKey(), 'later:' + Date.now()); close(); };
+    var onKey = function (e) { if (e.key === 'Escape') { e.preventDefault(); later(); } };
+    document.addEventListener('keydown', onKey, true);
+    overlay.querySelector('[data-ips-close]').addEventListener('click', later);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) later(); });
     overlay.querySelector('[data-ips-no]').addEventListener('click', function () { localSet(answerKey(), 'no'); close(); });
     overlay.querySelector('[data-ips-yes]').addEventListener('click', async function (event) {
       if (isIOS && !standalone) { localSet(answerKey(), 'ios'); iosGuide(overlay.querySelector('.ips-dialog'), close); return; }
       var button = event.currentTarget;
       button.disabled = true; button.textContent = 'Activando…';
       try {
-        await enable(); close(); toast('success', '¡Avisos activados!', 'IMDIIL te avisará en este dispositivo.');
+        await enable();
+        close(function () { toast('success', '¡Avisos activados!', 'IMDIIL te avisará en este dispositivo.'); });
       } catch (error) {
-        button.disabled = false; button.textContent = 'Sí, activar';
-        toast('info', 'No se activaron los avisos', error.message);
+        // Nunca deja el popup trabado: se cierra y explica el motivo (visible, ya sin el popup encima).
+        localSet(answerKey(), 'later:' + Date.now());
+        close(function () { toast('info', 'No se activaron los avisos', (error && error.message) || 'Inténtalo más tarde desde Mi perfil.'); });
       }
     });
     return true;
@@ -207,12 +216,14 @@
   function shouldAsk() {
     var answer = localGet(answerKey());
     if (answer === 'yes' || answer === 'no') return false;
+    if (answer && answer.indexOf('later:') === 0 && Date.now() - Number(answer.slice(6) || 0) < LATER_MS) return false;
     if (answer === 'ios' && !(isIOS && standalone)) return false;
     if (supported && Notification.permission === 'denied') return false;
     if (!supported && !isIOS) return false;
     return true;
   }
 
+  var LATER_MS = 3 * 24 * 60 * 60 * 1000;
   var reviewed = false;
   function reviewConsent() {
     if (reviewed || demo() || !uid()) return;
@@ -223,6 +234,14 @@
       return;
     }
     if (!shouldAsk()) return;
+    // Si el servidor aún no tiene las llaves de notificaciones, no se ofrece el popup.
+    fetch(API() + '/api/push/public-key', { cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (key) { if (key && key.configured && key.publicKey) queueConsent(); })
+      .catch(function () {});
+  }
+
+  function queueConsent() {
     var queue = window.IMDIILExperienceQueue;
     if (queue) {
       // Después del flujo inicial (bienvenida → recorrido → ficha → curso gratis).
