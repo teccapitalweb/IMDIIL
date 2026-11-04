@@ -148,14 +148,40 @@
       '<div class="dir-req-list">' + (items || '<div class="foro-empty" style="padding:20px">' + (tab === 'incoming' ? 'Nadie te ha solicitado contacto todavía.' : 'Aún no envías solicitudes. Toca "Solicitar contacto" en una tarjeta.') + '</div>') + '</div>';
   }
 
+  // Bandeja como vista dentro de la misma pestaña de Directorio (no popup),
+  // con botón para regresar exactamente a donde estaba el usuario.
+  function closeInbox() {
+    var page = document.getElementById('dir-req-page');
+    if (!page) return;
+    var host = page.parentNode;
+    var scrollY = Number(page.dataset.scroll || 0);
+    page.remove();
+    Array.prototype.forEach.call(host.children, function (el) { if (el.dataset.dirReqHidden) { el.style.display = el.dataset.dirReqHidden === '-' ? '' : el.dataset.dirReqHidden; delete el.dataset.dirReqHidden; } });
+    window.scrollTo({ top: scrollY, behavior: 'auto' });
+    paintBar(); decorateCards();
+  }
+
   function openInbox(tab) {
-    if (typeof Modal === 'undefined') return;
-    Modal.open({ id: 'dir-req-inbox', title: 'Solicitudes de contacto', subtitle: 'Directorio VIP', icon: 'i-users', body: '<div id="dir-req-inbox-body"></div>' });
+    var host = document.getElementById('dynamic-section') || (document.getElementById('dir-grid') || {}).parentNode;
+    if (!host) return;
+    if (document.getElementById('dir-req-page')) { closeInbox(); }
+    var scrollY = window.scrollY || 0;
+    Array.prototype.forEach.call(host.children, function (el) { el.dataset.dirReqHidden = el.style.display || '-'; el.style.display = 'none'; });
+    var page = document.createElement('section');
+    page.id = 'dir-req-page';
+    page.className = 'dir-req-page fade-up';
+    page.dataset.scroll = String(scrollY);
+    page.innerHTML = '<button type="button" class="dir-req-page__back" data-req-back>← Volver al directorio</button>' +
+      '<header class="dir-req-page__head"><span class="dir-req-page__icon"><svg class="ic"><use href="#i-users"/></svg></span><div><h1>Solicitudes de contacto</h1><p>Directorio VIP · responde a quienes te escriben y revisa las que enviaste.</p></div></header>' +
+      '<div id="dir-req-inbox-body" class="dir-req-page__body"></div>';
+    host.appendChild(page);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    page.querySelector('[data-req-back]').addEventListener('click', closeInbox);
     var paint = function (t) {
-      var host = document.getElementById('dir-req-inbox-body'); if (!host) return;
-      host.innerHTML = inboxHtml(t);
-      host.querySelectorAll('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { paint(b.dataset.tab); }); });
-      host.querySelectorAll('[data-accept],[data-decline]').forEach(function (b) {
+      var body = document.getElementById('dir-req-inbox-body'); if (!body) return;
+      body.innerHTML = inboxHtml(t);
+      body.querySelectorAll('[data-tab]').forEach(function (b) { b.addEventListener('click', function () { paint(b.dataset.tab); }); });
+      body.querySelectorAll('[data-accept],[data-decline]').forEach(function (b) {
         b.addEventListener('click', async function () {
           var id = b.dataset.accept || b.dataset.decline; b.disabled = true;
           try {
@@ -169,6 +195,8 @@
     paint(tab || 'incoming');
     load(true).then(function () { if (document.getElementById('dir-req-inbox-body')) paint(tab || 'incoming'); });
   }
+  // Si el usuario cambia de sección, la vista de solicitudes no se queda abierta.
+  window.addEventListener('hashchange', function () { var p = document.getElementById('dir-req-page'); if (p && location.hash !== '#directorio') p.remove(); });
 
   var observer = null;
   function watchGrid() {
@@ -187,7 +215,7 @@
     var wrapped = function (container) { var out = original(container); setTimeout(watchGrid, 0); return out; };
     wrapped.__dirRequests = true;
     window.Sections.renderers.directorio = wrapped;
-    window.IMDIILDirectoryRequests = { load: load, openInbox: openInbox };
+    window.IMDIILDirectoryRequests = { load: load, openInbox: openInbox, closeInbox: closeInbox };
     // El directorio avisa cada vez que pinta las tarjetas (VIP primero, básicas después).
     window.addEventListener('imdiil:directorio-painted', function () { if (!document.getElementById('dir-grid')) return; paintBar(); decorateCards(); });
     if (String(location.hash || '') === '#directorio') setTimeout(watchGrid, 400);
