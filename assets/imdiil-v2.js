@@ -641,7 +641,7 @@
     window.Sections.renderers.pdfs = target => renderCatalog(target,'material');
     window.Sections.renderers.libros = target => renderCatalog(target,'book');
     window.Sections.renderers.creditos = renderCredits;
-    window.Sections.renderers.retos = renderChallenges;
+    window.Sections.renderers.retos = window.IMDIILRetos?.render || renderChallenges;
     window.Sections.renderers.logros = renderProgress;
     window.Sections.renderers.herramientas = renderTools;
     if (!window.__abrirClaseIMDIILOriginal && typeof window.abrirClaseIMDIIL === 'function') window.__abrirClaseIMDIILOriginal = window.abrirClaseIMDIIL;

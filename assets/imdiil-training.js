@@ -158,8 +158,16 @@
   let deck = CONTENT.cards.slice();
   let cardIndex = 0;
   let flipped = false;
+  // Embebido dentro de Retos: sin portada propia; las pestañas las pone Retos.
+  let embedded = false;
+  let onNavigate = null;
 
   function shell(content) {
+    if (embedded) {
+      container.innerHTML = `<div class="tr-page tr-page--embedded fade-up">${content}</div>`;
+      bind();
+      return;
+    }
     const total = xp();
     const lvl = levelOf(total);
     const pct = lvl.next === lvl.start ? 100 : Math.min(100, Math.round((total - lvl.start) / (lvl.next - lvl.start) * 100));
@@ -176,6 +184,7 @@
   }
 
   function back(target, label) {
+    if (embedded && target === 'hub') return '';
     return `<button class="tr-back" type="button" data-tr-go="${target}"><span aria-hidden="true">←</span> ${esc(label)}</button>`;
   }
 
@@ -317,6 +326,7 @@
   }
 
   function go(target) {
+    if (embedded && onNavigate && view === 'hub' && (target === 'cases' || target === 'cards')) { onNavigate(target); return; }
     if (target === 'cases') renderCases();
     else if (target === 'cards') { rebuildDeck(); renderCards(); }
     else renderHub();
@@ -378,21 +388,31 @@
     }));
   }
 
-  async function mount(target) {
+  function renderStart(start) {
+    if (start === 'cases') renderCases();
+    else if (start === 'cards') { rebuildDeck(); renderCards(); }
+    else renderHub();
+  }
+
+  async function mount(target, opts) {
     container = target;
+    embedded = !!opts?.embedded;
+    onNavigate = typeof opts?.onNavigate === 'function' ? opts.onNavigate : null;
+    const start = opts?.start || 'hub';
     view = 'hub';
     const known = loadedFor === (uid() || 'demo');
-    if (known) renderHub();
+    if (known) renderStart(start);
     else container.innerHTML = '<div class="tr-page"><div class="tr-loading"><i></i>Cargando tu entrenamiento…</div></div>';
     // Siempre se consulta el servidor al entrar: trae lo hecho en otro dispositivo.
     await load(known);
     if (container !== target || !target.isConnected) return;
-    if (!known) renderHub(); else repaint();
+    if (!known) renderStart(start); else repaint();
   }
 
   function register() {
     if (!window.Sections?.renderers) return false;
-    window.Sections.renderers.entrenamiento = target => { mount(target); };
+    // Entrenamiento ahora vive dentro de Retos; la ruta anterior abre Retos en "Casos de planta".
+    window.Sections.renderers.entrenamiento = target => { if (window.IMDIILRetos) window.IMDIILRetos.render(target, { tab: 'casos' }); else mount(target); };
     // Entrada directa por URL (#entrenamiento) antes de que este archivo cargara.
     if (location.hash === '#entrenamiento' && document.getElementById('dynamic-section') && !document.querySelector('#dynamic-section .tr-page')) {
       setTimeout(() => window.navigateToSection?.('entrenamiento', { reemplazar: true }), 0);

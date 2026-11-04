@@ -124,5 +124,15 @@
     }
   }
 
-  window.IMDIILCredits = { sync: () => syncSoon(0), reto, openWallet };
+  // Casos de planta: el servidor paga lo guardado en training_progress (una vez por caso).
+  let trainingTimer = null;
+  function earn(payload) {
+    if (guest() || payload?.source !== 'training-case') return;
+    clearTimeout(trainingTimer);
+    const run = () => request('/credits/training-sync', { method: 'POST', body: '{}' }).then(afterAward).catch(error => console.warn('[créditos] Casos sin premio', error.message));
+    // Espera a que el avance del caso llegue al servidor (PUT /training/me).
+    trainingTimer = setTimeout(() => { run().then(data => { if (!(Number(data?.credits) > 0)) setTimeout(run, 6000); }); }, 3000);
+  }
+
+  window.IMDIILCredits = { sync: () => syncSoon(0), reto, openWallet, earn };
 }());
