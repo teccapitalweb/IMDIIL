@@ -188,6 +188,8 @@
     wrapped.__dirRequests = true;
     window.Sections.renderers.directorio = wrapped;
     window.IMDIILDirectoryRequests = { load: load, openInbox: openInbox };
+    // El directorio avisa cada vez que pinta las tarjetas (VIP primero, básicas después).
+    window.addEventListener('imdiil:directorio-painted', function () { if (!document.getElementById('dir-grid')) return; paintBar(); decorateCards(); });
     if (String(location.hash || '') === '#directorio') setTimeout(watchGrid, 400);
     // Contador de solicitudes nuevas en el menú.
     setTimeout(function () { if (window.UserState && window.UserState.uid) load(); }, 4000);

@@ -1999,6 +1999,93 @@ body::after{
 .dir-card__foto--ini{display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif}
 .dir-card__vip{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.92);color:#B86212;font:750 9px/1 'JetBrains Mono',monospace;letter-spacing:.7px;text-transform:uppercase;box-shadow:0 4px 12px rgba(36,24,12,.1)}
 .dir-card__vip .ic{width:10px;height:10px}.dir-count{display:inline-flex;align-items:center;gap:7px;margin-left:auto;padding:7px 10px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);color:var(--text-2);font-size:11px;font-weight:650}.dir-count strong{color:var(--text)}
+.dir-cta--ig:hover{color:#C13584;border-color:#C13584}
+.dir-card__ctas{flex-wrap:wrap;justify-content:center;row-gap:8px}
+.dir-det__row--ig:hover .dir-det__row-ic{color:#C13584}
+/* ═══ Directorio · tarjeta profesional VIP, secciones y contacto exclusivo ═══ */
+.dir-chip--vip{display:inline-flex;align-items:center;gap:6px;border-color:color-mix(in srgb,#e0a83a 55%,transparent);color:#b07a12}
+.dir-chip--vip .ic{width:14px;height:14px}
+.dir-chip--vip.is-active{background:linear-gradient(135deg,#f6c86a,#d99619);border-color:#d99619;color:#2a1a04}
+:root[data-theme="night"] .dir-chip--vip{color:#f1c46a}
+.dir-group-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 -2px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.dir-group-head span{display:inline-flex;align-items:center;gap:8px;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:1.6px;text-transform:uppercase;color:var(--text-2)}
+.dir-group-head small{font:700 11px/1 'JetBrains Mono',monospace;color:var(--text-3)}
+.dir-group-head--vip{border-bottom-color:color-mix(in srgb,#e0a83a 40%,transparent)}
+.dir-group-head--vip span{color:#c08a1d}
+.dir-group-head--vip .ic{width:15px;height:15px}
+.dir-group-head:not(:first-child){margin-top:18px}
+.dir-upsell{display:flex;align-items:center;gap:16px;margin:0 0 16px;padding:16px 18px;border-radius:18px;border:1px solid color-mix(in srgb,#e0a83a 45%,transparent);background:radial-gradient(120% 140% at 0% 0%,rgba(245,181,70,.18),transparent 55%),linear-gradient(160deg,#1c1710,#0f0c08);color:#f5efe4}
+.dir-upsell__ic{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#f6c86a,#d99619);color:#2a1a04;box-shadow:0 8px 20px rgba(217,150,25,.35)}
+.dir-upsell__ic .ic{width:22px;height:22px}
+.dir-upsell strong{display:block;font:800 15px/1.25 'Plus Jakarta Sans',sans-serif}
+.dir-upsell p{margin:3px 0 0;font-size:12.5px;line-height:1.5;color:#c9bca6}
+.dir-upsell .btn{margin-left:auto;flex:none}
+.dir-cta-lock{display:inline-flex;align-items:center;gap:7px;margin-top:auto;padding:9px 14px;border-radius:11px;border:1px dashed var(--border-2);background:transparent;color:var(--text-2);font:600 12px/1 Inter,sans-serif;cursor:pointer;transition:.15s}
+.dir-cta-lock .ic{width:14px;height:14px}
+.dir-cta-lock:hover{border-style:solid;border-color:var(--primary);color:var(--primary)}
+/* Tarjeta VIP · misma base limpia que la básica, con acentos dorados y portada personalizable */
+.dir-card.dir-card--vip{flex-direction:column;align-items:center;text-align:center;border-color:color-mix(in srgb,#e0a83a 55%,transparent);box-shadow:0 10px 28px color-mix(in srgb,#e0a83a 12%,rgba(0,0,0,.05))}
+.dir-card--vip::before{display:none}
+.dir-card--vip:hover{border-color:#e0a83a;box-shadow:0 20px 45px color-mix(in srgb,#e0a83a 22%,rgba(0,0,0,.1))}
+.dir-vip__cover{position:absolute;top:0;left:0;right:0;height:64px;z-index:0;border-radius:19px 19px 0 0;background:linear-gradient(135deg,#f6e2b3,#e8c071);background-size:cover;background-position:center}
+.dir-vip__badge{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:4px;padding:4px 9px 4px 7px;border-radius:999px;background:rgba(255,255,255,.94);color:#a8740e;font:800 9.5px/1 'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.dir-vip__badge .ic{width:12px;height:12px}
+.dir-card--vip .dir-card__badge-mia{z-index:2}
+.dir-card--vip .dir-card__top{position:relative;z-index:1}
+.dir-vip__avatar{position:relative;display:inline-block;padding:3px;border-radius:50%;background:linear-gradient(135deg,#f6cf72,#c98a16)}
+.dir-card--vip .dir-vip__avatar .dir-card__foto{width:84px;height:84px;border:3px solid var(--surface);box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.dir-vip__seal{position:absolute;right:0;bottom:2px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,#f6cf72,#c98a16);color:#2a1a04;border:3px solid var(--surface)}
+.dir-vip__seal .ic{width:12px;height:12px;stroke-width:3}
+.dir-vip__estado{display:inline-flex;align-items:center;gap:6px;margin-bottom:9px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.dir-vip__estado i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);animation:pulseDotSmall 2.2s ease-in-out infinite}
+.dir-vip__estado--ok{background:color-mix(in srgb,var(--success) 12%,transparent);color:var(--success)}
+.dir-vip__estado--info{background:rgba(47,111,221,.1);color:#2f6fdd}
+:root[data-theme="night"] .dir-vip__estado--info{color:#7cb4ff}
+.dir-vip__certs{display:inline-flex;align-items:center;gap:5px;margin-bottom:12px;padding:4px 11px;border-radius:999px;border:1px solid color-mix(in srgb,var(--success) 35%,transparent);background:color-mix(in srgb,var(--success) 8%,transparent);color:var(--text-2);font-size:11px;font-weight:700}
+.dir-vip__certs .ic{width:12px;height:12px;color:var(--success);stroke-width:3}
+.dir-vip__cert{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;border:1px solid var(--border-2);background:var(--surface);font-size:10.5px;font-weight:600;color:var(--text-2);line-height:1.35}
+.dir-vip__cert .ic{width:11px;height:11px;color:var(--success);stroke-width:3}
+.dir-card--vip .dir-cta-lock{border-color:color-mix(in srgb,#e0a83a 60%,transparent);color:#a8740e}
+:root[data-theme="night"] .dir-card--vip .dir-cta-lock{color:#f1c46a}
+.dir-card--vip .dir-card__ctas{justify-content:center}
+@media(max-width:600px){
+  .dir-card.dir-card--vip{padding:26px 18px 18px;gap:0}
+  .dir-card--vip .dir-card__top{margin-bottom:12px}
+  .dir-card--vip .dir-card__body-m{align-items:center}
+  .dir-card--vip .dir-card__bio{text-align:center}
+  .dir-card--vip .dir-vip__avatar .dir-card__foto{width:76px;height:76px}
+}
+.dir-det__cover{width:100%;height:76px;margin-bottom:-44px;border-radius:14px;background-size:cover;background-position:center}
+.dir-det--vip .dir-det__foto{position:relative;box-shadow:0 0 0 3px #e0a83a,0 10px 26px rgba(0,0,0,.2)}
+.dir-vip__badge--det{position:static;margin:0 0 12px;background:color-mix(in srgb,#e0a83a 14%,var(--surface));box-shadow:none}
+/* Editor · portada VIP */
+.dir-form__portada{display:grid;gap:10px;margin-bottom:6px}
+.dir-form__portada-prev{height:66px;border-radius:12px;border:1px solid var(--border);background-size:cover;background-position:center}
+.dir-form__swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dir-form__swatch{width:32px;height:32px;border-radius:10px;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border-2);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.dir-form__swatch:hover{transform:translateY(-1px)}
+.dir-form__swatch.is-active{box-shadow:0 0 0 2px var(--primary)}
+.dir-form__portada.is-locked{opacity:.55;pointer-events:none}
+.dir-det__certs{width:100%;display:grid;gap:7px;max-height:260px;overflow:auto;margin:16px 0 4px;padding:14px;border-radius:14px;border:1px solid color-mix(in srgb,#e0a83a 35%,transparent);background:color-mix(in srgb,#e0a83a 7%,var(--surface));text-align:left}
+.dir-det__certs>span{font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:1.4px;text-transform:uppercase;color:#c08a1d}
+.dir-det__certs>div{display:grid;grid-template-columns:16px minmax(0,1fr);gap:2px 8px;align-items:center}
+.dir-det__certs .ic{width:14px;height:14px;color:var(--success);stroke-width:3;grid-row:span 2}
+.dir-det__certs b{font-size:13px}
+.dir-det__certs small{font:600 10.5px 'JetBrains Mono',monospace;color:var(--text-3)}
+.dir-det__lock{width:100%;display:flex;align-items:center;gap:12px;margin-top:16px;padding:14px;border-radius:14px;border:1px dashed var(--border-2);text-align:left}
+.dir-det__lock>.ic{width:22px;height:22px;flex:none;color:var(--primary)}
+.dir-det__lock strong{display:block;font-size:13px}
+.dir-det__lock p{margin:2px 0 0;font-size:12px;color:var(--text-2)}
+.dir-det__lock .btn{margin-left:auto;flex:none}
+.dir-form__plan{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:11px 13px;border-radius:12px;border:1px solid var(--border-2);background:var(--surface-2);font-size:12.5px;color:var(--text-2)}
+.dir-form__plan .ic{width:18px;height:18px;flex:none;color:var(--text-3)}
+.dir-form__plan.is-vip{border-color:color-mix(in srgb,#e0a83a 50%,transparent);background:linear-gradient(135deg,color-mix(in srgb,#f6c86a 16%,var(--surface)),var(--surface))}
+.dir-form__plan.is-vip .ic{color:#c08a1d}
+.dir-form__plan b{color:var(--text)}
+.dir-form__vip{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,#e0a83a 16%,transparent);color:#b07a12;font:700 9.5px/1.4 'JetBrains Mono',monospace;letter-spacing:.6px;text-transform:uppercase;vertical-align:middle}
+.dir-form__vip .ic{width:11px;height:11px}
+@media(max-width:560px){.dir-upsell{flex-wrap:wrap;gap:12px 14px;padding:16px}.dir-upsell__ic{width:38px;height:38px;border-radius:11px}.dir-upsell__ic .ic{width:19px;height:19px}.dir-upsell__txt{flex:1;min-width:0}.dir-upsell .btn{width:100%;margin-left:0}.dir-det__lock{flex-wrap:wrap}.dir-det__lock .btn{width:100%}}
+@media(prefers-reduced-motion:reduce){.dir-card--vip::after{display:none}.dir-vip__estado i{animation:none}}
 .dir-card__name{font-family:'Plus Jakarta Sans',sans-serif;font-size:16.5px;font-weight:800;letter-spacing:-.3px;line-height:1.25;margin-bottom:3px}
 .dir-card__puesto{font-size:13px;color:var(--text);font-weight:600;margin-bottom:5px;line-height:1.3}
 .dir-card__empresa{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2);margin-bottom:10px}
@@ -3685,6 +3772,7 @@ window.__setDisplayName = async (nombre) => {
 <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6l9 -6"/></symbol>
 <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 15l6 -6"/><path d="M11 6l.5 -.5a4 4 0 0 1 6 6l-.5 .5"/><path d="M13 18l-.5 .5a4 4 0 0 1 -6 -6l.5 -.5"/></symbol>
 <symbol id="i-linkedin" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5a2.5 2.5 0 0 1 0 -5M3 8.98h4v12H3zM9 8.98h3.8v1.64h.05c.53 -1 1.83 -2.05 3.76 -2.05c4.02 0 4.76 2.65 4.76 6.1v6.31h-4v-5.6c0 -1.33 -.02 -3.05 -1.86 -3.05c-1.86 0 -2.14 1.45 -2.14 2.95v5.7H9z"/></symbol>
+<symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8A4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></symbol>
 <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10.5 -10.5a2.83 2.83 0 0 0 -4 -4l-10.5 10.5z"/><path d="M13.5 6.5l4 4"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35 -4.35"/></symbol>
 <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10v-3a4 4 0 0 1 8 0v3"/></symbol>
@@ -9201,6 +9289,7 @@ const Sections = (function(){
   let _dirUnsub = null;
   window.__dirCleanup = function(){ try{ if(typeof _dirUnsub==='function'){ _dirUnsub(); _dirUnsub=null; } }catch(e){} };
   window.__dirEditar = function(){ return dirEditarMiTarjeta(); };
+  window.__dirAutoCrear = function(){ return dirAutoCrearTarjeta(); };
   let _dirCards = [];
   let _dirFiltroSector = 'todos';
   let _dirBusqueda = '';
@@ -9220,9 +9309,11 @@ const Sections = (function(){
     const color = dirTexto(valor);
     return /^#[0-9a-f]{6}$/i.test(color) ? color : dirColorFor(uid);
   }
+  // Solo fotos https o base64 de imagen: evita inyectar atributos desde una tarjeta ajena.
   function dirFotoSegura(valor){
     const foto = dirTexto(valor);
-    return /^(https:\/\/|data:image\/(?:png|jpe?g|webp);base64,)/i.test(foto) ? foto : '';
+    if (/^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/i.test(foto)) return foto;
+    return /^https:\/\/[^\s"'<>]+$/i.test(foto) ? foto : '';
   }
   function dirEnlaceSeguro(valor){
     const enlace = dirTexto(valor);
@@ -9232,6 +9323,64 @@ const Sections = (function(){
       return ['http:','https:'].includes(url.protocol) ? url.href : '';
     } catch (_) { return ''; }
   }
+  function dirInstagramPerfil(value){
+    const raw = dirTexto(value);
+    if (!raw) return '';
+    let usuario = raw.replace(/^@/, '');
+    const pareceUrl = /^(?:https?:\/\/)?(?:www\.|m\.)?instagram\.com\//i.test(raw);
+    if (/^https?:\/\//i.test(raw) || pareceUrl) {
+      try {
+        const u = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw);
+        if (!['instagram.com','www.instagram.com','m.instagram.com'].includes(u.hostname.toLowerCase())) return '';
+        const partes = u.pathname.split('/').filter(Boolean);
+        if (partes.length !== 1) return '';
+        [usuario] = partes;
+      } catch(e) { return ''; }
+    }
+    if (!/^[A-Za-z0-9._]{1,30}$/.test(usuario) || ['accounts','direct','directory','explore','p','reel','reels','stories'].includes(usuario.toLowerCase())) return '';
+    return `https://www.instagram.com/${usuario}/`;
+  }
+  function dirInstagramUsuario(value){
+    const url = dirInstagramPerfil(value);
+    return url ? '@' + new URL(url).pathname.split('/').filter(Boolean)[0] : '';
+  }
+  function dirSectorDesde(texto){
+    const t = String(texto || '').trim().toLowerCase();
+    return SECTORES.find(s => s.toLowerCase() === t) || '';
+  }
+
+  // ─── Directorio · lo que decide el servidor (misma lógica que IMFRA) ───
+  // Todas las cuentas pueden tener tarjeta. El servidor indica quién es VIP
+  // (tarjeta profesional verificada), sus certificados reales y, solo a quien
+  // es VIP, los datos de contacto. El contacto vive aparte de la tarjeta.
+  const DIR_ESTADOS = {
+    proyectos: { label: 'Disponible para proyectos', cls: 'ok' },
+    empleo: { label: 'Busco empleo', cls: 'info' },
+    consultoria: { label: 'Ofrezco consultoría', cls: 'ok' }
+  };
+  // Portadas que un VIP puede elegir para la franja de su tarjeta.
+  const DIR_PORTADAS = {
+    dorado: { label: 'Dorado', bg: 'linear-gradient(135deg,#f6e2b3,#e8c071)' },
+    naranja: { label: 'Naranja IMDIIL', bg: 'linear-gradient(135deg,#ffd2b3,#FF7A2D)' },
+    marino: { label: 'Marino', bg: 'linear-gradient(135deg,#1e3a5f,#2f6fa3)' },
+    noche: { label: 'Navy', bg: 'linear-gradient(135deg,#0d2536,#14425f)' },
+    azul: { label: 'Cielo', bg: 'linear-gradient(135deg,#cfe0f5,#6f9fd8)' },
+    verde: { label: 'Verde', bg: 'linear-gradient(135deg,#d3eedd,#5cb88a)' },
+    arena: { label: 'Arena', bg: 'linear-gradient(135deg,#f1e7d6,#d9c3a0)' },
+    vino: { label: 'Vino', bg: 'linear-gradient(135deg,#6b1d33,#a8324f)' },
+    grafito: { label: 'Grafito', bg: 'linear-gradient(135deg,#3a3f47,#1f2329)' }
+  };
+  function dirPortadaStyle(c){
+    const img = dirFotoSegura(c?.portadaImg);
+    if (img) return `background-image:url('${img}')`;
+    return `background:${(DIR_PORTADAS[c?.portadaColor] || DIR_PORTADAS.dorado).bg}`;
+  }
+  let _dirPortadaTmp = undefined; // undefined=sin cambio, null=quitar, string=nueva
+  let _dirMeta = { cargado: false, viewerVip: false, vip: new Set(), certificados: {}, contactos: {}, miContacto: null };
+  let _dirSoloVip = false;
+  const DIR_SAFE_CACHE_KEY = 'imdiil:directory-public-cache:v1';
+  const DIR_SAFE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
   function dirNormalizarTarjeta(raw, id){
     const x = raw && typeof raw === 'object' ? raw : {};
     const uid = dirTexto(id || x.uid);
@@ -9239,20 +9388,186 @@ const Sections = (function(){
       ...x,
       id: uid,
       uid: dirTexto(x.uid, uid),
-      nombre: dirTexto(x.nombre, 'Miembro VIP'),
+      nombre: dirTexto(x.nombre, 'Miembro IMDIIL'),
       puesto: dirTexto(x.puesto),
       empresa: dirTexto(x.empresa),
       sector: dirTexto(x.sector),
       bio: dirTexto(x.bio),
+      estado: DIR_ESTADOS[dirTexto(x.estado)] ? dirTexto(x.estado) : '',
+      portadaColor: DIR_PORTADAS[dirTexto(x.portadaColor)] ? dirTexto(x.portadaColor) : 'dorado',
+      portadaImg: dirFotoSegura(x.portadaImg),
       whatsapp: dirTexto(x.whatsapp),
       email: dirTexto(x.email),
       linkedin: dirTexto(x.linkedin),
+      instagram: dirTexto(x.instagram),
       web: dirTexto(x.web),
       foto: dirFotoSegura(x.foto),
       color: dirColorSeguro(x.color, uid),
       vip: x.vip === true,
       visible: x.visible !== false
     };
+  }
+  function dirGuardarCacheSeguro(items){
+    try {
+      const cards = (items || []).slice(0,300).map(c => ({ ...dirNormalizarTarjeta(c, c.id), email:'', whatsapp:'', linkedin:'', instagram:'', web:'' })).filter(c => c.id && c.visible);
+      localStorage.setItem(DIR_SAFE_CACHE_KEY, JSON.stringify({ at:Date.now(), items:cards }));
+    } catch(e) { console.warn('[directorio cache]', e.message); }
+  }
+  function dirLeerCacheSeguro(){
+    try {
+      const cached = JSON.parse(localStorage.getItem(DIR_SAFE_CACHE_KEY) || 'null');
+      if (!cached?.at || Date.now() - cached.at > DIR_SAFE_CACHE_TTL_MS || !Array.isArray(cached.items)) return [];
+      return cached.items.map(c => dirNormalizarTarjeta(c, c.id)).filter(c => c.id && c.visible);
+    } catch(e) { return []; }
+  }
+
+  function dirViewerEsVip(){
+    return _dirMeta.cargado ? _dirMeta.viewerVip : (window.UserState?.modo === 'vip' || esAdminReal());
+  }
+  // El servidor decide quién es VIP; mientras responde, se usa el estatus guardado en la tarjeta.
+  function dirEsVip(c){
+    const id = typeof c === 'string' ? c : c?.id;
+    if (_dirMeta.cargado) return _dirMeta.vip.has(id);
+    const card = typeof c === 'string' ? _dirCards.find(x=>x.id===c) : c;
+    return card?.vip === true;
+  }
+  function dirTieneContacto(c){ return !!(c && (c.email || c.whatsapp || c.linkedin || c.instagram || c.web)); }
+  function dirSoloContacto(c){ return { email: c?.email || '', whatsapp: c?.whatsapp || '', linkedin: c?.linkedin || '', instagram: c?.instagram || '', web: c?.web || '' }; }
+
+  // Contacto que la cuenta ya nos dio: correo de acceso y WhatsApp de su ficha.
+  function dirContactoCuenta(){
+    const S = window.UserState || {};
+    const md = window.memberData || {};
+    let local = {};
+    try { local = JSON.parse(localStorage.getItem('imdiil_profile') || '{}'); } catch(e){}
+    return {
+      email: String(S.email || md.email || '').trim().toLowerCase().slice(0, 80),
+      whatsapp: String(md.whatsapp || local.whatsapp || '').trim().slice(0, 20),
+      linkedin: '', instagram: '', web: ''
+    };
+  }
+
+  async function dirApi(path, opts){
+    const user = window.__auth?.currentUser || window.__currentUser;
+    if (!user) throw new Error('Inicia sesión para usar el directorio.');
+    const token = await user.getIdToken();
+    const response = await fetch(`${window.WEBHOOK_URL}/directory${path}`, {
+      ...(opts || {}),
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'No pudimos conectar con el directorio.');
+    return data;
+  }
+  const dirGuardarContacto = (contacto) => dirApi('/contact', { method: 'PUT', body: JSON.stringify(dirSoloContacto(contacto)) });
+  window.__dirGuardarContacto = dirGuardarContacto;
+
+  async function dirCargarMeta(){
+    if (window.__isDemoMode || !window.UserState?.uid) return;
+    try {
+      const d = await dirApi('/overview');
+      _dirMeta = {
+        cargado: true,
+        viewerVip: d.viewerVip === true,
+        vip: new Set(Array.isArray(d.vip) ? d.vip : []),
+        certificados: d.certificates || {},
+        contactos: d.contacts || {},
+        miContacto: d.myContact || null
+      };
+    } catch(e) {
+      console.warn('[directorio]', e.message);
+    }
+    dirPintar();
+    dirPintarAviso();
+  }
+
+  // Contacto visible: el propio siempre; el de otros solo si quien mira es VIP (null = bloqueado).
+  function dirContactoVisible(c){
+    if (c.id === window.UserState?.uid) return _dirMeta.miContacto || dirSoloContacto(c);
+    if (!dirViewerEsVip()) return null;
+    return _dirMeta.cargado ? (_dirMeta.contactos[c.id] || {}) : dirSoloContacto(c);
+  }
+
+  function dirPaywallContacto(){
+    if (typeof window.__showPaywallModal === 'function') {
+      window.__showPaywallModal({
+        title: 'Contacta a los miembros con VIP',
+        sub: 'Hazte VIP para ver el WhatsApp, correo y LinkedIn de los miembros del directorio y tener tu tarjeta profesional verificada.',
+        cta: 'Hazte VIP'
+      });
+    } else if (typeof window.navigateToSection === 'function') {
+      window.navigateToSection('suscripcion');
+    }
+  }
+
+  // Tarjetas antiguas: su contacto se mueve al almacén protegido (una vez por
+  // dispositivo) y, si nunca tuvieron contacto ni se editaron, se completa con
+  // el de la cuenta. Si aún no hay tarjeta, se crea con la ficha y la foto.
+  async function dirAutoCrearTarjeta(){
+    const fs = window.__fs;
+    const S = window.UserState || {};
+    const md = window.memberData || {};
+    if (!fs?.setDoc || !S.uid || window.__isDemoMode || !(window.__auth?.currentUser || window.__currentUser)) return false;
+    const key = `imdiil:dir-auto:v1:${S.uid}`;
+    try { if (localStorage.getItem(key) === '1') return false; } catch(e){}
+    try {
+      const ref = fs.doc(fs.db, 'directorio', S.uid);
+      const ds = await fs.getDoc(ref);
+      const cuenta = dirContactoCuenta();
+      if (!ds.exists()) {
+        const nombre = String(md.nombre || S.nombre || S.displayName || '').trim() || cuenta.email.split('@')[0] || 'Miembro IMDIIL';
+        const especialidad = String(md.especialidad || '').trim();
+        const sector = dirSectorDesde(especialidad);
+        const payload = {
+          uid: S.uid,
+          nombre: nombre.slice(0, 50),
+          puesto: sector ? '' : especialidad.slice(0, 60),
+          empresa: String(md.empresa || '').trim().slice(0, 60),
+          sector, bio: '',
+          whatsapp: '', email: '', linkedin: '', instagram: '', web: '',
+          visible: true,
+          color: dirColorFor(S.uid),
+          autoCreada: true,
+          updatedAt: fs.serverTimestamp()
+        };
+        const foto = dirFotoSegura(S.fotoGoogle || S.photoURL);
+        if (foto) payload.foto = foto;
+        await dirGuardarContacto(cuenta);
+        await fs.setDoc(ref, payload, { merge: true });
+      } else {
+        const data = ds.data() || {};
+        const enTarjeta = dirSoloContacto(data);
+        if (dirTieneContacto(enTarjeta)) {
+          await dirGuardarContacto(enTarjeta);
+          await fs.setDoc(ref, { uid: S.uid, email: '', whatsapp: '', linkedin: '', instagram: '', web: '' }, { merge: true });
+        } else if (data.editadaPorUsuario !== true) {
+          const propio = await dirApi('/contact');
+          if (!propio.stored && !dirTieneContacto(propio.contact) && dirTieneContacto(cuenta)) await dirGuardarContacto(cuenta);
+        }
+      }
+      try { localStorage.setItem(key, '1'); } catch(e){}
+      return true;
+    } catch(e){
+      console.warn('[directorio] No se pudo preparar la tarjeta automática', e);
+      return false;
+    }
+  }
+
+  function dirComprimirPortada(file){
+    return new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=e=>{ const img=new Image(); img.onload=()=>{
+        const W=900,H=280; const escala=Math.max(W/img.width,H/img.height);
+        const w=W/escala,h=H/escala,sx=(img.width-w)/2,sy=(img.height-h)/2;
+        const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+        cv.getContext('2d').drawImage(img,sx,sy,w,h,0,0,W,H);
+        let q=0.8,out=cv.toDataURL('image/jpeg',q);
+        while(out.length>220000 && q>0.4){ q-=0.08; out=cv.toDataURL('image/jpeg',q); }
+        resolve(out);
+      }; img.onerror=reject; img.src=e.target.result; };
+      r.onerror=reject; r.readAsDataURL(file);
+    });
   }
   function dirComprimirFoto(file){
     return new Promise((resolve,reject)=>{
@@ -9368,7 +9683,7 @@ const Sections = (function(){
   }
 
   function renderDirectorio(container){
-    const esVip = window.UserState?.modo==='vip' || esAdminReal();
+    const conSesion = !!window.UserState?.uid && !window.__isDemoMode;
     container.innerHTML = `
       <div class="fade-up">
         <div class="sec-hero">
@@ -9377,18 +9692,21 @@ const Sections = (function(){
           <p class="sec-hero__sub">Conecta con la comunidad IMDIIL. Crea tu tarjeta profesional y descubre a otros ingenieros y especialistas del sector.</p>
         </div>
 
+        <div id="dir-aviso"></div>
+
         <div class="dir-bar">
           <div class="dir-search">
             <svg class="ic"><use href="#i-search"/></svg>
             <input type="text" id="dir-buscar" placeholder="Buscar por nombre, empresa o puesto…">
           </div>
           <span class="dir-count" id="dir-count"><svg class="ic"><use href="#i-users"/></svg><strong>0</strong> perfiles</span>
-          ${esVip?`<button class="btn btn--accent" id="dir-mi-tarjeta"><svg class="ic"><use href="#i-edit"/></svg>Mi tarjeta</button>`:''}
+          ${conSesion?`<button class="btn btn--accent" id="dir-mi-tarjeta"><svg class="ic"><use href="#i-edit"/></svg>Mi tarjeta</button>`:''}
         </div>
 
         <div class="dir-chips" id="dir-chips">
-          <button class="dir-chip is-active" data-sector="todos">Todos</button>
-          ${SECTORES.map(s=>`<button class="dir-chip" data-sector="${s}">${s}</button>`).join('')}
+          <button class="dir-chip dir-chip--vip ${_dirSoloVip?'is-active':''}" data-vipfilter><svg class="ic"><use href="#i-crown"/></svg>Solo VIP</button>
+          <button class="dir-chip ${_dirFiltroSector==='todos'?'is-active':''}" data-sector="todos">Todos</button>
+          ${SECTORES.map(s=>`<button class="dir-chip ${_dirFiltroSector===s?'is-active':''}" data-sector="${s}">${s}</button>`).join('')}
         </div>
 
         <div class="dir-grid" id="dir-grid">
@@ -9397,10 +9715,8 @@ const Sections = (function(){
       </div>
     `;
 
-    // Búsqueda
     const bus = container.querySelector('#dir-buscar');
     bus.addEventListener('input', ()=>{ _dirBusqueda = (bus.value||'').toLowerCase().trim(); dirPintar(); });
-    // Chips de sector
     container.querySelectorAll('[data-sector]').forEach(c=>{
       c.addEventListener('click', ()=>{
         container.querySelectorAll('[data-sector]').forEach(x=>x.classList.remove('is-active'));
@@ -9409,160 +9725,260 @@ const Sections = (function(){
         dirPintar();
       });
     });
-    // Mi tarjeta
-    if (esVip) container.querySelector('#dir-mi-tarjeta').addEventListener('click', dirEditarMiTarjeta);
+    container.querySelector('[data-vipfilter]').addEventListener('click', (e)=>{
+      _dirSoloVip = !_dirSoloVip;
+      e.currentTarget.classList.toggle('is-active', _dirSoloVip);
+      dirPintar();
+    });
+    container.querySelector('#dir-mi-tarjeta')?.addEventListener('click', dirEditarMiTarjeta);
 
+    dirPintarAviso();
     dirSuscribir();
+    void dirCargarMeta().then(()=>dirAutoCrearTarjeta());
+  }
+
+  // Invitación a VIP para quien tiene tarjeta básica.
+  function dirPintarAviso(){
+    const host = document.getElementById('dir-aviso');
+    if (!host) return;
+    if (!window.UserState?.uid || dirViewerEsVip()) { host.innerHTML = ''; return; }
+    host.innerHTML = `<section class="dir-upsell">
+      <span class="dir-upsell__ic"><svg class="ic"><use href="#i-crown"/></svg></span>
+      <div class="dir-upsell__txt"><strong>Destaca con tu tarjeta VIP</strong><p>Aparece primero, con portada, insignia verificada, tus certificados IMDIIL y contacto directo con todos los miembros.</p></div>
+      <button type="button" class="btn btn--accent" data-dir-hazte-vip>Hazte VIP</button>
+    </section>`;
+    host.querySelector('[data-dir-hazte-vip]')?.addEventListener('click', ()=>{ if (typeof window.navigateToSection === 'function') window.navigateToSection('suscripcion'); });
   }
 
   function dirSuscribir(){
     const fs = window.__fs;
-    if (!fs || !fs.onSnapshot){ const g=document.getElementById('dir-grid'); if(g) g.innerHTML='<div class="foro-empty">No se pudo cargar el directorio.</div>'; return; }
+    if (!fs || !fs.onSnapshot){
+      const cached = dirLeerCacheSeguro();
+      if (cached.length) { _dirCards = cached; dirPintar(); return; }
+      const g=document.getElementById('dir-grid');
+      if(g) g.innerHTML='<div class="foro-empty">No se pudo cargar el directorio.</div>';
+      return;
+    }
     if (_dirUnsub){ _dirUnsub(); _dirUnsub=null; }
     const q = fs.query(fs.collection(fs.db,'directorio'), fs.orderBy('updatedAt','desc'), fs.limit(300));
     _dirUnsub = fs.onSnapshot(q, (snap)=>{
       _dirCards = [];
-      snap.forEach(d=>{
-        const x = dirNormalizarTarjeta(d.data(), d.id);
-        if (x.visible) _dirCards.push(x);
-      });
+      snap.forEach(d=>{ const x = dirNormalizarTarjeta(d.data(), d.id); if (x.visible) _dirCards.push(x); });
+      dirGuardarCacheSeguro(_dirCards);
       try { dirPintar(); }
       catch (error) {
         console.error('dir render', error);
         const g=document.getElementById('dir-grid');
         if(g) g.innerHTML='<div class="foro-empty">No se pudieron dibujar los perfiles. Actualiza la página para volver a intentarlo.</div>';
       }
-    }, (err)=>{ console.error('dir snap',err); const g=document.getElementById('dir-grid'); if(g) g.innerHTML='<div class="foro-empty">No se pudo cargar el directorio.</div>'; });
+    }, (err)=>{
+      console.error('dir snap',err);
+      const cached = dirLeerCacheSeguro();
+      if (cached.length) { _dirCards = cached; dirPintar(); return; }
+      const g=document.getElementById('dir-grid');
+      if(g) g.innerHTML='<div class="foro-empty">No se pudo cargar el directorio.<br><button type="button" class="btn btn--ghost" id="dir-retry" style="margin-top:12px">Reintentar</button></div>';
+      document.getElementById('dir-retry')?.addEventListener('click',()=>{ g.innerHTML='<div class="foro-empty">Cargando directorio…</div>'; dirSuscribir(); });
+    });
+  }
+
+  function dirFotoHtml(c, clase){
+    const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
+    const fotoOk = dirFotoSegura(c.foto);
+    return fotoOk
+      ? `<img src="${escapeHtml(fotoOk)}" alt="${escapeHtml(c.nombre||'')}" class="${clase}" loading="lazy" referrerpolicy="no-referrer">`
+      : `<div class="${clase} ${clase}--ini" style="background:linear-gradient(135deg,${dirColorSeguro(c.color, c.id)},${dirColorSeguro(c.color, c.id)}aa);">${escapeHtml(inicial)}</div>`;
+  }
+
+  function dirCtasHtml(contacto){
+    if (contacto === null) {
+      return `<button type="button" class="dir-cta-lock" data-dirlock><svg class="ic"><use href="#i-lock"/></svg>Contactar · solo VIP</button>`;
+    }
+    const out = [];
+    const wa = String(contacto.whatsapp||'').replace(/[^0-9]/g,'');
+    if (wa) out.push(`<a class="dir-cta dir-cta--wa" href="https://wa.me/${wa}" target="_blank" rel="noopener" title="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>`);
+    if (contacto.email) out.push(`<button class="dir-cta dir-cta--mail" data-email="${escapeHtml(contacto.email)}" title="Correo: ${escapeHtml(contacto.email)}"><svg class="ic"><use href="#i-mail"/></svg></button>`);
+    if (dirEnlaceSeguro(contacto.linkedin)) out.push(`<a class="dir-cta dir-cta--li" href="${escapeHtml(dirEnlaceSeguro(contacto.linkedin))}" target="_blank" rel="noopener" title="LinkedIn"><svg class="ic"><use href="#i-linkedin"/></svg></a>`);
+    if (dirInstagramPerfil(contacto.instagram)) out.push(`<a class="dir-cta dir-cta--ig" href="${escapeHtml(dirInstagramPerfil(contacto.instagram))}" target="_blank" rel="noopener" title="Instagram" aria-label="Abrir perfil de Instagram"><svg class="ic"><use href="#i-instagram"/></svg></a>`);
+    if (dirEnlaceSeguro(contacto.web)) out.push(`<a class="dir-cta" href="${escapeHtml(dirEnlaceSeguro(contacto.web))}" target="_blank" rel="noopener" title="Sitio web"><svg class="ic"><use href="#i-link"/></svg></a>`);
+    return out.length ? `<div class="dir-card__ctas">${out.join('')}</div>` : '<div class="dir-card__sincontacto">Sin datos de contacto</div>';
+  }
+
+  // Tarjeta básica (diseño por defecto).
+  function dirCardBasicaHtml(c, esMia){
+    return `
+      <article class="dir-card${esMia?' dir-card--mia':''}" data-dircard="${escapeHtml(c.id)}">
+        ${esMia?'<span class="dir-card__badge-mia">Tú</span>':''}
+        <div class="dir-card__top">${dirFotoHtml(c,'dir-card__foto')}</div>
+        <div class="dir-card__body-m">
+          <div class="dir-card__name">${escapeHtml(c.nombre||'Miembro IMDIIL')}</div>
+          <div class="dir-card__puesto">${escapeHtml(c.puesto||'Miembro de la comunidad IMDIIL')}</div>
+          ${c.empresa?`<div class="dir-card__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
+          ${c.sector?`<span class="dir-card__sector">${escapeHtml(c.sector)}</span>`:''}
+          ${c.bio?`<div class="dir-card__bio">${escapeHtml(c.bio)}</div>`:''}
+          ${dirCtasHtml(dirContactoVisible(c))}
+        </div>
+      </article>`;
+  }
+
+  // Tarjeta profesional VIP: la misma base limpia, con acentos dorados y portada propia.
+  function dirCardVipHtml(c, esMia){
+    const certs = _dirMeta.certificados[c.id] || [];
+    const estado = DIR_ESTADOS[c.estado];
+    return `
+      <article class="dir-card dir-card--vip${esMia?' dir-card--mia':''}" data-dircard="${escapeHtml(c.id)}">
+        <div class="dir-vip__cover" style="${dirPortadaStyle(c)}" aria-hidden="true"></div>
+        <span class="dir-vip__badge"><svg class="ic"><use href="#i-crown"/></svg>VIP</span>
+        ${esMia?'<span class="dir-card__badge-mia">Tú</span>':''}
+        <div class="dir-card__top"><div class="dir-vip__avatar">${dirFotoHtml(c,'dir-card__foto')}<span class="dir-vip__seal" title="Miembro VIP verificado"><svg class="ic"><use href="#i-check"/></svg></span></div></div>
+        <div class="dir-card__body-m">
+          <div class="dir-card__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
+          <div class="dir-card__puesto">${escapeHtml(c.puesto||'Miembro VIP IMDIIL')}</div>
+          ${c.empresa?`<div class="dir-card__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
+          ${estado?`<span class="dir-vip__estado dir-vip__estado--${estado.cls}"><i></i>${estado.label}</span>`:''}
+          ${c.sector?`<span class="dir-card__sector">${escapeHtml(c.sector)}</span>`:''}
+          ${certs.length?`<span class="dir-vip__certs" title="Ver certificados en la tarjeta"><svg class="ic"><use href="#i-check"/></svg>${certs.length} certificado${certs.length!==1?'s':''} IMDIIL</span>`:''}
+          ${c.bio?`<div class="dir-card__bio">${escapeHtml(c.bio)}</div>`:''}
+          ${dirCtasHtml(dirContactoVisible(c))}
+        </div>
+      </article>`;
   }
 
   function dirPintar(){
     const grid = document.getElementById('dir-grid'); if(!grid) return;
+    const uid = window.UserState?.uid;
     let cards = _dirCards.slice();
     if (_dirFiltroSector!=='todos') cards = cards.filter(c=>c.sector===_dirFiltroSector);
     if (_dirBusqueda) cards = cards.filter(c=>{
       const blob = ((c.nombre||'')+' '+(c.empresa||'')+' '+(c.puesto||'')+' '+(c.sector||'')).toLowerCase();
       return blob.includes(_dirBusqueda);
     });
+    // VIP primero; la propia tarjeta va primero dentro de su grupo.
+    const propiaPrimero = (a,b)=>(b.id===uid)-(a.id===uid);
+    const vip = cards.filter(c=>dirEsVip(c)).sort(propiaPrimero);
+    const resto = _dirSoloVip ? [] : cards.filter(c=>!dirEsVip(c)).sort(propiaPrimero);
+    const total = vip.length + resto.length;
     const count = document.getElementById('dir-count');
-    if (count) count.innerHTML = `<svg class="ic"><use href="#i-users"/></svg><strong>${cards.length}</strong> ${cards.length===1?'perfil':'perfiles'}`;
-    if (!cards.length){
-      grid.innerHTML = `<div class="foro-empty">${_dirBusqueda||_dirFiltroSector!=='todos'?'No hay miembros que coincidan con tu búsqueda.':'Aún no hay tarjetas en el directorio. ¡Sé el primero en crear la tuya!'}</div>`;
+    if (count) count.innerHTML = `<svg class="ic"><use href="#i-users"/></svg><strong>${total}</strong> ${total===1?'perfil':'perfiles'}`;
+    if (!total){
+      grid.innerHTML = `<div class="foro-empty">${_dirSoloVip?'Aún no hay miembros VIP con esos filtros.':(_dirBusqueda||_dirFiltroSector!=='todos'?'No hay miembros que coincidan con tu búsqueda.':'Aún no hay tarjetas en el directorio. ¡Sé el primero en crear la tuya!')}</div>`;
+      window.dispatchEvent(new CustomEvent('imdiil:directorio-painted'));
       return;
     }
-    const uid = window.UserState?.uid;
-    grid.innerHTML = cards.map(c=>{
-      const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
-      const foto = `<div class="dir-card__foto dir-card__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${window.__avatarHtml(c.foto,inicial,`Foto de ${c.nombre||'miembro'}`)}</div>`;
-      const contactos = [];
-      if (c.whatsapp) contactos.push(`<a class="dir-cta dir-cta--wa" href="https://wa.me/${c.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" title="WhatsApp"><svg class="ic"><use href="#i-whatsapp"/></svg></a>`);
-      if (c.email) contactos.push(`<button class="dir-cta dir-cta--mail" data-email="${escapeHtml(c.email)}" title="Copiar correo: ${escapeHtml(c.email)}"><svg class="ic"><use href="#i-mail"/></svg></button>`);
-      const linkedin = dirEnlaceSeguro(c.linkedin);
-      const web = dirEnlaceSeguro(c.web);
-      if (linkedin) contactos.push(`<a class="dir-cta dir-cta--li" href="${escapeHtml(linkedin)}" target="_blank" rel="noopener" title="LinkedIn"><svg class="ic"><use href="#i-linkedin"/></svg></a>`);
-      if (web) contactos.push(`<a class="dir-cta" href="${escapeHtml(web)}" target="_blank" rel="noopener" title="Sitio web"><svg class="ic"><use href="#i-link"/></svg></a>`);
-      const esMia = c.id===uid;
-      return `
-      <article class="dir-card${esMia?' dir-card--mia':''}" data-dircard="${escapeHtml(c.id)}">
-        ${esMia?'<span class="dir-card__badge-mia">Tú</span>':''}
-        ${c.vip?'<span class="dir-card__vip"><svg class="ic"><use href="#i-crown"/></svg>VIP verificado</span>':''}
-        <div class="dir-card__top">
-          ${foto}
-        </div>
-        <div class="dir-card__body-m">
-          <div class="dir-card__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
-          <div class="dir-card__puesto">${escapeHtml(c.puesto||'Miembro de la comunidad IMDIIL')}</div>
-          ${c.empresa?`<div class="dir-card__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
-          ${c.sector?`<span class="dir-card__sector">${escapeHtml(c.sector)}</span>`:''}
-          <div class="dir-card__bio">${escapeHtml(c.bio||'Perfil profesional por completar.')}</div>
-          ${contactos.length?`<div class="dir-card__ctas">${contactos.join('')}</div>`:'<div class="dir-card__sincontacto">Sin datos de contacto</div>'}
-        </div>
-      </article>`;
-    }).join('');
+    const cabecera = (titulo, n, vipGrupo) => `<div class="dir-group-head ${vipGrupo?'dir-group-head--vip':''}"><span>${vipGrupo?'<svg class="ic"><use href="#i-crown"/></svg>':''}${titulo}</span><small>${n}</small></div>`;
+    let html = '';
+    if (vip.length) html += (resto.length || _dirSoloVip ? cabecera('Miembros VIP verificados', vip.length, true) : '') + vip.map(c=>dirCardVipHtml(c, c.id===uid)).join('');
+    if (resto.length) html += (vip.length ? cabecera('Comunidad IMDIIL', resto.length, false) : '') + resto.map(c=>dirCardBasicaHtml(c, c.id===uid)).join('');
+    grid.innerHTML = html;
 
-    // Clic en la tarjeta → abre el detalle (sin disparar al tocar un botón de contacto)
     grid.querySelectorAll('[data-dircard]').forEach(card=>{
       card.addEventListener('click', (e)=>{
-        if (e.target.closest('.dir-cta')) return; // dejó pasar los enlaces de contacto
+        if (e.target.closest('.dir-cta,[data-dirlock]')) return;
         dirVerDetalle(card.dataset.dircard);
       });
     });
-    // Botón de correo: copiar al portapapeles + intentar abrir cliente
+    grid.querySelectorAll('[data-dirlock]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation(); dirPaywallContacto(); }));
     grid.querySelectorAll('.dir-cta--mail').forEach(b=>{
-      b.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        dirAbrirCorreo(b.dataset.email);
-      });
+      b.addEventListener('click', (e)=>{ e.stopPropagation(); dirAbrirCorreo(b.dataset.email); });
     });
+    window.dispatchEvent(new CustomEvent('imdiil:directorio-painted'));
   }
 
   function dirVerDetalle(id){
     const c = _dirCards.find(x=>x.id===id); if(!c) return;
-    const uid = window.UserState?.uid;
-    const esMia = c.id===uid;
-    const inicial = (c.nombre||'?').trim().slice(0,2).toUpperCase();
-    const foto = c.foto
-      ? `<img src="${escapeHtml(c.foto)}" alt="" class="dir-det__foto" referrerpolicy="no-referrer">`
-      : `<div class="dir-det__foto dir-det__foto--ini" style="background:linear-gradient(135deg,${c.color||'#FF7A2D'},${(c.color||'#FF7A2D')}aa);">${escapeHtml(inicial)}</div>`;
+    const esMia = c.id===window.UserState?.uid;
+    const esVip = dirEsVip(c);
+    const certs = esVip ? (_dirMeta.certificados[c.id] || []) : [];
+    const estado = esVip ? DIR_ESTADOS[c.estado] : null;
+    const contacto = dirContactoVisible(c);
     const row = (icon,label,val,href,extraClass='') => val
-      ? `<a class="dir-det__row ${extraClass}" ${href?`href="${href}" target="_blank" rel="noopener"`:''}>
+      ? `<a class="dir-det__row ${extraClass}" ${href?`href="${escapeHtml(href)}" target="_blank" rel="noopener"`:''}>
            <span class="dir-det__row-ic"><svg class="ic"><use href="#${icon}"/></svg></span>
            <span class="dir-det__row-tx"><span class="dir-det__row-lbl">${label}</span><span class="dir-det__row-val">${escapeHtml(val)}</span></span>
          </a>` : '';
-    const waNum = c.whatsapp.replace(/[^0-9]/g,'');
-    const linkedin = dirEnlaceSeguro(c.linkedin);
-    const web = dirEnlaceSeguro(c.web);
+    const waNum = String(contacto?.whatsapp||'').replace(/[^0-9]/g,'');
+    const contactoHtml = contacto === null
+      ? `<div class="dir-det__lock"><svg class="ic"><use href="#i-lock"/></svg><div><strong>Contacto exclusivo para miembros VIP</strong><p>Hazte VIP para ver su WhatsApp, correo, LinkedIn e Instagram.</p></div><button type="button" class="btn btn--accent btn--sm" data-dirdet-vip>Hazte VIP</button></div>`
+      : `<div class="dir-det__rows">
+          ${row('i-whatsapp','WhatsApp',contacto.whatsapp, waNum?`https://wa.me/${waNum}`:'', 'dir-det__row--wa')}
+          ${contacto.email?`<button class="dir-det__row dir-det__row--mail" data-detmail="${escapeHtml(contacto.email)}">
+             <span class="dir-det__row-ic"><svg class="ic"><use href="#i-mail"/></svg></span>
+             <span class="dir-det__row-tx"><span class="dir-det__row-lbl">Correo · toca para escribir</span><span class="dir-det__row-val">${escapeHtml(contacto.email)}</span></span>
+           </button>`:''}
+          ${row('i-linkedin','LinkedIn',contacto.linkedin, dirEnlaceSeguro(contacto.linkedin), 'dir-det__row--li')}
+          ${row('i-instagram','Instagram',dirInstagramUsuario(contacto.instagram), dirInstagramPerfil(contacto.instagram), 'dir-det__row--ig')}
+          ${row('i-link','Sitio web',contacto.web, dirEnlaceSeguro(contacto.web))}
+        </div>
+        ${!dirTieneContacto(contacto)?'<div class="dir-det__sincontacto">Este miembro no agregó datos de contacto.</div>':''}`;
     const body = `
-      <div class="dir-det">
+      <div class="dir-det ${esVip?'dir-det--vip':''}">
+        ${esVip?`<div class="dir-det__cover" style="${dirPortadaStyle(c)}"></div>`:''}
         <div class="dir-det__head">
-          ${foto}
-          <div class="dir-det__name">${escapeHtml(c.nombre||'Miembro VIP')}</div>
+          ${dirFotoHtml(c,'dir-det__foto')}
+          ${esVip?'<span class="dir-vip__badge dir-vip__badge--det"><svg class="ic"><use href="#i-crown"/></svg>VIP verificado</span>':''}
+          <div class="dir-det__name">${escapeHtml(c.nombre||'Miembro IMDIIL')}</div>
           ${c.puesto?`<div class="dir-det__puesto">${escapeHtml(c.puesto)}</div>`:''}
           ${c.empresa?`<div class="dir-det__empresa"><svg class="ic"><use href="#i-briefcase"/></svg>${escapeHtml(c.empresa)}</div>`:''}
+          ${estado?`<span class="dir-vip__estado dir-vip__estado--${estado.cls}"><i></i>${estado.label}</span>`:''}
           ${c.sector?`<span class="dir-det__sector">${escapeHtml(c.sector)}</span>`:''}
         </div>
         ${c.bio?`<div class="dir-det__bio">${escapeHtml(c.bio)}</div>`:''}
-        <div class="dir-det__rows">
-          ${row('i-whatsapp','WhatsApp',c.whatsapp, waNum?`https://wa.me/${waNum}`:'', 'dir-det__row--wa')}
-          ${c.email?`<button class="dir-det__row dir-det__row--mail" data-detmail="${escapeHtml(c.email)}">
-             <span class="dir-det__row-ic"><svg class="ic"><use href="#i-mail"/></svg></span>
-             <span class="dir-det__row-tx"><span class="dir-det__row-lbl">Correo · toca para copiar</span><span class="dir-det__row-val">${escapeHtml(c.email)}</span></span>
-           </button>`:''}
-          ${row('i-linkedin','LinkedIn',c.linkedin, linkedin, 'dir-det__row--li')}
-          ${row('i-link','Sitio web',c.web, web)}
-        </div>
-        ${(!c.whatsapp&&!c.email&&!c.linkedin&&!c.web)?'<div class="dir-det__sincontacto">Este miembro no agregó datos de contacto.</div>':''}
+        ${certs.length?`<div class="dir-det__certs"><span>Certificados IMDIIL</span>${certs.map(x=>`<div><svg class="ic"><use href="#i-check"/></svg><b>${escapeHtml(x.curso)}</b><small>Folio ${escapeHtml(x.folio)}</small></div>`).join('')}</div>`:''}
+        ${contactoHtml}
       </div>
     `;
     const footer = document.createElement('div');
     footer.innerHTML = esMia
       ? `<button class="btn btn--ghost" id="dirdet-cerrar">Cerrar</button><button class="btn btn--accent" id="dirdet-editar"><svg class="ic"><use href="#i-edit"/></svg>Editar mi tarjeta</button>`
       : `<button class="btn btn--ghost" id="dirdet-cerrar">Cerrar</button>`;
-    const m = Modal.open({id:'dir-det', title:'Tarjeta profesional', subtitle: esMia?'Tu tarjeta en el directorio':'Directorio VIP', icon:'i-user', size:'sm', body, footer});
+    const m = Modal.open({id:'dir-det', title:esVip?'Tarjeta profesional VIP':'Tarjeta del directorio', subtitle: esMia?'Tu tarjeta en el directorio':'Directorio IMDIIL', icon:esVip?'i-crown':'i-user', size:'sm', body, footer});
     footer.querySelector('#dirdet-cerrar').addEventListener('click', ()=> m.close());
     if (esMia) footer.querySelector('#dirdet-editar').addEventListener('click', ()=>{ m.close(); setTimeout(dirEditarMiTarjeta, 150); });
-    // Copiar correo desde el detalle
+    document.querySelector('[data-dirdet-vip]')?.addEventListener('click', ()=>{ m.close(); setTimeout(dirPaywallContacto, 150); });
     const mailRow = document.querySelector('.dir-det__row--mail');
-    if (mailRow) mailRow.addEventListener('click', ()=>{
-      dirAbrirCorreo(mailRow.dataset.detmail);
-    });
+    if (mailRow) mailRow.addEventListener('click', ()=> dirAbrirCorreo(mailRow.dataset.detmail));
   }
 
   async function dirEditarMiTarjeta(){
     const fs = window.__fs;
     const uid = window.UserState?.uid;
-    if (!uid){ Toast.error('Inicia sesión',''); return; }
-    // Cargar tarjeta existente
+    if (!uid || window.__isDemoMode){ Toast.error('Inicia sesión','Crea tu cuenta para armar tu tarjeta.'); return; }
+    const esVip = dirViewerEsVip();
     let data = {};
-    try { const ds = await fs.getDoc(fs.doc(fs.db,'directorio',uid)); if (ds.exists()) data = ds.data(); } catch(e){}
+    let existe = false;
+    try { const ds = await fs.getDoc(fs.doc(fs.db,'directorio',uid)); if (ds.exists()) { data = ds.data(); existe = true; } } catch(e){}
+    if (!existe) {
+      // Sin tarjeta todavía: partimos de la foto de la cuenta y de la ficha profesional.
+      const md = window.memberData || {};
+      const especialidad = String(md.especialidad || '').trim();
+      const sector = dirSectorDesde(especialidad);
+      data = {
+        nombre: md.nombre || window.UserState?.nombre || window.UserState?.displayName || '',
+        empresa: md.empresa || '',
+        sector,
+        puesto: sector ? '' : especialidad,
+        foto: dirFotoSegura(window.UserState?.photoURL)
+      };
+    }
+    // Contacto: el guardado aparte; si aún no hay, el de la tarjeta o el de la cuenta.
+    let contacto = _dirMeta.miContacto;
+    if (!contacto) { try { contacto = (await dirApi('/contact')).contact; } catch(e) { contacto = null; } }
+    if (!dirTieneContacto(contacto)) contacto = dirTieneContacto(dirSoloContacto(data)) ? dirSoloContacto(data) : dirContactoCuenta();
     _dirFotoTmp = undefined;
+    _dirPortadaTmp = undefined;
+    let portadaColor = DIR_PORTADAS[data.portadaColor] ? data.portadaColor : 'dorado';
 
-    const fotoVinculada = window.UserState?.fotoGoogle || '';
-    const fotoActual = fotoVinculada || data.foto || '';
+    const v = (x) => String(x||'').replace(/"/g,'&quot;');
+    const fotoVinculada = dirFotoSegura(window.UserState?.fotoGoogle);
+    const fotoActual = fotoVinculada || dirFotoSegura(data.foto);
+    const lockTag = esVip ? '' : '<span class="dir-form__vip"><svg class="ic"><use href="#i-crown"/></svg>Solo VIP</span>';
     const body = `
       <div class="dir-form">
+        <div class="dir-form__plan ${esVip?'is-vip':''}">${esVip
+          ? '<svg class="ic"><use href="#i-crown"/></svg><span><b>Tarjeta profesional VIP</b> · insignia verificada, portada, estado profesional, certificados y primeros lugares.</span>'
+          : '<svg class="ic"><use href="#i-user"/></svg><span><b>Tarjeta básica</b> · hazte VIP para la tarjeta profesional verificada y aparecer primero.</span>'}</div>
         <div class="dir-form__foto-wrap">
           <div class="dir-form__foto" id="dirf-foto-prev">
-            ${fotoActual ? `<img src="${fotoActual}" alt="">` : `<svg class="ic"><use href="#i-user"/></svg>`}
+            ${fotoActual ? `<img src="${escapeHtml(fotoActual)}" alt="">` : `<svg class="ic"><use href="#i-user"/></svg>`}
           </div>
           <div class="dir-form__foto-acts">
             ${fotoVinculada
@@ -9572,36 +9988,52 @@ const Sections = (function(){
             <input type="file" id="dirf-foto-file" accept="image/*" style="display:none;">
           </div>
         </div>
+        <label class="dir-form__lbl">Portada de tu tarjeta ${lockTag}</label>
+        <div class="dir-form__portada ${esVip?'':'is-locked'}">
+          <div class="dir-form__portada-prev" id="dirf-portada-prev" style="${dirPortadaStyle(data)}"></div>
+          <div class="dir-form__swatches">
+            ${Object.entries(DIR_PORTADAS).map(([id,p])=>`<button type="button" class="dir-form__swatch ${portadaColor===id&&!dirFotoSegura(data.portadaImg)?'is-active':''}" data-portada="${id}" title="${p.label}" style="background:${p.bg}"></button>`).join('')}
+            <button type="button" class="btn btn--ghost btn--sm" id="dirf-portada-btn"><svg class="ic"><use href="#i-image"/></svg>Subir portada</button>
+            ${dirFotoSegura(data.portadaImg)?'<button type="button" class="btn btn--ghost btn--sm" id="dirf-portada-quitar">Quitar imagen</button>':''}
+            <input type="file" id="dirf-portada-file" accept="image/*" style="display:none;">
+          </div>
+        </div>
         <label class="dir-form__lbl">Nombre completo</label>
-        <input class="dir-form__in" id="dirf-nombre" maxlength="50" value="${(data.nombre||window.UserState?.nombre||'').replace(/"/g,'&quot;')}" placeholder="Ej. Felipe Estrada Ramírez">
+        <input class="dir-form__in" id="dirf-nombre" maxlength="50" value="${v(data.nombre||window.UserState?.nombre)}" placeholder="Ej. Felipe Estrada Ramírez">
         <label class="dir-form__lbl">Puesto / cargo</label>
-        <input class="dir-form__in" id="dirf-puesto" maxlength="60" value="${(data.puesto||'').replace(/"/g,'&quot;')}" placeholder="Ej. Jefe de Seguridad Industrial">
+        <input class="dir-form__in" id="dirf-puesto" maxlength="60" value="${v(data.puesto)}" placeholder="Ej. Jefe de Seguridad Industrial">
         <label class="dir-form__lbl">Empresa</label>
-        <input class="dir-form__in" id="dirf-empresa" maxlength="60" value="${(data.empresa||'').replace(/"/g,'&quot;')}" placeholder="Ej. Grupo Industrial del Bajío">
+        <input class="dir-form__in" id="dirf-empresa" maxlength="60" value="${v(data.empresa)}" placeholder="Ej. Grupo Industrial del Bajío">
         <label class="dir-form__lbl">Sector</label>
         <select class="dir-form__in" id="dirf-sector">
           <option value="">Selecciona…</option>
           ${SECTORES.map(s=>`<option value="${s}" ${data.sector===s?'selected':''}>${s}</option>`).join('')}
         </select>
+        <label class="dir-form__lbl">Estado profesional ${lockTag}</label>
+        <select class="dir-form__in" id="dirf-estado" ${esVip?'':'disabled'}>
+          <option value="">Sin estado</option>
+          ${Object.entries(DIR_ESTADOS).map(([id,e])=>`<option value="${id}" ${data.estado===id?'selected':''}>${e.label}</option>`).join('')}
+        </select>
         <label class="dir-form__lbl">Bio breve <span class="dir-form__opt">(opcional)</span></label>
         <textarea class="dir-form__in" id="dirf-bio" maxlength="160" rows="2" placeholder="Una línea sobre tu experiencia…">${escapeHtml(data.bio||'')}</textarea>
-        <div class="dir-form__sep">Contacto <span class="dir-form__opt">(todos opcionales)</span></div>
+        <div class="dir-form__sep">Contacto <span class="dir-form__opt">(solo lo ven los miembros VIP)</span></div>
         <label class="dir-form__lbl">WhatsApp</label>
-        <input class="dir-form__in" id="dirf-wa" maxlength="20" value="${(data.whatsapp||'').replace(/"/g,'&quot;')}" placeholder="Ej. 52 238 123 4567">
+        <input class="dir-form__in" id="dirf-wa" maxlength="20" value="${v(contacto.whatsapp)}" placeholder="Ej. 52 238 123 4567">
         <label class="dir-form__lbl">Correo</label>
-        <input class="dir-form__in" id="dirf-email" maxlength="80" value="${(data.email||'').replace(/"/g,'&quot;')}" placeholder="correo@ejemplo.com">
+        <input class="dir-form__in" id="dirf-email" maxlength="80" value="${v(contacto.email)}" placeholder="correo@ejemplo.com">
         <label class="dir-form__lbl">LinkedIn</label>
-        <input class="dir-form__in" id="dirf-linkedin" maxlength="120" value="${(data.linkedin||'').replace(/"/g,'&quot;')}" placeholder="linkedin.com/in/tu-perfil">
+        <input class="dir-form__in" id="dirf-linkedin" maxlength="120" value="${v(contacto.linkedin)}" placeholder="linkedin.com/in/tu-perfil">
+        <label class="dir-form__lbl">Instagram</label>
+        <input class="dir-form__in" id="dirf-instagram" maxlength="180" autocomplete="url" value="${v(contacto.instagram)}" placeholder="@usuario o instagram.com/usuario">
         <label class="dir-form__lbl">Sitio web</label>
-        <input class="dir-form__in" id="dirf-web" maxlength="120" value="${(data.web||'').replace(/"/g,'&quot;')}" placeholder="tusitio.com">
+        <input class="dir-form__in" id="dirf-web" maxlength="120" value="${v(contacto.web)}" placeholder="tusitio.com">
         <label class="dir-form__check"><input type="checkbox" id="dirf-visible" ${data.visible!==false?'checked':''}> Mostrar mi tarjeta en el directorio</label>
       </div>
     `;
     const footer = document.createElement('div');
     footer.innerHTML = `<button class="btn btn--ghost" id="dirf-cancel">Cancelar</button><button class="btn btn--accent" id="dirf-guardar">Guardar tarjeta</button>`;
-    const m = Modal.open({id:'dir-form', title:'Mi tarjeta profesional', subtitle:'Aparecerá en el Directorio VIP', icon:'i-user', size:'md', body, footer});
+    const m = Modal.open({id:'dir-form', title:'Mi tarjeta profesional', subtitle:'Aparecerá en el Directorio IMDIIL', icon:esVip?'i-crown':'i-user', size:'md', body, footer});
 
-    // Foto
     const fileInput = document.getElementById('dirf-foto-file');
     document.getElementById('dirf-foto-btn')?.addEventListener('click', ()=> fileInput.click());
     fileInput.addEventListener('change', async (e)=>{
@@ -9611,14 +10043,42 @@ const Sections = (function(){
       catch(err){ console.error(err); Toast.error('No se pudo cargar la foto',''); }
       fileInput.value='';
     });
-    const btnQuitar = document.getElementById('dirf-foto-quitar');
-    if (btnQuitar) btnQuitar.addEventListener('click', ()=>{ _dirFotoTmp = null; document.getElementById('dirf-foto-prev').innerHTML = `<svg class="ic"><use href="#i-user"/></svg>`; });
+    document.getElementById('dirf-foto-quitar')?.addEventListener('click', ()=>{ _dirFotoTmp = null; document.getElementById('dirf-foto-prev').innerHTML = `<svg class="ic"><use href="#i-user"/></svg>`; });
 
+    // Portada: color de la paleta o imagen propia (solo VIP).
+    const portadaPrev = document.getElementById('dirf-portada-prev');
+    const pintarPortada = () => {
+      const img = _dirPortadaTmp !== undefined ? _dirPortadaTmp : dirFotoSegura(data.portadaImg);
+      portadaPrev.setAttribute('style', dirPortadaStyle({ portadaImg: img, portadaColor }));
+      document.querySelectorAll('[data-portada]').forEach(b=>b.classList.toggle('is-active', !img && b.dataset.portada===portadaColor));
+    };
+    document.querySelectorAll('[data-portada]').forEach(b=>b.addEventListener('click', ()=>{ portadaColor = b.dataset.portada; _dirPortadaTmp = null; pintarPortada(); }));
+    const portadaFile = document.getElementById('dirf-portada-file');
+    document.getElementById('dirf-portada-btn')?.addEventListener('click', ()=> portadaFile.click());
+    portadaFile?.addEventListener('change', async (e)=>{
+      const f = e.target.files[0]; if(!f) return;
+      if(!f.type.startsWith('image/')){ Toast.error('Solo imágenes',''); return; }
+      try { _dirPortadaTmp = await dirComprimirPortada(f); pintarPortada(); }
+      catch(err){ console.error(err); Toast.error('No se pudo cargar la portada',''); }
+      portadaFile.value='';
+    });
+    document.getElementById('dirf-portada-quitar')?.addEventListener('click', ()=>{ _dirPortadaTmp = null; pintarPortada(); });
     footer.querySelector('#dirf-cancel').addEventListener('click', ()=> m.close());
     footer.querySelector('#dirf-guardar').addEventListener('click', async ()=>{
       const nombre = document.getElementById('dirf-nombre').value.trim();
       if (nombre.length<3){ Toast.error('Falta tu nombre','Escribe tu nombre completo'); return; }
+      const instagramRaw = document.getElementById('dirf-instagram').value.trim();
+      const instagram = dirInstagramPerfil(instagramRaw);
+      if (instagramRaw && !instagram){ Toast.error('Instagram inválido','Escribe @usuario o la URL de un perfil de Instagram.'); return; }
       const btn = footer.querySelector('#dirf-guardar'); btn.disabled=true; btn.textContent='Guardando…';
+      const nuevoContacto = {
+        whatsapp: document.getElementById('dirf-wa').value.trim(),
+        email: document.getElementById('dirf-email').value.trim(),
+        linkedin: document.getElementById('dirf-linkedin').value.trim(),
+        instagram,
+        web: document.getElementById('dirf-web').value.trim()
+      };
+      // El contacto se guarda aparte y la tarjeta pública no lo lleva.
       const payload = {
         uid,
         nombre,
@@ -9626,21 +10086,28 @@ const Sections = (function(){
         empresa: document.getElementById('dirf-empresa').value.trim(),
         sector: document.getElementById('dirf-sector').value,
         bio: document.getElementById('dirf-bio').value.trim(),
-        whatsapp: document.getElementById('dirf-wa').value.trim(),
-        email: document.getElementById('dirf-email').value.trim(),
-        linkedin: document.getElementById('dirf-linkedin').value.trim(),
-        web: document.getElementById('dirf-web').value.trim(),
+        whatsapp: '', email: '', linkedin: '', instagram: '', web: '',
         visible: document.getElementById('dirf-visible').checked,
+        editadaPorUsuario: true,
         color: dirColorFor(uid),
         updatedAt: fs.serverTimestamp()
       };
+      if (esVip) {
+        payload.estado = document.getElementById('dirf-estado').value;
+        payload.portadaColor = portadaColor;
+        if (_dirPortadaTmp !== undefined) payload.portadaImg = _dirPortadaTmp;
+      }
       if (fotoVinculada) { payload.foto = fotoVinculada; payload.fotoFuente = 'google'; }
-      else if (_dirFotoTmp !== undefined) payload.foto = _dirFotoTmp; // string o null
-      else if (data.foto) payload.foto = data.foto; // conservar
+      else if (_dirFotoTmp !== undefined) payload.foto = _dirFotoTmp;
+      else if (data.foto) payload.foto = data.foto;
       try {
+        const guardado = await dirGuardarContacto(nuevoContacto);
+        _dirMeta.miContacto = guardado.contact || nuevoContacto;
         await fs.setDoc(fs.doc(fs.db,'directorio',uid), payload, { merge:true });
-        Toast.success('Tarjeta guardada','Ya apareces en el directorio');
+        try { localStorage.setItem(`imdiil:dir-auto:v1:${uid}`, '1'); } catch(e){}
+        Toast.success('Tarjeta guardada', payload.visible ? 'Ya apareces en el directorio' : 'Tu tarjeta quedó oculta');
         m.close();
+        dirPintar();
       } catch(e){ console.error(e); Toast.error('No se pudo guardar', e.message||''); btn.disabled=false; btn.textContent='Guardar tarjeta'; }
     });
   }
@@ -13046,7 +13513,7 @@ body{letter-spacing:-.05px}
 .sec-hero__title{margin-top:0!important}
 .sec-hero{padding-top:0}
 </style>
-<script src="assets/imdiil-onboarding.js?v=3" defer></script>
+<script src="assets/imdiil-onboarding.js?v=4" defer></script>
 <script src="onboarding-tour.js?v=4" defer></script>
 <script src="assets/imdiil-experience.js?v=2" defer></script>
 <link rel="stylesheet" href="assets/imdiil-credits.css?v=1">
@@ -13056,7 +13523,7 @@ body{letter-spacing:-.05px}
 <script src="assets/imdiil-push.js?v=1" defer></script>
 <link rel="stylesheet" href="assets/imdiil-referrals.css?v=1">
 <script src="assets/imdiil-referrals.js?v=1" defer></script>
-<script src="assets/imdiil-directory-requests.js?v=1" defer></script>
+<script src="assets/imdiil-directory-requests.js?v=2" defer></script>
 <link rel="stylesheet" href="assets/imdiil-training.css?v=1">
 <script src="assets/imdiil-training-content.js?v=1" defer></script>
 <script src="assets/imdiil-training.js?v=1" defer></script>

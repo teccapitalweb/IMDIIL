@@ -250,9 +250,7 @@
           puesto: profile.especialidad.slice(0, 60),
           empresa: profile.empresa.slice(0, 60),
           sector: '', bio: '',
-          whatsapp: profile.whatsapp,
-          email: String(S.email || ''),
-          linkedin: '', web: '',
+          whatsapp: '', email: '', linkedin: '', instagram: '', web: '',
           visible: true,
           color: dirColorFor(S.uid),
           autoCreada: true
@@ -260,11 +258,23 @@
         if (S.photoURL) payload.foto = S.photoURL;
       } else {
         if (!data.nombre) payload.nombre = profile.nombre.slice(0, 50);
-        if (!data.whatsapp) payload.whatsapp = profile.whatsapp;
         if (!data.empresa && profile.empresa) payload.empresa = profile.empresa.slice(0, 60);
         if (!data.puesto && profile.especialidad) payload.puesto = profile.especialidad.slice(0, 60);
-        if (!data.email && S.email) payload.email = String(S.email);
       }
+      // El contacto va aparte (directorio_contacto): solo lo ven miembros VIP o quien acepte una solicitud.
+      try {
+        const current = await request('/directory/contact');
+        const c = current.contact || {};
+        const legacy = { email: data.email || '', whatsapp: data.whatsapp || '', linkedin: data.linkedin || '', instagram: data.instagram || '', web: data.web || '' };
+        await request('/directory/contact', { method: 'PUT', body: JSON.stringify({
+          email: c.email || legacy.email || String(S.email || ''),
+          whatsapp: c.whatsapp || legacy.whatsapp || profile.whatsapp,
+          linkedin: c.linkedin || legacy.linkedin,
+          instagram: c.instagram || legacy.instagram,
+          web: c.web || legacy.web
+        }) });
+        if (snap.exists()) Object.assign(payload, { whatsapp: '', email: '', linkedin: '', instagram: '', web: '' });
+      } catch (e) { console.warn('[directorio] contacto', e?.message || e); }
       await fs.setDoc(ref, payload, { merge: true });
     } catch (e) { console.warn('[directorio] No se pudo vincular la ficha', e?.message || e); }
   }
