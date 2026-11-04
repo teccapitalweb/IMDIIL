@@ -53,9 +53,9 @@
 
   // Retos rápidos (mismas respuestas que valida /credits/reto).
   const QUICK = [
-    { id: 'flow', label: 'Flujo de proceso', title: 'Detecta el cuello de botella', text: 'A produce 48 piezas/h, B produce 35 y C produce 42. ¿Dónde observar primero?', options: ['Proceso A', 'Proceso B', 'Proceso C'], answer: 1 },
-    { id: 'quality', label: 'Calidad', title: 'Elige la evidencia correcta', text: 'Un turno reporta "muchos defectos". ¿Qué dato convierte la observación en evidencia?', options: ['La sensación del supervisor', 'Cantidad, tipo, lote y momento del defecto', 'Una fotografía sin contexto'], answer: 1 },
-    { id: 'inventory', label: 'Inventarios', title: 'Prioriza el riesgo', text: 'Un componente crítico tiene proveedor único y 45 días de reposición. ¿Qué haces primero?', options: ['Ignorar mientras haya stock', 'Definir alternativa y punto de alerta', 'Comprar sin límite'], answer: 1 }
+    { id: 'flow', label: 'Flujo de proceso', title: 'Detecta el cuello de botella', text: 'A produce 48 piezas/h, B produce 35 y C produce 42. ¿Dónde observar primero?', options: ['Proceso A', 'Proceso B', 'Proceso C'], answer: 1, art: 'tiempos', why: 'B es el proceso más lento (35 pzas/h): marca el ritmo de toda la línea. Ahí se gana capacidad.' },
+    { id: 'quality', label: 'Calidad', title: 'Elige la evidencia correcta', text: 'Un turno reporta "muchos defectos". ¿Qué dato convierte la observación en evidencia?', options: ['La sensación del supervisor', 'Cantidad, tipo, lote y momento del defecto', 'Una fotografía sin contexto'], answer: 1, art: 'calidad', why: 'Sin datos estratificados no hay análisis: cantidad, tipo, lote y momento permiten un Pareto y la causa raíz.' },
+    { id: 'inventory', label: 'Inventarios', title: 'Prioriza el riesgo', text: 'Un componente crítico tiene proveedor único y 45 días de reposición. ¿Qué haces primero?', options: ['Ignorar mientras haya stock', 'Definir alternativa y punto de alerta', 'Comprar sin límite'], answer: 1, art: 'almacen', why: 'Proveedor único y reposición larga es riesgo de paro: se calcula un punto de reorden con stock de seguridad y se desarrolla una alternativa.' }
   ];
   const quickKey = () => `imdiil_v2_challenges_${window.UserState?.uid || 'demo'}`;
   const quickState = () => { try { return JSON.parse(localStorage.getItem(quickKey()) || '{}') || {}; } catch (e) { return {}; } };
@@ -226,10 +226,15 @@
       </section>
       <section class="rt-block" data-rt-mini-board></section>
       <section class="rt-block">
-        <div class="rt-head"><div class="rt-head__title"><img src="${iconImg('lean')}" alt="" width="44" height="44"><div><span>Decisiones de planta</span><h2>Retos rápidos</h2></div></div><small>${doneQuick}/${QUICK.length} resueltos</small></div>
-        <div class="rt-quick">${QUICK.map(item => {
+        <div class="rt-head"><div class="rt-head__title"><img src="${iconImg('lean')}" alt="" width="44" height="44"><div><span>Decisiones de planta · +25 créditos c/u</span><h2>Retos rápidos</h2></div></div><div class="rt-meter"><small>${doneQuick}/${QUICK.length} resueltos</small><b style="--p:${Math.round((doneQuick / QUICK.length) * 100)}%"></b></div></div>
+        <div class="rt-quick">${QUICK.map((item, n) => {
           const done = !!qs[item.id]?.completed;
-          return `<article class="rt-q ${done ? 'is-done' : ''}" data-rt-quick="${item.id}"><span>${esc(item.label)}</span><h3>${esc(item.title)}</h3><p>${esc(item.text)}</p><div class="rt-q__opts">${item.options.map((option, i) => `<button type="button" data-rt-opt="${i}">${String.fromCharCode(65 + i)} · ${esc(option)}</button>`).join('')}</div>${done ? `<small class="rt-q__done">${icon('i-check-circle')}Resuelto · puedes repetirlo</small>` : ''}</article>`;
+          return `<article class="rt-q ${done ? 'is-done' : ''}" data-rt-quick="${item.id}">
+            <header class="rt-q__head"><img src="${iconImg(item.art)}" alt="" width="52" height="52" loading="lazy"><div><span>Reto ${n + 1} · ${esc(item.label)}</span><h3>${esc(item.title)}</h3></div>${done ? `<b class="rt-q__badge">${icon('i-check-circle')}Resuelto</b>` : '<b class="rt-q__badge rt-q__badge--coin"><i class="credit-coin">C</i>+25</b>'}</header>
+            <p class="rt-q__case">${esc(item.text)}</p>
+            <div class="rt-q__opts">${item.options.map((option, i) => `<button type="button" data-rt-opt="${i}"><i>${String.fromCharCode(65 + i)}</i><span>${esc(option)}</span></button>`).join('')}</div>
+            <div class="rt-q__why" data-rt-why ${done ? '' : 'hidden'}><strong>${icon('i-check-circle')}Criterio</strong><p>${esc(item.why)}</p></div>
+          </article>`;
         }).join('')}</div>
       </section>`;
     bindPlay(body);
@@ -240,8 +245,11 @@
         const selected = Number(btn.dataset.rtOpt);
         card.querySelectorAll('[data-rt-opt]').forEach(b => { b.disabled = true; });
         btn.classList.add(selected === item.answer ? 'is-ok' : 'is-bad');
-        card.querySelector(`[data-rt-opt="${item.answer}"]`)?.classList.add('is-ok');
+        if (selected === item.answer) card.querySelector(`[data-rt-opt="${item.answer}"]`)?.classList.add('is-ok');
         if (selected === item.answer) {
+          const why = card.querySelector('[data-rt-why]');
+          if (why) why.hidden = false;
+          card.classList.add('is-done');
           const state = quickState();
           state[item.id] = { completed: true, completedAt: state[item.id]?.completedAt || new Date().toISOString() };
           try { localStorage.setItem(quickKey(), JSON.stringify(state)); } catch (e) {}
@@ -251,7 +259,7 @@
           try { window.celebrarImdiil?.('normal'); } catch (e) {}
         } else {
           window.Toast?.info?.('Revisa el criterio', 'Vuelve a intentarlo en un momento.');
-          setTimeout(() => { if (card.isConnected) card.querySelectorAll('[data-rt-opt]').forEach(b => { b.disabled = false; b.classList.remove('is-ok', 'is-bad'); }); }, 1600);
+          setTimeout(() => { if (card.isConnected) card.querySelectorAll('[data-rt-opt]').forEach(b => { b.disabled = false; b.classList.remove('is-ok', 'is-bad'); }); }, 1400);
         }
       }));
     });
@@ -281,6 +289,12 @@
     : `<span class="rt-av rt-av--txt">${esc(initials(row.name))}</span>`;
   const medal = tier => `<span class="rt-medal rt-medal--${esc(tier?.id || 'aprendiz')}" title="Nivel ${esc(tier?.name || 'Aprendiz')}"><i></i></span>`;
   const PERIOD_LABEL = { week: 'Esta semana', month: 'Este mes', all: 'Histórico' };
+  const EARN = [
+    { icon: 'contra-reloj', title: 'Gana un mini juego', detail: '16 juegos en el Arcade', xp: 20, go: 'arcade' },
+    { icon: 'calidad', title: 'Resuelve un caso de planta', detail: '+10 XP por decisión correcta', xp: 40, go: 'casos' },
+    { icon: 'lean', title: 'Domina una flashcard', detail: '52 tarjetas técnicas', xp: 4, go: 'flashcards' },
+    { icon: 'reto-diario', title: 'Entrena cada día', detail: 'Mantén tu racha activa', xp: 5, go: 'hoy' }
+  ];
 
   function paintMiniBoard(host) {
     if (!host) return;
@@ -298,7 +312,7 @@
   function paintLeaderboard(body) {
     const cached = boards[period]?.data;
     const head = `<div class="rt-lb__head">
-        <div class="rt-head__title"><img src="${iconImg('reto-diario')}" alt="" width="52" height="52"><div><span>Comunidad IMDIIL</span><h2>Clasificación del club</h2><p>Gana XP jugando: juego ganado +20 · caso resuelto +40 · flashcard +4 · día activo +5</p></div></div>
+        <div class="rt-head__title"><img src="${iconImg('reto-diario')}" alt="" width="52" height="52"><div><span>Comunidad IMDIIL</span><h2>Clasificación del club</h2><p>Compite con los miembros del club. La semana y el mes se reinician solos.</p></div></div>
         <div class="rt-seg" role="tablist">${Object.entries(PERIOD_LABEL).map(([key, label]) => `<button type="button" role="tab" class="${key === period ? 'is-active' : ''}" data-rt-period="${key}">${label}</button>`).join('')}</div>
       </div>`;
     if (guest()) {
@@ -320,7 +334,7 @@
       body.innerHTML = `<section class="rt-lb">${head}
         <div class="rt-lb__me">
           ${avatar(me, 54)}
-          <div class="rt-lb__me-copy"><span>Tu posición · ${esc(PERIOD_LABEL[period])}</span><strong>${me.rank ? `#${me.rank}` : 'Sin posición'} <small>de ${fmt(cached.players)}</small></strong></div>
+          <div class="rt-lb__me-copy"><span>Tu posición · ${esc(PERIOD_LABEL[period])}</span>${me.rank ? `<strong>#${me.rank} <small>de ${fmt(cached.players)}</small></strong>` : `<strong class="rt-lb__me-none">Aún sin lugar</strong><button type="button" class="rt-lb__me-cta" data-rt-goto="arcade">Jugar mi primer reto ${icon('i-arrow-right')}</button>`}</div>
           <div class="rt-lb__me-tier">${medal(me.tier)}<div><b>${esc(me.tier?.name || 'Aprendiz')}</b><small>${next ? `${fmt(Math.max(0, next.at - (me.totalXp || 0)))} XP para ${esc(next.name)}` : 'Nivel máximo'}</small><i class="rt-lb__bar"><i style="width:${progress}%"></i></i></div></div>
           <div class="rt-lb__me-xp"><strong>${fmt(me.xp)}</strong><small>XP ${period === 'all' ? 'total' : 'del periodo'}</small></div>
         </div>
@@ -332,12 +346,22 @@
             <div class="rt-podium__step"><span>${row.rank}</span></div>
           </div>`).join('')}</div>
           <ol class="rt-lb__list">${rows.slice(3).map(row => `<li class="${row.me ? 'is-me' : ''}"><b>#${row.rank}</b>${avatar(row, 42)}<div class="rt-lb__name"><strong>${esc(row.name)}</strong><span>${row.vip ? '<i class="rt-vip">★ VIP</i>' : '<i class="rt-pill">Miembro</i>'}<i class="rt-tier rt-tier--${esc(row.tier?.id)}">${esc(row.tier?.name || '')}</i>${row.streak > 1 ? `<i class="rt-pill">${row.streak} días</i>` : ''}</span></div><em>${fmt(row.xp)}<small>XP</small></em></li>`).join('')}</ol>`
-          : `<div class="rt-empty">Aún no hay actividad ${period === 'all' ? '' : 'en este periodo'}. ¡Juega un reto y sé el primero!</div>`}
+          : `<div class="rt-podium rt-podium--empty">${[2, 1, 3].map(rank => `<div class="rt-podium__col rt-podium__col--${rank}">
+              <div class="rt-podium__who">${rank === 1 ? '<span class="rt-crown" aria-hidden="true"></span>' : ''}<span class="rt-av rt-av--ghost">?</span></div>
+              <strong>Lugar disponible</strong><i class="rt-pill">${rank === 1 ? 'Puede ser tuyo' : 'Sin ocupar'}</i>
+              <div class="rt-podium__step"><span>${rank}</span></div>
+            </div>`).join('')}</div>
+            <p class="rt-lb__empty">${period === 'week' ? 'La semana arrancó en ceros.' : period === 'month' ? 'El mes arrancó en ceros.' : 'Todavía nadie suma XP.'} El primero que juegue se lleva el lugar #1.</p>`}
+        <div class="rt-earn">
+          <div class="rt-earn__head"><span>Cómo subir en la clasificación</span><small>Todo suma XP automáticamente</small></div>
+          <div class="rt-earn__grid">${EARN.map(item => `<button type="button" class="rt-earn__item" data-rt-goto="${item.go}"><img src="${iconImg(item.icon)}" alt="" width="46" height="46" loading="lazy"><div><b>${esc(item.title)}</b><small>${esc(item.detail)}</small></div><em>+${item.xp} XP</em></button>`).join('')}</div>
+        </div>
         <div class="rt-tiers">${(cached.tiers || []).slice().reverse().map(tier => `<span>${medal(tier)}<b>${esc(tier.name)}</b><small>${tier.min ? `${fmt(tier.min)}+ XP` : 'Inicio'}</small></span>`).join('')}</div>
         <p class="rt-lb__note">Avance sincronizado desde tu actividad. Solo mostramos nombre, foto y avance; nunca datos de contacto.</p>
       </section>`;
     }
     body.querySelectorAll('[data-rt-period]').forEach(btn => btn.addEventListener('click', () => { period = btn.dataset.rtPeriod; paintLeaderboard(body); }));
+    body.querySelectorAll('[data-rt-goto]').forEach(btn => btn.addEventListener('click', () => { tab = btn.dataset.rtGoto; session = null; paint(); }));
   }
 
   // ─── Partida ───

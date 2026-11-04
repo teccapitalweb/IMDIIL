@@ -288,32 +288,73 @@
     flipped = false;
   }
 
+  // Imagen e ícono 3D de cada tema (assets/img/retos/). Para cambiar la foto de un tema
+  // basta con apuntar "photo" a otra imagen (p. ej. assets/img/retos/flashcards/lean.webp).
+  const AREA_ART = {
+    'Lean': { icon: 'lean', photo: 'portadas/encuentra-muda', tone: '#16a34a' },
+    'OEE': { icon: 'oee', photo: 'portadas/calcula-oee', tone: '#0891b2' },
+    'Calidad': { icon: 'calidad', photo: 'portadas/grafica-control', tone: '#2563eb' },
+    'Mantenimiento': { icon: 'mantenimiento', photo: 'escenas/riesgo-mantenimiento', tone: '#ea580c' },
+    'Tiempos y movimientos': { icon: 'tiempos', photo: 'portadas/contra-reloj', tone: '#dc2626' },
+    'Seguridad': { icon: 'seguridad', photo: 'portadas/detecta-riesgo', tone: '#ca8a04' },
+    'Logística': { icon: 'logistica', photo: 'portadas/ruta-montacargas', tone: '#0d9488' }
+  };
+  const ART_BASE = 'assets/img/retos/';
+  const artOf = area => AREA_ART[area] || { icon: 'reto-diario', photo: 'portadas/memorama', tone: '#ff7a2d' };
+  const artUrl = path => { try { return new URL(`${ART_BASE}${path}.webp`, document.baseURI).href; } catch (e) { return `${ART_BASE}${path}.webp`; } };
+  const LEVELS = ['Nueva', 'Repasando', 'Entendida', 'Dominada'];
+
   function renderCards() {
     view = 'cards';
     if (!deck.length) rebuildDeck();
     const card = deck[cardIndex] || CONTENT.cards[0];
     const areas = ['Todas', ...new Set(CONTENT.cards.map(item => item.area))];
-    const mastered = deck.filter(item => (state.cards[item.id]?.confidence || 0) >= 3).length;
-    const mine = state.cards[card.id]?.confidence || 0;
+    const level = item => state.cards[item.id]?.confidence || 0;
+    const mastered = deck.filter(item => level(item) >= 3).length;
+    const learning = deck.filter(item => level(item) > 0 && level(item) < 3).length;
+    const fresh = deck.length - mastered - learning;
+    const mine = level(card);
+    const art = artOf(card.area);
+    const pct = deck.length ? Math.round((mastered / deck.length) * 100) : 0;
+    const countOf = area => (area === 'Todas' ? CONTENT.cards.length : CONTENT.cards.filter(item => item.area === area).length);
     shell(`${back('hub', 'Centro de entrenamiento')}
-      <div class="tr-section-head tr-section-head--page"><div><span>Repaso rápido</span><h2>Flashcards técnicas</h2></div><small>${mastered}/${deck.length} dominadas</small></div>
-      <div class="tr-filter">${areas.map(area => `<button type="button" class="${area === cardArea ? 'is-active' : ''}" data-tr-area="${esc(area)}">${esc(area)}</button>`).join('')}</div>
-      <section class="tr-flash-layout">
-        <article class="tr-flashcard ${flipped ? 'is-flipped' : ''}">
-          <div class="tr-fc-inner">
-            <div class="tr-fc-face tr-fc-front">
-              <div class="tr-fc-top"><span class="tr-fc-cat">${esc(card.area)}</span><span class="tr-fc-progress">${cardIndex + 1} de ${deck.length}</span></div>
-              <div class="tr-fc-main"><h3>${esc(card.front)}</h3><p>${mine ? ['', 'Lo estás repasando', 'Ya lo entiendes', 'Lo dominas'][mine] : '¿Recuerdas qué es?'}</p><button class="tr-btn tr-btn--primary" type="button" data-tr-flip>Mostrar respuesta ${icon('i-arrow-right')}</button></div>
+      <div class="tr-section-head tr-section-head--page"><div><span>Repaso rápido</span><h2>Flashcards técnicas</h2><p>Voltea la tarjeta, califica qué tan bien la dominas y gana XP.</p></div><small>${mastered}/${deck.length} dominadas</small></div>
+      <div class="tr-fc-filters" role="toolbar" aria-label="Filtrar por tema">${areas.map(area => `<button type="button" class="${area === cardArea ? 'is-active' : ''}" data-tr-area="${esc(area)}">${area === 'Todas' ? `<b>${countOf(area)}</b>` : `<img src="${ART_BASE}iconos/${artOf(area).icon}.webp" alt="" width="24" height="24" loading="lazy">`}${esc(area)}${area === 'Todas' ? '' : `<small>${countOf(area)}</small>`}</button>`).join('')}</div>
+      <section class="tr-fc-layout">
+        <div class="tr-fc-stage">
+          <article class="tr-flashcard ${flipped ? 'is-flipped' : ''}" style="--tone:${art.tone}">
+            <div class="tr-fc-inner">
+              <div class="tr-fc-face tr-fc-front" style="--photo:url('${artUrl(art.photo)}')" data-tr-flip role="button" tabindex="0" aria-label="Voltear tarjeta ${esc(card.front)}">
+                <div class="tr-fc-top"><span class="tr-fc-cat">${esc(card.area)}</span><span class="tr-fc-progress">${cardIndex + 1} / ${deck.length}</span></div>
+                <img class="tr-fc-icon" src="${ART_BASE}iconos/${art.icon}.webp" alt="" width="96" height="96">
+                <div class="tr-fc-main"><span class="tr-fc-level tr-fc-level--${mine}">${LEVELS[mine]}</span><h3>${esc(card.front)}</h3><p>¿Puedes explicarlo con tus palabras?</p><span class="tr-fc-cta">Voltear tarjeta ${icon('i-refresh')}</span></div>
+              </div>
+              <div class="tr-fc-face tr-fc-back">
+                <div class="tr-fc-top"><span class="tr-fc-badge"><img src="${ART_BASE}iconos/${art.icon}.webp" alt="" width="20" height="20">${esc(card.area)}</span><span class="tr-fc-progress">${cardIndex + 1} / ${deck.length}</span></div>
+                <h4>${esc(card.front)}</h4>
+                <p>${esc(card.back)}</p>
+                <div class="tr-fc-rate"><span>¿Qué tan bien la dominas?</span>
+                  <div class="tr-flash-actions"><button type="button" data-tr-rate="1"><b>Repasar</b><small>La veré otra vez</small></button><button type="button" data-tr-rate="2"><b>Entendida</b><small>+XP</small></button><button type="button" data-tr-rate="3"><b>Dominada</b><small>+XP · créditos</small></button></div>
+                </div>
+              </div>
             </div>
-            <div class="tr-fc-face tr-fc-back">
-              <span class="tr-fc-badge">Respuesta</span>
-              <h4>${esc(card.front)}</h4>
-              <p>${esc(card.back)}</p>
-              <div class="tr-flash-actions"><button type="button" data-tr-rate="1"><span>↻</span>Repasar</button><button type="button" data-tr-rate="2"><span>☺</span>Entendido</button><button type="button" data-tr-rate="3"><span>♛</span>Dominado</button></div>
-            </div>
+          </article>
+          <div class="tr-flash-nav">
+            <button class="tr-btn" type="button" data-tr-card="-1" ${cardIndex === 0 ? 'disabled' : ''} aria-label="Tarjeta anterior">← Anterior</button>
+            <div class="tr-fc-track" aria-hidden="true"><i style="width:${((cardIndex + 1) / deck.length) * 100}%"></i></div>
+            <button class="tr-btn" type="button" data-tr-card="1" ${cardIndex >= deck.length - 1 ? 'disabled' : ''} aria-label="Tarjeta siguiente">Siguiente →</button>
           </div>
-        </article>
-        <div class="tr-flash-nav"><button class="tr-btn" type="button" data-tr-card="-1" ${cardIndex === 0 ? 'disabled' : ''}>← Anterior</button><button class="tr-btn" type="button" data-tr-card="1" ${cardIndex >= deck.length - 1 ? 'disabled' : ''}>Siguiente →</button></div>
+          <small class="tr-fc-keys">Atajos: espacio para voltear · ← → para avanzar</small>
+        </div>
+        <aside class="tr-fc-side">
+          <div class="tr-fc-stat">
+            <div class="tr-fc-ring" style="--p:${pct}"><strong>${pct}%</strong><span>dominado</span></div>
+            <ul><li><i class="tr-fc-dot--3"></i>Dominadas<b>${mastered}</b></li><li><i class="tr-fc-dot--1"></i>Repasando<b>${learning}</b></li><li><i class="tr-fc-dot--0"></i>Nuevas<b>${fresh}</b></li></ul>
+          </div>
+          <div class="tr-fc-list"><span>Mazo ${cardArea === 'Todas' ? 'completo' : esc(cardArea)}</span>
+            <ol>${deck.map((item, i) => `<li><button type="button" class="${i === cardIndex ? 'is-now' : ''}" data-tr-jump="${i}"><i class="tr-fc-dot--${level(item)}"></i>${esc(item.front)}</button></li>`).join('')}</ol>
+          </div>
+        </aside>
       </section>`);
   }
 
@@ -364,7 +405,20 @@
       renderCase();
     });
     container.querySelectorAll('[data-tr-area]').forEach(el => el.addEventListener('click', () => { cardArea = el.dataset.trArea; rebuildDeck(); renderCards(); }));
-    container.querySelector('[data-tr-flip]')?.addEventListener('click', () => { flipped = true; container.querySelector('.tr-flashcard')?.classList.add('is-flipped'); });
+    const flip = () => { flipped = !flipped; container.querySelector('.tr-flashcard')?.classList.toggle('is-flipped', flipped); };
+    container.querySelector('[data-tr-flip]')?.addEventListener('click', flip);
+    container.querySelector('[data-tr-flip]')?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); flip(); } });
+    container.querySelectorAll('[data-tr-jump]').forEach(el => el.addEventListener('click', () => { cardIndex = Number(el.dataset.trJump) || 0; flipped = false; renderCards(); }));
+    if (!container.__trKeys) {
+      container.__trKeys = true;
+      document.addEventListener('keydown', event => {
+        if (view !== 'cards' || !container.isConnected || !container.querySelector('.tr-flashcard')) return;
+        if (/input|textarea|select/i.test(event.target?.tagName || '')) return;
+        if (event.key === ' ' && !event.target?.closest?.('button')) { event.preventDefault(); flipped = !flipped; container.querySelector('.tr-flashcard')?.classList.toggle('is-flipped', flipped); }
+        else if (event.key === 'ArrowRight' && cardIndex < deck.length - 1) { cardIndex += 1; flipped = false; renderCards(); }
+        else if (event.key === 'ArrowLeft' && cardIndex > 0) { cardIndex -= 1; flipped = false; renderCards(); }
+      });
+    }
     container.querySelectorAll('[data-tr-card]').forEach(el => el.addEventListener('click', () => {
       cardIndex = Math.max(0, Math.min(deck.length - 1, cardIndex + Number(el.dataset.trCard)));
       flipped = false;
