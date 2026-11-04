@@ -35,3 +35,7 @@
 .ips-message{padding:11px 13px;border-radius:12px;background:color-mix(in srgb,var(--primary,#FF7A2D) 9%,var(--surface,#fff));color:var(--text-2);font-size:11px;line-height:1.5}
 @media(max-width:520px){.ips-dialog{padding:22px 18px;border-radius:20px}.ips-list{grid-template-columns:1fr}.ips-actions{grid-template-columns:1fr}.ips-actions button[data-ips-yes]{grid-row:1}.ips-overlay{align-items:end;padding:10px}.ips-category{align-items:flex-start}}
 @media(prefers-reduced-motion:reduce){.ips-overlay,.ips-dialog{transition:none}}
+.ips-dialog{position:relative}
+.ips-close{position:absolute;top:12px;right:12px;width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(255,255,255,.06);color:#d8cfc4;font-size:22px;line-height:1;cursor:pointer}
+.ips-close:hover{background:rgba(255,255,255,.12);color:#fff}
+.ips-close:focus-visible{outline:2px solid #FFB377;outline-offset:2px}
