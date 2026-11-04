@@ -95,49 +95,128 @@
     try { localStorage.setItem(key, new Date().toISOString()); } catch (e) {}
     if (!firstDisplay || document.getElementById('welcome-gift')) { finish('server'); return false; }
 
-    const pop = document.createElement('div');
-    pop.id = 'welcome-gift';
-    pop.innerHTML = `
+    await showCreditChest({
+      kicker: 'Regalo de bienvenida',
+      titleHtml: `¡Recibiste <em>${fmt(amount)} créditos</em> de bienvenida!`,
+      desc: 'Te los damos por unirte a IMDIIL. Ya están en tu saldo y alcanzan para canjear tu primer material; sigue ganando créditos en los retos para desbloquear libros, herramientas y más.',
+      amount,
+      balance,
+      cta: 'Ver materiales para canjear',
+      route: 'pdfs'
+    });
+    finish('shown');
+    return true;
+  };
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Cofre con monedas: se usa para TODO crédito otorgado (bienvenida,
+  // cortesía del admin, etc.). Resuelve cuando el usuario lo cierra.
+  // ═══════════════════════════════════════════════════════════════════
+  function chestMarkup(amount) {
+    const coins = Array.from({ length: 14 }, (_, i) => {
+      const angle = -150 + (120 / 13) * i + (Math.random() * 8 - 4);
+      const dist = 62 + Math.random() * 46;
+      const x = Math.cos(angle * Math.PI / 180) * dist;
+      const y = Math.sin(angle * Math.PI / 180) * dist;
+      return `<span class="cc-coin" style="--x:${x.toFixed(0)}px;--y:${y.toFixed(0)}px;--d:${(0.72 + i * 0.035).toFixed(2)}s;--r:${(Math.random() * 540 - 270).toFixed(0)}deg">C</span>`;
+    }).join('');
+    return `<div class="cc-chest" aria-hidden="true"><i class="cc-glow"></i><i class="cc-rays"></i><div class="cc-coins">${coins}</div><div class="cc-lid"><i></i></div><div class="cc-box"><i class="cc-band"></i><i class="cc-lock"></i></div><b class="cc-amount">+${fmt(amount)}</b></div>`;
+  }
+
+  function showCreditChest(options) {
+    const o = options || {};
+    return new Promise(resolve => {
+      document.getElementById('welcome-gift')?.remove();
+      const pop = document.createElement('div');
+      pop.id = 'welcome-gift';
+      pop.className = 'is-chest';
+      pop.innerHTML = `
       <div class="wg-backdrop"></div>
       <section class="wg-card" role="dialog" aria-modal="true" aria-labelledby="wg-title" aria-describedby="wg-desc">
         <button class="wg-close" type="button" aria-label="Cerrar">×</button>
-        <div class="wg-coin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9.5 3 12 8 12 8s2.5-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg><b>+${fmt(amount)}</b></div>
-        <span class="wg-kicker">Regalo de bienvenida</span>
-        <h2 id="wg-title">¡Recibiste <em>${fmt(amount)} créditos</em> de bienvenida!</h2>
-        <p id="wg-desc">Te los damos por unirte a IMDIIL. Ya están en tu saldo y alcanzan para canjear tu primer material; sigue ganando créditos en los retos para desbloquear libros, herramientas y más.</p>
-        <div class="wg-balance"><span>Tu saldo actual</span><strong>${fmt(balance)} <small>créditos</small></strong></div>
+        ${chestMarkup(o.amount)}
+        <span class="wg-kicker">${esc(o.kicker || 'Créditos IMDIIL')}</span>
+        <h2 id="wg-title">${o.titleHtml || `¡Recibiste <em>${fmt(o.amount)} créditos</em>!`}</h2>
+        <p id="wg-desc">${esc(o.desc || 'Ya están en tu saldo. Úsalos para canjear libros, materiales y herramientas.')}</p>
+        <div class="wg-balance"><span>Tu saldo actual</span><strong>${fmt(o.balance)} <small>créditos</small></strong></div>
         <div class="wg-actions">
           <button class="wg-later" type="button">Más tarde</button>
-          <button class="wg-cta" type="button">Ver materiales para canjear <span aria-hidden="true">→</span></button>
+          <button class="wg-cta" type="button">${esc(o.cta || 'Ver en qué canjearlos')} <span aria-hidden="true">→</span></button>
         </div>
       </section>`;
-    document.body.appendChild(pop);
-    const previousFocus = document.activeElement;
-    let closed = false;
-    const close = () => {
-      if (closed) return;
-      closed = true;
-      document.removeEventListener('keydown', onKey, true);
-      pop.classList.add('is-closing');
-      setTimeout(() => {
-        pop.remove();
-        if (previousFocus && previousFocus.isConnected) previousFocus.focus?.({ preventScroll: true });
-        finish('shown');
-      }, 200);
-    };
-    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
-    document.addEventListener('keydown', onKey, true);
-    pop.querySelector('.wg-close').addEventListener('click', close);
-    pop.querySelector('.wg-later').addEventListener('click', close);
-    pop.querySelector('.wg-backdrop').addEventListener('click', close);
-    pop.querySelector('.wg-cta').addEventListener('click', () => {
-      close();
-      if (typeof window.navigateToSection === 'function') window.navigateToSection('pdfs');
+      document.body.appendChild(pop);
+      const previousFocus = document.activeElement;
+      let closed = false;
+      const close = goRoute => {
+        if (closed) return;
+        closed = true;
+        document.removeEventListener('keydown', onKey, true);
+        pop.classList.add('is-closing');
+        setTimeout(() => {
+          pop.remove();
+          if (previousFocus && previousFocus.isConnected) previousFocus.focus?.({ preventScroll: true });
+          if (goRoute && typeof window.navigateToSection === 'function') window.navigateToSection(goRoute);
+          resolve();
+        }, 200);
+      };
+      const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+      document.addEventListener('keydown', onKey, true);
+      pop.querySelector('.wg-close').addEventListener('click', () => close());
+      pop.querySelector('.wg-later').addEventListener('click', () => close());
+      pop.querySelector('.wg-backdrop').addEventListener('click', () => close());
+      pop.querySelector('.wg-cta').addEventListener('click', () => close(o.route || 'pdfs'));
+      setTimeout(() => pop.querySelector('.wg-cta')?.focus({ preventScroll: true }), 80);
+      setTimeout(() => celebrate('big'), 650);
     });
-    setTimeout(() => pop.querySelector('.wg-cta')?.focus({ preventScroll: true }), 80);
-    celebrate('big');
-    return true;
-  };
+  }
+  window.IMDIILCreditChest = { show: showCreditChest };
+
+  // ─── Créditos otorgados (cortesía del admin, etc.) → cofre con monedas ───
+  let noticesBusy = false;
+  let noticesCheckedAt = 0;
+  // Incluye los popups de avisos push e instalación, y la cola de experiencias (sin encimarse).
+  const popupOpen = () => !!document.querySelector('#welcome-gift, #profile-intake-modal, #free-course-intro, #splash-bienvenida, .v2-modal, .v2-unlock-splash, .v2-doc-viewer, .ips-overlay, #imdiil-install-pop.show') || document.body.classList.contains('onboarding-tour-open') || !!window.IMDIILExperienceQueue?.activeKey?.();
+  async function checkCreditNotices(force) {
+    const S = window.UserState || {};
+    if (noticesBusy || !S.uid || S.modo === 'invitado' || window.__isDemoMode) return;
+    if (!force && Date.now() - noticesCheckedAt < 60000) return;
+    if (popupOpen()) { setTimeout(() => checkCreditNotices(true), 4000); return; }
+    noticesBusy = true;
+    noticesCheckedAt = Date.now();
+    try {
+      const data = await request('/onboarding/credit-notices');
+      const notices = Array.isArray(data.notices) ? data.notices : [];
+      if (!notices.length) return;
+      const balance = Math.max(0, Number(data.balance) || 0);
+      if (window.UserState) window.UserState.creditos = balance;
+      window.dispatchEvent(new CustomEvent('imdiil:credits-changed', { detail: { balance } }));
+      const total = notices.reduce((sum, n) => sum + (Number(n.amount) || 0), 0);
+      const single = notices.length === 1 ? notices[0] : null;
+      // Se marcan vistos antes de mostrarse para no repetir el cofre en otro dispositivo.
+      await request('/onboarding/credit-notices/seen', { method: 'POST', body: JSON.stringify({ ids: notices.map(n => n.id) }) }).catch(e => console.warn('[créditos] No se pudo marcar el aviso', e));
+      if (popupOpen()) await new Promise(resolve => { const t = setInterval(() => { if (!popupOpen()) { clearInterval(t); resolve(); } }, 1500); });
+      await showCreditChest({
+        kicker: single ? single.title : 'Créditos acreditados',
+        titleHtml: `¡Recibiste <em>${fmt(total)} créditos</em>!`,
+        desc: single
+          ? (single.note || 'IMDIIL te otorgó estos créditos. Ya están en tu saldo para canjear libros, materiales y herramientas.')
+          : `Se acreditaron ${notices.length} asignaciones de créditos a tu cuenta. Ya están en tu saldo para canjear libros, materiales y herramientas.`,
+        amount: total,
+        balance,
+        cta: 'Ver en qué canjearlos',
+        route: 'pdfs'
+      });
+    } catch (e) {
+      console.warn('[créditos] Avisos no disponibles', e?.message || e);
+    } finally {
+      noticesBusy = false;
+    }
+  }
+  window.__checkCreditNotices = checkCreditNotices;
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && window.__IMDIIL_INITIAL_FLOW_DONE) checkCreditNotices(); });
+  setInterval(() => { if (document.visibilityState === 'visible' && window.__IMDIIL_INITIAL_FLOW_DONE) checkCreditNotices(); }, 3 * 60 * 1000);
+  // Respaldo: si por algo el flujo inicial no corre, revisa igual al minuto.
+  setTimeout(() => { if (!window.__IMDIIL_INITIAL_FLOW_DONE) checkCreditNotices(true); }, 60000);
 
   // ═══════════════════════════════════════════════════════════════════
   // Ficha profesional: se pide después de la bienvenida y del recorrido.
@@ -378,5 +457,6 @@
     await waitFor('imdiil:profile-intake-finished', () => window.__maybeAskProfile(), 0);
     window.__IMDIIL_INITIAL_FLOW_DONE = true;
     window.__programarInvitacionCursoGratis?.();
+    setTimeout(() => checkCreditNotices(true), 1500);
   };
 }());

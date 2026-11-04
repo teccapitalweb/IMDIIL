@@ -8,7 +8,7 @@
    Sube este archivo a la raíz del repositorio, junto a index.html.
    ============================================================ */
 
-var CACHE = 'imdiil-vip-v20';
+var CACHE = 'imdiil-vip-v21';
 
 // Al instalar, activarse de inmediato (sin esperar a que se cierren pestañas viejas)
 self.addEventListener('install', function (e) {
@@ -55,4 +55,42 @@ self.addEventListener('fetch', function (e) {
       });
     })
   );
+});
+
+// ─── Notificaciones push (las envía el webhook con llaves VAPID) ───
+self.addEventListener('push', function (event) {
+  var data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (err) { data = { body: event.data ? event.data.text() : '' }; }
+  var title = String(data.title || 'IMDIIL');
+  var url = String(data.url || '/vip-panel.html#inicio');
+  var actionLabel = String(data.action || 'Abrir IMDIIL');
+  event.waitUntil(self.registration.showNotification(title, {
+    body: String(data.body || ''),
+    icon: String(data.icon || '/assets/imdiil-app-icon-192.png'),
+    badge: String(data.badge || '/assets/imdiil-app-icon-192.png'),
+    tag: String(data.tag || 'imdiil'),
+    renotify: false,
+    data: { url: url, templateId: String(data.templateId || '') },
+    actions: [{ action: 'open', title: actionLabel }]
+  }));
+});
+
+// Al tocar la notificación: enfoca el panel abierto o abre uno nuevo (solo mismo origen).
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  var raw = event.notification && event.notification.data && event.notification.data.url || '/vip-panel.html#inicio';
+  var target;
+  try { target = new URL(raw, self.location.origin); } catch (err) { target = new URL('/vip-panel.html#inicio', self.location.origin); }
+  if (target.origin !== self.location.origin) target = new URL('/vip-panel.html#inicio', self.location.origin);
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windows) {
+    for (var i = 0; i < windows.length; i += 1) {
+      if (new URL(windows[i].url).origin === self.location.origin) {
+        return windows[i].focus().then(function (client) {
+          if (client.navigate) return client.navigate(target.href);
+          return client;
+        });
+      }
+    }
+    return self.clients.openWindow(target.href);
+  }));
 });
