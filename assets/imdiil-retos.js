@@ -2,7 +2,7 @@
 // IMDIIL · Retos (una sola sección, como IMFRA / Synova / ICADEM)
 //
 //   Hoy           · retos del día (3 mini juegos), clasificación y retos rápidos
-//   Arcade        · 16 mini juegos de ingeniería industrial con filtros por tema
+//   Arcade        · 16 mini juegos de ingeniería industrial en un catálogo único
 //   Clasificación · ranking del club por semana, mes e histórico
 //   Casos         · casos de planta  (assets/imdiil-training.js, embebido)
 //   Flashcards    · tarjetas técnicas (assets/imdiil-training.js, embebido)
@@ -85,7 +85,6 @@
   let root = null;
   let tab = 'hoy';
   let session = null;       // partida en curso
-  let filter = 'todos';
   let period = 'week';
   const boards = {};        // clasificación por periodo { at, data }
   const boardLoading = {};
@@ -224,7 +223,6 @@
           ${guest() ? '<small>Crea tu cuenta para ganar créditos</small>' : `<div class="rt-meter"><small>${dailyDone}/${daily.length || 3} completados</small><b style="--p:${pct}%"></b></div>`}</div>
         ${daily.length ? `<div class="rt-grid rt-grid--3">${daily.map(item => gameCard(gameOf(item.type), item.board, { daily: true })).join('')}</div>` : `<div class="rt-empty">${guest() ? 'Inicia sesión para ver los retos del día. Mientras tanto explora el Arcade.' : '<i class="rt-spin"></i>Cargando retos del día…'}</div>`}
       </section>
-      <section class="rt-block" data-rt-mini-board></section>
       <section class="rt-block">
         <div class="rt-head"><div class="rt-head__title"><img src="${iconImg('lean')}" alt="" width="44" height="44"><div><span>Decisiones de planta · +25 créditos c/u</span><h2>Retos rápidos</h2></div></div><div class="rt-meter"><small>${doneQuick}/${QUICK.length} resueltos</small><b style="--p:${Math.round((doneQuick / QUICK.length) * 100)}%"></b></div></div>
         <div class="rt-quick">${QUICK.map((item, n) => {
@@ -238,7 +236,6 @@
         }).join('')}</div>
       </section>`;
     bindPlay(body);
-    paintMiniBoard(body.querySelector('[data-rt-mini-board]'));
     body.querySelectorAll('[data-rt-quick]').forEach(card => {
       const item = QUICK.find(q => q.id === card.dataset.rtQuick);
       card.querySelectorAll('[data-rt-opt]').forEach(btn => btn.addEventListener('click', () => {
@@ -267,18 +264,14 @@
 
   function paintArcade(body) {
     const games = catalog();
-    const count = id => games.filter(game => GAME_CAT[game.type] === id).length;
-    const visible = filter === 'todos' ? games : games.filter(game => GAME_CAT[game.type] === filter);
     const wins = data?.progress?.perGame || {};
-    body.innerHTML = `<section class="rt-block">
-      <div class="rt-head"><div class="rt-head__title"><img src="${iconImg('contra-reloj')}" alt="" width="44" height="44"><div><span>Arcade industrial</span><h2>${games.length || 16} mini juegos</h2></div></div><small>${guest() ? 'Juega libre · crea tu cuenta para ganar créditos' : `${(data?.progress?.todayDone || []).length} ganados hoy · +${Number(data?.gameCredits) || 20} créditos por juego al día`}</small></div>
-      <div class="rt-filters" role="toolbar" aria-label="Filtrar por tema">
-        <button type="button" class="${filter === 'todos' ? 'is-active' : ''}" data-rt-filter="todos"><span class="rt-filters__all">${games.length || 16}</span>Todos</button>
-        ${CATS.filter(cat => !games.length || count(cat.id)).map(cat => `<button type="button" class="${filter === cat.id ? 'is-active' : ''}" data-rt-filter="${cat.id}"><img src="${iconImg(cat.id)}" alt="" width="26" height="26" loading="lazy">${esc(cat.name)}</button>`).join('')}
+    body.innerHTML = `<section class="rt-block rt-arcade">
+      <div class="rt-arcade__head">
+        <div><span>Arcade industrial · catálogo completo</span><h2>Todos los juegos, en un solo lugar.</h2><p>Explora las 16 dinámicas sin cambiar de sección. Cada tarjeta indica su especialidad y tu avance.</p></div>
+        <div class="rt-arcade__summary"><strong>${games.length || 16}</strong><span>mini juegos</span><small>${guest() ? 'Juega libre' : `${(data?.progress?.todayDone || []).length} ganados hoy · +${Number(data?.gameCredits) || 20} créditos c/u`}</small></div>
       </div>
-      ${games.length ? `<div class="rt-grid">${visible.map(game => gameCard(game, (Number(wins[game.type]?.wins) || 0) % game.boards.length)).join('')}</div>` : `<div class="rt-empty">${guest() ? 'Crea tu cuenta gratis para jugar el Arcade de IMDIIL.' : '<i class="rt-spin"></i>Cargando juegos…'}</div>`}
+      ${games.length ? `<div class="rt-grid rt-grid--arcade">${games.map(game => gameCard(game, (Number(wins[game.type]?.wins) || 0) % game.boards.length)).join('')}</div>` : `<div class="rt-empty">${guest() ? 'Crea tu cuenta gratis para jugar el Arcade de IMDIIL.' : '<i class="rt-spin"></i>Cargando juegos…'}</div>`}
     </section>`;
-    body.querySelectorAll('[data-rt-filter]').forEach(btn => btn.addEventListener('click', () => { filter = btn.dataset.rtFilter; paintArcade(body); }));
     bindPlay(body);
   }
 
@@ -287,7 +280,8 @@
   const avatar = (row, size) => row.photo
     ? `<img class="rt-av" src="${esc(row.photo)}" alt="" width="${size}" height="${size}" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'rt-av rt-av--txt',textContent:'${esc(initials(row.name))}'}))">`
     : `<span class="rt-av rt-av--txt">${esc(initials(row.name))}</span>`;
-  const medal = tier => `<span class="rt-medal rt-medal--${esc(tier?.id || 'aprendiz')}" title="Nivel ${esc(tier?.name || 'Aprendiz')}"><i></i></span>`;
+  const tierMark = tier => ({ aprendiz: 'A', bronce: 'B', plata: 'P', oro: 'O', leyenda: 'L' }[tier?.id] || String(tier?.name || 'A').charAt(0).toUpperCase());
+  const medal = tier => `<span class="rt-medal rt-medal--${esc(tier?.id || 'aprendiz')}" title="Nivel ${esc(tier?.name || 'Aprendiz')}">${esc(tierMark(tier))}</span>`;
   const PERIOD_LABEL = { week: 'Esta semana', month: 'Este mes', all: 'Histórico' };
   const EARN = [
     { icon: 'contra-reloj', title: 'Gana un mini juego', detail: '16 juegos en el Arcade', xp: 20, go: 'arcade' },
@@ -296,23 +290,10 @@
     { icon: 'reto-diario', title: 'Entrena cada día', detail: 'Mantén tu racha activa', xp: 5, go: 'hoy' }
   ];
 
-  function paintMiniBoard(host) {
-    if (!host) return;
-    const board = boards.week?.data;
-    if (guest() || !board || !board.rows?.length) { host.remove(); return; }
-    const top = board.rows.slice(0, 3);
-    host.innerHTML = `<div class="rt-mini">
-      <div class="rt-mini__head"><img src="${IMG}portadas/pareto.webp" alt="" loading="lazy"><div><span>Clasificación del club</span><h2>Así va la semana</h2><p>${board.me?.rank ? `Vas en el lugar <b>#${board.me.rank}</b> de ${fmt(board.players)}.` : 'Juega un reto para entrar a la clasificación.'}</p></div></div>
-      <ol class="rt-mini__list">${top.map(row => `<li class="${row.me ? 'is-me' : ''}"><b class="rt-mini__pos rt-mini__pos--${row.rank}">${row.rank}</b>${avatar(row, 40)}<div><strong>${esc(row.name)}${row.vip ? ' <i class="rt-vip">★ VIP</i>' : ''}</strong><small>${esc(row.tier?.name || '')}</small></div><em>${fmt(row.xp)} XP</em></li>`).join('')}</ol>
-      <button type="button" class="rt-btn rt-btn--primary" data-rt-goto="clasificacion">Ver clasificación ${icon('i-arrow-right')}</button>
-    </div>`;
-    host.querySelector('[data-rt-goto]').addEventListener('click', () => { tab = 'clasificacion'; paint(); });
-  }
-
   function paintLeaderboard(body) {
     const cached = boards[period]?.data;
     const head = `<div class="rt-lb__head">
-        <div class="rt-head__title"><img src="${iconImg('reto-diario')}" alt="" width="52" height="52"><div><span>Comunidad IMDIIL</span><h2>Clasificación del club</h2><p>Compite con los miembros del club. La semana y el mes se reinician solos.</p></div></div>
+        <div class="rt-lb__heading"><span>Comunidad IMDIIL</span><h2>Clasificación del club</h2><p>Tu posición, el podio y todos los niveles reunidos en un mismo apartado.</p></div>
         <div class="rt-seg" role="tablist">${Object.entries(PERIOD_LABEL).map(([key, label]) => `<button type="button" role="tab" class="${key === period ? 'is-active' : ''}" data-rt-period="${key}">${label}</button>`).join('')}</div>
       </div>`;
     if (guest()) {
@@ -338,25 +319,28 @@
           <div class="rt-lb__me-tier">${medal(me.tier)}<div><b>${esc(me.tier?.name || 'Aprendiz')}</b><small>${next ? `${fmt(Math.max(0, next.at - (me.totalXp || 0)))} XP para ${esc(next.name)}` : 'Nivel máximo'}</small><i class="rt-lb__bar"><i style="width:${progress}%"></i></i></div></div>
           <div class="rt-lb__me-xp"><strong>${fmt(me.xp)}</strong><small>XP ${period === 'all' ? 'total' : 'del periodo'}</small></div>
         </div>
-        ${rows.length ? `<div class="rt-podium">${podium.map(row => `<div class="rt-podium__col rt-podium__col--${row.rank} ${row.me ? 'is-me' : ''}">
-            <div class="rt-podium__who">${row.rank === 1 ? '<span class="rt-crown" aria-hidden="true"></span>' : ''}${avatar(row, row.rank === 1 ? 84 : 68)}${medal(row.tier)}</div>
-            <strong>${esc(row.name)}</strong>
-            ${row.vip ? '<i class="rt-vip">★ VIP</i>' : '<i class="rt-pill">Miembro</i>'}
-            <b class="rt-podium__xp">${fmt(row.xp)} XP</b>
-            <div class="rt-podium__step"><span>${row.rank}</span></div>
-          </div>`).join('')}</div>
-          <ol class="rt-lb__list">${rows.slice(3).map(row => `<li class="${row.me ? 'is-me' : ''}"><b>#${row.rank}</b>${avatar(row, 42)}<div class="rt-lb__name"><strong>${esc(row.name)}</strong><span>${row.vip ? '<i class="rt-vip">★ VIP</i>' : '<i class="rt-pill">Miembro</i>'}<i class="rt-tier rt-tier--${esc(row.tier?.id)}">${esc(row.tier?.name || '')}</i>${row.streak > 1 ? `<i class="rt-pill">${row.streak} días</i>` : ''}</span></div><em>${fmt(row.xp)}<small>XP</small></em></li>`).join('')}</ol>`
-          : `<div class="rt-podium rt-podium--empty">${[2, 1, 3].map(rank => `<div class="rt-podium__col rt-podium__col--${rank}">
-              <div class="rt-podium__who">${rank === 1 ? '<span class="rt-crown" aria-hidden="true"></span>' : ''}<span class="rt-av rt-av--ghost">?</span></div>
-              <strong>Lugar disponible</strong><i class="rt-pill">${rank === 1 ? 'Puede ser tuyo' : 'Sin ocupar'}</i>
-              <div class="rt-podium__step"><span>${rank}</span></div>
-            </div>`).join('')}</div>
-            <p class="rt-lb__empty">${period === 'week' ? 'La semana arrancó en ceros.' : period === 'month' ? 'El mes arrancó en ceros.' : 'Todavía nadie suma XP.'} El primero que juegue se lleva el lugar #1.</p>`}
+        <div class="rt-lb__board">
+          ${rows.length ? `<div class="rt-podium" aria-label="Primeros tres lugares">${podium.map(row => `<article class="rt-podium__col rt-podium__col--${row.rank} ${row.me ? 'is-me' : ''}">
+              <b class="rt-podium__rank">#${row.rank}</b>
+              <div class="rt-podium__who">${avatar(row, row.rank === 1 ? 80 : 68)}${medal(row.tier)}</div>
+              <strong>${esc(row.name)}</strong>
+              <small>${esc(row.tier?.name || 'Aprendiz')}${row.vip ? ' · VIP' : ''}</small>
+              <b class="rt-podium__xp">${fmt(row.xp)} XP</b>
+            </article>`).join('')}</div>
+            <ol class="rt-lb__list">${rows.slice(3).map(row => `<li class="${row.me ? 'is-me' : ''}"><b>#${row.rank}</b>${avatar(row, 42)}<div class="rt-lb__name"><strong>${esc(row.name)}</strong><span>${row.vip ? '<i class="rt-vip">★ VIP</i>' : '<i class="rt-pill">Miembro</i>'}<i class="rt-tier rt-tier--${esc(row.tier?.id)}">${esc(row.tier?.name || '')}</i>${row.streak > 1 ? `<i class="rt-pill">${row.streak} días</i>` : ''}</span></div><em>${fmt(row.xp)}<small>XP</small></em></li>`).join('')}</ol>`
+            : `<div class="rt-podium rt-podium--empty">${[2, 1, 3].map(rank => `<article class="rt-podium__col rt-podium__col--${rank}">
+                <b class="rt-podium__rank">#${rank}</b>
+                <div class="rt-podium__who"><span class="rt-av rt-av--ghost">?</span></div>
+                <strong>Lugar disponible</strong><small>${rank === 1 ? 'Puede ser tuyo' : 'Sin ocupar'}</small>
+                <b class="rt-podium__xp">0 XP</b>
+              </article>`).join('')}</div>
+              <p class="rt-lb__empty">${period === 'week' ? 'La semana arrancó en ceros.' : period === 'month' ? 'El mes arrancó en ceros.' : 'Todavía nadie suma XP.'} El primero que juegue se lleva el lugar #1.</p>`}
+        </div>
         <div class="rt-earn">
           <div class="rt-earn__head"><span>Cómo subir en la clasificación</span><small>Todo suma XP automáticamente</small></div>
-          <div class="rt-earn__grid">${EARN.map(item => `<button type="button" class="rt-earn__item" data-rt-goto="${item.go}"><img src="${iconImg(item.icon)}" alt="" width="46" height="46" loading="lazy"><div><b>${esc(item.title)}</b><small>${esc(item.detail)}</small></div><em>+${item.xp} XP</em></button>`).join('')}</div>
+          <div class="rt-earn__grid">${EARN.map((item, index) => `<button type="button" class="rt-earn__item" data-rt-goto="${item.go}"><span class="rt-earn__glyph">${String(index + 1).padStart(2, '0')}</span><div><b>${esc(item.title)}</b><small>${esc(item.detail)}</small></div><em>+${item.xp} XP</em></button>`).join('')}</div>
         </div>
-        <div class="rt-tiers">${(cached.tiers || []).slice().reverse().map(tier => `<span>${medal(tier)}<b>${esc(tier.name)}</b><small>${tier.min ? `${fmt(tier.min)}+ XP` : 'Inicio'}</small></span>`).join('')}</div>
+        <div class="rt-tiers" aria-label="Niveles de clasificación">${(cached.tiers || []).slice().sort((a, b) => (Number(a.min) || 0) - (Number(b.min) || 0)).map(tier => `<span>${medal(tier)}<b>${esc(tier.name)}</b><small>${tier.min ? `${fmt(tier.min)}+ XP` : 'Inicio'}</small></span>`).join('')}</div>
         <p class="rt-lb__note">Avance sincronizado desde tu actividad. Solo mostramos nombre, foto y avance; nunca datos de contacto.</p>
       </section>`;
     }
