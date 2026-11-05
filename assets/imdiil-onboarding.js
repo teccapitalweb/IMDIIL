@@ -110,7 +110,7 @@
 
   // ═══════════════════════════════════════════════════════════════════
   // Cofre con monedas: se usa para TODO crédito otorgado (bienvenida,
-  // cortesía del admin, etc.). Resuelve cuando el usuario lo cierra.
+  // cortesía del admin, etc.). Se muestra como splash y se cierra solo.
   // ═══════════════════════════════════════════════════════════════════
   function chestMarkup(amount) {
     const coins = Array.from({ length: 16 }, (_, i) => {
@@ -160,15 +160,11 @@
       pop.className = 'is-chest';
       pop.innerHTML = `
       <div class="wg-backdrop"></div>
-      <section class="wg-card" role="dialog" aria-modal="true" aria-labelledby="wg-title" aria-describedby="wg-desc">
-        <button class="wg-close" type="button" aria-label="Cerrar">×</button>
+      <section class="wg-card" role="status" aria-live="polite" aria-labelledby="wg-title" aria-describedby="wg-desc">
         ${chestMarkup(o.amount)}
         <span class="wg-kicker">${esc(o.kicker || 'Créditos IMDIIL')}</span>
         <h2 id="wg-title">${o.titleHtml || `¡Recibiste <em>${fmt(o.amount)} créditos</em>!`}</h2>
         <p id="wg-desc">${esc(o.desc || 'Ya están en tu saldo. Úsalos para canjear libros, materiales y herramientas.')}</p>
-        <div class="wg-actions">
-          <button class="wg-cta" type="button">${esc(o.cta || 'Ver en qué canjearlos')} <span aria-hidden="true">→</span></button>
-        </div>
       </section>`;
       document.body.appendChild(pop);
       const scrollLock = {
@@ -197,9 +193,11 @@
       if (scrollbarGap) document.body.style.paddingRight = `${bodyPaddingRight + scrollbarGap}px`;
       const previousFocus = document.activeElement;
       let closed = false;
+      let autoCloseTimer = 0;
       const close = goRoute => {
         if (closed) return;
         closed = true;
+        window.clearTimeout(autoCloseTimer);
         document.removeEventListener('keydown', onKey, true);
         pop.classList.add('is-closing');
         setTimeout(() => {
@@ -215,11 +213,9 @@
       };
       const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
       document.addEventListener('keydown', onKey, true);
-      pop.querySelector('.wg-close').addEventListener('click', () => close());
       pop.querySelector('.wg-backdrop').addEventListener('click', () => close());
-      pop.querySelector('.wg-cta').addEventListener('click', () => close(o.route || 'pdfs'));
-      setTimeout(() => pop.querySelector('.wg-cta')?.focus({ preventScroll: true }), 80);
       setTimeout(() => celebrate('big'), 650);
+      autoCloseTimer = window.setTimeout(() => close(), 4500);
     });
   }
   window.IMDIILCreditChest = { show: showCreditChest };
