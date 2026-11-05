@@ -551,6 +551,7 @@
       // Respaldo para navegadores que entregan pointerup fuera del elemento
       // capturador (especialmente al arrastrar rápido con mouse o touchpad).
       window.addEventListener('pointerup', endDrag, { once: true });
+      window.addEventListener('mouseup', endMouseDrag, { once: true });
       showPreview([drag.start]);
     });
     gridEl.addEventListener('pointermove', event => {
@@ -570,6 +571,10 @@
       drag = null;
       gridEl.releasePointerCapture?.(event.pointerId);
       finishSelection(cells);
+    };
+    const endMouseDrag = event => {
+      if (!drag) return;
+      endDrag({ pointerId: drag.pointerId, clientX: event.clientX, clientY: event.clientY, preventDefault() {} });
     };
     gridEl.addEventListener('pointerup', endDrag);
     gridEl.addEventListener('pointercancel', event => { if (drag?.pointerId === event.pointerId) { drag = null; clearPreview(); } });
