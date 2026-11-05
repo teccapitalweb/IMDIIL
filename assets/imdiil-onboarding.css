@@ -152,3 +152,36 @@
 @keyframes ccCoin{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(0)}12%{opacity:1}60%{opacity:1;transform:translate(var(--x),var(--y)) scale(1) rotate(var(--r))}100%{opacity:0;transform:translate(calc(var(--x)*1.1),calc(var(--y) + 70px)) scale(.85) rotate(var(--r))}}
 @keyframes ccPop{to{transform:translateX(-50%) scale(1)}}
 @media(prefers-reduced-motion:reduce){#welcome-gift .cc-box,#welcome-gift .cc-lid,#welcome-gift .cc-coin,#welcome-gift .cc-rays{animation:none}#welcome-gift .cc-lid{transform:translate(-6px,-14px) rotate(-38deg)}#welcome-gift .cc-glow{opacity:1;transform:translate(-50%,-50%);animation:none}#welcome-gift .cc-amount{transform:translateX(-50%);animation:none}}
+
+/* Cofre 2.0 · pieza libre, sin tarjeta cuadrada alrededor */
+#welcome-gift.is-chest .wg-card{width:min(520px,100%);max-height:none;overflow:visible;padding:18px 24px 22px;border:0;border-radius:0;background:transparent;box-shadow:none;text-shadow:0 2px 12px rgba(0,0,0,.55)}
+#welcome-gift.is-chest .wg-close{top:0;right:24px;border:1px solid rgba(255,255,255,.2);background:rgba(8,13,18,.34);color:#fff;backdrop-filter:blur(8px);text-shadow:none}
+#welcome-gift.is-chest .wg-close:hover{background:rgba(255,255,255,.14)}
+#welcome-gift.is-chest .wg-kicker{color:#ffd078;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+#welcome-gift.is-chest h2{margin:7px 0 7px;font-size:clamp(23px,4vw,30px);text-shadow:0 4px 18px rgba(0,0,0,.72)}
+#welcome-gift.is-chest h2 em{background:linear-gradient(135deg,#fff2a7,#ffb13b);-webkit-background-clip:text;background-clip:text}
+#welcome-gift.is-chest p{max-width:380px;margin-bottom:14px;color:#f0e9de;text-shadow:0 2px 12px rgba(0,0,0,.72)}
+#welcome-gift.is-chest .wg-actions{display:flex;justify-content:center}
+#welcome-gift.is-chest .wg-actions button{width:auto;min-width:200px;height:42px;padding:0 18px;border:1px solid rgba(255,231,174,.52);border-radius:999px;background:rgba(18,12,7,.52);color:#fff4d1;box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(8px);text-shadow:none}
+#welcome-gift.is-chest .wg-cta:hover{background:rgba(255,177,59,.24);filter:none}
+#welcome-gift .cc-stage{position:relative;width:320px;height:255px;margin:-14px auto 4px;isolation:isolate}
+#welcome-gift .cc-stage .cc-glow{left:50%;top:48%;width:270px;height:270px;background:radial-gradient(circle,rgba(255,210,104,.72),rgba(255,135,35,.22) 46%,transparent 72%);z-index:-2;animation:ccGlow .72s ease-out .42s forwards}
+#welcome-gift .cc-stage .cc-rays{left:50%;top:48%;width:330px;height:330px;background:repeating-conic-gradient(from 0deg,rgba(255,225,145,.3) 0 7deg,transparent 7deg 21deg);z-index:-3;animation:ccRays .78s ease-out .48s forwards,ccSpin 16s linear 1.3s infinite}
+#welcome-gift .cc-chest-svg{position:absolute;left:20px;bottom:12px;width:280px;height:230px;overflow:visible;filter:drop-shadow(0 18px 18px rgba(0,0,0,.38));animation:ccChestRise .62s cubic-bezier(.2,1.45,.35,1) both}
+#welcome-gift .cc-svg-lid{transform-box:fill-box;transform-origin:8% 96%;animation:ccSvgOpen .55s cubic-bezier(.2,1.2,.35,1) .46s both}
+#welcome-gift .cc-stage .cc-coins{left:50%;top:44%;z-index:4}
+#welcome-gift .cc-stage .cc-coin{width:25px;height:25px;left:-12px;top:-12px;border:2px solid #a8630a;background:radial-gradient(circle at 32% 26%,#fff9c8 0 11%,#ffe16f 28%,#f5b529 62%,#c97c0d 100%);color:#7a4305;font-size:10px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.28),0 5px 12px rgba(0,0,0,.42);z-index:5}
+#welcome-gift .cc-stage .cc-amount{bottom:1px;padding:8px 15px;border:1px solid rgba(255,238,174,.76);background:linear-gradient(135deg,#22160b,#40280e);color:#ffe58a;font-size:13px;letter-spacing:.2px;box-shadow:0 10px 24px rgba(0,0,0,.45);z-index:6}
+@keyframes ccChestRise{0%{opacity:0;transform:translateY(28px) scale(.82)}65%{opacity:1;transform:translateY(-5px) scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes ccSvgOpen{0%,35%{transform:none}100%{transform:translate(-8px,-10px) rotate(-13deg)}}
+@media(max-width:560px){
+  #welcome-gift.is-chest .wg-card{padding:12px 8px 18px}
+  #welcome-gift.is-chest .wg-close{right:8px}
+  #welcome-gift .cc-stage{width:286px;height:230px;margin-top:-10px}
+  #welcome-gift .cc-chest-svg{left:18px;width:250px;height:205px}
+  #welcome-gift.is-chest p{padding:0 10px;font-size:12.5px}
+}
+@media(prefers-reduced-motion:reduce){
+  #welcome-gift .cc-chest-svg,#welcome-gift .cc-svg-lid{animation:none}
+  #welcome-gift .cc-svg-lid{transform:translate(-8px,-10px) rotate(-13deg)}
+}

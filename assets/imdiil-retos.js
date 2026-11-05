@@ -128,11 +128,12 @@
   }
 
   // ─── Estructura ───
-  const TABS = [['hoy', 'Hoy'], ['arcade', 'Arcade'], ['clasificacion', 'Clasificación'], ['casos', 'Casos de planta'], ['flashcards', 'Flashcards'], ['progreso', 'Progreso']];
+  const TABS = [['hoy', 'Hoy'], ['arcade', 'Arcade'], ['clasificacion', 'Clasificación'], ['casos', 'Casos de planta'], ['flashcards', 'Flashcards']];
 
   function render(target, opts) {
     root = target;
-    tab = (opts && opts.tab) || (tab && TABS.some(([key]) => key === tab) ? tab : 'hoy');
+    const requestedTab = (opts && opts.tab) || tab;
+    tab = TABS.some(([key]) => key === requestedTab) ? requestedTab : 'hoy';
     session = null;
     paint();
     Promise.all([load(), loadBoard('week')]).then(() => { if (root === target && target.isConnected && !session) paint(); });
@@ -280,8 +281,8 @@
   const avatar = (row, size) => row.photo
     ? `<img class="rt-av" src="${esc(row.photo)}" alt="" width="${size}" height="${size}" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'rt-av rt-av--txt',textContent:'${esc(initials(row.name))}'}))">`
     : `<span class="rt-av rt-av--txt">${esc(initials(row.name))}</span>`;
-  const tierMark = tier => ({ aprendiz: 'A', bronce: 'B', plata: 'P', oro: 'O', leyenda: 'L' }[tier?.id] || String(tier?.name || 'A').charAt(0).toUpperCase());
-  const medal = tier => `<span class="rt-medal rt-medal--${esc(tier?.id || 'aprendiz')}" title="Nivel ${esc(tier?.name || 'Aprendiz')}">${esc(tierMark(tier))}</span>`;
+  const tierIcon = tier => ({ aprendiz: 'i-book', bronce: 'i-bolt', plata: 'i-certificate', oro: 'i-trophy', leyenda: 'i-crown' }[tier?.id] || 'i-book');
+  const medal = tier => `<span class="rt-medal rt-medal--${esc(tier?.id || 'aprendiz')}" title="Nivel ${esc(tier?.name || 'Aprendiz')}">${icon(tierIcon(tier))}</span>`;
   const PERIOD_LABEL = { week: 'Esta semana', month: 'Este mes', all: 'Histórico' };
   const EARN = [
     { icon: 'contra-reloj', title: 'Gana un mini juego', detail: '16 juegos en el Arcade', xp: 20, go: 'arcade' },

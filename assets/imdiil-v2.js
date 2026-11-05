@@ -576,7 +576,49 @@
     const overall = total ? Math.round(seen / total * 100) : 0;
     const complete = rows.filter(row => row.completed).length;
     const current = rows.filter(row => row.pct > 0 && !row.completed);
-    target.innerHTML = `<div class="v2-shell">${compactHero('Mi progreso','Tu avance, sin ruido.',`<div class="v2-progress-hero-ring" style="--pct:${overall}"><strong>${overall}<small>%</small></strong></div>`,'dark')}<section class="v2-progress-overview"><div class="v2-progress-overview__lead"><span class="v2-kicker">PANORAMA</span><h2>${overall ? 'Sigue construyendo tu ruta' : 'Tu ruta comienza aquí'}</h2><p>${seen} de ${total} clases completadas.</p><button data-go-courses>${current.length ? 'Continuar aprendiendo' : 'Explorar cursos'} →</button></div><div class="v2-progress-metrics"><div><strong>${complete}</strong><span>Cursos terminados</span></div><div><strong>${CHALLENGES.filter(item => challengeState()[item.id]?.completed).length}</strong><span>Retos resueltos</span></div><div><strong>${state.owned.size}</strong><span>Recursos canjeados</span></div><div><strong>${state.balance}</strong><span>Créditos disponibles</span></div></div></section><div class="v2-section-head"><div><h2>Ruta de aprendizaje</h2><p>Abre un curso para continuar.</p></div><span>${rows.length} cursos</span></div><div class="v2-progress-grid">${rows.map(row => `<button data-progress-course="${esc(row.course.id)}"><div class="v2-progress-grid__top"><span>${esc(row.course.area || 'IMDIIL')}</span><strong>${row.pct}%</strong></div><h3>${esc(row.course.titulo || 'Curso')}</h3><p>${row.seen.length} de ${row.lessons.length} clases</p><div class="v2-bar"><i style="width:${row.pct}%"></i></div></button>`).join('') || '<div class="v2-empty">Aún no hay cursos publicados.</div>'}</div></div>`;
+    const challengeDone = CHALLENGES.filter(item => challengeState()[item.id]?.completed).length;
+    const ranks = [
+      { name:'Aprendiz', at:0, icon:'i-book' },
+      { name:'Bronce', at:20, icon:'i-bolt' },
+      { name:'Plata', at:40, icon:'i-certificate' },
+      { name:'Oro', at:60, icon:'i-trophy' },
+      { name:'Leyenda', at:80, icon:'i-crown' }
+    ];
+    const rankIndex = Math.min(ranks.length - 1, Math.floor(overall / 20));
+    const activeRank = ranks[rankIndex];
+    const nextRank = ranks[rankIndex + 1];
+    const rankProgress = nextRank ? Math.round((overall - activeRank.at) / (nextRank.at - activeRank.at) * 100) : 100;
+    target.innerHTML = `<div class="v2-shell v2-achievements-page">
+      <header class="v2-achievements-head">
+        <div><span class="v2-kicker">PROGRESO PROFESIONAL</span><h1>Mi progreso</h1><p>Convierte cada clase, reto y recurso en avance visible.</p></div>
+        <span class="v2-achievements-head__badge">${seen} de ${total} clases</span>
+      </header>
+      <section class="v2-progress-hero">
+        <div class="v2-progress-hero__identity">
+          <span class="v2-progress-rank-icon v2-progress-rank-icon--${rankIndex}">${icon(activeRank.icon)}</span>
+          <div><small>Tu nivel actual</small><h2>${activeRank.name}</h2><p>${nextRank ? `${nextRank.at - overall}% para llegar a ${nextRank.name}` : 'Nivel máximo alcanzado'}</p></div>
+        </div>
+        <div class="v2-progress-hero__completion" style="--pct:${overall}"><strong>${overall}<small>%</small></strong><span>avance general</span></div>
+        <div class="v2-progress-hero__route">
+          <div><span>Avance hacia ${nextRank?.name || 'tu siguiente meta'}</span><b>${rankProgress}%</b></div>
+          <i><em style="width:${rankProgress}%"></em></i>
+        </div>
+        <div class="v2-progress-hero__stats">
+          <div><strong>${seen}</strong><span>Clases vistas</span></div>
+          <div><strong>${complete}</strong><span>Cursos terminados</span></div>
+          <div><strong>${challengeDone}</strong><span>Retos resueltos</span></div>
+          <div><strong>${state.owned.size}</strong><span>Recursos canjeados</span></div>
+        </div>
+      </section>
+      <section class="v2-rank-path">
+        <div class="v2-section-head"><div><h2>Ruta de niveles</h2><p>Cada bloque de avance abre el siguiente rango.</p></div><button class="v2-btn" type="button" data-go-courses>${current.length ? 'Continuar aprendiendo' : 'Explorar cursos'} →</button></div>
+        <div class="v2-rank-path__grid">${ranks.map((rank,index) => `<article class="${index < rankIndex ? 'is-done' : index === rankIndex ? 'is-current' : ''}"><span class="v2-progress-rank-icon v2-progress-rank-icon--${index}">${icon(rank.icon)}</span><div><small>${rank.at ? `Desde ${rank.at}%` : 'Punto de partida'}</small><strong>${rank.name}</strong></div>${index < rankIndex ? '<b>✓</b>' : index === rankIndex ? '<b>Actual</b>' : ''}</article>`).join('')}</div>
+      </section>
+      <section class="v2-progress-courses">
+        <div class="v2-section-head"><div><h2>Ruta de aprendizaje</h2><p>Abre un curso para continuar.</p></div><span>${rows.length} cursos</span></div>
+        <div class="v2-progress-grid">${rows.map(row => `<button data-progress-course="${esc(row.course.id)}"><div class="v2-progress-grid__top"><span>${esc(row.course.area || 'IMDIIL')}</span><strong>${row.pct}%</strong></div><h3>${esc(row.course.titulo || 'Curso')}</h3><p>${row.seen.length} de ${row.lessons.length} clases</p><div class="v2-bar"><i style="width:${row.pct}%"></i></div></button>`).join('') || '<div class="v2-empty">Aún no hay cursos publicados.</div>'}</div>
+      </section>
+    </div>`;
     target.querySelector('[data-go-courses]').addEventListener('click', () => go('cursos'));
     target.querySelectorAll('[data-progress-course]').forEach(button => button.addEventListener('click', () => go(courseRoute(button.dataset.progressCourse))));
   }

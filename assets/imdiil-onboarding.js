@@ -113,14 +113,42 @@
   // cortesía del admin, etc.). Resuelve cuando el usuario lo cierra.
   // ═══════════════════════════════════════════════════════════════════
   function chestMarkup(amount) {
-    const coins = Array.from({ length: 14 }, (_, i) => {
-      const angle = -150 + (120 / 13) * i + (Math.random() * 8 - 4);
-      const dist = 62 + Math.random() * 46;
+    const coins = Array.from({ length: 16 }, (_, i) => {
+      const angle = -156 + (132 / 15) * i + (Math.random() * 8 - 4);
+      const dist = 78 + Math.random() * 56;
       const x = Math.cos(angle * Math.PI / 180) * dist;
       const y = Math.sin(angle * Math.PI / 180) * dist;
-      return `<span class="cc-coin" style="--x:${x.toFixed(0)}px;--y:${y.toFixed(0)}px;--d:${(0.72 + i * 0.035).toFixed(2)}s;--r:${(Math.random() * 540 - 270).toFixed(0)}deg">C</span>`;
+      return `<span class="cc-coin" style="--x:${x.toFixed(0)}px;--y:${y.toFixed(0)}px;--d:${(0.58 + i * 0.035).toFixed(2)}s;--r:${(Math.random() * 540 - 270).toFixed(0)}deg">C</span>`;
     }).join('');
-    return `<div class="cc-chest" aria-hidden="true"><i class="cc-glow"></i><i class="cc-rays"></i><div class="cc-coins">${coins}</div><div class="cc-lid"><i></i></div><div class="cc-box"><i class="cc-band"></i><i class="cc-lock"></i></div><b class="cc-amount">+${fmt(amount)}</b></div>`;
+    return `<div class="cc-stage" aria-hidden="true">
+      <i class="cc-glow"></i><i class="cc-rays"></i><div class="cc-coins">${coins}</div>
+      <svg class="cc-chest-svg" viewBox="0 0 280 230" fill="none">
+        <defs>
+          <linearGradient id="ccWoodTop" x1="54" y1="44" x2="225" y2="114" gradientUnits="userSpaceOnUse"><stop stop-color="#B9622A"/><stop offset=".48" stop-color="#7F3514"/><stop offset="1" stop-color="#4A1C0B"/></linearGradient>
+          <linearGradient id="ccWoodBody" x1="50" y1="103" x2="219" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#A94F20"/><stop offset=".5" stop-color="#6B290F"/><stop offset="1" stop-color="#3A1508"/></linearGradient>
+          <linearGradient id="ccGold" x1="80" y1="65" x2="190" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF0A1"/><stop offset=".28" stop-color="#F7C948"/><stop offset=".66" stop-color="#D68A12"/><stop offset="1" stop-color="#8D4B08"/></linearGradient>
+          <linearGradient id="ccLock" x1="121" y1="131" x2="159" y2="177" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF4AF"/><stop offset=".45" stop-color="#F2B82E"/><stop offset="1" stop-color="#A35B09"/></linearGradient>
+          <filter id="ccShadow" x="20" y="18" width="244" height="212" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="13" stdDeviation="10" flood-color="#130803" flood-opacity=".55"/></filter>
+        </defs>
+        <g filter="url(#ccShadow)">
+          <g class="cc-svg-lid">
+            <path d="M54 103C60 62 90 38 140 38C190 38 220 62 226 103H54Z" fill="url(#ccWoodTop)" stroke="url(#ccGold)" stroke-width="8"/>
+            <path d="M69 94C78 69 101 56 140 56C179 56 202 69 211 94" stroke="#DB8D24" stroke-width="5" opacity=".72"/>
+            <path d="M135 42H146V99H135V42Z" fill="url(#ccGold)"/>
+            <path d="M54 98H226V113H54V98Z" fill="url(#ccGold)"/>
+          </g>
+          <ellipse cx="140" cy="107" rx="81" ry="21" fill="#160B07"/>
+          <path d="M48 104H232L220 194C219 202 212 208 204 208H76C68 208 61 202 60 194L48 104Z" fill="url(#ccWoodBody)" stroke="url(#ccGold)" stroke-width="8"/>
+          <path d="M62 122H218M62 184H218" stroke="#D78B1B" stroke-width="6" opacity=".88"/>
+          <path d="M131 108H149V204H131V108Z" fill="url(#ccGold)"/>
+          <path d="M112 141C112 134 118 128 125 128H155C162 128 168 134 168 141V171C168 178 162 184 155 184H125C118 184 112 178 112 171V141Z" fill="url(#ccLock)" stroke="#8B4B08" stroke-width="4"/>
+          <path d="M140 145C134 145 130 149 130 155C130 159 132 162 135 164L133 174H147L145 164C148 162 150 159 150 155C150 149 146 145 140 145Z" fill="#6B3507"/>
+          <path d="M69 119C72 151 76 176 81 194" stroke="#CE6C25" stroke-width="4" opacity=".45"/>
+          <path d="M199 119C196 151 192 176 187 194" stroke="#351006" stroke-width="5" opacity=".35"/>
+        </g>
+      </svg>
+      <b class="cc-amount">+${fmt(amount)} créditos</b>
+    </div>`;
   }
 
   function showCreditChest(options) {
@@ -138,9 +166,7 @@
         <span class="wg-kicker">${esc(o.kicker || 'Créditos IMDIIL')}</span>
         <h2 id="wg-title">${o.titleHtml || `¡Recibiste <em>${fmt(o.amount)} créditos</em>!`}</h2>
         <p id="wg-desc">${esc(o.desc || 'Ya están en tu saldo. Úsalos para canjear libros, materiales y herramientas.')}</p>
-        <div class="wg-balance"><span>Tu saldo actual</span><strong>${fmt(o.balance)} <small>créditos</small></strong></div>
         <div class="wg-actions">
-          <button class="wg-later" type="button">Más tarde</button>
           <button class="wg-cta" type="button">${esc(o.cta || 'Ver en qué canjearlos')} <span aria-hidden="true">→</span></button>
         </div>
       </section>`;
@@ -162,7 +188,6 @@
       const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
       document.addEventListener('keydown', onKey, true);
       pop.querySelector('.wg-close').addEventListener('click', () => close());
-      pop.querySelector('.wg-later').addEventListener('click', () => close());
       pop.querySelector('.wg-backdrop').addEventListener('click', () => close());
       pop.querySelector('.wg-cta').addEventListener('click', () => close(o.route || 'pdfs'));
       setTimeout(() => pop.querySelector('.wg-cta')?.focus({ preventScroll: true }), 80);
