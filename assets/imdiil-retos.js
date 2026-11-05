@@ -548,6 +548,9 @@
       event.preventDefault();
       drag = { pointerId: event.pointerId, start: target.dataset.ws.split(',').map(Number), last: target.dataset.ws.split(',').map(Number) };
       gridEl.setPointerCapture?.(event.pointerId);
+      // Respaldo para navegadores que entregan pointerup fuera del elemento
+      // capturador (especialmente al arrastrar rápido con mouse o touchpad).
+      window.addEventListener('pointerup', endDrag, { once: true });
       showPreview([drag.start]);
     });
     gridEl.addEventListener('pointermove', event => {
@@ -564,12 +567,18 @@
       const target = eventCell(event);
       if (target && gridEl.contains(target)) drag.last = target.dataset.ws.split(',').map(Number);
       const cells = pathBetween(drag.start, drag.last);
-      gridEl.releasePointerCapture?.(event.pointerId);
       drag = null;
+      gridEl.releasePointerCapture?.(event.pointerId);
       finishSelection(cells);
     };
     gridEl.addEventListener('pointerup', endDrag);
     gridEl.addEventListener('pointercancel', event => { if (drag?.pointerId === event.pointerId) { drag = null; clearPreview(); } });
+    gridEl.addEventListener('lostpointercapture', event => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const cells = pathBetween(drag.start, drag.last);
+      drag = null;
+      finishSelection(cells);
+    });
     gridEl.addEventListener('click', event => event.preventDefault());
   }
 
