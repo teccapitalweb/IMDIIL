@@ -34,11 +34,11 @@
     riesgo: 'detecta-riesgo', adivina: 'adivina-concepto', contra: 'contra-reloj', vf: 'verdadero-falso', oee: 'calcula-oee',
     balanceo: 'balanceo-linea', ishikawa: 'ishikawa', muda: 'encuentra-muda', control: 'grafica-control', pareto: 'pareto', ruta: 'ruta-montacargas'
   };
-  const cover = type => `${IMG}portadas/${COVER[type] || 'memorama'}.webp`;
-  const iconImg = id => `${IMG}iconos/${id}.webp`;
+  const cover = type => `${IMG}portadas-imdac/${COVER[type] || 'memorama'}.jpg`;
+  const iconImg = id => `${IMG}iconos-imdac/${id}.svg`;
   const scene = id => `${IMG}escenas/${id}.webp`;
 
-  // Temas (filtros del Arcade) con su ícono 3D.
+  // Temas (filtros del Arcade) con una familia de íconos editorial uniforme.
   const CATS = [
     { id: 'lean', name: 'Lean' }, { id: 'calidad', name: 'Calidad' }, { id: 'seguridad', name: 'Seguridad' },
     { id: 'mantenimiento', name: 'Mantenimiento' }, { id: 'logistica', name: 'Logística' }, { id: 'almacen', name: 'Almacén' },
@@ -188,7 +188,7 @@
     return `<article class="rt-card ${opts?.daily ? 'rt-card--daily' : ''} ${done ? 'is-done' : ''}" style="--g:${esc(game.color)}" data-rt-play="${esc(game.type)}" data-rt-board="${Number(board) || 0}" tabindex="0" role="button" aria-label="Jugar ${esc(game.title)}">
       <div class="rt-card__media">
         <img src="${cover(game.type)}" alt="" loading="lazy" decoding="async" width="960" height="600">
-        <span class="rt-card__tag">${esc(opts?.daily ? 'Reto del día' : game.label)}</span>
+        ${opts?.daily ? '<span class="rt-card__tag">Reto del día</span>' : ''}
         ${done ? `<span class="rt-card__done">${icon('i-check-circle')}Ganado hoy</span>` : ''}
       </div>
       <div class="rt-card__body">
