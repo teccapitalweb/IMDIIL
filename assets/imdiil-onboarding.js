@@ -165,6 +165,7 @@
         <span class="wg-kicker">${esc(o.kicker || 'Créditos IMDIIL')}</span>
         <h2 id="wg-title">${o.titleHtml || `¡Recibiste <em>${fmt(o.amount)} créditos</em>!`}</h2>
         <p id="wg-desc">${esc(o.desc || 'Ya están en tu saldo. Úsalos para canjear libros, materiales y herramientas.')}</p>
+        <i class="wg-autoclose" aria-hidden="true"><b></b></i>
       </section>`;
       document.body.appendChild(pop);
       const scrollLock = {
@@ -177,19 +178,16 @@
           right: document.body.style.right,
           width: document.body.style.width,
           overflow: document.body.style.overflow,
-          paddingRight: document.body.style.paddingRight
+          paddingRight: document.body.style.paddingRight,
+          touchAction: document.body.style.touchAction
         }
       };
       const scrollbarGap = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
       const bodyPaddingRight = Number.parseFloat(getComputedStyle(document.body).paddingRight) || 0;
       document.documentElement.classList.add('credit-chest-open');
       document.body.classList.add('credit-chest-open');
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollLock.y}px`;
-      document.body.style.left = `-${scrollLock.x}px`;
-      document.body.style.right = '0';
-      document.body.style.width = 'auto';
       document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
       if (scrollbarGap) document.body.style.paddingRight = `${bodyPaddingRight + scrollbarGap}px`;
       const previousFocus = document.activeElement;
       let closed = false;
@@ -214,8 +212,7 @@
       const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
       document.addEventListener('keydown', onKey, true);
       pop.querySelector('.wg-backdrop').addEventListener('click', () => close());
-      setTimeout(() => celebrate('big'), 650);
-      autoCloseTimer = window.setTimeout(() => close(), 4500);
+      autoCloseTimer = window.setTimeout(() => close(), 4200);
     });
   }
   window.IMDIILCreditChest = { show: showCreditChest };

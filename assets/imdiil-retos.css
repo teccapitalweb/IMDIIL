@@ -307,6 +307,39 @@
   .rt-oee__field{grid-template-columns:1fr}.rt-bal__task{grid-template-columns:30px minmax(0,1fr)}.rt-bal__pick{grid-column:1/-1}.rt-bal__pick button{flex:1}.rt-fish__row{grid-template-columns:1fr}.rt-fish__bone--top:after,.rt-fish__bone--bottom:after{display:none}.rt-fish__bone{min-height:70px}
   .rt-par__chart{gap:4px;padding:28px 4px 70px}.rt-par__bar span{font-size:9px}.rt-stat strong{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.rt-card,.rt-card__media>img,.rt-win,.rt-mem__card,.rt-sc__pin,.rt-route__path{transition:none;animation:none}}
+
+/* ── Pulido visual IMDAC · superficies frías, jerarquía y movimiento útil ── */
+@supports selector(body:has(.rt-page)){
+  :root[data-theme="day"] .app:has(.rt-page){background:#f4f7f9}
+  :root[data-theme="night"] .app:has(.rt-page){background:#0b1117}
+  body:has(.rt-page)::before{opacity:.16}
+}
+.rt-page{--rt-navy:#0b1f3a;--rt-blue:#14425f;--rt-orange:#f26b1d;color:var(--text)}
+.rt-body>*{animation:rtSectionIn .34s cubic-bezier(.2,.75,.25,1) both}
+@keyframes rtSectionIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.rt-arcade__head{border-color:color-mix(in srgb,#14425f 18%,var(--border));background:linear-gradient(125deg,color-mix(in srgb,#14425f 7%,var(--surface)),var(--surface) 62%);box-shadow:0 14px 38px rgba(10,31,49,.07)}
+.rt-card{border-color:color-mix(in srgb,#14425f 14%,var(--border));border-radius:18px;box-shadow:0 8px 24px rgba(10,31,49,.07);transform:translateZ(0)}
+.rt-card:hover{border-color:color-mix(in srgb,var(--g) 45%,#14425f);box-shadow:0 18px 42px rgba(10,31,49,.14);transform:translateY(-4px)}
+.rt-card__media{aspect-ratio:16/9;background:#0b1f3a}
+.rt-card__media>img{filter:saturate(.82) contrast(1.04);transition:transform .45s cubic-bezier(.2,.75,.25,1),filter .3s}
+.rt-card:hover .rt-card__media>img{transform:scale(1.035);filter:saturate(.95) contrast(1.06)}
+.rt-card__media:after{background:linear-gradient(180deg,rgba(7,22,36,.08),transparent 42%,rgba(7,22,36,.46))}
+.rt-card__icon{top:-23px;right:15px;width:46px;height:46px;padding:4px;border:1px solid rgba(255,255,255,.6);border-radius:50%;background:#0b1f3a;box-shadow:0 8px 20px rgba(7,22,36,.24);filter:none}
+.rt-card__body{padding:16px 17px 17px}.rt-card h3{margin-right:52px;font-size:16px}.rt-card p{font-size:11.75px}
+.rt-card__foot{border-top:1px solid var(--border);margin-top:14px;padding-top:12px}
+.rt-play{overflow:hidden;border:1px solid color-mix(in srgb,#14425f 18%,var(--border));border-radius:22px;background:var(--surface);box-shadow:0 18px 48px rgba(10,31,49,.11)}
+.rt-play__banner{min-height:158px}.rt-play__stage{padding:22px 24px 26px;background:var(--surface)}
+.rt-play__hint{margin:0;padding:15px 24px;border-bottom:1px solid var(--border);background:color-mix(in srgb,#14425f 5%,var(--surface));font-weight:600}
+.rt-btn,.rt-chip,.rt-cls__item button,.rt-tf__btns button,.rt-gs__keys button{transition:transform .16s,border-color .16s,background .16s,box-shadow .16s}
+.rt-btn:hover:not(:disabled),.rt-chip:hover:not(:disabled),.rt-cls__item button:hover:not(:disabled),.rt-tf__btns button:hover:not(:disabled),.rt-gs__keys button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 16px rgba(10,31,49,.1)}
+.rt-btn:focus-visible,.rt-card:focus-visible,.rt-cls__item button:focus-visible,.rt-tf__btns button:focus-visible,.rt-gs__keys button:focus-visible{outline:3px solid color-mix(in srgb,var(--primary) 32%,transparent);outline-offset:2px}
+.rt-win{position:relative;overflow:hidden;gap:8px;margin-top:22px;padding:28px;border-color:rgba(66,151,199,.24);background:linear-gradient(145deg,#0d2b42,#071a29);color:#fff;box-shadow:0 16px 36px rgba(7,22,36,.18)}
+.rt-win:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px) 0 0/34px 34px,linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px) 0 0/34px 34px;pointer-events:none}
+.rt-win>*{position:relative}.rt-win p,.rt-win small{color:rgba(255,255,255,.72)}.rt-win h3{color:#fff}.rt-win>span{color:#ffb377}
+.rt-win .rt-btn{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff}.rt-win .rt-btn--primary{border-color:transparent;background:linear-gradient(135deg,#ff8a3d,#f26b1d)}
+:root[data-theme="night"] .rt-card,:root[data-theme="night"] .rt-play{box-shadow:0 14px 36px rgba(0,0,0,.28)}
+@media(max-width:700px){.rt-play{border-radius:16px}.rt-play__stage{padding:16px}.rt-play__hint{padding:13px 16px}.rt-card:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){.rt-body>*{animation:none}.rt-card,.rt-card__media>img,.rt-btn,.rt-chip{transition:none}}
 /* ── Pulido v3: retos rápidos, clasificación vacía y cómo ganar XP ── */
 .rt-q{gap:12px;padding:20px;border-radius:22px;transition:border-color .2s,box-shadow .2s}.rt-q:hover{box-shadow:0 14px 30px rgba(20,14,8,.07)}
 .rt-q__head{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:12px}.rt-q__head img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 8px 12px rgba(20,14,8,.18))}

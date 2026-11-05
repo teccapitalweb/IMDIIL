@@ -153,31 +153,38 @@
 @keyframes ccPop{to{transform:translateX(-50%) scale(1)}}
 @media(prefers-reduced-motion:reduce){#welcome-gift .cc-box,#welcome-gift .cc-lid,#welcome-gift .cc-coin,#welcome-gift .cc-rays{animation:none}#welcome-gift .cc-lid{transform:translate(-6px,-14px) rotate(-38deg)}#welcome-gift .cc-glow{opacity:1;transform:translate(-50%,-50%);animation:none}#welcome-gift .cc-amount{transform:translateX(-50%);animation:none}}
 
-/* Cofre 2.0 · pieza libre, sin tarjeta cuadrada alrededor */
-#welcome-gift.is-chest .wg-backdrop{background:rgba(3,10,16,.78);backdrop-filter:blur(10px) saturate(.72);-webkit-backdrop-filter:blur(10px) saturate(.72)}
-#welcome-gift.is-chest .wg-card{width:min(520px,100%);max-height:none;overflow:visible;padding:18px 24px 8px;border:0;border-radius:0;background:transparent;box-shadow:none;text-shadow:0 2px 12px rgba(0,0,0,.72);pointer-events:none}
+/* Cofre 3.0 · splash independiente, con el panel real visible detrás. */
+#welcome-gift.is-chest{position:fixed!important;inset:0!important;z-index:2147483200!important;isolation:isolate;overflow:hidden;background:transparent!important}
+#welcome-gift.is-chest .wg-backdrop{position:absolute!important;inset:0!important;background:rgba(7,22,36,.24)!important;backdrop-filter:blur(3px) saturate(.88) brightness(.94);-webkit-backdrop-filter:blur(3px) saturate(.88) brightness(.94)}
+#welcome-gift.is-chest .wg-card{width:min(500px,100%);max-height:none;overflow:visible;padding:12px 24px 10px;border:0;border-radius:0;background:transparent!important;box-shadow:none;text-shadow:0 2px 12px rgba(0,0,0,.72);pointer-events:none}
 html.credit-chest-open,body.credit-chest-open{overflow:hidden!important;overscroll-behavior:none!important}
+body.credit-chest-open{touch-action:none!important}
+body.credit-chest-open::before,body.credit-chest-open::after{animation-play-state:paused!important}
 #welcome-gift.is-chest .wg-kicker{color:#ffd078;text-shadow:0 2px 10px rgba(0,0,0,.7)}
 #welcome-gift.is-chest h2{margin:7px 0 7px;font-size:clamp(23px,4vw,30px);text-shadow:0 4px 18px rgba(0,0,0,.72)}
 #welcome-gift.is-chest h2 em{background:linear-gradient(135deg,#fff2a7,#ffb13b);-webkit-background-clip:text;background-clip:text}
 #welcome-gift.is-chest p{max-width:380px;margin-bottom:0;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.82),0 0 3px rgba(0,0,0,.9)}
-#welcome-gift .cc-stage{position:relative;width:320px;height:275px;margin:-4px auto 4px;isolation:isolate}
+#welcome-gift .wg-autoclose{position:relative;display:block;width:118px;height:3px;margin:17px auto 0;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.25)}
+#welcome-gift .wg-autoclose b{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ffbd59,#f26b1d);transform-origin:left center;animation:wgAutoclose 4.2s linear forwards}
+#welcome-gift .cc-stage{position:relative;width:300px;height:250px;margin:-2px auto 2px;isolation:isolate}
 #welcome-gift .cc-stage .cc-glow{left:50%;top:48%;width:270px;height:270px;background:radial-gradient(circle,rgba(255,210,104,.72),rgba(255,135,35,.22) 46%,transparent 72%);z-index:-2;animation:ccGlow .72s ease-out .42s forwards}
 #welcome-gift .cc-stage .cc-rays{left:50%;top:48%;width:330px;height:330px;background:repeating-conic-gradient(from 0deg,rgba(255,225,145,.3) 0 7deg,transparent 7deg 21deg);z-index:-3;animation:ccRays .78s ease-out .48s forwards,ccSpin 16s linear 1.3s infinite}
-#welcome-gift .cc-chest-svg{position:absolute;left:20px;bottom:12px;width:280px;height:230px;overflow:visible;filter:drop-shadow(0 18px 18px rgba(0,0,0,.38));animation:ccChestRise .62s cubic-bezier(.2,1.45,.35,1) both}
+#welcome-gift .cc-chest-svg{position:absolute;left:20px;bottom:10px;width:260px;height:214px;overflow:visible;filter:drop-shadow(0 18px 18px rgba(0,0,0,.38));animation:ccChestRise .62s cubic-bezier(.2,1.45,.35,1) both}
 #welcome-gift .cc-svg-lid{transform-box:fill-box;transform-origin:8% 96%;animation:ccSvgOpen .55s cubic-bezier(.2,1.2,.35,1) .46s both}
 #welcome-gift .cc-stage .cc-coins{left:50%;top:44%;z-index:4}
 #welcome-gift .cc-stage .cc-coin{width:25px;height:25px;left:-12px;top:-12px;border:2px solid #a8630a;background:radial-gradient(circle at 32% 26%,#fff9c8 0 11%,#ffe16f 28%,#f5b529 62%,#c97c0d 100%);color:#7a4305;font-size:10px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.28),0 5px 12px rgba(0,0,0,.42);z-index:5}
 #welcome-gift .cc-stage .cc-amount{bottom:1px;padding:8px 15px;border:1px solid rgba(255,238,174,.76);background:linear-gradient(135deg,#22160b,#40280e);color:#ffe58a;font-size:13px;letter-spacing:.2px;box-shadow:0 10px 24px rgba(0,0,0,.45);z-index:6}
 @keyframes ccChestRise{0%{opacity:0;transform:translateY(28px) scale(.82)}65%{opacity:1;transform:translateY(-5px) scale(1.03)}100%{opacity:1;transform:none}}
 @keyframes ccSvgOpen{0%,35%{transform:none}100%{transform:translate(-8px,-10px) rotate(-13deg)}}
+@keyframes wgAutoclose{to{transform:scaleX(0)}}
 @media(max-width:560px){
   #welcome-gift.is-chest .wg-card{padding:12px 8px 6px}
-  #welcome-gift .cc-stage{width:286px;height:250px;margin-top:-2px}
-  #welcome-gift .cc-chest-svg{left:18px;width:250px;height:205px}
+  #welcome-gift .cc-stage{width:276px;height:232px;margin-top:-2px}
+  #welcome-gift .cc-chest-svg{left:18px;width:240px;height:198px}
   #welcome-gift.is-chest p{padding:0 10px;font-size:12.5px}
 }
 @media(prefers-reduced-motion:reduce){
   #welcome-gift .cc-chest-svg,#welcome-gift .cc-svg-lid{animation:none}
   #welcome-gift .cc-svg-lid{transform:translate(-8px,-10px) rotate(-13deg)}
+  #welcome-gift .wg-autoclose b{animation:none;transform:none}
 }
