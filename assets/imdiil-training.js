@@ -288,7 +288,8 @@
     flipped = false;
   }
 
-  // Ícono y color de cada tema. Las dos caras usan el fondo oficial compartido.
+  // Ícono y color de cada tema. Las dos caras comparten una composición
+  // editorial construida en CSS para verse nítida en cualquier resolución.
   const AREA_ART = {
     'Lean': { icon: 'lean', tone: '#16a34a' },
     'OEE': { icon: 'oee', tone: '#0891b2' },
@@ -300,10 +301,6 @@
   };
   const ART_BASE = 'assets/img/retos/';
   const artOf = area => AREA_ART[area] || { icon: 'reto-diario', tone: '#ff7a2d' };
-  const flashBackgroundUrl = () => {
-    try { return new URL(`${ART_BASE}flashcard-background.png`, document.baseURI).href; }
-    catch (e) { return `${ART_BASE}flashcard-background.png`; }
-  };
 
   function renderCards() {
     view = 'cards';
@@ -319,10 +316,10 @@
     const countOf = area => (area === 'Todas' ? CONTENT.cards.length : CONTENT.cards.filter(item => item.area === area).length);
     shell(`${back('hub', 'Centro de entrenamiento')}
       <div class="tr-section-head tr-section-head--page"><div><span>Repaso rápido</span><h2>Flashcards técnicas</h2><p>Voltea la tarjeta, califica qué tan bien la dominas y gana XP.</p></div><small>${mastered}/${deck.length} dominadas</small></div>
-      <div class="tr-fc-filters" role="toolbar" aria-label="Filtrar por tema">${areas.map(area => `<button type="button" class="${area === cardArea ? 'is-active' : ''}" data-tr-area="${esc(area)}">${area === 'Todas' ? `<b>${countOf(area)}</b>` : `<img src="${ART_BASE}iconos/${artOf(area).icon}.webp" alt="" width="24" height="24" loading="lazy">`}${esc(area)}${area === 'Todas' ? '' : `<small>${countOf(area)}</small>`}</button>`).join('')}</div>
+      <div class="tr-fc-filters" role="toolbar" aria-label="Filtrar por tema">${areas.map(area => `<button type="button" class="${area === cardArea ? 'is-active' : ''}" data-tr-area="${esc(area)}">${area === 'Todas' ? `<b>${countOf(area)}</b>` : `<img src="${ART_BASE}iconos-imdac/${artOf(area).icon}.svg" alt="" width="24" height="24" loading="lazy">`}${esc(area)}${area === 'Todas' ? '' : `<small>${countOf(area)}</small>`}</button>`).join('')}</div>
       <section class="tr-fc-layout">
         <div class="tr-fc-stage">
-          <article class="tr-flashcard ${flipped ? 'is-flipped' : ''}" style="--tone:${art.tone};--flash-bg:url('${flashBackgroundUrl()}')">
+          <article class="tr-flashcard ${flipped ? 'is-flipped' : ''}" style="--tone:${art.tone}">
             <div class="tr-fc-inner">
               <div class="tr-fc-face tr-fc-front" data-tr-flip role="button" tabindex="0" aria-label="Voltear tarjeta ${esc(card.front)}">
                 <div class="tr-fc-top"><span class="tr-fc-cat">${esc(card.area)}</span></div>
