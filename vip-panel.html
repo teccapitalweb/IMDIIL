@@ -23,6 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="onboarding-tour.css?v=1">
 <link rel="stylesheet" href="assets/imdiil-v2.css?v=14">
+<link rel="stylesheet" href="assets/imdiil-course-games.css?v=1">
 <link rel="stylesheet" href="assets/imdiil-experience.css?v=1">
 <link rel="stylesheet" href="assets/imdiil-onboarding.css?v=5">
 <!-- Métricas: tiempo por minuto/sección y contador de visitas (antes de que arranque la sesión) -->
@@ -7038,7 +7039,7 @@ const Sections = (function(){
           markBtn.style.color = 'var(--success)';
           markBtn.disabled = true;
         } else {
-          markBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Marcar como vista';
+          markBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M9 4h6l1 3h3v11H5V7h3l1-3Z"/><path d="M9 11h6M12 8v6"/></svg> Completar mini juego';
           markBtn.style.background = 'linear-gradient(135deg, var(--primary), var(--highlight))';
           markBtn.style.borderColor = 'transparent';
           markBtn.style.color = '#0E0A06';
@@ -7176,11 +7177,22 @@ const Sections = (function(){
         window.cerrarVisor();
       }
     });
-    // Handler del botón "Marcar como vista"
-    document.getElementById('visorMarkAsViewed')?.addEventListener('click', function() {
+    // Al cerrar una clase se abre su mini juego, igual que en IMFRA, ICADEM y SYNOVA.
+    document.getElementById('visorMarkAsViewed')?.addEventListener('click', async function() {
       const cursoId = this.dataset.cursoId;
       const numClase = parseInt(this.dataset.numClase);
       if (!cursoId || !numClase) return;
+      const curso = cursos.find(c => String(c.id) === String(cursoId));
+      const sesion = curso?.sesiones?.find((s, i) => Number(s.numero || i + 1) === numClase) || curso?.sesiones?.[numClase - 1];
+      if (window.IMDIILCourseGames?.play && curso && sesion) {
+        this.disabled = true;
+        const original = this.innerHTML;
+        this.textContent = 'Abriendo juego…';
+        const result = await window.IMDIILCourseGames.play({ course:curso, lesson:sesion, lessonNumber:numClase, practice:false });
+        if (!result?.completed) { this.disabled = false; this.innerHTML = original; return; }
+        try { localStorage.setItem(`imdiil:class-quiz:${window.UserState?.uid || 'demo'}:${cursoId}:${numClase}`, JSON.stringify({ passed:true, score:result.score, total:result.total, assisted:result.assisted, mode:result.mode, completedAt:new Date().toISOString() })); } catch(e) {}
+        window.__scheduleLearningSync?.();
+      }
       window.marcarClaseVista(cursoId, numClase);
       // Feedback visual
       this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> ¡Marcada!';
@@ -12626,7 +12638,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       <div class="visor-actions">
         <button id="visorMarkAsViewed" class="visor-btn visor-btn--mark" style="display:none;padding:0 14px;width:auto;gap:7px;font-weight:700;font-size:12.5px;letter-spacing:-.1px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
-          Marcar como vista
+          Completar mini juego
         </button>
         <a id="visorDownload" class="visor-btn visor-btn--ghost" href="#" target="_blank" rel="noopener" title="Abrir en pestaña nueva">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>
@@ -13509,6 +13521,7 @@ body{letter-spacing:-.05px}
 <script src="assets/imdiil-training.js?v=5" defer></script>
 <link rel="stylesheet" href="assets/imdiil-retos.css?v=5">
 <script src="assets/imdiil-retos.js?v=6" defer></script>
-<script src="assets/imdiil-v2.js?v=16" defer></script>
+<script src="assets/imdiil-course-games.js?v=1" defer></script>
+<script src="assets/imdiil-v2.js?v=17" defer></script>
 </body>
 </html>
