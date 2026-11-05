@@ -506,7 +506,6 @@
         renderLesson(course,lessonIndex,target);
         return;
       }
-      window.marcarClaseVista?.(course.id,status.number);
       window.Toast?.success?.('Clase completada','Superaste el mini juego; la siguiente clase ya puede abrirse');
       if (nextIndex >= 0) go(lessonRoute(course.id,nextIndex)); else go(courseRoute(course.id));
     };
@@ -519,6 +518,12 @@
         const result = await window.IMDIILCourseGames.play({ course, lesson, lessonNumber:status.number, questions, practice:status.viewed });
         if (!result?.completed) return;
         rememberQuizPass(course.id,status.number,result.score,result.total);
+        // El servidor sólo paga el avance que ya recibió y valida. Guardamos
+        // clase + evaluación, sincronizamos y esperamos el cofre antes de salir.
+        if (!status.viewed) window.marcarClaseVista?.(course.id,status.number,{ deferCelebration:true });
+        await window.__syncLearningProgress?.();
+        await window.IMDIILCredits?.sync?.();
+        window.__flushDeferredCourseCelebration?.();
         handleGamePass(result);
       } finally {
         startGame.busy = false;

@@ -420,7 +420,10 @@
         msg.innerHTML = `<b class="rt-win__credits"><i class="credit-coin">C</i>+${fmt(result.credits)} créditos · +20 XP</b>`;
         if (window.UserState) window.UserState.creditos = Number(result.balance) || window.UserState.creditos;
         window.dispatchEvent(new CustomEvent('imdiil:credits-changed', { detail: { balance: Number(result.balance) || 0 } }));
-        setTimeout(() => window.__checkCreditNotices?.(true), 500);
+        // Revela de inmediato el aviso que el servidor acaba de crear. El helper
+        // también lo marca como visto para que el cofre no se repita al recargar.
+        if (window.IMDIILCredits?.award) await window.IMDIILCredits.award(result);
+        else await window.__checkCreditNotices?.(true);
       } else if (result.capped) {
         msg.textContent = 'Partida registrada. Ya alcanzaste el tope de créditos de hoy.';
       } else {
@@ -494,31 +497,80 @@
     }
     const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     grid.forEach(row => row.forEach((cell, c) => { if (!cell) row[c] = abc[Math.floor(rand() * abc.length)]; }));
+    const palette = ['#F26B1D', '#0D9488', '#7C3AED', '#DB2777', '#2563EB', '#B7791F', '#16A34A', '#DC2626'];
     const found = new Set();
-    let start = null;
-    stage.innerHTML = `<div class="rt-ws"><div class="rt-ws__grid" style="--n:${size}">${grid.map((row, r) => row.map((ch, c) => `<button type="button" class="rt-ws__cell" data-ws="${r},${c}">${ch}</button>`).join('')).join('')}</div><aside class="rt-ws__words"><span>Encuentra (${words.length})</span><ul>${board.words.map((w, i) => `<li data-ws-word="${words[i]}">${esc(w)}</li>`).join('')}</ul><small>Toca la primera y la última letra de cada palabra.</small></aside></div>`;
+    stage.innerHTML = `<div class="rt-ws"><div class="rt-ws__grid" style="--n:${size}">${grid.map((row, r) => row.map((ch, c) => `<button type="button" class="rt-ws__cell" data-ws="${r},${c}" aria-label="Fila ${r + 1}, columna ${c + 1}: ${ch}">${ch}</button>`).join('')).join('')}</div><aside class="rt-ws__words"><span>Encuentra (${words.length})</span><ul>${board.words.map((w, i) => `<li data-ws-word="${words[i]}" style="--ws-color:${palette[i % palette.length]}">${esc(w)}</li>`).join('')}</ul><small>Mantén presionado y arrastra por todas las letras de cada palabra.</small></aside></div>`;
     const cell = (r, c) => stage.querySelector(`[data-ws="${r},${c}"]`);
-    stage.querySelectorAll('[data-ws]').forEach(btn => btn.addEventListener('click', () => {
-      const [r, c] = btn.dataset.ws.split(',').map(Number);
-      if (!start) { start = [r, c]; btn.classList.add('is-start'); return; }
+    const gridEl = stage.querySelector('.rt-ws__grid');
+    let drag = null;
+    let preview = [];
+    const pathBetween = (start, end) => {
+      if (!start || !end) return [];
       const [r0, c0] = start;
-      cell(r0, c0)?.classList.remove('is-start');
-      start = null;
+      const [r, c] = end;
       const dr = Math.sign(r - r0);
       const dc = Math.sign(c - c0);
       const len = Math.max(Math.abs(r - r0), Math.abs(c - c0)) + 1;
-      if (!(r - r0 === 0 || c - c0 === 0 || Math.abs(r - r0) === Math.abs(c - c0)) || len < 2) return;
+      if (!(r === r0 || c === c0 || Math.abs(r - r0) === Math.abs(c - c0))) return [];
+      return Array.from({ length: len }, (_, k) => [r0 + dr * k, c0 + dc * k]);
+    };
+    const clearPreview = () => {
+      preview.forEach(([r, c]) => cell(r, c)?.classList.remove('is-selecting'));
+      preview = [];
+    };
+    const showPreview = cells => {
+      clearPreview();
+      preview = cells;
+      cells.forEach(([r, c]) => cell(r, c)?.classList.add('is-selecting'));
+    };
+    const eventCell = event => document.elementFromPoint(event.clientX, event.clientY)?.closest?.('[data-ws]');
+    const finishSelection = cells => {
+      clearPreview();
+      if (cells.length < 2) return;
       let text = '';
-      const cells = [];
-      for (let k = 0; k < len; k += 1) { cells.push([r0 + dr * k, c0 + dc * k]); text += grid[r0 + dr * k][c0 + dc * k]; }
+      cells.forEach(([r, c]) => { text += grid[r][c]; });
       const reversed = text.split('').reverse().join('');
       const word = words.find(w => !found.has(w) && (w === text || w === reversed));
       if (!word) { cells.forEach(([a, b]) => { const el = cell(a, b); el?.classList.add('is-miss'); setTimeout(() => el?.classList.remove('is-miss'), 450); }); return; }
+      const color = palette[Math.max(0, words.indexOf(word)) % palette.length];
       found.add(word);
-      cells.forEach(([a, b]) => cell(a, b)?.classList.add('is-found'));
-      stage.querySelector(`[data-ws-word="${word}"]`)?.classList.add('is-found');
+      cells.forEach(([a, b]) => {
+        const el = cell(a, b);
+        if (el) { el.style.setProperty('--ws-color', color); el.classList.add('is-found'); }
+      });
+      const label = stage.querySelector(`[data-ws-word="${word}"]`);
+      if (label) { label.style.setProperty('--ws-color', color); label.classList.add('is-found'); }
       if (found.size === words.length) done({ found: [...found] });
-    }));
+    };
+    gridEl.addEventListener('pointerdown', event => {
+      const target = event.target.closest('[data-ws]');
+      if (!target || drag) return;
+      event.preventDefault();
+      drag = { pointerId: event.pointerId, start: target.dataset.ws.split(',').map(Number), last: target.dataset.ws.split(',').map(Number) };
+      gridEl.setPointerCapture?.(event.pointerId);
+      showPreview([drag.start]);
+    });
+    gridEl.addEventListener('pointermove', event => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      const target = eventCell(event);
+      if (!target || !gridEl.contains(target)) return;
+      drag.last = target.dataset.ws.split(',').map(Number);
+      showPreview(pathBetween(drag.start, drag.last));
+    });
+    const endDrag = event => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      event.preventDefault();
+      const target = eventCell(event);
+      if (target && gridEl.contains(target)) drag.last = target.dataset.ws.split(',').map(Number);
+      const cells = pathBetween(drag.start, drag.last);
+      gridEl.releasePointerCapture?.(event.pointerId);
+      drag = null;
+      finishSelection(cells);
+    };
+    gridEl.addEventListener('pointerup', endDrag);
+    gridEl.addEventListener('pointercancel', event => { if (drag?.pointerId === event.pointerId) { drag = null; clearPreview(); } });
+    gridEl.addEventListener('click', event => event.preventDefault());
   }
 
   function runCrossword(stage, board, done) {

@@ -35,30 +35,34 @@
     return data;
   }
 
-  function afterAward(data) {
+  async function afterAward(data) {
     if (!data || !(Number(data.credits) > 0)) return data;
     const balance = Math.max(0, Number(data.balance) || 0);
     if (window.UserState) window.UserState.creditos = balance;
     window.dispatchEvent(new CustomEvent('imdiil:credits-changed', { detail: { balance } }));
     window.dispatchEvent(new CustomEvent('imdiil:credits-earned', { detail: data }));
-    // El cofre con monedas lee el aviso que el servidor acaba de crear.
-    setTimeout(() => window.__checkCreditNotices?.(true), 400);
+    // El servidor crea el aviso en la misma transacción del saldo. Lo leemos
+    // inmediatamente para que el cofre acompañe al resultado del juego.
+    await window.__checkCreditNotices?.(true);
     return data;
   }
 
   // ─── Clases y evaluaciones (desde el avance guardado en el servidor) ───
   let syncTimer = null;
   let syncing = null;
+  function syncNow() {
+    if (guest()) return Promise.resolve(null);
+    if (syncing) return syncing;
+    syncing = request('/credits/sync', { method: 'POST', body: '{}' })
+      .then(afterAward)
+      .catch(error => { console.warn('[créditos] No se pudo sincronizar', error.message); return null; })
+      .finally(() => { syncing = null; });
+    return syncing;
+  }
   function syncSoon(delay) {
     if (guest()) return;
     clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => {
-      if (syncing) return;
-      syncing = request('/credits/sync', { method: 'POST', body: '{}' })
-        .then(afterAward)
-        .catch(error => console.warn('[créditos] No se pudo sincronizar', error.message))
-        .finally(() => { syncing = null; });
-    }, delay == null ? 1200 : delay);
+    syncTimer = setTimeout(syncNow, delay == null ? 1200 : delay);
   }
   window.addEventListener('imdiil:learning-progress-synced', () => syncSoon());
 
@@ -134,5 +138,5 @@
     trainingTimer = setTimeout(() => { run().then(data => { if (!(Number(data?.credits) > 0)) setTimeout(run, 6000); }); }, 3000);
   }
 
-  window.IMDIILCredits = { sync: () => syncSoon(0), reto, openWallet, earn };
+  window.IMDIILCredits = { sync: syncNow, award: afterAward, reto, openWallet, earn };
 }());

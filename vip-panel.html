@@ -6495,7 +6495,14 @@ const Sections = (function(){
     return p[cursoId] || { clasesVistas: [], completado: false, fechaCompletado: null };
   }
 
-  window.marcarClaseVista = function(cursoId, numeroClase) {
+  let __deferredCourseSplash = null;
+  window.__flushDeferredCourseCelebration = function(){
+    const curso = __deferredCourseSplash;
+    __deferredCourseSplash = null;
+    if (curso) setTimeout(() => mostrarSplashCompletado(curso), 250);
+  };
+
+  window.marcarClaseVista = function(cursoId, numeroClase, options) {
     const p = getProgreso();
     if (!p[cursoId]) p[cursoId] = { clasesVistas: [], completado: false, fechaCompletado: null };
     if (!p[cursoId].classViewedAt) p[cursoId].classViewedAt = {};
@@ -6514,8 +6521,10 @@ const Sections = (function(){
       setProgreso(p);
       // Emitir el certificado a Firestore (para que se acumule y sea verificable)
       emitirCertificadoFirestore(curso);
-      // Mostrar splash de felicitación
-      setTimeout(() => mostrarSplashCompletado(curso), 400);
+      // El flujo de mini juego puede diferir este splash hasta que el cofre de
+      // créditos termine, evitando que las dos celebraciones se encimen.
+      if (options?.deferCelebration) __deferredCourseSplash = curso;
+      else setTimeout(() => mostrarSplashCompletado(curso), 400);
     }
     return p[cursoId];
   };
@@ -7184,6 +7193,7 @@ const Sections = (function(){
       if (!cursoId || !numClase) return;
       const curso = cursos.find(c => String(c.id) === String(cursoId));
       const sesion = curso?.sesiones?.find((s, i) => Number(s.numero || i + 1) === numClase) || curso?.sesiones?.[numClase - 1];
+      let markedFromGame = false;
       if (window.IMDIILCourseGames?.play && curso && sesion) {
         this.disabled = true;
         const original = this.innerHTML;
@@ -7192,8 +7202,13 @@ const Sections = (function(){
         if (!result?.completed) { this.disabled = false; this.innerHTML = original; return; }
         try { localStorage.setItem(`imdiil:class-quiz:${window.UserState?.uid || 'demo'}:${cursoId}:${numClase}`, JSON.stringify({ passed:true, score:result.score, total:result.total, assisted:result.assisted, mode:result.mode, completedAt:new Date().toISOString() })); } catch(e) {}
         window.__scheduleLearningSync?.();
+        window.marcarClaseVista(cursoId, numClase, { deferCelebration:true });
+        markedFromGame = true;
+        await window.__syncLearningProgress?.();
+        await window.IMDIILCredits?.sync?.();
+        window.__flushDeferredCourseCelebration?.();
       }
-      window.marcarClaseVista(cursoId, numClase);
+      if (!markedFromGame) window.marcarClaseVista(cursoId, numClase);
       // Feedback visual
       this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> ¡Marcada!';
       this.style.background = 'color-mix(in srgb, var(--success) 20%, transparent)';
@@ -13509,7 +13524,7 @@ body{letter-spacing:-.05px}
 <script src="onboarding-tour.js?v=4" defer></script>
 <script src="assets/imdiil-experience.js?v=2" defer></script>
 <link rel="stylesheet" href="assets/imdiil-credits.css?v=1">
-<script src="assets/imdiil-credits.js?v=2" defer></script>
+<script src="assets/imdiil-credits.js?v=3" defer></script>
 <script src="assets/imdiil-experience-queue.js?v=1" defer></script>
 <link rel="stylesheet" href="assets/imdiil-push.css?v=2">
 <script src="assets/imdiil-push.js?v=2" defer></script>
@@ -13519,9 +13534,9 @@ body{letter-spacing:-.05px}
 <link rel="stylesheet" href="assets/imdiil-training.css?v=5">
 <script src="assets/imdiil-training-content.js?v=1" defer></script>
 <script src="assets/imdiil-training.js?v=5" defer></script>
-<link rel="stylesheet" href="assets/imdiil-retos.css?v=5">
-<script src="assets/imdiil-retos.js?v=6" defer></script>
+<link rel="stylesheet" href="assets/imdiil-retos.css?v=6">
+<script src="assets/imdiil-retos.js?v=7" defer></script>
 <script src="assets/imdiil-course-games.js?v=1" defer></script>
-<script src="assets/imdiil-v2.js?v=17" defer></script>
+<script src="assets/imdiil-v2.js?v=18" defer></script>
 </body>
 </html>
