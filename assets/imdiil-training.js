@@ -247,10 +247,10 @@
     view = 'cases';
     const areas = [...new Set(CONTENT.cases.map(item => item.area))];
     shell(`${back('hub', 'Centro de entrenamiento')}
-      <div class="tr-section-head tr-section-head--page"><div><span>Simulador profesional</span><h2>Casos de planta</h2><p>Decisiones encadenadas con explicación técnica. Áreas: ${esc(areas.join(' · '))}.</p></div><small>${Object.keys(state.cases).length}/${CONTENT.cases.length} resueltos</small></div>
+      <div class="tr-section-head tr-section-head--page"><div><span>Simulador profesional</span><h2>Casos de planta</h2><p>Escenarios reales para practicar decisiones de ${esc(areas.join(', '))}.</p></div><small>${Object.keys(state.cases).length}/${CONTENT.cases.length} resueltos</small></div>
       <div class="tr-case-grid">${CONTENT.cases.map((item, index) => {
         const result = state.cases[item.id];
-        return `<article class="tr-case-card ${result ? 'is-complete' : ''}"><div class="tr-case-card__top"><b>${String(index + 1).padStart(2, '0')}</b><span>${esc(item.area)}</span>${result ? `<em>✓ ${result.score}/${item.steps.length}</em>` : ''}</div><h3>${esc(item.title)}</h3><p>${esc(item.scenario)}</p><div class="tr-case-card__meta"><span>${esc(item.difficulty)}</span><span>${esc(item.duration)}</span><span>${item.steps.length} decisiones</span></div><button class="tr-btn" type="button" data-tr-case="${item.id}">${result ? 'Resolver de nuevo' : 'Abrir caso'} ${icon('i-arrow-right')}</button></article>`;
+        return `<article class="tr-case-card ${result ? 'is-complete' : ''}"><div class="tr-case-card__top"><b>${String(index + 1).padStart(2, '0')}</b><span>${esc(item.area)}</span>${result ? `<em>✓ ${result.score}/${item.steps.length}</em>` : ''}</div><h3>${esc(item.title)}</h3><p>${esc(item.scenario)}</p><div class="tr-case-card__meta"><span>${esc(item.difficulty)}</span><span>${esc(item.duration)}</span></div><button class="tr-btn" type="button" data-tr-case="${item.id}">${result ? 'Resolver de nuevo' : 'Abrir caso'} ${icon('i-arrow-right')}</button></article>`;
       }).join('')}</div>`);
   }
 

@@ -128,7 +128,7 @@
           <linearGradient id="ccWoodBody" x1="50" y1="103" x2="219" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#A94F20"/><stop offset=".5" stop-color="#6B290F"/><stop offset="1" stop-color="#3A1508"/></linearGradient>
           <linearGradient id="ccGold" x1="80" y1="65" x2="190" y2="202" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF0A1"/><stop offset=".28" stop-color="#F7C948"/><stop offset=".66" stop-color="#D68A12"/><stop offset="1" stop-color="#8D4B08"/></linearGradient>
           <linearGradient id="ccLock" x1="121" y1="131" x2="159" y2="177" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF4AF"/><stop offset=".45" stop-color="#F2B82E"/><stop offset="1" stop-color="#A35B09"/></linearGradient>
-          <filter id="ccShadow" x="20" y="18" width="244" height="212" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="13" stdDeviation="10" flood-color="#130803" flood-opacity=".55"/></filter>
+          <filter id="ccShadow" x="-60" y="-80" width="400" height="360" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="13" stdDeviation="10" flood-color="#130803" flood-opacity=".55"/></filter>
         </defs>
         <g filter="url(#ccShadow)">
           <g class="cc-svg-lid">
@@ -171,6 +171,30 @@
         </div>
       </section>`;
       document.body.appendChild(pop);
+      const scrollLock = {
+        x: window.scrollX,
+        y: window.scrollY,
+        styles: {
+          position: document.body.style.position,
+          top: document.body.style.top,
+          left: document.body.style.left,
+          right: document.body.style.right,
+          width: document.body.style.width,
+          overflow: document.body.style.overflow,
+          paddingRight: document.body.style.paddingRight
+        }
+      };
+      const scrollbarGap = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+      const bodyPaddingRight = Number.parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+      document.documentElement.classList.add('credit-chest-open');
+      document.body.classList.add('credit-chest-open');
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollLock.y}px`;
+      document.body.style.left = `-${scrollLock.x}px`;
+      document.body.style.right = '0';
+      document.body.style.width = 'auto';
+      document.body.style.overflow = 'hidden';
+      if (scrollbarGap) document.body.style.paddingRight = `${bodyPaddingRight + scrollbarGap}px`;
       const previousFocus = document.activeElement;
       let closed = false;
       const close = goRoute => {
@@ -180,6 +204,10 @@
         pop.classList.add('is-closing');
         setTimeout(() => {
           pop.remove();
+          document.documentElement.classList.remove('credit-chest-open');
+          document.body.classList.remove('credit-chest-open');
+          Object.assign(document.body.style, scrollLock.styles);
+          window.scrollTo(scrollLock.x, scrollLock.y);
           if (previousFocus && previousFocus.isConnected) previousFocus.focus?.({ preventScroll: true });
           if (goRoute && typeof window.navigateToSection === 'function') window.navigateToSection(goRoute);
           resolve();
