@@ -500,31 +500,38 @@
     target.querySelectorAll('[data-outline]').forEach(button => button.addEventListener('click', () => go(lessonRoute(course.id,Number(button.dataset.outline)))));
     target.querySelector('.v2-notes textarea')?.addEventListener('input', event => localStorage.setItem(noteKey(course.id,lessonIndex),event.target.value));
     target.querySelector('[data-next]')?.addEventListener('click', () => go(lessonRoute(course.id,nextIndex)));
-    const handleGamePass = result => {
+    const handleGamePass = (result, award) => {
       if (status.viewed) {
         window.Toast?.success?.('Práctica terminada',`Mini juego completado${result.assisted ? ` · ${result.assisted} ayuda${result.assisted === 1 ? '' : 's'}` : ''}`);
         renderLesson(course,lessonIndex,target);
         return;
       }
-      window.Toast?.success?.('Clase completada','Superaste el mini juego; la siguiente clase ya puede abrirse');
+      const credits = Math.max(0, Number(award?.credits) || 0);
+      window.Toast?.success?.('Clase completada', credits
+        ? `Superaste el mini juego y recibiste ${fmt(credits)} créditos; la siguiente clase ya puede abrirse`
+        : 'Superaste el mini juego; la siguiente clase ya puede abrirse');
       if (nextIndex >= 0) go(lessonRoute(course.id,nextIndex)); else go(courseRoute(course.id));
+    };
+    const finishGame = async result => {
+      if (!result?.completed) return;
+      rememberQuizPass(course.id,status.number,result.score,result.total);
+      // El servidor paga sólo la primera finalización de cada clase. Forzamos
+      // una copia fresca del avance y luego una petición fresca de créditos;
+      // así el cofre aparece antes de navegar a la siguiente clase.
+      if (!status.viewed) window.marcarClaseVista?.(course.id,status.number,{ deferCelebration:true });
+      await window.__syncLearningProgress?.({ fresh:true });
+      const award = await window.IMDIILCredits?.sync?.({ fresh:true });
+      window.__flushDeferredCourseCelebration?.();
+      handleGamePass(result,award);
     };
     const startGame = async () => {
       if (startGame.busy) return;
       startGame.busy = true;
       try {
         const questions = lessonQuizQuestions(course,lesson,status.number);
-        if (!window.IMDIILCourseGames?.play) return runQuiz(course,lesson,status.number,handleGamePass);
+        if (!window.IMDIILCourseGames?.play) return runQuiz(course,lesson,status.number,finishGame);
         const result = await window.IMDIILCourseGames.play({ course, lesson, lessonNumber:status.number, questions, practice:status.viewed });
-        if (!result?.completed) return;
-        rememberQuizPass(course.id,status.number,result.score,result.total);
-        // El servidor sólo paga el avance que ya recibió y valida. Guardamos
-        // clase + evaluación, sincronizamos y esperamos el cofre antes de salir.
-        if (!status.viewed) window.marcarClaseVista?.(course.id,status.number,{ deferCelebration:true });
-        await window.__syncLearningProgress?.();
-        await window.IMDIILCredits?.sync?.();
-        window.__flushDeferredCourseCelebration?.();
-        handleGamePass(result);
+        await finishGame(result);
       } finally {
         startGame.busy = false;
       }
@@ -575,7 +582,7 @@
         body.innerHTML = `<span class="v2-success-mark">✓</span><h3>Evaluación aprobada</h3><p>Obtuviste ${score} de ${total} respuestas correctas. Tu avance quedó protegido.</p>`;
         next.disabled = false;
         next.textContent = 'Continuar';
-        next.onclick = () => { view.close(); onPass({ score, total }); };
+        next.onclick = () => { view.close(); onPass({ completed:true, score, total, assisted:0, mode:'quiz' }); };
         return;
       }
       body.innerHTML = `<h3>Repasa e intenta de nuevo</h3><p>Obtuviste ${score} de ${total}. Necesitas al menos 2 respuestas correctas; tu avance anterior se conserva.</p>`;

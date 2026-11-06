@@ -219,17 +219,36 @@
 
   // ─── Créditos otorgados (cortesía del admin, etc.) → cofre con monedas ───
   let noticesBusy = false;
+  let noticesPromise = null;
+  let noticesForceQueued = false;
   let noticesCheckedAt = 0;
   // Incluye los popups de avisos push e instalación, y la cola de experiencias (sin encimarse).
   const popupOpen = () => !!document.querySelector('#welcome-gift, #profile-intake-modal, #free-course-intro, #splash-bienvenida, .v2-modal, .v2-unlock-splash, .v2-doc-viewer, .ips-overlay, #imdiil-install-pop.show') || document.body.classList.contains('onboarding-tour-open') || !!window.IMDIILExperienceQueue?.activeKey?.();
   async function checkCreditNotices(force) {
     const S = window.UserState || {};
-    if (noticesBusy || !S.uid || S.modo === 'invitado' || window.__isDemoMode) return;
+    if (!S.uid || S.modo === 'invitado' || window.__isDemoMode) return;
+    // Si otra revisión ya está en curso, una llamada forzada (por ejemplo al
+    // terminar un juego) queda en cola y espera su propio cofre. Antes se
+    // descartaba y el premio podía no verse hasta varios minutos después.
+    if (noticesBusy) {
+      if (force) noticesForceQueued = true;
+      await noticesPromise;
+      if (force && noticesForceQueued) {
+        noticesForceQueued = false;
+        return checkCreditNotices(true);
+      }
+      return;
+    }
     if (!force && Date.now() - noticesCheckedAt < 60000) return;
-    if (popupOpen()) { setTimeout(() => checkCreditNotices(true), 4000); return; }
     noticesBusy = true;
     noticesCheckedAt = Date.now();
-    try {
+    noticesPromise = (async () => {
+      if (popupOpen()) await new Promise(resolve => {
+        const started = Date.now();
+        const timer = setInterval(() => {
+          if (!popupOpen() || Date.now() - started > 15000) { clearInterval(timer); resolve(); }
+        }, 300);
+      });
       const data = await request('/onboarding/credit-notices');
       const notices = Array.isArray(data.notices) ? data.notices : [];
       if (!notices.length) return;
@@ -252,10 +271,16 @@
         cta: 'Ver en qué canjearlos',
         route: 'pdfs'
       });
-    } catch (e) {
+    })().catch(e => {
       console.warn('[créditos] Avisos no disponibles', e?.message || e);
-    } finally {
+    }).finally(() => {
       noticesBusy = false;
+      noticesPromise = null;
+    });
+    await noticesPromise;
+    if (noticesForceQueued) {
+      noticesForceQueued = false;
+      return checkCreditNotices(true);
     }
   }
   window.__checkCreditNotices = checkCreditNotices;

@@ -6419,10 +6419,21 @@ const Sections = (function(){
   }
 
   let __learningSyncPromise = null;
-  window.__syncLearningProgress = function(){
+  window.__syncLearningProgress = function(options){
     const user = window.__auth?.currentUser;
     if (!user || window.__isDemoMode) return Promise.resolve(false);
-    if (__learningSyncPromise) { __learningSyncPromise.then(() => scheduleProgressSync()); return __learningSyncPromise; }
+    // Cuando una clase acaba de completarse necesitamos subir el estado que
+    // existe AHORA, no limitarnos a esperar una sincronización anterior que
+    // pudo haber capturado el avance antes de terminar el mini juego.
+    if (__learningSyncPromise) {
+      if (options?.fresh) {
+        return __learningSyncPromise
+          .then(() => new Promise(resolve => setTimeout(resolve, 0)))
+          .then(() => window.__syncLearningProgress());
+      }
+      __learningSyncPromise.then(() => scheduleProgressSync());
+      return __learningSyncPromise;
+    }
     __learningSyncPromise = (async () => {
       try {
         const token = await user.getIdToken();
@@ -13520,11 +13531,11 @@ body{letter-spacing:-.05px}
 .sec-hero__title{margin-top:0!important}
 .sec-hero{padding-top:0}
 </style>
-<script src="assets/imdiil-onboarding.js?v=8" defer></script>
+<script src="assets/imdiil-onboarding.js?v=9" defer></script>
 <script src="onboarding-tour.js?v=4" defer></script>
 <script src="assets/imdiil-experience.js?v=2" defer></script>
 <link rel="stylesheet" href="assets/imdiil-credits.css?v=1">
-<script src="assets/imdiil-credits.js?v=3" defer></script>
+<script src="assets/imdiil-credits.js?v=4" defer></script>
 <script src="assets/imdiil-experience-queue.js?v=1" defer></script>
 <link rel="stylesheet" href="assets/imdiil-push.css?v=2">
 <script src="assets/imdiil-push.js?v=2" defer></script>
@@ -13537,6 +13548,6 @@ body{letter-spacing:-.05px}
 <link rel="stylesheet" href="assets/imdiil-retos.css?v=8">
 <script src="assets/imdiil-retos.js?v=10" defer></script>
 <script src="assets/imdiil-course-games.js?v=1" defer></script>
-<script src="assets/imdiil-v2.js?v=19" defer></script>
+<script src="assets/imdiil-v2.js?v=20" defer></script>
 </body>
 </html>

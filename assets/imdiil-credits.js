@@ -50,9 +50,15 @@
   // ─── Clases y evaluaciones (desde el avance guardado en el servidor) ───
   let syncTimer = null;
   let syncing = null;
-  function syncNow() {
+  async function syncNow(options) {
     if (guest()) return Promise.resolve(null);
-    if (syncing) return syncing;
+    // Una sincronización iniciada antes de terminar el juego puede devolver
+    // cero aun cuando el avance nuevo ya esté guardado. `fresh` espera esa
+    // petición y ejecuta otra con el estado definitivo del servidor.
+    if (syncing) {
+      const current = await syncing;
+      return options?.fresh ? syncNow() : current;
+    }
     syncing = request('/credits/sync', { method: 'POST', body: '{}' })
       .then(afterAward)
       .catch(error => { console.warn('[créditos] No se pudo sincronizar', error.message); return null; })
