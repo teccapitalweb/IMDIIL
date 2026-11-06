@@ -3807,7 +3807,8 @@ window.__setDisplayName = async (nombre) => {
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
-      <img class="brand__official-logo" src="assets/imdiil-logo-oficial.png" alt="IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística">
+      <span class="brand__logo"><img src="assets/imdiil-app-icon-192.png" alt=""></span>
+      <span class="brand__identity"><strong>IMDIIL</strong><small>INGENIERÍA INDUSTRIAL</small></span>
     </div>
 
     <div class="nav-section">
@@ -3853,9 +3854,7 @@ window.__setDisplayName = async (nombre) => {
   <!-- MAIN -->
   <main class="main">
     <header class="topbar">
-      <div class="topbar__left">
-        <span class="pill" id="topbar-pill"><svg class="ic"><use href="#i-user"/></svg><span id="topbar-pill-text">Ingeniero</span></span>
-      </div>
+      <div class="topbar__left"><span class="topbar__context"><strong>IMDIIL</strong><i>/</i><span>ÁREA DE MIEMBRO</span></span></div>
       <div class="topbar__right">
         <button class="install-app-btn" id="install-app-btn" type="button" aria-label="Instalar IMDIIL en este dispositivo" hidden>
           <svg class="ic"><use href="#i-download"/></svg><span>Instalar</span>
@@ -3896,8 +3895,41 @@ window.__setDisplayName = async (nombre) => {
 
       <div style="height:22px"></div>
 
+      <section class="command-section" aria-labelledby="command-title">
+        <div class="command-section__head">
+          <div><span class="command-section__eyebrow">Acceso operativo</span><h2 id="command-title">Continúa desde aquí</h2></div>
+          <span class="command-section__meta">3 accesos recomendados</span>
+        </div>
+        <div class="command-grid">
+          <a class="command-card" data-section="cursos">
+            <span class="command-card__index">01 / FORMACIÓN</span>
+            <span class="command-card__icon"><svg class="ic"><use href="#i-book"/></svg></span>
+            <strong>Retoma tus cursos</strong>
+            <span>Consulta tus clases, avance y materiales descargables.</span>
+            <small>Abrir catálogo <svg class="ic"><use href="#i-arrow-right"/></svg></small>
+          </a>
+          <a class="command-card" data-section="herramientas">
+            <span class="command-card__index">02 / APLICACIÓN</span>
+            <span class="command-card__icon"><svg class="ic"><use href="#i-tools"/></svg></span>
+            <strong>Mejora tus procesos</strong>
+            <span>Usa OEE, IPER, ATS y recursos técnicos para planta.</span>
+            <small>Abrir herramientas <svg class="ic"><use href="#i-arrow-right"/></svg></small>
+          </a>
+          <a class="command-card" data-section="retos">
+            <span class="command-card__index">03 / RETOS</span>
+            <span class="command-card__icon"><svg class="ic"><use href="#i-bolt"/></svg></span>
+            <strong>Entrena y gana créditos</strong>
+            <span>Resuelve mini juegos y repasa conceptos de ingeniería industrial.</span>
+            <small>Abrir centro <svg class="ic"><use href="#i-arrow-right"/></svg></small>
+          </a>
+        </div>
+      </section>
+
+      <div style="height:26px"></div>
+
       <!-- Noticias diarias (reales desde Firestore) -->
       <section class="home-news">
+        <div class="section-header"><h2 class="section-header__title">Noticias del sector<span class="section-header__badge">Hoy</span></h2></div>
         <div class="home-news__layout" id="home-news-grid">
           <div class="foro-empty" style="grid-column:1/-1;">Cargando noticias…</div>
         </div>
@@ -3982,9 +4014,7 @@ window.__setDisplayName = async (nombre) => {
   <div class="mobile-drawer__overlay" id="mobile-drawer-overlay"></div>
   <div class="mobile-drawer__panel">
     <div class="mobile-drawer__header">
-      <div class="mobile-drawer__brand">
-        <img class="brand__official-logo" src="assets/imdiil-logo-oficial.png" alt="IMDIIL · Instituto Mexicano de Ingeniería Industrial y Logística">
-      </div>
+      <div class="mobile-drawer__brand"><span class="brand__logo"><img src="assets/imdiil-app-icon-192.png" alt=""></span><span class="brand__identity"><strong>IMDIIL</strong><small>INGENIERÍA INDUSTRIAL</small></span></div>
       <button class="mobile-drawer__close" id="mobile-drawer-close" aria-label="Cerrar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -13546,7 +13576,7 @@ body{letter-spacing:-.05px}
 <script src="assets/imdiil-training-content.js?v=1" defer></script>
 <script src="assets/imdiil-training.js?v=6" defer></script>
 <link rel="stylesheet" href="assets/imdiil-retos.css?v=8">
-<link rel="stylesheet" href="assets/imdiil-imfra-palette.css?v=1">
+<link rel="stylesheet" href="assets/imdiil-imfra-palette.css?v=2">
 <script src="assets/imdiil-retos.js?v=10" defer></script>
 <script src="assets/imdiil-course-games.js?v=1" defer></script>
 <script src="assets/imdiil-v2.js?v=20" defer></script>
