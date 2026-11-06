@@ -1,0 +1,181 @@
+/* IMDIIL · paleta editorial inspirada en IMFRA.
+   Conserva la estructura y la marca IMDIIL; unifica fondo, superficies,
+   navegación, estados y experiencias dinámicas en carbón, blanco y ámbar. */
+
+:root[data-theme="day"]{
+  --bg:#F4F4F2;
+  --bg-deep:#E9E9E6;
+  --surface:#FFFFFF;
+  --surface-2:#F5F5F3;
+  --surface-3:#E9E9E6;
+  --border:rgba(13,13,13,.08);
+  --border-2:rgba(13,13,13,.14);
+  --border-strong:rgba(245,157,26,.48);
+  --text:#111111;
+  --text-2:#50504C;
+  --text-3:#858580;
+  --primary:#F59D1A;
+  --primary-soft:#FFF0D7;
+  --primary-deep:#D97F06;
+  --primary-glow:rgba(245,157,26,.18);
+  --highlight:#FFBD55;
+  --shadow-card:0 8px 28px rgba(13,13,13,.07);
+}
+
+:root[data-theme="night"]{
+  --bg:#0B0B0B;
+  --bg-deep:#050505;
+  --surface:#141414;
+  --surface-2:#1B1B1B;
+  --surface-3:#252525;
+  --border:rgba(255,255,255,.07);
+  --border-2:rgba(255,255,255,.12);
+  --border-strong:rgba(245,163,38,.42);
+  --text:#F5F5F2;
+  --text-2:#AAA7A1;
+  --text-3:#73716C;
+  --primary:#F5A326;
+  --primary-soft:rgba(245,163,38,.14);
+  --primary-deep:#D98307;
+  --primary-glow:rgba(245,163,38,.16);
+  --highlight:#FFC35F;
+  --shadow-card:0 18px 48px rgba(0,0,0,.28);
+}
+
+::selection{background:var(--primary);color:#111}
+body{
+  background:
+    radial-gradient(circle at 46% -18%,color-mix(in srgb,var(--primary) 7%,transparent),transparent 34%),
+    var(--bg)!important;
+}
+body::before{
+  background:radial-gradient(circle at 45% -12%,color-mix(in srgb,var(--primary) 10%,transparent),transparent 38%)!important;
+  filter:none!important;
+  animation:none!important;
+  opacity:.7;
+}
+body::after{
+  background-image:
+    linear-gradient(to right,color-mix(in srgb,var(--text) 3%,transparent) 1px,transparent 1px),
+    linear-gradient(to bottom,color-mix(in srgb,var(--text) 3%,transparent) 1px,transparent 1px)!important;
+  opacity:.24;
+}
+
+/* Navegación carbón de IMFRA, con el logotipo oficial de IMDIIL legible. */
+:root[data-theme="day"] .sidebar,
+:root[data-theme="night"] .sidebar,
+:root[data-theme="day"] .mobile-drawer__panel,
+:root[data-theme="night"] .mobile-drawer__panel{
+  --text:#F5F5F2;
+  --text-2:#AAA7A1;
+  --text-3:#6F6D68;
+  --surface:#101010;
+  --surface-2:#1A1A1A;
+  --surface-3:#242424;
+  --border:rgba(255,255,255,.07);
+  --border-2:rgba(255,255,255,.12);
+  background:#101010!important;
+  color:var(--text);
+  border-color:rgba(255,255,255,.08)!important;
+  box-shadow:none!important;
+}
+.sidebar .brand{border-bottom-color:rgba(255,255,255,.08)!important}
+.sidebar .brand__official-logo{
+  width:164px;
+  height:64px;
+  padding:6px 12px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:#FFFFFF;
+  box-shadow:0 7px 20px rgba(0,0,0,.22);
+}
+.sidebar .nav-label{color:#6F6D68!important}
+.sidebar .nav-item{color:#AAA7A1!important;border-radius:10px!important}
+.sidebar .nav-item:hover{background:#1A1A1A!important;color:#F5F5F2!important}
+.sidebar .nav-item.is-active{
+  color:#FFFFFF!important;
+  background:color-mix(in srgb,var(--primary) 11%,#101010)!important;
+  box-shadow:inset 3px 0 0 var(--primary)!important;
+}
+.sidebar .nav-item.is-active .ic{color:var(--primary)!important}
+.sidebar .nav-item__badge{background:#242424!important;color:#AAA7A1!important}
+.sidebar .nav-item__badge.is-new{background:var(--primary)!important;color:#111!important}
+.sidebar-account{background:#101010!important}
+.sidebar-account__cta{
+  border-color:color-mix(in srgb,var(--primary) 55%,#101010)!important;
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep))!important;
+  color:#111!important;
+  box-shadow:0 9px 22px rgba(245,157,26,.16)!important;
+}
+.sidebar-account__card{background:#1A1A1A!important;border-color:rgba(255,255,255,.08)!important;color:#F5F5F2!important}
+.sidebar-account__card:hover,.sidebar-account__card.is-active{background:#242424!important;border-color:rgba(245,157,26,.34)!important}
+.sidebar-account__identity small,.sidebar-account__edit{color:var(--primary)!important}
+
+/* Superficies y controles del panel. */
+.main{background:transparent!important}
+.aside{background:color-mix(in srgb,var(--surface-2) 54%,transparent)!important;border-left-color:var(--border)!important}
+.topbar{background:color-mix(in srgb,var(--bg) 90%,transparent)!important}
+.banner,.widget,.content-row,.kpi-card,.curso-card,.cert-card,.webinar-card,.plan-card,.perfil-card,.perfil-hero,.post{
+  border-color:var(--border)!important;
+}
+.banner__stat,.cd-box{background:var(--surface-2)!important}
+.icon-btn,.theme-toggle,.install-app-btn,.avatar{border-color:var(--border)!important}
+.icon-btn:hover,.theme-toggle:hover,.install-app-btn:hover,.avatar:hover{border-color:var(--border-2)!important}
+.avatar__circle,.perfil-hero__avatar{background:var(--primary)!important;color:#111!important}
+.activity-row__bar-fill--orange,.activity-row__bar-fill--gold,.curso-card__progress-fill{background:var(--primary)!important}
+.section-header__badge::before,.tag::before,.kpi-card__label::before,.banner__stat-lbl::before{background:var(--primary)!important}
+
+.btn--accent,.row-btn,.fomo-banner__cta{
+  background:linear-gradient(135deg,var(--primary),var(--primary-deep))!important;
+  border-color:transparent!important;
+  color:#111!important;
+  box-shadow:0 8px 20px var(--primary-glow)!important;
+}
+.btn--primary{background:var(--text)!important;color:var(--surface)!important}
+.btn--accent:hover,.row-btn:hover,.fomo-banner__cta:hover{filter:brightness(1.035)}
+.pill{border-color:color-mix(in srgb,var(--primary) 22%,var(--border))!important}
+
+/* Retos y entrenamiento: misma energía, sin volver al azul/naranja anterior. */
+:root[data-theme="night"] .rt-page{
+  --surface:#141414;
+  --surface-2:#1B1B1B;
+  --surface-3:#252525;
+  --border:rgba(255,255,255,.07);
+  --border-2:rgba(255,255,255,.12);
+  --text:#F5F5F2;
+  --text-2:#AAA7A1;
+  --text-3:#73716C;
+}
+:root[data-theme="day"] .app:has(.rt-page),
+:root[data-theme="day"] .main:has(.rt-page),
+:root[data-theme="day"] #dynamic-section:has(.rt-page){background:var(--bg)!important}
+:root[data-theme="night"] .app:has(.rt-page),
+:root[data-theme="night"] .main:has(.rt-page),
+:root[data-theme="night"] #dynamic-section:has(.rt-page){background:var(--bg)!important}
+.rt-hero{
+  background:
+    linear-gradient(95deg,rgba(8,8,8,.97) 0%,rgba(14,14,14,.9) 43%,rgba(14,14,14,.3) 76%,rgba(14,14,14,.08) 100%),
+    var(--hero) center 40%/cover no-repeat,
+    #101010!important;
+  box-shadow:0 24px 58px rgba(13,13,13,.24)!important;
+}
+.rt-kicker{border-color:rgba(245,157,26,.32)!important;background:rgba(245,157,26,.12)!important;color:#FFD28B!important}
+.rt-hero h1 em{background:linear-gradient(90deg,#FFD28B,var(--primary))!important;-webkit-background-clip:text!important;background-clip:text!important}
+.rt-stat{background:rgba(10,10,10,.58)!important}
+.rt-stat span{color:#C9C5BD!important}
+
+.tr-hero,.v2-route-hero--dark{
+  background:
+    radial-gradient(circle at 90% 8%,rgba(245,157,26,.22),transparent 30%),
+    linear-gradient(135deg,#0D0D0D,#1A1A1A)!important;
+  box-shadow:0 20px 52px rgba(13,13,13,.22)!important;
+}
+.tr-kicker,.tr-section-head>div>span,.v2-route-hero--dark .v2-kicker{color:#FFC35F!important}
+.tr-hero h1 em{color:#FFC35F!important}
+.tr-hero__stats>div{background:rgba(10,10,10,.4)!important}
+.tr-level__bar span,.tr-mission__progress span,.tr-case-run__bar span{background:linear-gradient(90deg,var(--primary),#FFC768)!important}
+
+@media(max-width:880px){
+  .mobile-drawer__item{color:#AAA7A1!important}
+  .mobile-drawer__item:hover,.mobile-drawer__item.is-active{background:#1A1A1A!important;color:#FFFFFF!important;box-shadow:inset 3px 0 0 var(--primary)!important}
+}

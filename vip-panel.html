@@ -7,7 +7,7 @@
 (function(){try{var c=new URLSearchParams(location.search).get('offer');if(c&&/^[A-Z0-9-]{4,40}$/i.test(c))localStorage.setItem('imdiil_offer_code',JSON.stringify({code:c.toUpperCase(),expiresMs:Date.now()+36*3600*1000}));}catch(e){}})();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#F4EFE3">
+<meta name="theme-color" content="#F4F4F2">
 <meta name="description" content="IMDIIL Panel VIP · Capacitación industrial, herramientas pro y certificación con folio.">
 <title>IMDIIL · Panel VIP</title>
 <link rel="icon" type="image/png" sizes="192x192" href="assets/imdiil-app-icon-192.png">
@@ -4050,7 +4050,7 @@ function vipWebinarJoinUrl(w){return String(w?.link||w?.url||w?.zoom||w?.enlace|
 const Theme={
   revision:'auth-palette-v1',
   init(){const migrated=Storage.pref.get('theme-revision','')===this.revision;const theme=migrated?Storage.pref.get('theme','day'):'day';Storage.pref.set('theme-revision',this.revision);this.apply(theme);document.getElementById('theme-toggle')?.addEventListener('click',()=>this.toggle());},
-  apply(t){if(t!=='day'&&t!=='night')t='day';document.documentElement.setAttribute('data-theme',t);Storage.pref.set('theme',t);const icon=document.getElementById('theme-icon')?.querySelector('use');const lbl=document.getElementById('theme-label');if(icon)icon.setAttribute('href',t==='night'?'#i-moon':'#i-sun');if(lbl)lbl.textContent=t==='night'?'Noche':'Día';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',t==='night'?'#0E0A06':'#F4EFE3');},
+  apply(t){if(t!=='day'&&t!=='night')t='day';document.documentElement.setAttribute('data-theme',t);Storage.pref.set('theme',t);const icon=document.getElementById('theme-icon')?.querySelector('use');const lbl=document.getElementById('theme-label');if(icon)icon.setAttribute('href',t==='night'?'#i-moon':'#i-sun');if(lbl)lbl.textContent=t==='night'?'Noche':'Día';const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',t==='night'?'#0B0B0B':'#F4F4F2');},
   toggle(){this.apply(document.documentElement.getAttribute('data-theme')==='night'?'day':'night');}
 };
 
@@ -13546,6 +13546,7 @@ body{letter-spacing:-.05px}
 <script src="assets/imdiil-training-content.js?v=1" defer></script>
 <script src="assets/imdiil-training.js?v=6" defer></script>
 <link rel="stylesheet" href="assets/imdiil-retos.css?v=8">
+<link rel="stylesheet" href="assets/imdiil-imfra-palette.css?v=1">
 <script src="assets/imdiil-retos.js?v=10" defer></script>
 <script src="assets/imdiil-course-games.js?v=1" defer></script>
 <script src="assets/imdiil-v2.js?v=20" defer></script>
