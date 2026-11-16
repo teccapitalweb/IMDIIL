@@ -12,6 +12,7 @@
     exportTruncated: false, exportLimits: null,
     error: '', requestId: 0, searchTimer: null
   };
+  var authReadyPromise = null;
   var filters = [
     ['', 'Todos los estados'], ['paid', 'Pagadas'], ['pending_payment', 'Pendientes'],
     ['checkout_open', 'Checkout abierto'], ['creating_checkout', 'Preparando checkout'],
@@ -98,7 +99,28 @@
     };
   }
 
+  function waitForAuthReady() {
+    if (window._fb?.auth?.currentUser) return Promise.resolve();
+    if (authReadyPromise) return authReadyPromise;
+    authReadyPromise = new Promise(function (resolve, reject) {
+      var timer = null;
+      function finish(error) {
+        window.removeEventListener('adminready', onReady);
+        if (timer) window.clearTimeout(timer);
+        if (error) reject(error); else resolve();
+      }
+      function onReady() { finish(); }
+      window.addEventListener('adminready', onReady, { once:true });
+      timer = window.setTimeout(function () {
+        finish(new Error('No fue posible restaurar la sesión de administración.'));
+      }, 6000);
+      // Cubre el caso en que Firebase resolvió entre la primera comprobación y el listener.
+      if (window._fb?.auth?.currentUser) finish();
+    }).finally(function () { authReadyPromise = null; });
+    return authReadyPromise;
+  }
   async function authToken() {
+    if (!window._fb?.auth?.currentUser) await waitForAuthReady();
     if (typeof pages._getAuthToken === 'function') return pages._getAuthToken();
     var user = window._fb?.auth?.currentUser;
     if (!user) throw new Error('No fue posible restaurar la sesión de administración.');

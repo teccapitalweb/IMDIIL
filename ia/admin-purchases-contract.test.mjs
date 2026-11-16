@@ -33,6 +33,16 @@ test("listado, detalle y CSV reutilizan la autenticación admin", () => {
   assert.match(app, /stripe\.paymentIntentId/);
 });
 
+test("la carga directa espera una sola restauración de Firebase Auth", () => {
+  assert.match(app, /function waitForAuthReady\(\)/);
+  assert.match(app, /if \(!window\._fb\?\.auth\?\.currentUser\) await waitForAuthReady\(\)/);
+  assert.match(app, /window\.addEventListener\('adminready', onReady, \{ once:true \}\)/);
+  assert.match(app, /window\.removeEventListener\('adminready', onReady\)/);
+  assert.match(app, /if \(authReadyPromise\) return authReadyPromise/);
+  assert.match(app, /window\.setTimeout\([\s\S]*6000\)/);
+  assert.doesNotMatch(app, /localStorage[^\n]*(?:token|auth)/i);
+});
+
 test("los datos de compradores se escapan y no se exponen secretos", () => {
   assert.match(app, /function esc\(value\)/);
   assert.match(app, /esc\(order\.buyer\.name/);
