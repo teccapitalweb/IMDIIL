@@ -42,6 +42,12 @@ test("la capacidad desconocida no reduce la compra múltiple a un lugar", () => 
   assert.match(app, /checkoutRuntime\.maxPerOrder = Math\.max\(1, Math\.min/);
 });
 
+test("el copy comunica un cupo inicial ampliable sin escasez falsa", () => {
+  assert.match(siteConfig, /Cupo inicial: 25 personas · sujeto a ampliación/);
+  assert.match(siteConfig, /puede ampliarse según la demanda/);
+  assert.doesNotMatch(siteConfig, /solo\s+25|últimos\s+25|cupo\s+máximo\s+de\s+25/i);
+});
+
 test("el cobro real no está activado en la configuración estática", () => {
   assert.match(siteConfig, /enabled:\s*false/);
   assert.match(siteConfig, /mode:\s*"test"/);
