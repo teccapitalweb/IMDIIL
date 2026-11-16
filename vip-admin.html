@@ -5154,6 +5154,17 @@ const Pages={
           </div>
 
           <div class="dash-card">
+            <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-credit-card"/></svg>IA para Empresarios</div><span class="tag tag--primary">PAGO ÚNICO</span></div>
+            <p style="font-size:12.5px;color:var(--text-2);line-height:1.55;margin-bottom:14px;">Precio por cada lugar del curso presencial. El siguiente intento de compra tomará el nuevo importe; las autorizaciones ya abiertas conservan el monto con el que se crearon.</p>
+            <div class="form-grid">
+              <div class="form-field form-field--full"><label class="label">Precio por lugar (MXN)</label><input type="number" class="input" id="cfg-ia-price" value="" placeholder="Cargando…" min="1" step="0.01" inputmode="decimal" disabled></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-3);padding:10px 12px;background:color-mix(in srgb,var(--primary) 8%,var(--surface-2));border-left:3px solid var(--primary);border-radius:6px;line-height:1.55;margin:0 0 14px">Se cobra directamente con Stripe mediante una autorización de pago. No crea un producto ni un precio nuevo en el catálogo de Stripe.</div>
+            <div class="form-actions"><button class="btn btn--accent" id="btn-save-ia-price" disabled>Guardar precio del curso<svg class="ic"><use href="#i-check"/></svg></button></div>
+            <p id="cfg-ia-price-status" style="margin:10px 0 0;color:var(--text-3);font-size:11.5px;line-height:1.5" aria-live="polite"></p>
+          </div>
+
+          <div class="dash-card">
             <div class="dash-card__header"><div class="dash-card__title"><svg class="ic"><use href="#i-whatsapp"/></svg>Contacto</div></div>
             <div class="form-grid">
               <div class="form-field form-field--full"><label class="label">WhatsApp</label><input type="text" class="input" id="cfg-wa" value="${c.whatsapp}" placeholder="+52 ..."></div>
@@ -5210,6 +5221,67 @@ const Pages={
         if(window.Toast)Toast.error('No se pudieron leer los precios','Recarga la página antes de editarlos');
       }
     })();
+
+    // Precio del curso IA: solo pasa por el backend autenticado. El servidor
+    // valida el rango, evita sobrescrituras simultáneas y conserva auditoría.
+    let iaPriceVersion=null;
+    const loadIaPrice=async()=>{
+      const input=document.getElementById('cfg-ia-price');
+      const button=document.getElementById('btn-save-ia-price');
+      const status=document.getElementById('cfg-ia-price-status');
+      try{
+        const token=await Pages._getAuthToken();
+        const response=await fetch(Pages._webhookUrl+'/admin/ia-event/config?mode=live',{headers:{Authorization:'Bearer '+token,Accept:'application/json'},cache:'no-store'});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(data.error||'No se pudo leer la configuración del curso');
+        const cfg=data.config||{};
+        const unitAmount=Number(cfg.unitAmount);
+        if(!Number.isSafeInteger(unitAmount)||unitAmount<=0)throw new Error('El servidor no devolvió un precio válido');
+        const min=Number(data.limits&&data.limits.min),max=Number(data.limits&&data.limits.max);
+        if(Number.isSafeInteger(min)&&min>0)input.min=String(min/100);
+        if(Number.isSafeInteger(max)&&max>0)input.max=String(max/100);
+        iaPriceVersion=Number(cfg.version);
+        input.value=(unitAmount/100).toFixed(unitAmount%100===0?0:2);
+        input.disabled=false;
+        button.disabled=false;
+        status.textContent='Configuración vigente · versión '+iaPriceVersion+(cfg.updatedAt?' · actualizada '+new Date(cfg.updatedAt).toLocaleString('es-MX',{timeZone:'America/Mexico_City'}):'');
+      }catch(error){
+        input.placeholder='Sin conexión';
+        input.disabled=true;
+        button.disabled=true;
+        status.textContent=error.message||'No se pudo cargar el precio';
+      }
+    };
+    loadIaPrice();
+    document.getElementById('btn-save-ia-price').addEventListener('click',async event=>{
+      const button=event.currentTarget;
+      const input=document.getElementById('cfg-ia-price');
+      const status=document.getElementById('cfg-ia-price-status');
+      const pesos=Number(input.value);
+      const unitAmount=Math.round(pesos*100);
+      if(!Number.isFinite(pesos)||pesos<=0||!Number.isSafeInteger(unitAmount)){Toast.error('Precio inválido','Escribe un importe válido en MXN');return;}
+      if(!Number.isSafeInteger(iaPriceVersion)){Toast.error('Configuración desactualizada','Recarga el precio antes de guardar');return;}
+      button.disabled=true;input.disabled=true;status.textContent='Guardando y validando el nuevo importe…';
+      try{
+        const token=await Pages._getAuthToken();
+        const response=await fetch(Pages._webhookUrl+'/admin/ia-event/config',{
+          method:'PATCH',
+          headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json'},
+          body:JSON.stringify({mode:'live',unitAmount,expectedVersion:iaPriceVersion,reason:'Actualización desde panel IMDIIL'})
+        });
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok){const err=new Error(data.error||data.message||'No se pudo guardar el precio');err.status=response.status;throw err;}
+        const cfg=data.config||{};
+        iaPriceVersion=Number(cfg.version);
+        input.value=(Number(cfg.unitAmount)/100).toFixed(Number(cfg.unitAmount)%100===0?0:2);
+        status.textContent='Precio vigente guardado · versión '+iaPriceVersion;
+        Toast.success('Precio del curso guardado','Las compras nuevas ya usarán este importe');
+      }catch(error){
+        status.textContent=error.message||'No se pudo guardar el precio';
+        if(error.status===409)await loadIaPrice();
+        Toast.error('No se pudo guardar',error.message||'Recarga e inténtalo nuevamente');
+      }finally{input.disabled=false;button.disabled=false;}
+    });
 
     p.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',async()=>{
       const type=b.dataset.save;

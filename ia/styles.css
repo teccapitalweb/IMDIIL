@@ -271,6 +271,18 @@ h2 em { color: var(--orange); font-style: normal; }
 .checkout-notice.is-ready { color: #bcdccf; }
 .privacy-note { margin-top: 8px; color: #5e5953; }
 
+.payment-element-panel { padding: 4px 0 0; }
+.payment-element-panel[hidden] { display: none; }
+.payment-element-heading { margin-bottom: 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.payment-element-heading h4 { margin: 7px 0 0; color: var(--white); font-size: clamp(20px,2vw,28px); line-height: 1.1; letter-spacing: -.035em; }
+.payment-order-summary { margin-bottom: 18px; padding: 15px 17px; display: flex; justify-content: space-between; align-items: center; gap: 18px; color: #aaa49c; background: #171614; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; font-size: 11px; }
+.payment-order-summary strong { color: var(--orange); font-size: 16px; }
+.payment-element-mount { min-height: 120px; padding: 17px; background: #f6f3ee; border-radius: 14px; }
+.payment-element-panel .ticket-button { margin-top: 18px; }
+.payment-back { width: 100%; margin-top: 14px; text-align: center; }
+.payment-element-panel[aria-busy="true"] { cursor: progress; }
+.payment-element-panel[aria-busy="true"] .payment-element-mount { opacity: .72; }
+
 .payment-result { padding: 26px; background: #171614; border: 1px solid rgba(255,255,255,.14); border-radius: 18px; }
 .payment-result[hidden] { display: none; }
 .payment-result[data-state="paid"] { border-color: rgba(112,204,152,.46); box-shadow: inset 3px 0 0 #70cc98; }
@@ -435,6 +447,7 @@ h2 em { color: var(--orange); font-style: normal; }
   .enrollment-copy { padding: 84px 18px 54px; }
   .ticket { margin: 0 18px 60px; padding: 30px 24px; }
   .checkout-heading { display: grid; }
+  .payment-element-heading { display: grid; }
   .secure-badge { width: max-content; }
   .buyer-fields, .attendee-entry, .recovery-panel form { grid-template-columns: 1fr; }
   .form-field-wide, .attendee-entry legend, .recovery-panel form > p, .recovery-panel form > button, .recovery-panel form > #recoveryNotice { grid-column: 1; }
@@ -459,6 +472,8 @@ h2 em { color: var(--orange); font-style: normal; }
   .quantity-control { justify-self: start; }
   .price-summary { gap: 10px; }
   .price-summary > div:last-child { padding-left: 10px; }
+  .payment-element-mount { min-height: 112px; padding: 12px; border-radius: 11px; }
+  .payment-order-summary { padding: 13px 14px; }
 }
 
 @media (max-width: 370px) {
