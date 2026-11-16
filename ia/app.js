@@ -5,6 +5,82 @@
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
   const money = amount => new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(amount);
+  const storageKeys = {
+    request: "imdiil:ia:checkout-request",
+    reservation: "imdiil:ia:reservation",
+    token: "imdiil:ia:reservation-token"
+  };
+  const checkoutRuntime = {
+    enabled: false,
+    mode: config.checkout.mode || "test",
+    unitAmount: Math.round(config.course.price * 100),
+    maxPerOrder: Math.max(1, Number(config.checkout.maxPerOrder) || 5),
+    reservationId: null,
+    token: null,
+    reservation: null,
+    polling: false
+  };
+
+  const formatMinor = amount => `$${money(Math.round((Number(amount) || 0) / 100))} ${config.course.currency}`;
+  const session = {
+    get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { sessionStorage.setItem(key, value); } catch { /* private mode */ } },
+    remove(key) { try { sessionStorage.removeItem(key); } catch { /* private mode */ } }
+  };
+
+  function randomToken() {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+    if (globalThis.crypto?.getRandomValues) {
+      const bytes = new Uint8Array(16);
+      globalThis.crypto.getRandomValues(bytes);
+      return [...bytes].map(value => value.toString(16).padStart(2, "0")).join("");
+    }
+    throw new Error("Este navegador no puede iniciar una reserva segura. Actualízalo e inténtalo nuevamente.");
+  }
+
+  async function apiRequest(path, options = {}) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), Number(config.checkout.requestTimeoutMs) || 15000);
+    try {
+      const headers = { Accept: "application/json", ...(options.headers || {}) };
+      if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+      const response = await fetch(`${String(config.checkout.apiBase || "").replace(/\/$/, "")}${path}`, {
+        ...options,
+        headers,
+        signal: controller.signal,
+        cache: "no-store"
+      });
+      let data = {};
+      try { data = await response.json(); } catch { data = {}; }
+      if (!response.ok) {
+        const messages = {
+          400: "Revisa la cantidad y los datos antes de continuar.",
+          401: "El enlace seguro ya no es válido.",
+          403: "No fue posible autorizar esta operación.",
+          404: "No encontramos esa reserva.",
+          409: "La disponibilidad cambió. Actualiza e inténtalo nuevamente.",
+          410: "Esta reserva ya venció. Puedes iniciar una nueva.",
+          422: "Hay datos que necesitan corrección.",
+          429: "Recibimos varios intentos. Espera un momento y vuelve a intentar.",
+          503: "Las inscripciones todavía no están habilitadas."
+        };
+        const fallback = messages[response.status] || "No pudimos completar la operación. Inténtalo nuevamente.";
+        const message = data.code === "checkout_failed" && typeof data.error === "string"
+          ? data.error
+          : fallback;
+        const error = new Error(message);
+        error.status = response.status;
+        error.code = String(data.code || "request_failed");
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      if (error.name === "AbortError") throw new Error("La conexión tardó demasiado. Inténtalo nuevamente.");
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
 
   function applyContent() {
     document.title = config.seo.title;
@@ -215,25 +291,422 @@
     onScroll();
   }
 
-  function setupPreviewActions() {
+  function setupToasts() {
     const toast = $("#toast");
     const text = $("#toastText");
+    const title = $("#toastTitle");
     let timer;
-    const show = message => {
+    const show = (message, heading = "Información del curso") => {
+      title.textContent = heading;
       text.textContent = message;
       toast.classList.add("show");
       clearTimeout(timer);
       timer = setTimeout(() => toast.classList.remove("show"), 7000);
     };
     $("#toastClose").addEventListener("click", () => toast.classList.remove("show"));
-    $$(".checkout-trigger").forEach(button => button.addEventListener("click", () => {
-      if (config.checkout.enabled && config.checkout.url) location.href = config.checkout.url;
-      else show(config.checkout.notice);
-    }));
     $("#videoButton").addEventListener("click", () => {
       if (config.video.source) show("El reproductor oficial se abrirá aquí.");
       else show(config.video.description);
     });
+    return show;
+  }
+
+  function normalizeQuantity(value) {
+    const parsed = Math.trunc(Number(value) || 1);
+    return Math.min(checkoutRuntime.maxPerOrder, Math.max(1, parsed));
+  }
+
+  function updateQuantity(value) {
+    const quantity = normalizeQuantity(value);
+    const input = $("#seatQuantity");
+    input.value = String(quantity);
+    input.max = String(checkoutRuntime.maxPerOrder);
+    $("#quantityMax").textContent = String(checkoutRuntime.maxPerOrder);
+    $("#quantityDecrease").disabled = quantity <= 1;
+    $("#quantityIncrease").disabled = quantity >= checkoutRuntime.maxPerOrder;
+    $("#unitPriceSummary").textContent = formatMinor(checkoutRuntime.unitAmount);
+    $("#checkoutTotal").textContent = formatMinor(checkoutRuntime.unitAmount * quantity);
+    $("#mobilePrice").textContent = `$${money((checkoutRuntime.unitAmount * quantity) / 100)}`;
+  }
+
+  function setCheckoutNotice(message, state = "") {
+    const notice = $("#checkoutNotice");
+    notice.textContent = message;
+    notice.className = `checkout-notice${state ? ` is-${state}` : ""}`;
+  }
+
+  function setCheckoutLoading(loading) {
+    const form = $("#checkoutForm");
+    const button = $("#checkoutSubmit");
+    form.setAttribute("aria-busy", String(loading));
+    button.disabled = loading || !checkoutRuntime.enabled;
+    button.classList.toggle("is-loading", loading);
+    $("#checkoutSubmitText").textContent = loading
+      ? "Preparando pago"
+      : checkoutRuntime.enabled ? "Continuar a pago seguro" : "Pago en preparación";
+  }
+
+  function setupMobileCheckoutCta() {
+    const cta = $(".mobile-cta");
+    const enrollment = $("#inscripcion");
+    if (!cta || !enrollment || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(entries => {
+      cta.classList.toggle("is-context-hidden", entries.some(entry => entry.isIntersecting));
+    }, { threshold: 0.04 });
+    observer.observe(enrollment);
+  }
+
+  function rememberReservation(reservationId, token) {
+    checkoutRuntime.reservationId = reservationId || checkoutRuntime.reservationId;
+    checkoutRuntime.token = token || checkoutRuntime.token;
+    if (reservationId) session.set(storageKeys.reservation, reservationId);
+    if (token) session.set(storageKeys.token, token);
+  }
+
+  function clearReturnParameters() {
+    const url = new URL(location.href);
+    if (!url.searchParams.has("token")) return;
+    url.searchParams.delete("token");
+    history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function showCheckoutForm() {
+    $("#checkoutForm").hidden = false;
+    $("#paymentResult").hidden = true;
+    $("#recoveryPanel").hidden = false;
+  }
+
+  function setResult(state, title, message, data = null) {
+    const panel = $("#paymentResult");
+    panel.hidden = false;
+    panel.dataset.state = state;
+    $("#checkoutForm").hidden = true;
+    $("#resultTitle").textContent = title;
+    $("#resultMessage").textContent = message;
+    $("#resultKicker").textContent = state === "paid" ? "COMPRA CONFIRMADA" : "ESTADO DE LA RESERVA";
+    $("#resultRetry").hidden = !["canceled", "error"].includes(state);
+    $("#resultRefresh").hidden = state !== "pending";
+    const summary = $("#resultSummary");
+    if (!data) {
+      summary.hidden = true;
+      return;
+    }
+    summary.hidden = false;
+    const quantity = Number(data.quantity || data.places || data.seats || 0);
+    const total = Number(data.totalAmount ?? data.amountTotal ?? data.totalAmountMinor ?? 0);
+    $("#resultDate").textContent = config.course.dateShort;
+    $("#resultQuantity").textContent = quantity ? `${quantity} ${quantity === 1 ? "lugar" : "lugares"}` : "—";
+    $("#resultTotalLabel").textContent = state === "paid" ? "Total pagado" : "Total";
+    $("#resultTotal").textContent = total ? formatMinor(total) : "Pendiente de confirmar";
+    $("#resultReservation").textContent = data.publicId || data.reservationCode || data.reservationId || checkoutRuntime.reservationId || "—";
+  }
+
+  function attendeeField(label, type, value, options = {}) {
+    const wrapper = document.createElement("label");
+    wrapper.className = "form-field";
+    const caption = document.createElement("span");
+    caption.textContent = label;
+    const input = document.createElement("input");
+    input.type = type;
+    input.value = value || "";
+    input.maxLength = options.maxLength || 180;
+    input.autocomplete = options.autocomplete || "off";
+    if (options.required) input.required = true;
+    if (options.name) input.name = options.name;
+    wrapper.append(caption, input);
+    return { wrapper, input };
+  }
+
+  function renderAttendees(data) {
+    const form = $("#attendeesForm");
+    const fields = $("#attendeesFields");
+    const quantity = Math.max(0, Number(data.quantity || data.places || 0));
+    const records = Array.isArray(data.attendees) ? data.attendees : Array.isArray(data.passes) ? data.passes : [];
+    fields.replaceChildren();
+    if (!quantity) {
+      form.hidden = true;
+      return;
+    }
+    for (let index = 0; index < quantity; index += 1) {
+      const record = records[index] || {};
+      const attendee = record.attendee || record;
+      const entry = document.createElement("fieldset");
+      entry.className = "attendee-entry";
+      entry.dataset.passId = String(record.passId || record.id || attendee.passId || "");
+      entry.dataset.index = String(index);
+      const legend = document.createElement("legend");
+      legend.textContent = `ASISTENTE ${index + 1}`;
+      const name = attendeeField("Nombre completo", "text", attendee.name || attendee.nombre || "", { name: `attendeeName${index}`, autocomplete: "name", maxLength: 140, required: true });
+      const email = attendeeField("Correo electrónico · opcional", "email", attendee.email || attendee.correo || "", { name: `attendeeEmail${index}`, autocomplete: "email", maxLength: 180 });
+      entry.append(legend, name.wrapper, email.wrapper);
+      fields.append(entry);
+    }
+    form.hidden = false;
+  }
+
+  function reservationState(data) {
+    return String(data.status || data.state || data.paymentStatus || "pending").toLowerCase();
+  }
+
+  function renderReservation(data) {
+    checkoutRuntime.reservation = data;
+    const state = reservationState(data);
+    if (["paid", "confirmed", "pagado", "confirmada"].includes(state)) {
+      checkoutRuntime.polling = false;
+      session.remove(storageKeys.request);
+      setResult("paid", "Tu compra está confirmada.", "El pago fue verificado por el servidor. Completa los datos de cada asistente para dejar listos tus lugares.", data);
+      renderAttendees(data);
+      return "paid";
+    }
+    $("#attendeesForm").hidden = true;
+    if (["canceled", "cancelled", "cancelado"].includes(state)) {
+      checkoutRuntime.polling = false;
+      setResult("canceled", "La compra no se completó.", "No se confirmó ningún cobro. Puedes revisar la cantidad e iniciar una nueva reserva.", data);
+      return "canceled";
+    }
+    if (["expired", "payment_failed", "checkout_error", "failed", "expirada", "fallido"].includes(state)) {
+      checkoutRuntime.polling = false;
+      setResult("error", "La reserva ya no está activa.", "No confirmamos un pago. Inicia una nueva reserva o utiliza la recuperación si necesitas consultar una operación anterior.", data);
+      return "error";
+    }
+    setResult("pending", "Estamos verificando tu pago.", "Tu inscripción todavía no está confirmada. Esta pantalla se actualizará cuando el webhook de Stripe valide el resultado.", data);
+    return "pending";
+  }
+
+  async function getReservationStatus() {
+    if (!checkoutRuntime.reservationId || !checkoutRuntime.token) throw new Error("No encontramos los datos seguros de esta reserva.");
+    return apiRequest(`/reservations/${encodeURIComponent(checkoutRuntime.reservationId)}`, {
+      headers: { "X-Reservation-Token": checkoutRuntime.token }
+    });
+  }
+
+  function validatedCheckoutUrl(value) {
+    let url;
+    try { url = new URL(String(value || "")); }
+    catch { throw new Error("El destino de pago no es válido. Inténtalo nuevamente."); }
+    if (url.protocol !== "https:" || url.hostname !== "checkout.stripe.com") {
+      throw new Error("El destino de pago no es válido. Inténtalo nuevamente.");
+    }
+    return url.href;
+  }
+
+  async function pollReservation(attempts = 18) {
+    if (checkoutRuntime.polling) return;
+    checkoutRuntime.polling = true;
+    for (let attempt = 0; attempt < attempts && checkoutRuntime.polling; attempt += 1) {
+      try {
+        const state = renderReservation(await getReservationStatus());
+        if (state !== "pending") return;
+      } catch (error) {
+        if (attempt === 0) setResult("pending", "Seguimos esperando confirmación.", error.message);
+      }
+      await new Promise(resolve => setTimeout(resolve, Number(config.checkout.pollIntervalMs) || 2500));
+    }
+    checkoutRuntime.polling = false;
+    $("#resultRefresh").hidden = false;
+  }
+
+  async function handleReturnState() {
+    const params = new URLSearchParams(location.search);
+    const payment = String(params.get("payment") || params.get("checkout") || "").toLowerCase();
+    const reservationId = params.get("reservation") || params.get("reservation_id") || session.get(storageKeys.reservation);
+    const token = params.get("token") || session.get(storageKeys.token);
+    rememberReservation(reservationId, token);
+    clearReturnParameters();
+    if (!payment) return;
+    $("#inscripcion").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!checkoutRuntime.reservationId || !checkoutRuntime.token) {
+      setResult("error", "No pudimos localizar la reserva.", "Usa la opción de recuperación con tu correo y el identificador de reserva.");
+      return;
+    }
+    if (["canceled", "cancelled", "cancelado"].includes(payment)) {
+      try {
+        const data = await apiRequest(`/reservations/${encodeURIComponent(checkoutRuntime.reservationId)}/cancel`, {
+          method: "POST",
+          body: JSON.stringify({ token: checkoutRuntime.token }),
+          headers: { "X-Reservation-Token": checkoutRuntime.token }
+        });
+        renderReservation(data);
+      } catch {
+        setResult("canceled", "La compra no se completó.", "No declaramos ningún pago como exitoso. Puedes intentarlo nuevamente o actualizar el estado de la reserva.");
+        $("#resultRefresh").hidden = false;
+      }
+      return;
+    }
+    if (payment === "error") {
+      setResult("error", "No pudimos completar la operación.", "Conserva tu identificador de reserva y vuelve a intentar. No se confirmó un cobro desde esta pantalla.");
+      return;
+    }
+    setResult("pending", "Comprobando tu pago…", "La página de regreso no confirma la inscripción: estamos consultando el estado verificado del servidor.");
+    await pollReservation();
+  }
+
+  async function loadCheckoutConfig() {
+    try {
+      const remote = await apiRequest("/config");
+      const remoteUnit = Number(remote.unitAmount ?? remote.unitAmountMinor ?? remote.price?.unitAmount ?? 0);
+      if (remoteUnit > 0) checkoutRuntime.unitAmount = remoteUnit;
+      const remoteMax = Math.trunc(Number(remote.maxPerOrder ?? remote.limits?.maxPerOrder ?? config.checkout.maxPerOrder));
+      if (remoteMax > 0) checkoutRuntime.maxPerOrder = remoteMax;
+      const available = remote.availability?.available ?? remote.available;
+      if (available !== null && available !== undefined && Number.isFinite(Number(available))) {
+        checkoutRuntime.maxPerOrder = Math.max(1, Math.min(checkoutRuntime.maxPerOrder, Number(available)));
+      }
+      checkoutRuntime.mode = String(remote.mode || config.checkout.mode || "test");
+      checkoutRuntime.enabled = remote.enabled === true && Number(available ?? 1) !== 0;
+      updateQuantity($("#seatQuantity").value);
+      setCheckoutLoading(false);
+      if (checkoutRuntime.enabled) {
+        const modeNote = checkoutRuntime.mode === "test" ? "Modo de prueba activo. No utilices una tarjeta real." : "El pago se realizará en la página segura de Stripe.";
+        setCheckoutNotice(modeNote, "ready");
+      } else {
+        setCheckoutNotice(remote.soldOut ? "Por el momento no hay lugares disponibles." : config.checkout.notice);
+      }
+    } catch {
+      checkoutRuntime.enabled = false;
+      setCheckoutLoading(false);
+      setCheckoutNotice(config.checkout.notice);
+    }
+  }
+
+  function setupCheckout(showToast) {
+    const form = $("#checkoutForm");
+    const quantity = $("#seatQuantity");
+    updateQuantity(quantity.value);
+    setCheckoutLoading(false);
+
+    $$(".checkout-trigger").forEach(button => button.addEventListener("click", () => {
+      $("#inscripcion").scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => quantity.focus({ preventScroll: true }), 650);
+      if (!checkoutRuntime.enabled) showToast(config.checkout.notice, "Inscripción preparada");
+    }));
+    $("#quantityDecrease").addEventListener("click", () => updateQuantity(Number(quantity.value) - 1));
+    $("#quantityIncrease").addEventListener("click", () => updateQuantity(Number(quantity.value) + 1));
+    quantity.addEventListener("input", () => updateQuantity(quantity.value));
+    quantity.addEventListener("blur", () => updateQuantity(quantity.value));
+
+    form.addEventListener("input", () => {
+      if (form.getAttribute("aria-busy") !== "true") session.remove(storageKeys.request);
+    });
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!checkoutRuntime.enabled) {
+        setCheckoutNotice(config.checkout.notice, "error");
+        return;
+      }
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      setCheckoutLoading(true);
+      setCheckoutNotice("Validando cantidad, disponibilidad e importe en el servidor.");
+      const requestToken = session.get(storageKeys.request) || randomToken();
+      session.set(storageKeys.request, requestToken);
+      const payload = {
+        quantity: normalizeQuantity(quantity.value),
+        buyer: {
+          name: $("#buyerName").value.trim(),
+          email: $("#buyerEmail").value.trim(),
+          phone: $("#buyerPhone").value.trim()
+        },
+        buyerAttends: $("#buyerAttends").checked,
+        requestToken
+      };
+      try {
+        const data = await apiRequest("/checkout", { method: "POST", body: JSON.stringify(payload) });
+        const reservationId = data.reservationId || data.reservation?.id;
+        const token = data.statusToken || data.token || data.reservationToken;
+        rememberReservation(reservationId, token);
+        if (data.checkoutUrl || data.url) {
+          location.assign(validatedCheckoutUrl(data.checkoutUrl || data.url));
+          return;
+        }
+        if (reservationId && token) {
+          setResult("pending", "Tu reserva se está preparando.", "Evita crear otra compra mientras terminamos de abrir la sesión segura de Stripe.", data);
+          await pollReservation(8);
+          return;
+        }
+        throw new Error("No pudimos abrir Stripe. Inténtalo nuevamente.");
+      } catch (error) {
+        setCheckoutNotice(error.message, "error");
+        setCheckoutLoading(false);
+      }
+    });
+
+    $("#resultRetry").addEventListener("click", () => {
+      checkoutRuntime.polling = false;
+      session.remove(storageKeys.request);
+      const url = new URL(location.href);
+      ["payment", "checkout", "reservation", "reservation_id", "token"].forEach(key => url.searchParams.delete(key));
+      history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      showCheckoutForm();
+      setCheckoutLoading(false);
+      updateQuantity(quantity.value);
+    });
+    $("#resultRefresh").addEventListener("click", async () => {
+      $("#resultRefresh").hidden = true;
+      await pollReservation(1);
+    });
+
+    $("#attendeesForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const attendeesForm = event.currentTarget;
+      if (!attendeesForm.checkValidity()) {
+        attendeesForm.reportValidity();
+        return;
+      }
+      const entries = $$(".attendee-entry", attendeesForm);
+      const attendees = entries.map((entry, index) => ({
+        passId: entry.dataset.passId || undefined,
+        index,
+        name: $("input[type='text']", entry).value.trim(),
+        email: $("input[type='email']", entry).value.trim()
+      }));
+      attendeesForm.setAttribute("aria-busy", "true");
+      $("#attendeesSubmit").disabled = true;
+      $("#attendeesNotice").textContent = "Guardando datos…";
+      $("#attendeesNotice").className = "attendees-notice";
+      try {
+        const data = await apiRequest(`/reservations/${encodeURIComponent(checkoutRuntime.reservationId)}/attendees`, {
+          method: "PUT",
+          headers: { "X-Reservation-Token": checkoutRuntime.token },
+          body: JSON.stringify({ token: checkoutRuntime.token, attendees })
+        });
+        $("#attendeesNotice").textContent = "Datos guardados correctamente.";
+        renderAttendees({ ...checkoutRuntime.reservation, ...data });
+      } catch (error) {
+        $("#attendeesNotice").textContent = error.message;
+        $("#attendeesNotice").className = "attendees-notice is-error";
+      } finally {
+        attendeesForm.setAttribute("aria-busy", "false");
+        $("#attendeesSubmit").disabled = false;
+      }
+    });
+
+    $("#recoveryForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const recoveryForm = event.currentTarget;
+      if (!recoveryForm.checkValidity()) {
+        recoveryForm.reportValidity();
+        return;
+      }
+      const button = $("#recoverySubmit");
+      button.disabled = true;
+      try {
+        await apiRequest("/recover", {
+          method: "POST",
+          body: JSON.stringify({
+            reservationId: $("#recoveryReservation").value.trim(),
+            email: $("#recoveryEmail").value.trim()
+          })
+        });
+      } catch { /* respuesta deliberadamente indistinguible */ }
+      $("#recoveryNotice").textContent = "Si los datos coinciden con una compra, enviaremos un enlace seguro al correo registrado cuando el proveedor de mensajes esté disponible.";
+      button.disabled = false;
+    });
+
+    loadCheckoutConfig();
+    handleReturnState();
   }
 
   applyContent();
@@ -241,5 +714,6 @@
   setupNavigation();
   setupMotion();
   setupScroll();
-  setupPreviewActions();
+  setupMobileCheckoutCta();
+  setupCheckout(setupToasts());
 })();

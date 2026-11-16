@@ -1,7 +1,7 @@
 window.SITE_CONFIG = {
   status: {
     label: "Información oficial actualizada",
-    note: "Inscripción en preparación · Stripe permanece desactivado."
+    note: "Compra múltiple preparada · activación comercial pendiente."
   },
   brand: {
     name: "IMDIIL",
@@ -159,8 +159,11 @@ window.SITE_CONFIG = {
   checkout: {
     enabled: false,
     mode: "test",
-    url: null,
-    notice: "Stripe permanece desactivado. Antes de cobrar se validarán el producto, el importe de $1,199 MXN, la institución receptora, las condiciones fiscales y las políticas del evento."
+    apiBase: "https://imdiil-webhook-production.up.railway.app/ia-event",
+    maxPerOrder: 5,
+    requestTimeoutMs: 15000,
+    pollIntervalMs: 2500,
+    notice: "La compra segura está preparada, pero los cobros permanecen desactivados hasta validar el producto, la cuenta receptora y las condiciones comerciales de IMDIIL."
   },
   faq: [
     ["¿Cuándo se realizará el curso?", "El jueves 26 de noviembre de 2026."],
@@ -178,7 +181,7 @@ window.SITE_CONFIG = {
     "Video promocional autorizado",
     "Producto y cuenta receptora de Stripe",
     "Condiciones fiscales y políticas aplicables",
-    "Páginas y correos de confirmación de compra"
+    "Proveedor y remitente del correo de confirmación de compra"
   ],
   contact: {
     phone: null,
