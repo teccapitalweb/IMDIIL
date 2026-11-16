@@ -65,8 +65,8 @@
           503: "Las inscripciones todavía no están habilitadas."
         };
         const fallback = messages[response.status] || "No pudimos completar la operación. Inténtalo nuevamente.";
-        const message = data.code === "checkout_failed" && typeof data.error === "string"
-          ? data.error
+        const message = data.code === "checkout_failed"
+          ? "No pudimos abrir el pago en este momento. Inténtalo nuevamente en unos segundos."
           : fallback;
         const error = new Error(message);
         error.status = response.status;
@@ -335,6 +335,15 @@
     notice.className = `checkout-notice${state ? ` is-${state}` : ""}`;
   }
 
+  function setReviewBanner(state, label, note) {
+    const labelNode = $("#reviewLabel");
+    const noteNode = $("#reviewNote");
+    const bar = labelNode?.closest(".review-bar");
+    if (labelNode) labelNode.textContent = label;
+    if (noteNode) noteNode.textContent = note;
+    if (bar) bar.dataset.checkoutState = state;
+  }
+
   function setCheckoutLoading(loading) {
     const form = $("#checkoutForm");
     const button = $("#checkoutSubmit");
@@ -445,7 +454,11 @@
   }
 
   function reservationState(data) {
-    return String(data.status || data.state || data.paymentStatus || "pending").toLowerCase();
+    const explicitState = String(data.status || data.state || data.paymentStatus || "pending").toLowerCase();
+    const errorCode = String(data.errorCode || data.code || "").toLowerCase();
+    const stripeSessionId = data.stripeSessionId || data.checkoutSessionId || data.stripe?.sessionId;
+    if (!stripeSessionId && ["checkout_error", "checkout_failed"].includes(errorCode)) return "checkout_error";
+    return explicitState;
   }
 
   function renderReservation(data) {
@@ -552,20 +565,29 @@
       if (available !== null && available !== undefined && Number.isFinite(Number(available))) {
         checkoutRuntime.maxPerOrder = Math.max(1, Math.min(checkoutRuntime.maxPerOrder, Number(available)));
       }
-      checkoutRuntime.mode = String(remote.mode || config.checkout.mode || "test");
+      checkoutRuntime.mode = String(remote.mode || config.checkout.mode || "test") === "live" ? "live" : "test";
       checkoutRuntime.enabled = remote.enabled === true && Number(available ?? 1) !== 0;
       updateQuantity($("#seatQuantity").value);
       setCheckoutLoading(false);
       if (checkoutRuntime.enabled) {
         const modeNote = checkoutRuntime.mode === "test" ? "Modo de prueba activo. No utilices una tarjeta real." : "El pago se realizará en la página segura de Stripe.";
         setCheckoutNotice(modeNote, "ready");
+        if (checkoutRuntime.mode === "test") {
+          setReviewBanner("test", "Modo de prueba", "Checkout de prueba habilitado · no utilices una tarjeta real.");
+        } else {
+          setReviewBanner("live", "Inscripción disponible", "Compra segura habilitada · Stripe en modo producción.");
+        }
       } else {
-        setCheckoutNotice(remote.soldOut ? "Por el momento no hay lugares disponibles." : config.checkout.notice);
+        const disabledNotice = remote.soldOut ? "Por el momento no hay lugares disponibles." : config.checkout.notice;
+        setCheckoutNotice(disabledNotice);
+        if (remote.soldOut) setReviewBanner("sold-out", "Cupo agotado", "No hay lugares disponibles en este momento.");
+        else setReviewBanner("disabled", "Inscripción en preparación", "El sistema de pago permanece desactivado.");
       }
     } catch {
       checkoutRuntime.enabled = false;
       setCheckoutLoading(false);
-      setCheckoutNotice(config.checkout.notice);
+      setCheckoutNotice("No pudimos verificar la disponibilidad en este momento. Recarga la página e inténtalo nuevamente.", "error");
+      setReviewBanner("unavailable", "Disponibilidad no confirmada", "No pudimos verificar el sistema de inscripción. Inténtalo nuevamente.");
     }
   }
 

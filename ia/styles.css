@@ -31,6 +31,11 @@ img { display: block; max-width: 100%; }
 .review-bar { min-height: 34px; padding: 8px 4vw; display: flex; align-items: center; justify-content: center; gap: 10px; color: #d9d7d2; background: #080808; border-bottom: 1px solid rgba(255,255,255,.09); font-size: 11px; letter-spacing: .06em; text-align: center; }
 .review-bar strong { color: var(--orange); text-transform: uppercase; letter-spacing: .12em; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 5px rgba(245,157,26,.12); }
+.review-bar[data-checkout-state="live"] .status-dot { background: #70cc98; box-shadow: 0 0 0 5px rgba(112,204,152,.13); }
+.review-bar[data-checkout-state="live"] strong { color: #70cc98; }
+.review-bar[data-checkout-state="test"] .status-dot { background: #f5c45b; box-shadow: 0 0 0 5px rgba(245,196,91,.13); }
+.review-bar[data-checkout-state="unavailable"] .status-dot,.review-bar[data-checkout-state="sold-out"] .status-dot { background: #d86c5f; box-shadow: 0 0 0 5px rgba(216,108,95,.13); }
+.review-bar[data-checkout-state="unavailable"] strong,.review-bar[data-checkout-state="sold-out"] strong { color: #e68b7f; }
 
 .site-header { position: absolute; z-index: 100; top: 52px; left: 3vw; right: 3vw; height: var(--header-h); padding: 0 16px 0 22px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: var(--white); background: rgba(17,17,17,.82); border: 1px solid rgba(255,255,255,.13); border-radius: 999px; backdrop-filter: blur(22px); box-shadow: 0 14px 50px rgba(0,0,0,.22); }
 .site-header.is-fixed { position: fixed; top: 14px; animation: headerIn .5s var(--ease); }

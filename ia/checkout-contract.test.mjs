@@ -65,6 +65,18 @@ test("los errores recuperables no quedan como pago pendiente", () => {
   assert.match(app, /"checkout_error"/);
   assert.match(app, /data\.code === "checkout_failed"/);
   assert.match(app, /error\.code = String\(data\.code/);
+  assert.match(app, /!stripeSessionId && \["checkout_error", "checkout_failed"\]\.includes\(errorCode\)/);
+  assert.match(app, /return "checkout_error"/);
+  assert.match(app, /No pudimos abrir el pago en este momento/);
+});
+
+test("el banner refleja solo la configuración confirmada por el backend", () => {
+  assert.match(app, /function setReviewBanner\(state, label, note\)/);
+  assert.match(app, /setReviewBanner\("live", "Inscripción disponible"/);
+  assert.match(app, /setReviewBanner\("test", "Modo de prueba"/);
+  assert.match(app, /setReviewBanner\("disabled", "Inscripción en preparación"/);
+  assert.match(app, /setReviewBanner\("unavailable", "Disponibilidad no confirmada"/);
+  assert.match(app, /remote\.enabled === true/);
 });
 
 test("la llamada móvil no cubre el formulario de inscripción", () => {
