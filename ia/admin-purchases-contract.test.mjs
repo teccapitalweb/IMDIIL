@@ -10,7 +10,7 @@ test("compras IA vive dentro del panel real y es accesible en móvil", () => {
   assert.match(html, /class="nav-item" data-section="compras-ia"/);
   assert.match(html, /class="mobile-nav__item" data-section="compras-ia"/);
   assert.match(html, /imdiil-admin-ia-purchases\.css/);
-  assert.match(html, /imdiil-admin-ia-purchases\.js/);
+  assert.match(html, /imdiil-admin-ia-purchases\.js\?v=2/);
   assert.match(app, /pages\['compras-ia'\]/);
 });
 
