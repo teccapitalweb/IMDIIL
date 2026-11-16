@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#111111"/>
+  <rect width="30" height="630" fill="#f59d1a"/>
+  <path d="M78 118H1128M78 512H1128" stroke="#ffffff" stroke-opacity=".18"/>
+  <path d="M802 118V512" stroke="#f59d1a" stroke-opacity=".48"/>
+  <text x="78" y="82" fill="#f59d1a" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="4">IMDIIL · CAPACITACIÓN EMPRESARIAL</text>
+  <text x="78" y="204" fill="#9b958d" font-family="Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="3">INTELIGENCIA ARTIFICIAL</text>
+  <text x="72" y="354" fill="#ffffff" font-family="Arial,sans-serif" font-size="164" font-weight="800" letter-spacing="-12">PARA</text>
+  <text x="76" y="455" fill="#f59d1a" font-family="Arial,sans-serif" font-size="86" font-weight="800" letter-spacing="-5">EMPRESARIOS</text>
+  <text x="842" y="186" fill="#8f8981" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="3">CURSO PRESENCIAL</text>
+  <text x="832" y="340" fill="#f59d1a" font-family="Arial,sans-serif" font-size="150" font-weight="800" letter-spacing="-10">26</text>
+  <text x="1016" y="278" fill="#ffffff" font-family="Arial,sans-serif" font-size="34" font-weight="800">NOV</text>
+  <text x="1016" y="319" fill="#8f8981" font-family="Arial,sans-serif" font-size="20" font-weight="700">2026</text>
+  <text x="842" y="404" fill="#ffffff" font-family="Arial,sans-serif" font-size="22" font-weight="700">09:00 — 16:00</text>
+  <text x="842" y="447" fill="#ffffff" font-family="Arial,sans-serif" font-size="22" font-weight="700">TEHUACÁN, PUEBLA</text>
+  <text x="842" y="490" fill="#f59d1a" font-family="Arial,sans-serif" font-size="26" font-weight="800">$1,199 MXN</text>
+  <text x="78" y="558" fill="#a8a29a" font-family="Arial,sans-serif" font-size="20">Vende más · reduce costos · automatiza tu negocio con IA</text>
+</svg>
