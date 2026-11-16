@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111111">
+  <meta name="referrer" content="no-referrer">
   <meta name="description" content="Curso presencial en Tehuacán para aumentar ventas, reducir costos y automatizar tu negocio con IA. 26 de noviembre de 2026.">
   <link rel="canonical" href="https://www.imdiil.com/ia/">
   <meta property="og:type" content="website">
@@ -192,8 +193,106 @@
           <li>Plan empresarial de implementación a 30 días</li>
           <li>Laptop personal requerida</li>
         </ul>
-        <button class="button ticket-button checkout-trigger" type="button">Inscribirme ahora <span aria-hidden="true">↗</span></button>
-        <p id="checkoutNotice">Stripe permanece desactivado. Esta página no realiza cobros.</p>
+        <div class="purchase-panel" id="purchasePanel">
+          <form class="checkout-form" id="checkoutForm" novalidate>
+            <div class="checkout-heading">
+              <div>
+                <span class="checkout-kicker">RESERVA EN UNA SOLA TRANSACCIÓN</span>
+                <h4>¿Cuántos lugares necesitas?</h4>
+              </div>
+              <span class="secure-badge" aria-label="Pago alojado y protegido por Stripe">PAGO SEGURO · STRIPE</span>
+            </div>
+
+            <div class="quantity-row">
+              <div>
+                <label for="seatQuantity">Cantidad de lugares</label>
+                <p id="quantityHelp">Elige entre 1 y <span id="quantityMax">5</span> lugares.</p>
+              </div>
+              <div class="quantity-control" role="group" aria-label="Cantidad de lugares">
+                <button type="button" id="quantityDecrease" aria-label="Quitar un lugar">−</button>
+                <input id="seatQuantity" name="quantity" type="number" value="1" min="1" max="5" inputmode="numeric" aria-describedby="quantityHelp">
+                <button type="button" id="quantityIncrease" aria-label="Agregar un lugar">+</button>
+              </div>
+            </div>
+
+            <div class="price-summary" aria-live="polite" aria-atomic="true">
+              <div><span>PRECIO UNITARIO</span><strong id="unitPriceSummary">$1,199 MXN</strong></div>
+              <div class="price-total"><span>TOTAL</span><strong id="checkoutTotal">$1,199 MXN</strong></div>
+            </div>
+
+            <fieldset class="buyer-fields">
+              <legend>Datos del comprador</legend>
+              <label class="form-field form-field-wide">
+                <span>Nombre completo</span>
+                <input id="buyerName" name="buyerName" type="text" autocomplete="name" maxlength="140" required>
+              </label>
+              <label class="form-field">
+                <span>Correo electrónico</span>
+                <input id="buyerEmail" name="buyerEmail" type="email" autocomplete="email" maxlength="180" required>
+              </label>
+              <label class="form-field">
+                <span>Teléfono <small>opcional</small></span>
+                <input id="buyerPhone" name="buyerPhone" type="tel" autocomplete="tel" maxlength="40">
+              </label>
+              <label class="buyer-attends form-field-wide">
+                <input id="buyerAttends" name="buyerAttends" type="checkbox" checked>
+                <span><strong>Yo también asistiré</strong>Usaremos tus datos para el primer lugar. Los demás asistentes se completan después del pago.</span>
+              </label>
+            </fieldset>
+
+            <button class="button ticket-button" id="checkoutSubmit" type="submit" disabled>
+              <span id="checkoutSubmitText">Pago en preparación</span><span aria-hidden="true">↗</span>
+            </button>
+            <p class="checkout-notice" id="checkoutNotice" role="status">Estamos verificando la disponibilidad del sistema de inscripción.</p>
+            <p class="privacy-note">No almacenamos datos de tarjeta. El importe definitivo y la disponibilidad se validan en el servidor antes de abrir Stripe.</p>
+          </form>
+
+          <section class="payment-result" id="paymentResult" aria-live="polite" aria-atomic="false" hidden>
+            <span class="result-kicker" id="resultKicker">ESTADO DE LA RESERVA</span>
+            <h4 id="resultTitle">Comprobando tu pago…</h4>
+            <p id="resultMessage">No cierres esta página mientras confirmamos el resultado con Stripe.</p>
+            <dl class="result-summary" id="resultSummary" hidden>
+              <div><dt>Curso</dt><dd>IA para Empresarios</dd></div>
+              <div><dt>Fecha</dt><dd id="resultDate">26 NOV 2026</dd></div>
+              <div><dt>Lugares</dt><dd id="resultQuantity">—</dd></div>
+              <div><dt id="resultTotalLabel">Total</dt><dd id="resultTotal">—</dd></div>
+              <div class="result-reservation"><dt>Reserva</dt><dd id="resultReservation">—</dd></div>
+            </dl>
+            <div class="result-actions">
+              <button class="button ticket-button" id="resultRetry" type="button" hidden>Intentar de nuevo <span aria-hidden="true">↗</span></button>
+              <button class="text-button" id="resultRefresh" type="button" hidden>Actualizar estado</button>
+            </div>
+
+            <form class="attendees-form" id="attendeesForm" hidden>
+              <div class="attendees-heading">
+                <span>SIGUIENTE PASO</span>
+                <h5>Datos de asistentes</h5>
+                <p>Completa un registro por cada lugar adquirido. Puedes usar correos distintos para enviar confirmaciones individuales cuando el servicio esté configurado.</p>
+              </div>
+              <div id="attendeesFields"></div>
+              <button class="button ticket-button" id="attendeesSubmit" type="submit">Guardar asistentes</button>
+              <p class="attendees-notice" id="attendeesNotice" role="status"></p>
+            </form>
+          </section>
+
+          <details class="recovery-panel" id="recoveryPanel">
+            <summary>¿Necesitas recuperar una compra?</summary>
+            <form id="recoveryForm">
+              <p>Solicita un enlace seguro usando el identificador de reserva y el correo del comprador.</p>
+              <label class="form-field">
+                <span>Identificador de reserva</span>
+                <input id="recoveryReservation" name="reservationId" type="text" autocomplete="off" maxlength="100" required>
+              </label>
+              <label class="form-field">
+                <span>Correo del comprador</span>
+                <input id="recoveryEmail" name="email" type="email" autocomplete="email" maxlength="180" required>
+              </label>
+              <button class="text-button" id="recoverySubmit" type="submit">Solicitar recuperación</button>
+              <p id="recoveryNotice" role="status"></p>
+            </form>
+          </details>
+          <noscript><p class="checkout-notice">Activa JavaScript para iniciar una inscripción segura.</p></noscript>
+        </div>
       </div>
     </section>
 
@@ -236,7 +335,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
     <button type="button" id="toastClose" aria-label="Cerrar aviso">×</button>
-    <strong>Inscripción en preparación</strong>
+    <strong id="toastTitle">Inscripción en preparación</strong>
     <p id="toastText"></p>
   </div>
 

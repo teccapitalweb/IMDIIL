@@ -1,7 +1,7 @@
 window.SITE_CONFIG = {
   status: {
     label: "Información oficial actualizada",
-    note: "Inscripción en preparación · Stripe permanece desactivado."
+    note: "Compra múltiple preparada · activación comercial pendiente."
   },
   brand: {
     name: "IMDIIL",
@@ -23,13 +23,13 @@ window.SITE_CONFIG = {
     modality: "100 % presencial",
     city: "Tehuacán, Puebla",
     venueNote: "La ubicación exacta del recinto se proporcionará después de confirmar la adquisición del pase.",
-    capacity: "Cupo limitado",
+    capacity: "Cupo inicial: 25 personas · sujeto a ampliación",
     requirement: "Laptop personal",
     price: 1199,
     currency: "MXN",
     audience: ["Empresarios", "Emprendedores", "Gerentes", "Directivos"],
     ticketBenefits: [
-      "Cupo limitado",
+      "Cupo inicial de 25 personas, sujeto a ampliación",
       "6 horas efectivas de formación presencial",
       "Seis módulos con ejercicios prácticos",
       "Plan empresarial de implementación a 30 días",
@@ -159,15 +159,18 @@ window.SITE_CONFIG = {
   checkout: {
     enabled: false,
     mode: "test",
-    url: null,
-    notice: "Stripe permanece desactivado. Antes de cobrar se validarán el producto, el importe de $1,199 MXN, la institución receptora, las condiciones fiscales y las políticas del evento."
+    apiBase: "https://imdiil-webhook-production.up.railway.app/ia-event",
+    maxPerOrder: 5,
+    requestTimeoutMs: 15000,
+    pollIntervalMs: 2500,
+    notice: "La compra segura está preparada, pero los cobros permanecen desactivados hasta validar el producto, la cuenta receptora y las condiciones comerciales de IMDIIL."
   },
   faq: [
     ["¿Cuándo se realizará el curso?", "El jueves 26 de noviembre de 2026."],
     ["¿En qué horario?", "De 9:00 a. m. a 4:00 p. m., con seis horas efectivas de formación."],
     ["¿Cuál es la modalidad?", "100 % presencial en Tehuacán, Puebla."],
     ["¿Dónde será el evento?", "La ubicación exacta del recinto se proporcionará después de confirmar la adquisición del pase."],
-    ["¿Cuánto cuesta la inscripción?", "$1,199 MXN. El cupo es limitado."],
+    ["¿Cuánto cuesta la inscripción?", "$1,199 MXN. El cupo inicial es de 25 personas y puede ampliarse según la demanda."],
     ["¿A quién está dirigido?", "A empresarios, emprendedores, gerentes y directivos."],
     ["¿Qué debo llevar?", "Laptop personal."],
     ["¿Quién imparte el curso?", "Ing. Ricardo Olmos Rivera, empresario y CEO de Teccapital Web."]
@@ -178,7 +181,7 @@ window.SITE_CONFIG = {
     "Video promocional autorizado",
     "Producto y cuenta receptora de Stripe",
     "Condiciones fiscales y políticas aplicables",
-    "Páginas y correos de confirmación de compra"
+    "Proveedor y remitente del correo de confirmación de compra"
   ],
   contact: {
     phone: null,
