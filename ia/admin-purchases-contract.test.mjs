@@ -22,6 +22,37 @@ test("el contrato admin separa live y test y usa estados canónicos", () => {
   assert.match(app, /creating_checkout/);
   assert.match(app, /params\.set\('state', state\.filter\)/);
   assert.match(app, /params\.set\('search', state\.search\.trim\(\)\)/);
+  for (const state of ["partially_refunded", "refunded", "disputed", "dispute_lost", "dispute_closed"]) {
+    assert.match(app, new RegExp(state));
+  }
+});
+
+test("normaliza reembolsos y disputas y conserva el estado original del checkout", () => {
+  assert.match(app, /checkoutState:String\(order\.checkoutState/);
+  assert.match(app, /netAmountPaid:num\(order\.netAmountPaid/);
+  assert.match(app, /refund:\{[\s\S]*status:String\(refund\.status[\s\S]*amount:num\(refund\.amount\)[\s\S]*chargeId:String\(refund\.chargeId/);
+  assert.match(app, /dispute:\{[\s\S]*providerStatus:String\(dispute\.providerStatus[\s\S]*amount:num\(dispute\.amount\)[\s\S]*chargeId:String\(dispute\.chargeId/);
+  assert.match(app, /Reembolso parcial/);
+  assert.match(app, /Disputa perdida/);
+});
+
+test("los KPI usan exclusivamente el resumen financiero del servidor", () => {
+  assert.match(app, /orders:num\(source\.orders\)/);
+  assert.match(app, /paidSeats:num\(source\.paidSeats\), paidAmount:num\(source\.paidAmount\)/);
+  assert.match(app, /Ingreso neto confirmado/);
+  assert.doesNotMatch(app, /state\.orders\.filter\(function \(order\)/);
+  assert.doesNotMatch(app, /paid\.reduce\(/);
+});
+
+test("el detalle concilia bruto, reembolso, neto y metadatos Stripe", () => {
+  assert.match(app, /field\('Importe bruto'/);
+  assert.match(app, /field\('Reembolsado'/);
+  assert.match(app, /field\('Ingreso neto'/);
+  assert.match(app, /function adjustmentSections\(order\)/);
+  assert.match(app, /Stripe cargo del reembolso/);
+  assert.match(app, /Stripe disputa/);
+  assert.match(app, /Estado informado por Stripe/);
+  assert.match(app, /Actualizada · hora CDMX/);
 });
 
 test("listado, detalle y CSV reutilizan la autenticación admin", () => {
