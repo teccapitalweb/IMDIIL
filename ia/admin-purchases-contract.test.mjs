@@ -48,6 +48,14 @@ test("la vista usa tarjetas móviles y controles táctiles", () => {
   assert.match(css, /\.mobile-nav__item\{flex:1 1 0!important/);
 });
 
+test("la inscripción usa la hora pagada de Ciudad de México también en móvil", () => {
+  assert.match(app, /timeZone:'America\/Mexico_City'/);
+  assert.match(app, /date\(order\.paidAt \|\| order\.createdAt\)/);
+  assert.match(app, /date\(order\.paidAt \|\| order\.createdAt, true\)/);
+  assert.match(app, /Inscripción · hora CDMX/);
+  assert.match(app, /Pago confirmado · hora CDMX/);
+});
+
 test("un error de recarga no conserva indicadores financieros anteriores", () => {
   assert.match(app, /if \(!append\) \{[\s\S]*state\.orders = \[\];[\s\S]*state\.summary = null;[\s\S]*state\.truncated = false;/);
 });
