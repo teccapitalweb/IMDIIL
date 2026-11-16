@@ -1,7 +1,7 @@
 window.SITE_CONFIG = {
   status: {
     label: "Información oficial actualizada",
-    note: "Compra múltiple preparada · activación comercial pendiente."
+    note: "Pago seguro integrado · disponibilidad controlada por el servidor."
   },
   brand: {
     name: "IMDIIL",
@@ -160,10 +160,11 @@ window.SITE_CONFIG = {
     enabled: false,
     mode: "test",
     apiBase: "https://imdiil-webhook-production.up.railway.app/ia-event",
+    publishableKey: "pk_live_51TMAcSA7If2CqXs9NuKsM1cVT9n5agProkMR8HFiT6QTXzS0g9PtiokZ4cpT1Qo3rk9bbsrZHx9sOUbE9UEOjgGs00n1OM3Y9b",
     maxPerOrder: 5,
     requestTimeoutMs: 15000,
     pollIntervalMs: 2500,
-    notice: "La compra segura está preparada, pero los cobros permanecen desactivados hasta validar el producto, la cuenta receptora y las condiciones comerciales de IMDIIL."
+    notice: "La compra segura está preparada, pero en este momento permanece pausada por el servidor."
   },
   faq: [
     ["¿Cuándo se realizará el curso?", "El jueves 26 de noviembre de 2026."],
@@ -179,7 +180,6 @@ window.SITE_CONFIG = {
     "Ubicación exacta del recinto",
     "Canal oficial de atención e inscripción de IMDIIL",
     "Video promocional autorizado",
-    "Producto y cuenta receptora de Stripe",
     "Condiciones fiscales y políticas aplicables",
     "Proveedor y remitente del correo de confirmación de compra"
   ],

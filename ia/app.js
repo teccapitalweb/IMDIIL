@@ -4,7 +4,13 @@
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
-  const money = amount => new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(amount);
+  const money = amount => {
+    const value = Number(amount) || 0;
+    return new Intl.NumberFormat("es-MX", {
+      minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
   const storageKeys = {
     request: "imdiil:ia:checkout-request",
     reservation: "imdiil:ia:reservation",
@@ -15,13 +21,19 @@
     mode: config.checkout.mode || "test",
     unitAmount: Math.round(config.course.price * 100),
     maxPerOrder: Math.max(1, Number(config.checkout.maxPerOrder) || 5),
+    configVersion: null,
+    publishableKey: String(config.checkout.publishableKey || ""),
     reservationId: null,
     token: null,
     reservation: null,
-    polling: false
+    polling: false,
+    stripe: null,
+    elements: null,
+    paymentElement: null,
+    clientSecret: null
   };
 
-  const formatMinor = amount => `$${money(Math.round((Number(amount) || 0) / 100))} ${config.course.currency}`;
+  const formatMinor = amount => `$${money((Number(amount) || 0) / 100)} ${config.course.currency}`;
   const session = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
     set(key, value) { try { sessionStorage.setItem(key, value); } catch { /* private mode */ } },
@@ -205,6 +217,33 @@
     });
   }
 
+  function applyRuntimePrice() {
+    const major = checkoutRuntime.unitAmount / 100;
+    config.course.price = major;
+    const full = `$${money(major)} ${config.course.currency}`;
+    const short = `$${money(major)}`;
+    const meta = $("#metaPrice");
+    const ticket = $("#ticketPrice");
+    const mobile = $("#mobilePrice");
+    if (meta) meta.textContent = full;
+    if (ticket) ticket.textContent = money(major);
+    if (mobile) mobile.textContent = short;
+    const priceFaqIndex = config.faq.findIndex(item => /cu[aá]nto cuesta/i.test(String(item[0] || "")));
+    if (priceFaqIndex >= 0) {
+      config.faq[priceFaqIndex][1] = `${full}. El cupo inicial es de 25 personas y puede ampliarse según la demanda.`;
+      const answer = $(`#faq-${priceFaqIndex} p`);
+      if (answer) answer.textContent = config.faq[priceFaqIndex][1];
+    }
+    const structured = $("#structuredData");
+    if (structured?.textContent) {
+      try {
+        const data = JSON.parse(structured.textContent);
+        if (data.offers) data.offers.price = major;
+        structured.textContent = JSON.stringify(data);
+      } catch { /* el JSON-LD se vuelve a generar al recargar */ }
+    }
+  }
+
   function audienceCopy(label) {
     const copy = {
       Empresarios: "Decisiones, costos y crecimiento con una nueva lectura.",
@@ -374,22 +413,92 @@
 
   function clearReturnParameters() {
     const url = new URL(location.href);
-    if (!url.searchParams.has("token")) return;
-    url.searchParams.delete("token");
+    const transient = ["token", "payment", "checkout", "reservation", "reservation_id", "payment_intent", "payment_intent_client_secret", "redirect_status"];
+    if (!transient.some(key => url.searchParams.has(key))) return;
+    transient.forEach(key => url.searchParams.delete(key));
     history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
   }
 
+  function destroyPaymentElement() {
+    if (checkoutRuntime.paymentElement) {
+      try { checkoutRuntime.paymentElement.destroy(); } catch { /* ya desmontado */ }
+    }
+    checkoutRuntime.paymentElement = null;
+    checkoutRuntime.elements = null;
+    checkoutRuntime.clientSecret = null;
+    const mount = $("#paymentElement");
+    if (mount) mount.replaceChildren();
+  }
+
   function showCheckoutForm() {
+    destroyPaymentElement();
     $("#checkoutForm").hidden = false;
+    $("#paymentElementPanel").hidden = true;
     $("#paymentResult").hidden = true;
     $("#recoveryPanel").hidden = false;
   }
 
+  function setPaymentLoading(loading) {
+    const panel = $("#paymentElementPanel");
+    const button = $("#paymentSubmit");
+    panel.setAttribute("aria-busy", String(loading));
+    button.disabled = loading;
+    button.classList.toggle("is-loading", loading);
+    $("#paymentSubmitText").textContent = loading ? "Confirmando pago" : "Confirmar y pagar";
+    $("#paymentBack").disabled = loading;
+  }
+
+  function setPaymentNotice(message, state = "") {
+    const notice = $("#paymentNotice");
+    notice.textContent = message;
+    notice.className = `checkout-notice${state ? ` is-${state}` : ""}`;
+  }
+
+  async function mountPaymentElement(data, quantity) {
+    const clientSecret = String(data.clientSecret || "");
+    if (!/^pi_[^_]+.*_secret_/.test(clientSecret)) throw new Error("Stripe no devolvió una autorización de pago válida.");
+    if (!checkoutRuntime.publishableKey || !/^pk_(test|live)_/.test(checkoutRuntime.publishableKey)) {
+      throw new Error("La llave pública de Stripe no está configurada.");
+    }
+    if (typeof window.Stripe !== "function") throw new Error("Stripe no terminó de cargar. Recarga la página e inténtalo nuevamente.");
+    destroyPaymentElement();
+    checkoutRuntime.stripe ||= window.Stripe(checkoutRuntime.publishableKey);
+    checkoutRuntime.clientSecret = clientSecret;
+    checkoutRuntime.elements = checkoutRuntime.stripe.elements({
+      clientSecret,
+      appearance: {
+        theme: "stripe",
+        variables: {
+          colorPrimary: "#f59d1a",
+          colorText: "#151412",
+          colorBackground: "#f6f3ee",
+          colorDanger: "#b84034",
+          fontFamily: "Manrope, Arial, sans-serif",
+          borderRadius: "10px"
+        }
+      }
+    });
+    checkoutRuntime.paymentElement = checkoutRuntime.elements.create("payment", {
+      layout: { type: "tabs" }
+    });
+    checkoutRuntime.paymentElement.mount("#paymentElement");
+    $("#checkoutForm").hidden = true;
+    $("#paymentResult").hidden = true;
+    $("#paymentElementPanel").hidden = false;
+    $("#paymentOrderPlaces").textContent = `${quantity} ${quantity === 1 ? "lugar" : "lugares"}`;
+    $("#paymentOrderTotal").textContent = formatMinor(checkoutRuntime.unitAmount * quantity);
+    setPaymentLoading(false);
+    setPaymentNotice("Stripe procesa tus datos de tarjeta; IMDIIL no los almacena.", "ready");
+    $("#paymentElementTitle").focus?.({ preventScroll: true });
+  }
+
   function setResult(state, title, message, data = null) {
+    destroyPaymentElement();
     const panel = $("#paymentResult");
     panel.hidden = false;
     panel.dataset.state = state;
     $("#checkoutForm").hidden = true;
+    $("#paymentElementPanel").hidden = true;
     $("#resultTitle").textContent = title;
     $("#resultMessage").textContent = message;
     $("#resultKicker").textContent = state === "paid" ? "COMPRA CONFIRMADA" : "ESTADO DE LA RESERVA";
@@ -456,8 +565,8 @@
   function reservationState(data) {
     const explicitState = String(data.status || data.state || data.paymentStatus || "pending").toLowerCase();
     const errorCode = String(data.errorCode || data.code || "").toLowerCase();
-    const stripeSessionId = data.stripeSessionId || data.checkoutSessionId || data.stripe?.sessionId;
-    if (!stripeSessionId && ["checkout_error", "checkout_failed"].includes(errorCode)) return "checkout_error";
+    const stripeReference = data.stripePaymentIntentId || data.paymentIntentId || data.stripeSessionId || data.checkoutSessionId || data.stripe?.paymentIntentId || data.stripe?.sessionId;
+    if (!stripeReference && ["checkout_error", "checkout_failed", "payment_intent_failed"].includes(errorCode)) return "checkout_error";
     return explicitState;
   }
 
@@ -493,16 +602,6 @@
     });
   }
 
-  function validatedCheckoutUrl(value) {
-    let url;
-    try { url = new URL(String(value || "")); }
-    catch { throw new Error("El destino de pago no es válido. Inténtalo nuevamente."); }
-    if (url.protocol !== "https:" || url.hostname !== "checkout.stripe.com") {
-      throw new Error("El destino de pago no es válido. Inténtalo nuevamente.");
-    }
-    return url.href;
-  }
-
   async function pollReservation(attempts = 18) {
     if (checkoutRuntime.polling) return;
     checkoutRuntime.polling = true;
@@ -521,7 +620,8 @@
 
   async function handleReturnState() {
     const params = new URLSearchParams(location.search);
-    const payment = String(params.get("payment") || params.get("checkout") || "").toLowerCase();
+    const redirectStatus = String(params.get("redirect_status") || "").toLowerCase();
+    const payment = String(params.get("payment") || params.get("checkout") || (redirectStatus ? "return" : "")).toLowerCase();
     const reservationId = params.get("reservation") || params.get("reservation_id") || session.get(storageKeys.reservation);
     const token = params.get("token") || session.get(storageKeys.token);
     rememberReservation(reservationId, token);
@@ -559,6 +659,10 @@
       const remote = await apiRequest("/config");
       const remoteUnit = Number(remote.unitAmount ?? remote.unitAmountMinor ?? remote.price?.unitAmount ?? 0);
       if (remoteUnit > 0) checkoutRuntime.unitAmount = remoteUnit;
+      const remoteVersion = Number(remote.configVersion ?? remote.version ?? remote.price?.version);
+      checkoutRuntime.configVersion = Number.isSafeInteger(remoteVersion) && remoteVersion >= 0 ? remoteVersion : null;
+      const remotePublishableKey = String(remote.publishableKey || remote.stripePublishableKey || "");
+      if (/^pk_(test|live)_/.test(remotePublishableKey)) checkoutRuntime.publishableKey = remotePublishableKey;
       const remoteMax = Math.trunc(Number(remote.maxPerOrder ?? remote.limits?.maxPerOrder ?? config.checkout.maxPerOrder));
       if (remoteMax > 0) checkoutRuntime.maxPerOrder = remoteMax;
       const available = remote.availability?.available ?? remote.available;
@@ -567,10 +671,11 @@
       }
       checkoutRuntime.mode = String(remote.mode || config.checkout.mode || "test") === "live" ? "live" : "test";
       checkoutRuntime.enabled = remote.enabled === true && Number(available ?? 1) !== 0;
+      applyRuntimePrice();
       updateQuantity($("#seatQuantity").value);
       setCheckoutLoading(false);
       if (checkoutRuntime.enabled) {
-        const modeNote = checkoutRuntime.mode === "test" ? "Modo de prueba activo. No utilices una tarjeta real." : "El pago se realizará en la página segura de Stripe.";
+        const modeNote = checkoutRuntime.mode === "test" ? "Modo de prueba activo. No utilices una tarjeta real." : "Pago seguro con Stripe habilitado.";
         setCheckoutNotice(modeNote, "ready");
         if (checkoutRuntime.mode === "test") {
           setReviewBanner("test", "Modo de prueba", "Checkout de prueba habilitado · no utilices una tarjeta real.");
@@ -632,34 +737,99 @@
           phone: $("#buyerPhone").value.trim()
         },
         buyerAttends: $("#buyerAttends").checked,
-        requestToken
+        requestToken,
+        ...(checkoutRuntime.configVersion !== null ? { configVersion: checkoutRuntime.configVersion } : {})
       };
       try {
         const data = await apiRequest("/checkout", { method: "POST", body: JSON.stringify(payload) });
         const reservationId = data.reservationId || data.reservation?.id;
         const token = data.statusToken || data.token || data.reservationToken;
         rememberReservation(reservationId, token);
-        if (data.checkoutUrl || data.url) {
-          location.assign(validatedCheckoutUrl(data.checkoutUrl || data.url));
+        if (data.clientSecret && reservationId && token) {
+          await mountPaymentElement(data, payload.quantity);
           return;
         }
         if (reservationId && token) {
-          setResult("pending", "Tu reserva se está preparando.", "Evita crear otra compra mientras terminamos de abrir la sesión segura de Stripe.", data);
+          setResult("pending", "Tu reserva se está preparando.", "Evita crear otra compra mientras terminamos de abrir el formulario seguro de Stripe.", data);
           await pollReservation(8);
           return;
         }
-        throw new Error("No pudimos abrir Stripe. Inténtalo nuevamente.");
+        throw new Error("No pudimos preparar Stripe. Inténtalo nuevamente.");
       } catch (error) {
+        if (error.code === "price_changed") await loadCheckoutConfig();
         setCheckoutNotice(error.message, "error");
         setCheckoutLoading(false);
       }
     });
 
+    $("#paymentSubmit").addEventListener("click", async () => {
+      if (!checkoutRuntime.stripe || !checkoutRuntime.elements || !checkoutRuntime.reservationId || !checkoutRuntime.token) {
+        setPaymentNotice("No pudimos recuperar la autorización de pago. Edita los datos e inténtalo nuevamente.", "error");
+        return;
+      }
+      setPaymentLoading(true);
+      setPaymentNotice("Validando el pago directamente con Stripe.");
+      const returnUrl = new URL(location.href);
+      returnUrl.search = "";
+      returnUrl.searchParams.set("payment", "return");
+      returnUrl.searchParams.set("reservation", checkoutRuntime.reservationId);
+      returnUrl.hash = "inscripcion";
+      try {
+        const result = await checkoutRuntime.stripe.confirmPayment({
+          elements: checkoutRuntime.elements,
+          confirmParams: { return_url: returnUrl.href },
+          redirect: "if_required"
+        });
+        if (result.error) {
+          setPaymentNotice(result.error.message || "Stripe no pudo confirmar el pago. Revisa los datos e inténtalo nuevamente.", "error");
+          setPaymentLoading(false);
+          return;
+        }
+        setResult("pending", "Comprobando tu pago…", "Stripe recibió la operación. La inscripción quedará confirmada únicamente cuando el servidor valide el pago.", {
+          reservationId: checkoutRuntime.reservationId,
+          quantity: normalizeQuantity(quantity.value),
+          totalAmount: checkoutRuntime.unitAmount * normalizeQuantity(quantity.value),
+          state: result.paymentIntent?.status || "pending_payment"
+        });
+        await pollReservation();
+      } catch (error) {
+        setPaymentNotice(error.message || "No pudimos conectar con Stripe. Inténtalo nuevamente.", "error");
+        setPaymentLoading(false);
+      }
+    });
+
+    $("#paymentBack").addEventListener("click", async () => {
+      const reservationId = checkoutRuntime.reservationId;
+      const token = checkoutRuntime.token;
+      setPaymentLoading(true);
+      if (reservationId && token) {
+        try {
+          await apiRequest(`/reservations/${encodeURIComponent(reservationId)}/cancel`, {
+            method: "POST",
+            body: JSON.stringify({ token }),
+            headers: { "X-Reservation-Token": token }
+          });
+        } catch { /* el servidor conciliará cualquier intento ya finalizado */ }
+      }
+      checkoutRuntime.reservationId = null;
+      checkoutRuntime.token = null;
+      session.remove(storageKeys.request);
+      session.remove(storageKeys.reservation);
+      session.remove(storageKeys.token);
+      showCheckoutForm();
+      setCheckoutLoading(false);
+      setCheckoutNotice("Puedes ajustar los datos antes de generar una nueva autorización.", "ready");
+    });
+
     $("#resultRetry").addEventListener("click", () => {
       checkoutRuntime.polling = false;
+      checkoutRuntime.reservationId = null;
+      checkoutRuntime.token = null;
       session.remove(storageKeys.request);
+      session.remove(storageKeys.reservation);
+      session.remove(storageKeys.token);
       const url = new URL(location.href);
-      ["payment", "checkout", "reservation", "reservation_id", "token"].forEach(key => url.searchParams.delete(key));
+      ["payment", "checkout", "reservation", "reservation_id", "token", "payment_intent", "payment_intent_client_secret", "redirect_status"].forEach(key => url.searchParams.delete(key));
       history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
       showCheckoutForm();
       setCheckoutLoading(false);

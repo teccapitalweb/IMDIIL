@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.imdiil.com/ia/">
   <meta property="og:title" content="Inteligencia Artificial para Empresarios | IMDIIL">
-  <meta property="og:description" content="Curso presencial en Tehuacán. Jueves 26 de noviembre de 2026 · 9:00 a. m. a 4:00 p. m. · $1,199 MXN.">
+  <meta property="og:description" content="Curso presencial en Tehuacán. Jueves 26 de noviembre de 2026 · 9:00 a. m. a 4:00 p. m. Consulta la inversión vigente y reserva en línea.">
   <meta property="og:image" content="https://www.imdiil.com/ia/assets/og-imdiil-ia.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -22,6 +22,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <script src="./site-config.js" defer></script>
+  <script src="https://js.stripe.com/v3/" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
@@ -200,7 +201,7 @@
                 <span class="checkout-kicker">RESERVA EN UNA SOLA TRANSACCIÓN</span>
                 <h4>¿Cuántos lugares necesitas?</h4>
               </div>
-              <span class="secure-badge" aria-label="Pago alojado y protegido por Stripe">PAGO SEGURO · STRIPE</span>
+              <span class="secure-badge" aria-label="Pago procesado y protegido por Stripe">PAGO SEGURO · STRIPE</span>
             </div>
 
             <div class="quantity-row">
@@ -244,8 +245,28 @@
               <span id="checkoutSubmitText">Pago en preparación</span><span aria-hidden="true">↗</span>
             </button>
             <p class="checkout-notice" id="checkoutNotice" role="status">Estamos verificando la disponibilidad del sistema de inscripción.</p>
-            <p class="privacy-note">No almacenamos datos de tarjeta. El importe definitivo y la disponibilidad se validan en el servidor antes de abrir Stripe.</p>
+            <p class="privacy-note">No almacenamos datos de tarjeta. El importe definitivo y la disponibilidad se validan en el servidor antes de mostrar el formulario de Stripe.</p>
           </form>
+
+          <section class="payment-element-panel" id="paymentElementPanel" aria-labelledby="paymentElementTitle" hidden>
+            <div class="payment-element-heading">
+              <div>
+                <span class="checkout-kicker">PAGO CIFRADO POR STRIPE</span>
+                <h4 id="paymentElementTitle">Confirma tu pago</h4>
+              </div>
+              <span class="secure-badge">TARJETA SEGURA</span>
+            </div>
+            <div class="payment-order-summary" aria-live="polite">
+              <span id="paymentOrderPlaces">1 lugar</span>
+              <strong id="paymentOrderTotal">$1,199 MXN</strong>
+            </div>
+            <div class="payment-element-mount" id="paymentElement" aria-label="Datos de pago"></div>
+            <button class="button ticket-button" id="paymentSubmit" type="button">
+              <span id="paymentSubmitText">Confirmar y pagar</span><span aria-hidden="true">↗</span>
+            </button>
+            <button class="text-button payment-back" id="paymentBack" type="button">← Editar datos de la compra</button>
+            <p class="checkout-notice" id="paymentNotice" role="status">Stripe procesa tus datos de tarjeta; IMDIIL no los almacena.</p>
+          </section>
 
           <section class="payment-result" id="paymentResult" aria-live="polite" aria-atomic="false" hidden>
             <span class="result-kicker" id="resultKicker">ESTADO DE LA RESERVA</span>
