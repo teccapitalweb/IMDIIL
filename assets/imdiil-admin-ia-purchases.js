@@ -38,8 +38,8 @@
     var parsed = toDate(value);
     if (!parsed) return '—';
     return parsed.toLocaleString('es-MX', short
-      ? { day:'2-digit', month:'short', year:'numeric' }
-      : { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      ? { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'America/Mexico_City' }
+      : { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'America/Mexico_City' });
   }
   function money(minor, currency) {
     try {
@@ -164,13 +164,13 @@
     return '<tr><td><div class="iaa-buyer"><strong>' + esc(order.buyer.name || 'Sin nombre') + '</strong><span>' + esc(order.buyer.email || 'Sin correo') + '</span></div></td>' +
       '<td>' + badge(order.state) + '</td><td><strong class="iaa-number">' + esc(integer(order.quantity)) + '</strong><span class="iaa-cell-note">lugar' + (order.quantity === 1 ? '' : 'es') + '</span></td>' +
       '<td><strong class="iaa-money">' + esc(money(order.amountPaid || order.totalAmount, order.currency)) + '</strong><span class="iaa-cell-note">' + (status(order.state).tone === 'success' ? 'confirmado' : 'importe') + '</span></td>' +
-      '<td><span class="iaa-date">' + esc(date(order.createdAt)) + '</span><span class="iaa-cell-note">' + esc(order.reservationId || order.id || 'Sin referencia') + '</span></td>' +
+      '<td><span class="iaa-date">' + esc(date(order.paidAt || order.createdAt)) + '</span><span class="iaa-cell-note">hora CDMX · ' + esc(order.reservationId || order.id || 'Sin referencia') + '</span></td>' +
       '<td><span class="iaa-stripe-state ' + (stripeReady ? 'is-ready' : '') + '"><i></i>' + (stripeReady ? 'Vinculada' : 'Sin sesión') + '</span></td>' +
       '<td><button class="iaa-view" type="button" data-ia-order="' + esc(order.id) + '"><svg class="ic"><use href="#i-eye"/></svg>Ver</button></td></tr>';
   }
   function card(order) {
     return '<article class="iaa-order-card"><div class="iaa-order-card__head"><div class="iaa-buyer"><strong>' + esc(order.buyer.name || 'Sin nombre') + '</strong><span>' + esc(order.buyer.email || 'Sin correo') + '</span></div>' + badge(order.state) + '</div>' +
-      '<div class="iaa-order-card__grid"><div><small>Total</small><strong>' + esc(money(order.amountPaid || order.totalAmount, order.currency)) + '</strong></div><div><small>Lugares</small><strong>' + esc(integer(order.quantity)) + '</strong></div><div><small>Fecha</small><strong>' + esc(date(order.createdAt, true)) + '</strong></div></div>' +
+      '<div class="iaa-order-card__grid"><div><small>Total</small><strong>' + esc(money(order.amountPaid || order.totalAmount, order.currency)) + '</strong></div><div><small>Lugares</small><strong>' + esc(integer(order.quantity)) + '</strong></div><div><small>Inscripción · hora CDMX</small><strong>' + esc(date(order.paidAt || order.createdAt, true)) + '</strong></div></div>' +
       '<div class="iaa-order-card__foot"><span>' + esc(order.reservationId || order.id || 'Sin referencia') + '</span><button class="iaa-view" type="button" data-ia-order="' + esc(order.id) + '"><svg class="ic"><use href="#i-eye"/></svg>Ver detalle</button></div></article>';
   }
 
@@ -178,7 +178,7 @@
     if (state.loading && !state.orders.length) return '<div class="iaa-loading" role="status"><span></span><strong>Consultando compras…</strong><small>Verificando datos protegidos del evento.</small></div>';
     if (state.error && !state.orders.length) return '<div class="iaa-empty iaa-empty--error"><svg class="ic"><use href="#i-mail"/></svg><strong>No se pudieron cargar las compras</strong><span>' + esc(state.error) + '</span><button class="btn btn--primary" type="button" data-ia-retry>Intentar de nuevo</button></div>';
     if (!state.orders.length) return '<div class="iaa-empty"><svg class="ic"><use href="#i-credit-card"/></svg><strong>No hay compras con estos filtros</strong><span>Prueba otro estado, modo o término de búsqueda.</span></div>';
-    return '<div class="iaa-table-wrap"><table class="iaa-table"><thead><tr><th>Comprador</th><th>Estado</th><th>Lugares</th><th>Total</th><th>Fecha / Reserva</th><th>Stripe</th><th></th></tr></thead><tbody>' + state.orders.map(row).join('') + '</tbody></table></div>' +
+    return '<div class="iaa-table-wrap"><table class="iaa-table"><thead><tr><th>Comprador</th><th>Estado</th><th>Lugares</th><th>Total</th><th>Inscripción (hora CDMX) / Reserva</th><th>Stripe</th><th></th></tr></thead><tbody>' + state.orders.map(row).join('') + '</tbody></table></div>' +
       '<div class="iaa-mobile-list">' + state.orders.map(card).join('') + '</div>' +
       (state.error ? '<p class="iaa-inline-error">' + esc(state.error) + '</p>' : '') +
       (state.nextCursor ? '<div class="iaa-load-more"><button class="btn btn--ghost" type="button" data-ia-more' + (state.loadingMore ? ' disabled' : '') + '>' + (state.loadingMore ? 'Cargando…' : 'Cargar más compras') + '</button></div>' : '');
@@ -290,7 +290,7 @@
       body.innerHTML = (errorMessage ? '<div class="iaa-detail-warning"><svg class="ic"><use href="#i-mail"/></svg><span>No se pudo actualizar el detalle: ' + esc(errorMessage) + '. Se muestra la información disponible.</span></div>' : '') +
         '<div class="iaa-detail-summary"><div><span>Estado</span>' + badge(order.state) + '</div><div><span>Total</span><strong>' + esc(money(order.amountPaid || order.totalAmount, order.currency)) + '</strong></div><div><span>Lugares</span><strong>' + esc(integer(order.quantity)) + '</strong></div></div>' +
         '<section class="iaa-detail-section"><div class="iaa-detail-section__head"><h3>Comprador</h3><span>' + (order.buyerAttends ? 'También asiste' : 'Compra para asistentes') + '</span></div><div class="iaa-detail-grid">' + field('Nombre', order.buyer.name) + field('Correo', order.buyer.email) + field('Teléfono', order.buyer.phone) + field('Datos de asistentes', order.attendeesComplete ? 'Completos' : 'Pendientes') + '</div></section>' +
-        '<section class="iaa-detail-section"><div class="iaa-detail-section__head"><h3>Operación</h3><span>' + esc(status(order.state).label) + '</span></div><div class="iaa-detail-grid">' + field('Reserva', order.reservationId || order.id) + field('Creada', date(order.createdAt)) + field('Pago confirmado', date(order.paidAt)) + field('Vigencia de reserva', date(order.holdExpiresAt)) + field('Precio unitario', money(order.unitAmount, order.currency)) + field('Importe pagado', money(order.amountPaid, order.currency)) + '</div></section>' +
+        '<section class="iaa-detail-section"><div class="iaa-detail-section__head"><h3>Operación</h3><span>' + esc(status(order.state).label) + '</span></div><div class="iaa-detail-grid">' + field('Reserva', order.reservationId || order.id) + field('Creada · hora CDMX', date(order.createdAt)) + field('Pago confirmado · hora CDMX', date(order.paidAt)) + field('Vigencia de reserva · hora CDMX', date(order.holdExpiresAt)) + field('Precio unitario', money(order.unitAmount, order.currency)) + field('Importe pagado', money(order.amountPaid, order.currency)) + '</div></section>' +
         '<section class="iaa-detail-section"><div class="iaa-detail-section__head"><h3>Referencias Stripe</h3><span>Copiables para conciliación</span></div><div class="iaa-references">' + refs.map(function (item, index) { return reference(item.label, item.value, index); }).join('') + '</div></section>' +
         '<section class="iaa-detail-section"><div class="iaa-detail-section__head"><h3>Pases y asistentes</h3><span>' + esc(integer(order.passes.length || order.quantity)) + ' lugar' + ((order.passes.length || order.quantity) === 1 ? '' : 'es') + '</span></div><div class="iaa-passes">' + (order.passes.length ? order.passes.map(pass).join('') : '<div class="iaa-passes-empty">Los pases aparecerán aquí cuando estén disponibles en el servidor.</div>') + '</div></section>';
       body.querySelectorAll('[data-ia-copy]').forEach(function (button) {
