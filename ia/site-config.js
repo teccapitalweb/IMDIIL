@@ -17,6 +17,7 @@ window.SITE_CONFIG = {
     dateShort: "26 NOV 2026",
     startDate: "2026-11-26T09:00:00-06:00",
     endDate: "2026-11-26T16:00:00-06:00",
+    timeZone: "America/Mexico_City",
     schedule: "9:00 a. m. — 4:00 p. m.",
     scheduleShort: "09:00 — 16:00",
     duration: "6 horas efectivas",
@@ -29,11 +30,10 @@ window.SITE_CONFIG = {
     currency: "MXN",
     audience: ["Empresarios", "Emprendedores", "Gerentes", "Directivos"],
     ticketBenefits: [
-      "Cupo inicial de 25 personas, sujeto a ampliación",
-      "6 horas efectivas de formación presencial",
+      "Acceso presencial al curso",
+      "6 horas efectivas de formación",
       "Seis módulos con ejercicios prácticos",
-      "Plan empresarial de implementación a 30 días",
-      "Laptop personal requerida"
+      "Certificado digital con folio verificable"
     ]
   },
   video: {
@@ -46,20 +46,26 @@ window.SITE_CONFIG = {
   valuePillars: [
     {
       number: "01",
-      label: "Vender",
-      title: "Convierte información en oportunidades comerciales",
-      body: "Conoce mejor a tus clientes, fortalece propuestas y diseña estrategias para generar recompras."
+      label: "Vende más",
+      title: "Convierte información en mejores oportunidades comerciales",
+      body: "Fortalece propuestas, identifica objeciones y diseña estrategias para generar recompras."
     },
     {
       number: "02",
-      label: "Optimizar",
-      title: "Recupera tiempo y controla mejor tus números",
-      body: "Automatiza tareas repetitivas y analiza ventas, costos, gastos y márgenes con mayor claridad."
+      label: "Ahorra tiempo",
+      title: "Automatiza tareas que hoy consumen recursos",
+      body: "Agiliza cotizaciones, reportes, correos y documentos con flujos sencillos de trabajo."
     },
     {
       number: "03",
-      label: "Implementar",
-      title: "Lleva la IA a un proceso concreto de tu empresa",
+      label: "Controla tu negocio",
+      title: "Lee tus números y detecta fugas con mayor claridad",
+      body: "Analiza ventas, costos, márgenes e indicadores para tomar decisiones con información útil."
+    },
+    {
+      number: "04",
+      label: "Implementa IA",
+      title: "Pasa de la idea a un proceso concreto",
       body: "Configura asistentes y construye una ruta de implementación por etapas, responsables e indicadores."
     }
   ],
@@ -68,6 +74,7 @@ window.SITE_CONFIG = {
       number: "01",
       duration: "60 MIN",
       title: "Haz que tu empresa venda más con IA",
+      summary: "Detecta oportunidades, mejora propuestas y diseña una estrategia comercial para tu negocio.",
       topics: [
         "Detecta oportunidades de venta y conoce mejor a tus clientes.",
         "Crea ofertas y propuestas comerciales con apoyo de IA.",
@@ -80,6 +87,7 @@ window.SITE_CONFIG = {
       number: "02",
       duration: "60 MIN",
       title: "Automatiza tareas y recupera tu tiempo",
+      summary: "Identifica tareas repetitivas y crea un flujo básico para ahorrar tiempo.",
       topics: [
         "Identifica actividades repetitivas que consumen recursos.",
         "Agiliza cotizaciones, correos, reportes y documentos.",
@@ -92,6 +100,7 @@ window.SITE_CONFIG = {
       number: "03",
       duration: "60 MIN",
       title: "Controla tus números y detecta fugas",
+      summary: "Analiza ventas, costos y márgenes para encontrar oportunidades de mejora.",
       topics: [
         "Analiza ventas, costos, gastos y márgenes de tu negocio.",
         "Detecta productos o servicios con menor rentabilidad.",
@@ -104,6 +113,7 @@ window.SITE_CONFIG = {
       number: "04",
       duration: "60 MIN",
       title: "Dirige y supervisa tu equipo con IA",
+      summary: "Define indicadores y crea un tablero básico para dar seguimiento a tu equipo.",
       topics: [
         "Define indicadores de productividad por área o responsable.",
         "Desarrolla manuales, procesos y responsabilidades claras.",
@@ -116,6 +126,7 @@ window.SITE_CONFIG = {
       number: "05",
       duration: "60 MIN",
       title: "Crea asistentes de IA para tu empresa",
+      summary: "Configura un asistente especializado para una necesidad real de tu operación.",
       topics: [
         "Diseña asistentes especializados sin necesidad de programar.",
         "Aplica asistentes a ventas, operaciones y administración.",
@@ -128,6 +139,7 @@ window.SITE_CONFIG = {
       number: "06",
       duration: "60 MIN",
       title: "Implementa IA en los próximos 30 días",
+      summary: "Prioriza procesos, responsables e indicadores en una ruta de implementación.",
       topics: [
         "Identifica tres procesos que conviene mejorar primero.",
         "Elige herramientas según recursos y complejidad.",
@@ -156,6 +168,13 @@ window.SITE_CONFIG = {
     ],
     disclaimer: ""
   },
+  certificate: {
+    title: "Certificado digital con folio verificable",
+    description: "Al concluir el curso recibirás un certificado digital emitido por IMDIIL. Cada documento contará con un folio individual para validar su autenticidad.",
+    features: ["Emisión digital", "Folio individual", "Validación de autenticidad"],
+    verificationUrl: null
+  },
+  testimonials: [],
   checkout: {
     enabled: false,
     mode: "test",

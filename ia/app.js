@@ -107,19 +107,32 @@
     $("#heroEyebrow").textContent = config.course.eyebrow;
     $("#heroTagline").textContent = config.course.tagline;
     $("#heroDescription").textContent = config.course.description;
-    $(".editorial-topline span:first-child").textContent = `CURSO PRESENCIAL · ${config.course.capacity.toUpperCase()}`;
-    $(".editorial-topline span:last-child").textContent = `${config.course.city.toUpperCase()} · 2026`;
-    $(".editorial-byline strong").textContent = config.speaker.name.toUpperCase();
+    $("#heroSpeakerName").textContent = config.speaker.name;
+    $("#heroSpeakerPhoto").src = config.speaker.photo;
+    $("#heroSpeakerPhoto").alt = config.speaker.name;
     $("#metaDate").textContent = config.course.dateShort;
     $("#metaSchedule").textContent = config.course.scheduleShort;
     $("#metaModality").textContent = config.course.modality;
+    $("#metaLocation").textContent = config.course.city.toUpperCase();
+    $("#metaDuration").textContent = config.course.duration.toUpperCase();
     $("#metaPrice").textContent = `$${money(config.course.price)} ${config.course.currency}`;
+    const eventStart = new Date(config.course.startDate);
+    if (Number.isFinite(eventStart.getTime())) {
+      const datePart = new Intl.DateTimeFormat("es-MX", {
+        day: "2-digit", month: "long", year: "numeric", timeZone: config.course.timeZone
+      }).format(eventStart).toUpperCase();
+      const timePart = new Intl.DateTimeFormat("es-MX", {
+        hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: config.course.timeZone
+      }).format(eventStart);
+      $("#countdownDate").textContent = `${datePart} · ${timePart} H`;
+    }
 
     $("#videoState").textContent = config.video.status;
     $("#videoDescription").textContent = config.video.description;
     $("#speakerName").innerHTML = `${config.speaker.name.replace("Ing. ", "").split(" ").slice(0, 2).join(" ").toUpperCase()}<br><em>${config.speaker.name.replace("Ing. ", "").split(" ").slice(2).join(" ").toUpperCase()}</em>`;
     $("#speakerRole").textContent = config.speaker.role;
-    $("#speakerBio").innerHTML = config.speaker.bio.map(paragraph => `<p>${paragraph}</p>`).join("");
+    $("#speakerBrief").textContent = config.speaker.bio[0] || "";
+    $("#speakerBio").innerHTML = config.speaker.bio.slice(1).map(paragraph => `<p>${paragraph}</p>`).join("");
     $("#speakerPhoto").src = config.speaker.photo;
     $("#speakerPhoto").alt = config.speaker.name;
     const disclaimer = $("#speakerDisclaimer");
@@ -135,6 +148,9 @@
     $("#mobilePrice").textContent = `$${money(config.course.price)}`;
     $("#contactLocation").textContent = config.contact.location;
     $("#venueNote").textContent = config.contact.venueNote;
+    $("#certificateTitle").innerHTML = "CERTIFICADO DIGITAL<br><em>CON FOLIO VERIFICABLE.</em>";
+    $("#certificateDescription").textContent = config.certificate.description;
+    $("#certificateFeatures").innerHTML = config.certificate.features.map(item => `<li>${item}</li>`).join("");
 
     $("#valueRows").innerHTML = config.valuePillars.map((item, index) => `
       <article class="value-row reveal" data-delay="${Math.min(index, 3)}">
@@ -150,7 +166,7 @@
         <button class="program-trigger" type="button" aria-expanded="${index === 0}" aria-controls="module-${index}">
           <span class="program-number">${item.number}</span>
           <span class="program-time">${item.duration}</span>
-          <span class="program-title">${item.title}</span>
+          <span class="program-title"><strong>${item.title}</strong><small>${item.summary}</small></span>
           <span class="program-plus" aria-hidden="true">+</span>
         </button>
         <div class="program-panel" id="module-${index}" aria-hidden="${index !== 0}">
@@ -163,17 +179,21 @@
     const firstModule = $(".program-item");
     if (firstModule) firstModule.classList.add("open");
 
-    $("#outcomeTrack").innerHTML = config.outcomes.map((item, index) => `
-      <article class="outcome-card reveal" data-delay="${index % 3}">
-        <span class="index">0${index + 1}</span>
-        <div><h3>${item[0]}</h3><p>${item[1]}</p></div>
-      </article>`).join("");
-
-    $("#audienceGrid").innerHTML = config.course.audience.map((item, index) => `
-      <article class="audience-card reveal" data-delay="${index}">
-        <span>0${index + 1}</span>
-        <div><h3>${item}</h3><p>${audienceCopy(item)}</p></div>
-      </article>`).join("");
+    const testimonialsSection = $("#testimonials");
+    const testimonials = Array.isArray(config.testimonials) ? config.testimonials : [];
+    testimonialsSection.hidden = testimonials.length === 0;
+    if (testimonials.length) {
+      $("#testimonialTrack").innerHTML = testimonials.map(item => `
+        <figure class="testimonial-card">
+          <blockquote>${item.quote}</blockquote>
+          <figcaption><strong>${item.name}</strong><span>${item.role || ""}</span></figcaption>
+        </figure>`).join("");
+      const track = $("#testimonialTrack");
+      const move = direction => track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .76), behavior: "smooth" });
+      $("#testimonialPrevious").addEventListener("click", () => move(-1));
+      $("#testimonialNext").addEventListener("click", () => move(1));
+      $(".testimonial-controls").hidden = testimonials.length < 2;
+    }
 
     $("#faqList").innerHTML = config.faq.map((item, index) => `
       <article class="faq-item reveal">
@@ -252,6 +272,45 @@
       Directivos: "Criterio para priorizar recursos, riesgos e impacto."
     };
     return copy[label] || "Aplicación empresarial con criterio.";
+  }
+
+  function setupCountdown() {
+    const countdown = window.IMDIIL_COUNTDOWN;
+    const section = $(".hero-countdown");
+    const title = $("#countdownTitle");
+    const status = $("#countdownStatus");
+    const fields = {
+      days: $("#countdownDays"),
+      hours: $("#countdownHours"),
+      minutes: $("#countdownMinutes"),
+      seconds: $("#countdownSeconds")
+    };
+    if (!countdown?.remainingUntil || !section || Object.values(fields).some(field => !field)) return;
+
+    let timer = null;
+    let available = true;
+    const render = () => {
+      try {
+        const remaining = countdown.remainingUntil(config.course.startDate, Date.now());
+        fields.days.textContent = String(remaining.days).padStart(3, "0");
+        fields.hours.textContent = String(remaining.hours).padStart(2, "0");
+        fields.minutes.textContent = String(remaining.minutes).padStart(2, "0");
+        fields.seconds.textContent = String(remaining.seconds).padStart(2, "0");
+        if (remaining.started) {
+          section.classList.add("has-started");
+          title.textContent = "El evento ha comenzado";
+          status.textContent = "El evento ha comenzado";
+          if (timer) clearInterval(timer);
+        }
+      } catch {
+        available = false;
+        section.hidden = true;
+        if (timer) clearInterval(timer);
+      }
+    };
+
+    render();
+    if (available && !section.classList.contains("has-started")) timer = setInterval(render, 1000);
   }
 
   function setupAccordions() {
@@ -397,10 +456,18 @@
   function setupMobileCheckoutCta() {
     const cta = $(".mobile-cta");
     const enrollment = $("#inscripcion");
-    if (!cta || !enrollment || !("IntersectionObserver" in window)) return;
+    const hero = $(".hero");
+    if (!cta || !hero || !enrollment || !("IntersectionObserver" in window)) return;
+    const visibleSections = new Set();
+    cta.classList.add("is-context-hidden");
     const observer = new IntersectionObserver(entries => {
-      cta.classList.toggle("is-context-hidden", entries.some(entry => entry.isIntersecting));
+      entries.forEach(entry => {
+        if (entry.isIntersecting) visibleSections.add(entry.target);
+        else visibleSections.delete(entry.target);
+      });
+      cta.classList.toggle("is-context-hidden", visibleSections.size > 0);
     }, { threshold: 0.04 });
+    observer.observe(hero);
     observer.observe(enrollment);
   }
 
@@ -902,6 +969,7 @@
   }
 
   applyContent();
+  setupCountdown();
   setupAccordions();
   setupNavigation();
   setupMotion();
