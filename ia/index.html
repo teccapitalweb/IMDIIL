@@ -30,11 +30,29 @@
   <a class="skip-link" href="#main">Saltar al contenido</a>
   <div class="scroll-progress" aria-hidden="true"><span id="scrollProgress"></span></div>
 
-  <div class="review-bar" role="status">
-    <span class="status-dot" aria-hidden="true"></span>
-    <strong id="reviewLabel">Información oficial actualizada</strong>
-    <span id="reviewNote">Inscripción en preparación · Stripe permanece desactivado.</span>
-  </div>
+  <section class="review-bar" aria-label="Inscripción y cuenta regresiva">
+    <div class="review-status" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="review-status-copy">
+        <strong id="reviewLabel">Información oficial actualizada</strong>
+        <span id="reviewNote">Inscripción en preparación · Stripe permanece desactivado.</span>
+      </span>
+    </div>
+    <div class="hero-countdown review-countdown" aria-labelledby="countdownTitle">
+      <strong class="review-countdown-label" id="countdownTitle">El curso comienza en</strong>
+      <div class="countdown-units" aria-label="Tiempo restante para el curso">
+        <span><strong id="countdownDays">000</strong><small>Días</small></span>
+        <i aria-hidden="true">:</i>
+        <span><strong id="countdownHours">00</strong><small>Horas</small></span>
+        <i aria-hidden="true">:</i>
+        <span><strong id="countdownMinutes">00</strong><small>Min</small></span>
+        <i aria-hidden="true">:</i>
+        <span><strong id="countdownSeconds">00</strong><small>Seg</small></span>
+      </div>
+      <p class="countdown-status" id="countdownStatus" role="status" aria-live="polite"></p>
+    </div>
+    <button class="review-cta checkout-trigger" type="button">Reservar mi lugar <span aria-hidden="true">→</span></button>
+  </section>
 
   <header class="site-header" id="inicio">
     <a class="brand" href="#inicio" aria-label="IMDIIL, inicio">
@@ -57,7 +75,10 @@
     <section class="hero section-dark" aria-labelledby="heroTitle">
       <div class="hero-copy reveal">
         <p class="eyebrow" id="heroEyebrow">IMDIIL · CAPACITACIÓN EMPRESARIAL</p>
-        <h1 id="heroTitle"><span class="hero-solid">IA</span><span class="hero-outline">PARA</span><span class="hero-accent">EMPRESARIOS</span></h1>
+        <h1 id="heroTitle">
+          <span class="hero-solid">IA</span>
+          <span class="hero-title-row"><span class="hero-connector">PARA</span><span class="hero-accent">EMPRESARIOS</span></span>
+        </h1>
         <p class="hero-tagline" id="heroTagline">Cómo aumentar ventas, reducir costos y automatizar tu negocio con IA.</p>
         <p class="hero-speaker-line"><span>Imparte</span><strong id="heroSpeakerName">Ing. Ricardo Olmos Rivera</strong></p>
         <dl class="hero-mobile-summary" aria-label="Fecha, horario y modalidad del curso">
@@ -93,22 +114,6 @@
         <div class="hero-investment"><span>Inversión por persona</span><strong id="metaPrice">$1,199 MXN</strong></div>
       </aside>
 
-      <div class="hero-countdown reveal" data-delay="3" aria-labelledby="countdownTitle">
-        <div class="countdown-copy">
-          <span id="countdownDate">26 NOVIEMBRE 2026 · 09:00 H</span>
-          <strong id="countdownTitle">Tu lugar se acerca</strong>
-        </div>
-        <div class="countdown-units" aria-label="Tiempo restante para el curso">
-          <span><strong id="countdownDays">000</strong><small>Días</small></span>
-          <i aria-hidden="true">:</i>
-          <span><strong id="countdownHours">00</strong><small>Horas</small></span>
-          <i aria-hidden="true">:</i>
-          <span><strong id="countdownMinutes">00</strong><small>Minutos</small></span>
-          <i aria-hidden="true">:</i>
-          <span><strong id="countdownSeconds">00</strong><small>Segundos</small></span>
-        </div>
-        <p class="countdown-status" id="countdownStatus" role="status" aria-live="polite"></p>
-      </div>
     </section>
 
     <div class="marquee" aria-label="Conceptos del curso">
@@ -117,12 +122,12 @@
       </div>
     </div>
 
-    <section class="video-section section-light" id="experiencia" aria-labelledby="videoTitle" hidden>
+    <section class="video-section section-light" id="experiencia" aria-labelledby="videoTitle">
       <div class="section-kicker reveal"><span>VIDEO</span><p>PIEZA PROMOCIONAL</p></div>
       <div class="video-intro reveal">
-        <h2 id="videoTitle">IA APLICADA<br><em>A EMPRESAS.</em></h2>
+        <h2 id="videoTitle">VIDEO<br><em>PROMOCIONAL.</em></h2>
         <div>
-          <p class="lead">Conoce el enfoque práctico del curso en la pieza oficial.</p>
+          <p class="lead">Este espacio está preparado para presentar la pieza oficial del curso.</p>
         </div>
       </div>
       <div class="video-frame reveal" data-delay="1">
@@ -130,10 +135,10 @@
           <span class="video-noise" aria-hidden="true"></span>
           <span class="video-word" aria-hidden="true">IMDIIL / IA</span>
           <span class="play-button" aria-hidden="true"><i></i></span>
-          <span class="video-state" id="videoState">Video promocional en preparación</span>
+          <span class="video-state" id="videoState">Video promocional · próximamente</span>
           <span class="video-corner">00:00 / PRÓXIMAMENTE</span>
         </button>
-        <p id="videoDescription">El video promocional todavía no está disponible. El reproductor está preparado para integrar la fuente oficial.</p>
+        <p id="videoDescription">El video se integrará aquí cuando la pieza oficial esté lista.</p>
       </div>
     </section>
 
@@ -276,13 +281,16 @@
                 <span>Correo electrónico</span>
                 <input id="buyerEmail" name="buyerEmail" type="email" autocomplete="email" maxlength="180" required>
               </label>
-              <label class="form-field">
-                <span>Teléfono <small>opcional</small></span>
-                <input id="buyerPhone" name="buyerPhone" type="tel" autocomplete="tel" maxlength="40">
-              </label>
+              <details class="optional-contact">
+                <summary>Agregar teléfono <small>opcional</small><i aria-hidden="true"></i></summary>
+                <label class="form-field">
+                  <span>Teléfono</span>
+                  <input id="buyerPhone" name="buyerPhone" type="tel" autocomplete="tel" maxlength="40">
+                </label>
+              </details>
               <label class="buyer-attends form-field-wide">
                 <input id="buyerAttends" name="buyerAttends" type="checkbox" checked>
-                <span><strong>Yo también asistiré</strong>Usaremos tus datos para el primer lugar. Los demás asistentes se completan después del pago.</span>
+                <span><strong>Yo también asistiré</strong><small>Usaremos estos datos para el primer lugar.</small></span>
               </label>
             </fieldset>
 
@@ -290,7 +298,7 @@
               <span id="checkoutSubmitText">Pago en preparación</span><span aria-hidden="true">↗</span>
             </button>
             <p class="checkout-notice" id="checkoutNotice" role="status">Estamos verificando la disponibilidad del sistema de inscripción.</p>
-            <p class="privacy-note">No almacenamos datos de tarjeta. El importe definitivo y la disponibilidad se validan en el servidor antes de mostrar el formulario de Stripe.</p>
+            <p class="privacy-note">Pago cifrado por Stripe. IMDIIL no almacena datos de tarjeta.</p>
           </form>
 
           <section class="payment-element-panel" id="paymentElementPanel" aria-labelledby="paymentElementTitle" hidden>

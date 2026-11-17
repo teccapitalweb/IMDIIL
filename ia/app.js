@@ -140,19 +140,26 @@
     $("#heroMobileSchedule").textContent = config.course.schedule.replace(" — ", " a ");
     $("#heroMobileModality").textContent = `Presencial en ${config.course.city}`;
     const eventStart = new Date(config.course.startDate);
-    if (Number.isFinite(eventStart.getTime())) {
+    const countdownDate = $("#countdownDate");
+    if (countdownDate && Number.isFinite(eventStart.getTime())) {
       const datePart = new Intl.DateTimeFormat("es-MX", {
         day: "2-digit", month: "long", year: "numeric", timeZone: config.course.timeZone
       }).format(eventStart).toUpperCase();
       const timePart = new Intl.DateTimeFormat("es-MX", {
         hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: config.course.timeZone
       }).format(eventStart);
-      $("#countdownDate").textContent = `${datePart} · ${timePart} H`;
+      countdownDate.textContent = `${datePart} · ${timePart} H`;
     }
 
     $("#videoState").textContent = config.video.status;
     $("#videoDescription").textContent = config.video.description;
-    $("#experiencia").hidden = !config.video.source;
+    const videoSection = $("#experiencia");
+    videoSection.hidden = false;
+    videoSection.dataset.videoState = config.video.source ? "ready" : "placeholder";
+    $("#videoButton").setAttribute(
+      "aria-label",
+      config.video.source ? config.video.title : `${config.video.status}. ${config.video.description}`
+    );
     $("#speakerName").textContent = config.speaker.name.toUpperCase();
     $("#speakerRole").textContent = config.speaker.role;
     $("#speakerBrief").textContent = config.speaker.summary || config.speaker.bio[0] || "";
@@ -802,7 +809,7 @@
     setCheckoutLoading(false);
 
     $$(".checkout-trigger").forEach(button => button.addEventListener("click", () => {
-      $("#inscripcion").scrollIntoView({ behavior: "smooth", block: "start" });
+      $("#purchasePanel").scrollIntoView({ behavior: "smooth", block: "start" });
       setTimeout(() => quantity.focus({ preventScroll: true }), 650);
       if (!checkoutRuntime.enabled) showToast(config.checkout.notice, "Inscripción preparada");
     }));

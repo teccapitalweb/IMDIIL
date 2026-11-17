@@ -7,10 +7,12 @@ const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
 
 test("el hero conserva el mensaje principal y elimina el párrafo redundante", () => {
-  assert.match(html, /IA[\s\S]*PARA[\s\S]*EMPRESARIOS/);
+  assert.match(html, /class="hero-solid">IA[\s\S]*class="hero-title-row"[\s\S]*class="hero-connector">PARA[\s\S]*class="hero-accent">EMPRESARIOS/);
   assert.match(html, /Cómo aumentar ventas, reducir costos y automatizar tu negocio con IA\./);
   assert.doesNotMatch(html, /id="heroDescription"/);
   assert.doesNotMatch(app, /\$\("#heroDescription"\)/);
+  assert.match(css, /\.hero h1 \.hero-connector[\s\S]*font-size: \.16em/);
+  assert.match(css, /\.hero h1 \.hero-accent[\s\S]*font-size: \.43em/);
 });
 
 test("móvil recibe fecha, horario y modalidad desde la configuración oficial", () => {
@@ -28,8 +30,8 @@ test("la composición móvil prioriza el retrato y compacta los datos", () => {
   assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.hero-portrait \{ order: 2;/);
   assert.match(css, /\.hero-mobile-summary \{ margin: 14px 0 0;[\s\S]*?display: grid;/);
   assert.match(css, /\.hero-facts \{ display: none;/);
-  assert.match(css, /\.hero-countdown \{ order: 3;[\s\S]*?display: grid;/);
-  assert.doesNotMatch(css, /\.hero-facts, \.hero-countdown \{ display: none;/);
+  assert.match(html, /<section class="review-bar"[\s\S]*class="review-cta checkout-trigger"/);
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*section\.review-bar[\s\S]*grid-template-rows: auto auto/);
 });
 
 test("la acción principal permanece completa y la secundaria reduce protagonismo", () => {

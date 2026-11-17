@@ -16,10 +16,13 @@ test("la estructura pública sintetiza títulos y elimina estados internos", () 
   assert.doesNotMatch(html, /NO SE TRATA DE USAR MÁS IA/);
 });
 
-test("el video pendiente conserva su integración sin ocupar espacio público", () => {
-  assert.match(html, /<section class="video-section[^>]+id="experiencia"[^>]+hidden>/);
+test("el video pendiente conserva un espacio público preparado", () => {
+  assert.match(html, /<section class="video-section[^>]+id="experiencia"/);
+  assert.doesNotMatch(html, /id="experiencia"[^>]+hidden/);
   assert.match(html, /id="videoButton"/);
-  assert.match(app, /#experiencia"\)\.hidden = !config\.video\.source/);
+  assert.match(html, /Video promocional · próximamente/i);
+  assert.match(app, /videoSection\.hidden = false/);
+  assert.match(app, /videoSection\.dataset\.videoState/);
   assert.match(config, /source:\s*null/);
 });
 
@@ -59,8 +62,13 @@ test("el carrusel queda listo en tres filas sin publicar testimonios ficticios",
   assert.doesNotMatch(config, /quote\s*:/);
 });
 
-test("contador móvil y contratos de compra permanecen disponibles", () => {
-  assert.match(css, /@media \(max-width: 760px\)[\s\S]*\.hero-countdown \{ order: 3;[\s\S]*display: grid/);
+test("contador superior y contratos de compra permanecen disponibles", () => {
+  assert.match(html, /<section class="review-bar"[\s\S]*class="hero-countdown review-countdown"[\s\S]*class="review-cta checkout-trigger"/);
+  assert.match(css, /section\.review-bar[\s\S]*grid-template-columns/);
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*section\.review-bar[\s\S]*\.review-cta/);
+  for (const id of ["countdownDays", "countdownHours", "countdownMinutes", "countdownSeconds", "countdownStatus"]) {
+    assert.equal((html.match(new RegExp(`id="${id}"`, "g")) || []).length, 1);
+  }
   for (const id of ["checkoutForm", "seatQuantity", "checkoutSubmit", "paymentElement", "paymentSubmit", "attendeesForm", "recoveryForm"]) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
