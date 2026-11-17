@@ -959,3 +959,14 @@ section.review-bar {
   .hero-actions .button-ghost { min-height: 26px; }
   .ticket ul { grid-template-columns: 1fr; gap: 5px; }
 }
+
+/* Inscripción: fecha, horario y ubicación en una sola línea */
+.enrollment-meta { flex-wrap: nowrap; }
+.enrollment-meta span { white-space: nowrap; }
+@media (max-width: 760px) {
+  .enrollment-meta { gap: 6px; }
+  .enrollment-meta span { flex: 0 1 auto; min-width: 0; padding: 9px 8px; font-size: clamp(7px, 2.3vw, 9px); letter-spacing: .04em; text-align: center; }
+}
+@media (max-width: 360px) {
+  .enrollment-meta span { padding: 9px 6px; font-size: 7px; letter-spacing: .02em; }
+}
