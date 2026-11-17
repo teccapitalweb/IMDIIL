@@ -106,7 +106,6 @@
     $("#brandName").textContent = config.brand.name;
     $("#heroEyebrow").textContent = config.course.eyebrow;
     $("#heroTagline").textContent = config.course.tagline;
-    $("#heroDescription").textContent = config.course.description;
     $("#heroSpeakerName").textContent = config.speaker.name;
     $("#heroSpeakerPhoto").src = config.speaker.photo;
     $("#heroSpeakerPhoto").alt = config.speaker.name;
@@ -116,6 +115,9 @@
     $("#metaLocation").textContent = config.course.city.toUpperCase();
     $("#metaDuration").textContent = config.course.duration.toUpperCase();
     $("#metaPrice").textContent = `$${money(config.course.price)} ${config.course.currency}`;
+    $("#heroMobileDate").textContent = config.course.dateLong;
+    $("#heroMobileSchedule").textContent = config.course.schedule.replace(" — ", " a ");
+    $("#heroMobileModality").textContent = `Presencial en ${config.course.city}`;
     const eventStart = new Date(config.course.startDate);
     if (Number.isFinite(eventStart.getTime())) {
       const datePart = new Intl.DateTimeFormat("es-MX", {

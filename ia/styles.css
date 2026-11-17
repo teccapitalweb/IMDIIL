@@ -483,6 +483,7 @@ h2 em { color: var(--orange); font-style: normal; }
 
 /* Refinamiento editorial IA para Empresarios */
 html { overflow-x: clip; }
+.hero-mobile-summary { display: none; }
 .hero {
   min-height: max(760px, 100svh);
   padding: 148px 3.5vw 24px;
@@ -641,23 +642,22 @@ section:not(.hero) { padding: clamp(72px, 7vw, 112px) 5vw; }
 }
 
 @media (max-width: 760px) {
-  .hero { padding: 132px 18px 24px; grid-template-columns: 1fr; grid-template-rows: auto; gap: 24px; }
-  .hero-copy { padding: 0; }
-  .hero h1 { font-size: clamp(60px, 21vw, 84px); }
-  .hero-tagline { margin-top: 24px; font-size: 19px; }
-  .hero-description { font-size: 13px; }
-  .hero-actions { display: grid; }
-  .hero-actions .button { width: 100%; }
-  .hero-portrait { height: auto; min-height: 0; aspect-ratio: 1141 / 1379; border-radius: 140px 140px 18px 18px; }
-  .hero-facts { grid-column: 1; padding: 18px; }
-  .hero-facts-list { display: grid; grid-template-columns: 1fr 1fr; }
-  .hero-facts-list div { padding: 11px 8px; border-right: 1px solid rgba(255,255,255,.11); }
-  .hero-facts-list div:nth-child(even) { border-right: 0; }
-  .hero-investment { padding: 16px 8px 0; }
-  .hero-countdown { grid-column: 1; padding: 16px 0; grid-template-columns: 1fr; gap: 13px; }
-  .countdown-units { justify-content: space-between; gap: 4px; }
-  .countdown-units > span { min-width: 48px; }
-  .countdown-units strong { font-size: clamp(24px, 8vw, 31px); }
+  .hero { padding: 108px 15px 20px; grid-template-columns: 1fr; grid-template-rows: auto; gap: 16px; }
+  .hero-copy { order: 1; padding: 0; }
+  .hero .eyebrow { margin-bottom: 14px; font-size: 9px; letter-spacing: .17em; }
+  .hero h1 { font-size: clamp(58px, 18vw, 72px); }
+  .hero-tagline { margin: 16px 0 6px; font-size: 18px; line-height: 1.2; }
+  .hero-speaker-line { margin-top: 12px; }
+  .hero-mobile-summary { margin: 14px 0 0; padding: 6px 0; display: grid; border-top: 1px solid rgba(255,255,255,.14); border-bottom: 1px solid rgba(255,255,255,.12); }
+  .hero-mobile-summary > div { min-height: 28px; padding: 4px 2px; display: grid; grid-template-columns: 70px 1fr; gap: 10px; align-items: center; }
+  .hero-mobile-summary dt { color: #8e8880; font-size: 8px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+  .hero-mobile-summary dd { margin: 0; color: #e3dfd9; font-size: 11px; font-weight: 700; line-height: 1.3; }
+  .hero-actions { margin-top: 14px; display: grid; gap: 8px; }
+  .hero-actions .button-primary { width: 100%; min-height: 48px; }
+  .hero-actions .button-ghost { width: max-content; min-height: 36px; padding: 5px 3px; justify-self: center; color: #aaa49c; background: transparent; border: 0; border-bottom: 1px solid rgba(255,255,255,.28); border-radius: 0; font-size: 9px; }
+  .hero-actions .button-ghost span { font-size: 13px; }
+  .hero-portrait { order: 2; height: auto; min-height: 0; aspect-ratio: 1141 / 1379; border-radius: 140px 140px 18px 18px; }
+  .hero-facts, .hero-countdown { display: none; }
   section:not(.hero) { padding: 64px 18px; }
   .video-intro h2, .manifesto h2, .program-heading h2, .speaker-copy h2, .certificate h2, .faq-heading h2, .closing h2 { font-size: clamp(39px, 11vw, 56px); }
   .video-poster { aspect-ratio: 4 / 3; }
@@ -694,12 +694,7 @@ section:not(.hero) { padding: clamp(72px, 7vw, 112px) 5vw; }
 
 @media (max-width: 390px) {
   .hero { padding-inline: 15px; }
-  .hero h1 { font-size: 19vw; }
-  .hero-facts-list { grid-template-columns: 1fr; }
-  .hero-facts-list div { border-right: 0; }
-  .countdown-units > span { min-width: 43px; }
-  .countdown-units strong { font-size: 23px; }
-  .countdown-units i { font-size: 15px; }
+  .hero h1 { font-size: 18vw; }
   .speaker-stats strong { font-size: 34px; }
 }
 
