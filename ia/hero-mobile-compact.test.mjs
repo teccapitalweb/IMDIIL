@@ -27,7 +27,9 @@ test("la composición móvil prioriza el retrato y compacta los datos", () => {
   assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.hero-copy \{ order: 1;/);
   assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.hero-portrait \{ order: 2;/);
   assert.match(css, /\.hero-mobile-summary \{ margin: 14px 0 0;[\s\S]*?display: grid;/);
-  assert.match(css, /\.hero-facts, \.hero-countdown \{ display: none;/);
+  assert.match(css, /\.hero-facts \{ display: none;/);
+  assert.match(css, /\.hero-countdown \{ order: 3;[\s\S]*?display: grid;/);
+  assert.doesNotMatch(css, /\.hero-facts, \.hero-countdown \{ display: none;/);
 });
 
 test("la acción principal permanece completa y la secundaria reduce protagonismo", () => {

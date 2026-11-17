@@ -45,7 +45,7 @@
       <span>Menú</span><i aria-hidden="true"></i>
     </button>
     <nav class="site-nav" id="siteNav" aria-label="Navegación principal">
-      <a href="#experiencia">Experiencia</a>
+      <a href="#beneficios">Beneficios</a>
       <a href="#programa">Programa</a>
       <a href="#ponente">Ponente</a>
       <a href="#preguntas">Preguntas</a>
@@ -74,7 +74,10 @@
       <figure class="hero-portrait reveal" data-delay="1">
         <span class="hero-portrait-index" aria-hidden="true">PONENTE / 01</span>
         <span class="hero-portrait-word" aria-hidden="true">IA</span>
-        <img id="heroSpeakerPhoto" src="./assets/ricardo-olmos-rivera.png" alt="Ing. Ricardo Olmos Rivera" width="1141" height="1379" loading="eager" decoding="async" fetchpriority="high">
+        <picture>
+          <source srcset="./assets/ricardo-olmos-rivera.webp" type="image/webp">
+          <img id="heroSpeakerPhoto" src="./assets/ricardo-olmos-rivera.png" alt="Ing. Ricardo Olmos Rivera" width="1141" height="1379" loading="eager" decoding="async" fetchpriority="high">
+        </picture>
         <figcaption><strong>Ing. Ricardo Olmos Rivera</strong><span>Empresario y CEO de Teccapital Web</span></figcaption>
       </figure>
 
@@ -114,13 +117,12 @@
       </div>
     </div>
 
-    <section class="video-section section-light" id="experiencia" aria-labelledby="videoTitle">
-      <div class="section-kicker reveal"><span>01</span><p>LA EXPERIENCIA</p></div>
+    <section class="video-section section-light" id="experiencia" aria-labelledby="videoTitle" hidden>
+      <div class="section-kicker reveal"><span>VIDEO</span><p>PIEZA PROMOCIONAL</p></div>
       <div class="video-intro reveal">
-        <h2 id="videoTitle">MÍRALO.<br><em>APLICADO.</em></h2>
+        <h2 id="videoTitle">IA APLICADA<br><em>A EMPRESAS.</em></h2>
         <div>
-          <p class="lead">Una pieza pensada para mostrar cómo la IA deja de ser una conversación abstracta y se convierte en decisiones, flujos y soluciones empresariales.</p>
-          <span class="provisional-pill">VIDEO OFICIAL · PENDIENTE</span>
+          <p class="lead">Conoce el enfoque práctico del curso en la pieza oficial.</p>
         </div>
       </div>
       <div class="video-frame reveal" data-delay="1">
@@ -135,22 +137,21 @@
       </div>
     </section>
 
-    <section class="manifesto benefits-section section-dark" aria-labelledby="manifestoTitle">
-      <div class="section-kicker reveal"><span>02</span><p>RESULTADOS PARA TU EMPRESA</p></div>
+    <section class="manifesto benefits-section section-dark" id="beneficios" aria-labelledby="manifestoTitle">
+      <div class="section-kicker reveal"><span>01</span><p>LO QUE VAS A APLICAR</p></div>
       <div class="manifesto-grid">
-        <h2 class="reveal" id="manifestoTitle">MENOS TEORÍA.<br>MÁS <em>RESULTADOS.</em></h2>
-        <p class="reveal" data-delay="1">Cada bloque conecta una necesidad real del negocio con un ejercicio práctico y una decisión que podrás llevar a tu empresa.</p>
+        <h2 class="reveal" id="manifestoTitle">APLICA IA<br><em>EN TU EMPRESA.</em></h2>
+        <p class="reveal" data-delay="1">Ventas, automatización, control y dirección en seis módulos prácticos.</p>
       </div>
       <div class="value-rows" id="valueRows"></div>
     </section>
 
     <section class="program-section section-paper" id="programa" aria-labelledby="programTitle">
-      <div class="section-kicker reveal"><span>03</span><p>PROGRAMA OFICIAL</p></div>
+      <div class="section-kicker reveal"><span>02</span><p>PROGRAMA OFICIAL</p></div>
       <div class="program-heading reveal">
-        <h2 id="programTitle">SEIS MÓDULOS.<br><em>UN PLAN DE ACCIÓN.</em></h2>
+        <h2 id="programTitle">PROGRAMA EN<br><em>6 MÓDULOS.</em></h2>
         <div>
-          <p>Seis horas efectivas para aplicar IA en ventas, operaciones, control, equipos y automatización.</p>
-          <span class="provisional-pill dark">TEMARIO OFICIAL · 6 EJERCICIOS PRÁCTICOS</span>
+          <p>Consulta cada módulo y abre solamente el contenido que quieras revisar.</p>
         </div>
       </div>
       <div class="program-layout">
@@ -162,11 +163,11 @@
     </section>
 
     <section class="certificate section-dark" aria-labelledby="certificateTitle">
-      <div class="section-kicker reveal"><span>04</span><p>CERTIFICADO DIGITAL</p></div>
+      <div class="section-kicker reveal"><span>03</span><p>CERTIFICADO DIGITAL</p></div>
       <div class="certificate-layout">
         <div class="certificate-copy reveal">
           <span class="provisional-pill">INCLUIDO EN TU PASE</span>
-          <h2 id="certificateTitle">TU APRENDIZAJE.<br><em>CON RESPALDO.</em></h2>
+          <h2 id="certificateTitle">CERTIFICADO<br><em>INCLUIDO.</em></h2>
           <p id="certificateDescription">Al concluir el curso recibirás un certificado digital emitido por IMDIIL, con un folio individual para validar su autenticidad.</p>
           <ul id="certificateFeatures"></ul>
         </div>
@@ -183,58 +184,54 @@
       </div>
     </section>
 
-    <section class="speaker section-paper" id="ponente" aria-labelledby="speakerName">
-      <div class="section-kicker reveal"><span>05</span><p>EL PONENTE</p></div>
-      <div class="speaker-layout">
-        <figure class="speaker-portrait reveal">
-          <div class="portrait-grid" aria-hidden="true"></div>
-          <span class="speaker-watermark" aria-hidden="true">RICARDO<br>OLMOS</span>
-          <img id="speakerPhoto" src="./assets/ricardo-olmos-rivera.png" alt="Ing. Ricardo Olmos Rivera" width="1141" height="1379" loading="lazy" decoding="async">
-          <figcaption>ING. RICARDO OLMOS RIVERA · PONENTE</figcaption>
-        </figure>
-        <div class="speaker-copy reveal" data-delay="1">
+    <section class="speaker speaker-compact section-paper" id="ponente" aria-labelledby="speakerName">
+      <div class="section-kicker reveal"><span>04</span><p>EL PONENTE</p></div>
+      <article class="speaker-card reveal">
+        <div class="speaker-card-intro">
           <span class="provisional-pill dark">SEMBLANZA OFICIAL</span>
-          <h2 id="speakerName">ING. RICARDO<br><em>OLMOS RIVERA</em></h2>
+          <h2 id="speakerName">ING. RICARDO OLMOS RIVERA</h2>
           <p class="speaker-role" id="speakerRole">Empresario y CEO de Teccapital Web</p>
           <p class="speaker-brief" id="speakerBrief"></p>
-          <div class="speaker-stats" aria-label="Experiencia del ponente">
-            <div><strong>5+</strong><span>años en tecnología</span></div>
-            <div><strong>15+</strong><span>soluciones de software</span></div>
-            <div><strong>100+</strong><span>empresas capacitadas</span></div>
-          </div>
-          <details class="speaker-biography">
-            <summary>Conoce su trayectoria <span aria-hidden="true">+</span></summary>
-            <div id="speakerBio"></div>
-          </details>
-          <p class="disclaimer" id="speakerDisclaimer" hidden></p>
         </div>
-      </div>
+        <details class="speaker-biography">
+          <summary><span>Conoce su trayectoria</span><i aria-hidden="true"></i></summary>
+          <div class="speaker-biography-content">
+            <div class="speaker-stats" aria-label="Experiencia del ponente">
+              <div><strong>5+</strong><span>años en tecnología</span></div>
+              <div><strong>15+</strong><span>soluciones de software</span></div>
+              <div><strong>100+</strong><span>empresas capacitadas</span></div>
+            </div>
+            <div id="speakerBio"></div>
+          </div>
+        </details>
+        <p class="disclaimer" id="speakerDisclaimer" hidden></p>
+      </article>
     </section>
 
     <section class="testimonials section-light" id="testimonials" aria-labelledby="testimonialsTitle" hidden>
-      <div class="section-kicker"><span>06</span><p>OPINIONES</p></div>
+      <div class="section-kicker"><span>05</span><p>OPINIONES VERIFICADAS</p></div>
       <div class="testimonials-heading">
-        <h2 id="testimonialsTitle">EXPERIENCIAS<br><em>REALES.</em></h2>
-        <div class="testimonial-controls" aria-label="Controles de opiniones">
-          <button id="testimonialPrevious" type="button" aria-controls="testimonialTrack" aria-label="Opinión anterior">←</button>
-          <button id="testimonialNext" type="button" aria-controls="testimonialTrack" aria-label="Opinión siguiente">→</button>
-        </div>
+        <h2 id="testimonialsTitle">LO QUE DICEN<br><em>LOS PARTICIPANTES.</em></h2>
+        <button class="testimonial-pause" id="testimonialPause" type="button" aria-pressed="false">Pausar movimiento</button>
       </div>
-      <div class="testimonial-track" id="testimonialTrack" role="region" aria-label="Opiniones de asistentes" tabindex="0"></div>
+      <div class="testimonial-rows" id="testimonialRows" role="region" aria-label="Opiniones de participantes">
+        <div class="testimonial-row" id="testimonialRowA" data-direction="left" tabindex="0"></div>
+        <div class="testimonial-row" id="testimonialRowB" data-direction="right" tabindex="0"></div>
+        <div class="testimonial-row" id="testimonialRowC" data-direction="left" tabindex="0"></div>
+      </div>
     </section>
 
     <section class="enrollment" id="inscripcion" aria-labelledby="enrollmentTitle">
       <div class="enrollment-copy reveal">
-        <div class="section-kicker inverse"><span>06</span><p>INSCRIPCIÓN</p></div>
-        <h2 id="enrollmentTitle">LLEVA LA IA<br><em>A TU NEGOCIO.</em></h2>
-        <p>Una sesión intensiva y presencial para convertir oportunidades en un plan empresarial de implementación.</p>
+        <div class="section-kicker inverse"><span id="enrollmentSectionNumber">05</span><p>INSCRIPCIÓN</p></div>
+        <h2 id="enrollmentTitle">RESERVA<br><em>TU LUGAR.</em></h2>
+        <p>Adquiere de uno a cinco lugares en una sola transacción segura.</p>
         <div class="enrollment-meta">
           <span id="enrollDate">26 NOV 2026</span><span id="enrollTime">9:00 A. M. — 4:00 P. M.</span><span id="enrollLocation">TEHUACÁN, PUEBLA</span>
         </div>
       </div>
       <div class="ticket reveal" data-delay="1">
         <span class="ticket-label">PASE GENERAL — IA PARA EMPRESARIOS</span>
-        <h3>INTELIGENCIA ARTIFICIAL<br>PARA EMPRESARIOS</h3>
         <div class="ticket-price"><sup>$</sup><strong id="ticketPrice">1,199</strong><span>MXN</span></div>
         <ul id="ticketBenefits">
           <li>Acceso presencial al curso</li>
@@ -366,24 +363,22 @@
     </section>
 
     <section class="faq-section section-light" id="preguntas" aria-labelledby="faqTitle">
-      <div class="section-kicker reveal"><span>07</span><p>PREGUNTAS FRECUENTES</p></div>
+      <div class="section-kicker reveal"><span id="faqSectionNumber">06</span><p>ANTES DE RESERVAR</p></div>
       <div class="faq-heading reveal">
-        <h2 id="faqTitle">TODO CLARO.<br><em>ANTES DE ASISTIR.</em></h2>
-        <p>Consulta aquí los datos esenciales del curso, la modalidad y lo que necesitas llevar.</p>
+        <h2 id="faqTitle">PREGUNTAS<br><em>FRECUENTES.</em></h2>
+        <p>Fecha, sede, pase y requisitos del curso.</p>
       </div>
       <div class="faq-layout">
         <div class="faq-list" id="faqList"></div>
-        <aside class="pending-panel reveal">
-          <span class="pending-title">PENDIENTE DE CONFIRMACIÓN</span>
-          <ul id="pendingList"></ul>
-        </aside>
       </div>
     </section>
 
     <section class="closing section-dark" aria-labelledby="closingTitle">
-      <div class="closing-mark" aria-hidden="true">IA</div>
-      <p class="eyebrow reveal">IMDIIL · TEHUACÁN · 2026</p>
-      <h2 class="reveal" id="closingTitle">NO SE TRATA DE USAR MÁS IA.<br><em>SE TRATA DE USARLA MEJOR.</em></h2>
+      <div class="closing-copy reveal">
+        <p class="eyebrow">IMDIIL · TEHUACÁN · 2026</p>
+        <h2 id="closingTitle">IA PARA EMPRESARIOS</h2>
+        <p>26 de noviembre · 9:00 a. m. · Presencial</p>
+      </div>
       <button class="button button-primary checkout-trigger reveal" type="button">Inscribirme ahora <span aria-hidden="true">↗</span></button>
     </section>
   </main>
@@ -396,6 +391,7 @@
     <div class="footer-links">
       <span id="contactLocation">Tehuacán, Puebla</span>
       <span id="venueNote">Recinto exacto después de confirmar el pase</span>
+      <a id="contactEmail" href="mailto:imdiilmx@gmail.com">imdiilmx@gmail.com</a>
     </div>
     <a href="#inicio">Volver arriba ↑</a>
   </footer>
