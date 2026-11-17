@@ -20,16 +20,17 @@ function visibleText(fragment) {
     .trim();
 }
 
-test("la fotografía real autorizada aparece en el hero y en la sección del ponente", () => {
+test("la fotografía real autorizada aparece una sola vez en el hero", () => {
   assert.equal(config.speaker.photo, "./assets/ricardo-olmos-rivera.png");
   const photo = new URL(config.speaker.photo, import.meta.url);
   assert.equal(existsSync(photo), true);
   assert.ok(statSync(photo).size > 100_000, "la fotografía no debe sustituirse por un placeholder");
 
   assert.match(html, /<img[^>]+id="heroSpeakerPhoto"[^>]+src="\.\/assets\/ricardo-olmos-rivera\.png"[^>]*>/);
-  assert.match(html, /<img[^>]+id="speakerPhoto"[^>]+src="\.\/assets\/ricardo-olmos-rivera\.png"[^>]*>/);
+  assert.equal((html.match(/ricardo-olmos-rivera\.png/g) || []).length, 1);
+  assert.doesNotMatch(html, /id="speakerPhoto"/);
   assert.match(app, /#heroSpeakerPhoto[\s\S]*config\.speaker\.photo/);
-  assert.match(app, /#speakerPhoto[\s\S]*config\.speaker\.photo/);
+  assert.doesNotMatch(app, /#speakerPhoto/);
 });
 
 test("la cuenta regresiva parte de un instante absoluto del evento", () => {
@@ -49,7 +50,7 @@ test("la propuesta comercial se resume en cuatro beneficios confirmados", () => 
   assert.equal(config.valuePillars.length, 4);
   assert.deepEqual(
     config.valuePillars.map(item => item.label),
-    ["Vende más", "Ahorra tiempo", "Controla tu negocio", "Implementa IA"]
+    ["Ventas", "Ahorra tiempo", "Controla tu negocio", "Implementa IA"]
   );
   for (const item of config.valuePillars) {
     assert.ok(item.title.length > 10);
@@ -102,7 +103,7 @@ test("el certificado se destaca sin inventar un folio, QR o verificador activo",
   assert.match(config.certificate.description, /folio individual/i);
   assert.equal(config.certificate.verificationUrl, null);
   assert.match(html, /id="certificateTitle"/);
-  assert.match(app, /CERTIFICADO DIGITAL<br><em>CON FOLIO VERIFICABLE\.<\/em>/);
+  assert.match(app, /CERTIFICADO<br><em>INCLUIDO\.<\/em>/);
 
   const certificateCopy = `${html}\n${JSON.stringify(config.certificate)}`;
   assert.doesNotMatch(certificateCopy, /\bIPCIL\b|c[oó]digo\s+QR|\bQR\b/i);
@@ -113,16 +114,21 @@ test("los testimonios permanecen vacíos y la sección no se publica", () => {
   assert.deepEqual(config.testimonials, []);
   assert.match(html, /<section[^>]+id="testimonials"[^>]+hidden>/);
   assert.match(app, /testimonialsSection\.hidden\s*=\s*testimonials\.length\s*===\s*0/);
+  for (const id of ["testimonialRowA", "testimonialRowB", "testimonialRowC"]) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(app, /testimonial-marquee/);
+  assert.match(app, /aria-hidden="true"/);
   assert.doesNotMatch(siteConfigSource, /quote\s*:\s*["']/i);
 });
 
 test("la semblanza completa está detrás de un control desplegable", () => {
   assert.match(html, /<details class="speaker-biography">/);
-  assert.match(html, /<summary>Conoce su trayectoria[\s\S]*<\/summary>/);
+  assert.match(html, /<summary><span>Conoce su trayectoria<\/span>[\s\S]*<\/summary>/);
   assert.match(html, /id="speakerBrief"/);
   assert.match(html, /id="speakerBio"/);
-  assert.match(app, /config\.speaker\.bio\[0\]/);
-  assert.match(app, /config\.speaker\.bio\.slice\(1\)/);
+  assert.match(app, /config\.speaker\.summary/);
+  assert.match(app, /config\.speaker\.bio\.map/);
 });
 
 test("los CTA de marketing usan únicamente los tres textos aprobados", () => {

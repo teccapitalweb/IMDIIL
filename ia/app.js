@@ -11,6 +11,9 @@
       maximumFractionDigits: 2
     }).format(value);
   };
+  const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+  })[character]);
   const storageKeys = {
     request: "imdiil:ia:checkout-request",
     reservation: "imdiil:ia:reservation",
@@ -39,6 +42,24 @@
     set(key, value) { try { sessionStorage.setItem(key, value); } catch { /* private mode */ } },
     remove(key) { try { sessionStorage.removeItem(key); } catch { /* private mode */ } }
   };
+
+  function syncMobileCtaAccessibility() {
+    const cta = $(".mobile-cta");
+    if (!cta) return;
+    const hidden = document.body.classList.contains("menu-open")
+      || cta.classList.contains("is-context-hidden")
+      || cta.classList.contains("is-interaction-hidden");
+    cta.inert = hidden;
+    if (hidden) cta.setAttribute("aria-hidden", "true");
+    else cta.removeAttribute("aria-hidden");
+  }
+
+  function setMobileCtaState(className, hidden) {
+    const cta = $(".mobile-cta");
+    if (!cta) return;
+    cta.classList.toggle(className, hidden);
+    syncMobileCtaAccessibility();
+  }
 
   function randomToken() {
     if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
@@ -131,12 +152,11 @@
 
     $("#videoState").textContent = config.video.status;
     $("#videoDescription").textContent = config.video.description;
-    $("#speakerName").innerHTML = `${config.speaker.name.replace("Ing. ", "").split(" ").slice(0, 2).join(" ").toUpperCase()}<br><em>${config.speaker.name.replace("Ing. ", "").split(" ").slice(2).join(" ").toUpperCase()}</em>`;
+    $("#experiencia").hidden = !config.video.source;
+    $("#speakerName").textContent = config.speaker.name.toUpperCase();
     $("#speakerRole").textContent = config.speaker.role;
-    $("#speakerBrief").textContent = config.speaker.bio[0] || "";
-    $("#speakerBio").innerHTML = config.speaker.bio.slice(1).map(paragraph => `<p>${paragraph}</p>`).join("");
-    $("#speakerPhoto").src = config.speaker.photo;
-    $("#speakerPhoto").alt = config.speaker.name;
+    $("#speakerBrief").textContent = config.speaker.summary || config.speaker.bio[0] || "";
+    $("#speakerBio").innerHTML = config.speaker.bio.map(paragraph => `<p>${paragraph}</p>`).join("");
     const disclaimer = $("#speakerDisclaimer");
     disclaimer.textContent = config.speaker.disclaimer;
     disclaimer.hidden = !config.speaker.disclaimer;
@@ -150,7 +170,11 @@
     $("#mobilePrice").textContent = `$${money(config.course.price)}`;
     $("#contactLocation").textContent = config.contact.location;
     $("#venueNote").textContent = config.contact.venueNote;
-    $("#certificateTitle").innerHTML = "CERTIFICADO DIGITAL<br><em>CON FOLIO VERIFICABLE.</em>";
+    const contactEmail = $("#contactEmail");
+    contactEmail.textContent = config.contact.email || "";
+    contactEmail.href = config.contact.email ? `mailto:${config.contact.email}` : "#";
+    contactEmail.hidden = !config.contact.email;
+    $("#certificateTitle").innerHTML = "CERTIFICADO<br><em>INCLUIDO.</em>";
     $("#certificateDescription").textContent = config.certificate.description;
     $("#certificateFeatures").innerHTML = config.certificate.features.map(item => `<li>${item}</li>`).join("");
 
@@ -165,36 +189,42 @@
 
     $("#programList").innerHTML = config.modules.map((item, index) => `
       <article class="program-item reveal" data-delay="${Math.min(index, 3)}">
-        <button class="program-trigger" type="button" aria-expanded="${index === 0}" aria-controls="module-${index}">
+        <button class="program-trigger" type="button" aria-expanded="false" aria-controls="module-${index}">
           <span class="program-number">${item.number}</span>
           <span class="program-time">${item.duration}</span>
           <span class="program-title"><strong>${item.title}</strong><small>${item.summary}</small></span>
           <span class="program-plus" aria-hidden="true">+</span>
         </button>
-        <div class="program-panel" id="module-${index}" aria-hidden="${index !== 0}">
+        <div class="program-panel" id="module-${index}" aria-hidden="true">
           <div><div class="program-panel-content">
             <ol>${item.topics.map(topic => `<li>${topic}</li>`).join("")}</ol>
             <p class="program-objective"><strong>EJERCICIO PRÁCTICO</strong>${item.exercise}</p>
           </div></div>
         </div>
       </article>`).join("");
-    const firstModule = $(".program-item");
-    if (firstModule) firstModule.classList.add("open");
-
     const testimonialsSection = $("#testimonials");
     const testimonials = Array.isArray(config.testimonials) ? config.testimonials : [];
     testimonialsSection.hidden = testimonials.length === 0;
+    $("#enrollmentSectionNumber").textContent = testimonials.length ? "06" : "05";
+    $("#faqSectionNumber").textContent = testimonials.length ? "07" : "06";
     if (testimonials.length) {
-      $("#testimonialTrack").innerHTML = testimonials.map(item => `
+      const cardMarkup = items => items.map(item => `
         <figure class="testimonial-card">
-          <blockquote>${item.quote}</blockquote>
-          <figcaption><strong>${item.name}</strong><span>${item.role || ""}</span></figcaption>
+          <blockquote>${escapeHtml(item.quote)}</blockquote>
+          <figcaption><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.role || "")}</span></figcaption>
         </figure>`).join("");
-      const track = $("#testimonialTrack");
-      const move = direction => track.scrollBy({ left: direction * Math.max(280, track.clientWidth * .76), behavior: "smooth" });
-      $("#testimonialPrevious").addEventListener("click", () => move(-1));
-      $("#testimonialNext").addEventListener("click", () => move(1));
-      $(".testimonial-controls").hidden = testimonials.length < 2;
+      ["testimonialRowA", "testimonialRowB", "testimonialRowC"].forEach((id, rowIndex) => {
+        const ordered = testimonials.map((_, itemIndex) => testimonials[(itemIndex + rowIndex) % testimonials.length]);
+        const cards = cardMarkup(ordered);
+        $(`#${id}`).innerHTML = `<div class="testimonial-marquee"><div class="testimonial-group">${cards}</div><div class="testimonial-group" aria-hidden="true">${cards}</div></div>`;
+      });
+      const pauseButton = $("#testimonialPause");
+      pauseButton.addEventListener("click", () => {
+        const paused = !testimonialsSection.classList.contains("is-paused");
+        testimonialsSection.classList.toggle("is-paused", paused);
+        pauseButton.setAttribute("aria-pressed", String(paused));
+        pauseButton.textContent = paused ? "Reanudar movimiento" : "Pausar movimiento";
+      });
     }
 
     $("#faqList").innerHTML = config.faq.map((item, index) => `
@@ -204,8 +234,6 @@
         </button>
         <div class="faq-answer" id="faq-${index}" aria-hidden="true"><div><p>${item[1]}</p></div></div>
       </article>`).join("");
-    $("#pendingList").innerHTML = config.pending.map(item => `<li>${item}</li>`).join("");
-
     $("#structuredData").textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "EducationEvent",
@@ -300,6 +328,7 @@
         fields.seconds.textContent = String(remaining.seconds).padStart(2, "0");
         if (remaining.started) {
           section.classList.add("has-started");
+          $(".countdown-units", section)?.setAttribute("aria-hidden", "true");
           title.textContent = "El evento ha comenzado";
           status.textContent = "El evento ha comenzado";
           if (timer) clearInterval(timer);
@@ -316,6 +345,10 @@
   }
 
   function setupAccordions() {
+    const syncInteractionCta = () => {
+      const readingDetails = Boolean($(".program-item.open") || $(".speaker-biography[open]"));
+      setMobileCtaState("is-interaction-hidden", readingDetails);
+    };
     $$(".program-trigger").forEach(trigger => trigger.addEventListener("click", () => {
       const item = trigger.closest(".program-item");
       const willOpen = !item.classList.contains("open");
@@ -329,6 +362,7 @@
         trigger.setAttribute("aria-expanded", "true");
         $(".program-panel", item).setAttribute("aria-hidden", "false");
       }
+      syncInteractionCta();
     }));
     $$(".faq-trigger").forEach(trigger => trigger.addEventListener("click", () => {
       const item = trigger.closest(".faq-item");
@@ -336,29 +370,24 @@
       trigger.setAttribute("aria-expanded", String(open));
       $(".faq-answer", item).setAttribute("aria-hidden", String(!open));
     }));
+    $(".speaker-biography")?.addEventListener("toggle", syncInteractionCta);
   }
 
   function setupNavigation() {
     const toggle = $("#menuToggle");
     const nav = $("#siteNav");
-    const mobileCta = $(".mobile-cta");
-    const syncMobileCta = open => {
-      mobileCta.inert = open;
-      if (open) mobileCta.setAttribute("aria-hidden", "true");
-      else mobileCta.removeAttribute("aria-hidden");
-    };
     const close = () => {
       toggle.setAttribute("aria-expanded", "false");
       nav.classList.remove("open");
       document.body.classList.remove("menu-open");
-      syncMobileCta(false);
+      syncMobileCtaAccessibility();
     };
     toggle.addEventListener("click", () => {
       const open = toggle.getAttribute("aria-expanded") !== "true";
       toggle.setAttribute("aria-expanded", String(open));
       nav.classList.toggle("open", open);
       document.body.classList.toggle("menu-open", open);
-      syncMobileCta(open);
+      syncMobileCtaAccessibility();
     });
     $$("a", nav).forEach(link => link.addEventListener("click", close));
     document.addEventListener("keydown", event => { if (event.key === "Escape") close(); });
@@ -459,15 +488,16 @@
     const cta = $(".mobile-cta");
     const enrollment = $("#inscripcion");
     const hero = $(".hero");
-    if (!cta || !hero || !enrollment || !("IntersectionObserver" in window)) return;
+    if (!cta || !hero || !enrollment) return;
     const visibleSections = new Set();
-    cta.classList.add("is-context-hidden");
+    setMobileCtaState("is-context-hidden", true);
+    if (!("IntersectionObserver" in window)) return;
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) visibleSections.add(entry.target);
         else visibleSections.delete(entry.target);
       });
-      cta.classList.toggle("is-context-hidden", visibleSections.size > 0);
+      setMobileCtaState("is-context-hidden", visibleSections.size > 0);
     }, { threshold: 0.04 });
     observer.observe(hero);
     observer.observe(enrollment);

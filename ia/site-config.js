@@ -41,32 +41,32 @@ window.SITE_CONFIG = {
     source: null,
     title: "IA aplicada a decisiones empresariales",
     status: "Video promocional en preparación",
-    description: "Este espacio está preparado para integrar la pieza oficial cuando sea autorizada."
+    description: "La pieza oficial se mostrará aquí cuando sea autorizada."
   },
   valuePillars: [
     {
       number: "01",
-      label: "Vende más",
-      title: "Convierte información en mejores oportunidades comerciales",
-      body: "Fortalece propuestas, identifica objeciones y diseña estrategias para generar recompras."
+      label: "Ventas",
+      title: "Mejora propuestas y seguimiento",
+      body: "Detecta oportunidades, prepara ofertas y fortalece tus argumentos de venta."
     },
     {
       number: "02",
       label: "Ahorra tiempo",
-      title: "Automatiza tareas que hoy consumen recursos",
-      body: "Agiliza cotizaciones, reportes, correos y documentos con flujos sencillos de trabajo."
+      title: "Automatiza tareas repetitivas",
+      body: "Agiliza cotizaciones, correos, reportes y documentos."
     },
     {
       number: "03",
       label: "Controla tu negocio",
-      title: "Lee tus números y detecta fugas con mayor claridad",
-      body: "Analiza ventas, costos, márgenes e indicadores para tomar decisiones con información útil."
+      title: "Controla costos y márgenes",
+      body: "Analiza ventas, gastos e indicadores para detectar fugas."
     },
     {
       number: "04",
       label: "Implementa IA",
-      title: "Pasa de la idea a un proceso concreto",
-      body: "Configura asistentes y construye una ruta de implementación por etapas, responsables e indicadores."
+      title: "Define una ruta de implementación",
+      body: "Prioriza procesos, responsables e indicadores para los próximos 30 días."
     }
   ],
   modules: [
@@ -160,6 +160,7 @@ window.SITE_CONFIG = {
   speaker: {
     name: "Ing. Ricardo Olmos Rivera",
     role: "Empresario y CEO de Teccapital Web",
+    summary: "Especializado en tecnología, desarrollo de software e inteligencia artificial aplicada a empresas.",
     photo: "./assets/ricardo-olmos-rivera.png",
     bio: [
       "Especializado en tecnología, inteligencia artificial, automatización empresarial y desarrollo de software, cuenta con más de cinco años de experiencia en el sector tecnológico.",
@@ -186,25 +187,22 @@ window.SITE_CONFIG = {
     notice: "La compra segura está preparada, pero en este momento permanece pausada por el servidor."
   },
   faq: [
-    ["¿Cuándo se realizará el curso?", "El jueves 26 de noviembre de 2026."],
-    ["¿En qué horario?", "De 9:00 a. m. a 4:00 p. m., con seis horas efectivas de formación."],
-    ["¿Cuál es la modalidad?", "100 % presencial en Tehuacán, Puebla."],
-    ["¿Dónde será el evento?", "La ubicación exacta del recinto se proporcionará después de confirmar la adquisición del pase."],
+    ["¿Cuándo y dónde será el curso?", "El jueves 26 de noviembre de 2026, de 9:00 a. m. a 4:00 p. m., de forma presencial en Tehuacán, Puebla. El recinto exacto se proporcionará después de confirmar el pase."],
     ["¿Cuánto cuesta la inscripción?", "$1,199 MXN. El cupo inicial es de 25 personas y puede ampliarse según la demanda."],
+    ["¿Qué incluye el pase general?", "Acceso presencial, seis horas efectivas, seis módulos prácticos y certificado digital con folio verificable."],
     ["¿A quién está dirigido?", "A empresarios, emprendedores, gerentes y directivos."],
     ["¿Qué debo llevar?", "Laptop personal."],
     ["¿Quién imparte el curso?", "Ing. Ricardo Olmos Rivera, empresario y CEO de Teccapital Web."]
   ],
   pending: [
     "Ubicación exacta del recinto",
-    "Canal oficial de atención e inscripción de IMDIIL",
     "Video promocional autorizado",
     "Condiciones fiscales y políticas aplicables",
     "Proveedor y remitente del correo de confirmación de compra"
   ],
   contact: {
     phone: null,
-    email: null,
+    email: "imdiilmx@gmail.com",
     location: "Tehuacán, Puebla",
     venueNote: "Recinto exacto después de confirmar el pase"
   },
